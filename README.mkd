@@ -1,3 +1,10 @@
+    .                       
+    |-. ,-. ,-. . , , ,-,-. 
+    | | `-. | | |/|/  | | | 
+    ^-' `-' |-' ' '   ' ' ' 
+            |               
+            '               
+
 # Description
 
 - Windows are represented as the leaves of a binary tree.
@@ -7,45 +14,43 @@
 - The other nodes are called *container nodes*.
 - Only two methods of node insertion will be provided: *replace* and *pair*.
 
-    Example: insertion of a new node (number 4) into the given tree with the
-    *replace* method:
+        Example: insertion of a new node (number 4) into the given tree with the
+        *replace* method:
 
-                 b                                   c 
-                / \                                 / \
-               3   a              -->              4   b    
-               ^  / \                              ^  / \   
-                 2   1                               3   a
-                                                        / \
-                                                       2   1
+                     b                                   c
+                    / \                                 / \
+                   3   a              -->              4   b
+                   ^  / \                              ^  / \
+                     2   1                               3   a
+                                                            / \
+                                                           2   1
+        +-------------------------+         +-------------------------+
+        |            |            |         |            |            |
+        |            |     2      |         |            |     3      |
+        |            |            |         |            |            |
+        |     3      |------------|   -->   |     4      |------------|
+        |     ^      |            |         |     ^      |     |      |
+        |            |     1      |         |            |  2  |  1   |
+        |            |            |         |            |     |      |
+        +-------------------------+         +-------------------------+
 
-    +-------------------------+         +-------------------------+
-    |            |            |         |            |            |
-    |            |     2      |         |            |     3      |
-    |            |            |         |            |            |
-    |     3      |------------|   -->   |     4      |------------|
-    |     ^      |            |         |     ^      |     |      |
-    |            |     1      |         |            |  2  |  1   |
-    |            |            |         |            |     |      |
-    +-------------------------+         +-------------------------+
+        And with the *pair* method:
 
-    And with the *pair* method:
-
-                 b                                   b
-                / \                                 / \ 
-               3   a              -->              c   a 
-               ^  / \                             / \ / \
-                 2   1                           4  3 2  1
-                                                 ^
-
-    +-------------------------+         +-------------------------+
-    |            |            |         |            |            |
-    |            |     2      |         |     4      |     2      |
-    |            |            |         |     ^      |            |
-    |     3      |------------|   -->   |------------|------------|
-    |     ^      |            |         |            |            |
-    |            |     1      |         |     3      |     1      |
-    |            |            |         |            |            |
-    +-------------------------+         +-------------------------+
+                     b                                   b
+                    / \                                 / \
+                   3   a              -->              c   a
+                   ^  / \                             / \ / \
+                     2   1                           4  3 2  1
+                                                     ^
+        +-------------------------+         +-------------------------+
+        |            |            |         |            |            |
+        |            |     2      |         |     4      |     2      |
+        |            |            |         |     ^      |            |
+        |     3      |------------|   -->   |------------|------------|
+        |     ^      |            |         |            |            |
+        |            |     1      |         |     3      |     1      |
+        |            |            |         |            |            |
+        +-------------------------+         +-------------------------+
 
 - Each container node is a split rectangle.
 - The splitting method of a container node is either *automatic* or *manual*.
@@ -55,10 +60,10 @@
 - Several tree transformations will be provided: directional leaf swap, node
   pulling, rotation, contraction, dilatation...
 
-# Features
+# Planned Features
 
 - Directional focus movement (left, right, up, down).
-- Tree transformations: swap the children of a container node, rotate the tree, expand (or contract): map x -> x^2 (or x -> x^½) to the node's split ratio, balance, shuffle.
+- Tree transformations: swap the children of a container node, rotate the tree, expand (or contract): map x -> x^2 (or x -> x^½) to the node's split ratio.
 - Move the focused node up in the tree (decrease its depth).
 - Float individual windows (it means there will be a floating layer).
 - Resize and move floating windows with the keyboard.
@@ -67,3 +72,4 @@
 - For floating windows, double borders will not be enough to always see the external borders: in order to solve the problem a custom X window property will be set, and a patch for `compton` will be provided (the third border will be the generated shadow).
 - Change settings at runtime (fifo).
 - Don't automatically give the focus to toolbar windows.
+- When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
