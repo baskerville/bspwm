@@ -62,9 +62,7 @@
 
 # Planned Features
 
-- Directional focus movement (left, right, up, down).
-- Tree transformations: swap the children of a container node, rotate the tree, expand (or contract): map x -> x^2 (or x -> x^½) to the node's split ratio.
-- Move the focused node up in the tree (decrease its depth).
+- Directional focus movement.
 - Float individual windows (it means there will be a floating layer).
 - Resize and move floating windows with the keyboard.
 - Resize and move floating windows on a regular magnetic grid (the granularity of the grid might be related to GCD(screen\_width, screen\_height)).
