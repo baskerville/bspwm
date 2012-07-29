@@ -71,3 +71,4 @@
 - Change settings at runtime (fifo).
 - Don't automatically give the focus to toolbar windows.
 - When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
+- Config. file in Lua.
