@@ -1,0 +1,17 @@
+color = {
+    outer_border = {
+        normal = "#654321",
+        active = "#123456"
+    },
+    inner_border = {
+        normal = "#654321",
+        active = "#123456"
+    }
+}
+
+width = {
+    outer_border = 1,
+    inner_border = 2
+}
+
+# vim: set ft=lua:
