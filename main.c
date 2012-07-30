@@ -18,6 +18,14 @@ int main(void)
     struct timeval timeout;
     xcb_generic_event_t *event;
 
+    load_settings();
+
+    /* O_RDWR is needed, see http://bit.ly/T0C5Mh */
+    fifo = open(INPUT_FIFO, O_RDWR | O_NONBLOCK);
+
+    if (fifo == -1) 
+        die("error: could not open fifo\n");
+
     dpy = xcb_connect(NULL, &default_screen);
 
     if (xcb_connection_has_error(dpy))
@@ -25,11 +33,6 @@ int main(void)
 
     xfd = xcb_get_file_descriptor(dpy);
     timeout.tv_sec = SELECT_TIMEOUT;
-
-    /* O_RDWR is needed, see http://bit.ly/T0C5Mh */
-    fifo = open(INPUT_FIFO, O_RDWR | O_NONBLOCK);
-    if (fifo == -1) 
-        die("error: could not open fifo\n");
 
     FD_ZERO(&descriptors);
     FD_SET(xfd, &descriptors);

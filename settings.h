@@ -1,5 +1,9 @@
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+
 #define CONFIG_FILE         "bspwmrc"
-#define BORDER_WIDTH        1
+#define OUTER_BORDER_WIDTH  1
 #define INNER_BORDER_WIDTH  2
 
 #define SPLIT_RATIO         0.5
@@ -13,9 +17,11 @@ char *normal_border_color;
 char *active_border_color;
 char *inner_border_color;
 
-int border_width;
+int outer_border_width;
 int inner_border_width;
+int border_width;
 bool smart_surroundings;
 double split_ratio;
 
 void load_settings(void);
+void apply_settings(lua_State*);

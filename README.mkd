@@ -68,7 +68,8 @@
 - Resize and move floating windows on a regular magnetic grid (the granularity of the grid might be related to GCD(screen\_width, screen\_height)).
 - Double window borders. Rationale: with single borders, it might happen that the color of the window border is too close to the color of the window content to be visible.
 - For floating windows, double borders will not be enough to always see the external borders: in order to solve the problem a custom X window property will be set, and a patch for `compton` will be provided (the third border will be the generated shadow).
-- Change settings at runtime (fifo).
+- Directional *pair* splitting preselection (feedback in the window border).
 - Don't automatically give the focus to toolbar windows.
 - When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
-- Config. file in Lua.
+- Change settings and call methods at runtime (fifo).
+- Configuration file in Lua.
