@@ -3,7 +3,7 @@
 
 int lua_evalexpr(lua_State* L, char* expr)
 {
-  char buf[EXPR_BUF_SIZE];
+  char buf[BUFSIZ];
   sprintf(buf, "return %s", expr);
   return luaL_dostring(L, buf);
 }

@@ -1,8 +1,7 @@
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-
-#define EXPR_BUF_SIZE   256
+#include <stdio.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
 int lua_evalexpr(lua_State*, char*);
 char* lua_stringexpr(lua_State*, char*, char*);

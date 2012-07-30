@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
@@ -14,7 +15,7 @@ int main(void)
 {
     fd_set descriptors;
     int fifo, xfd, nbr;
-    char message[READ_BUF_SIZE];
+    char message[BUFSIZ];
     struct timeval timeout;
     xcb_generic_event_t *event;
 
