@@ -1,51 +1,52 @@
 #include "utils.h"
 #include "luautils.h"
 
-char *lua_stringexpr(lua_State* L, char* expr, char* def)
+int lua_evalexpr(lua_State* L, char* expr)
 {
   char buf[EXPR_BUF_SIZE];
-  char *result = def;
-  sprintf(buf, "TMP=%s", expr);
-  if (!luaL_dostring(L, buf)) {
-    lua_getglobal(L, "TMP");
-    if (lua_isstring(L, -1)) {
+  sprintf(buf, "return %s", expr);
+  return luaL_dostring(L, buf);
+}
+
+char *lua_stringexpr(lua_State* L, char* expr, char* fallback)
+{
+  char *result = fallback;
+  if (lua_evalexpr(L, expr) == 0) {
+    if (lua_isstring(L, -1))
       result = (char *) lua_tostring(L, -1);
-    }
     lua_pop(L, 1);
   }
   return result;
 }
 
-double lua_doubleexpr(lua_State* L, char* expr, double def)
+double lua_doubleexpr(lua_State* L, char* expr, double fallback)
 {
-  char buf[EXPR_BUF_SIZE];
-  double result = def;
-  sprintf(buf, "TMP=%s", expr);
-  if (!luaL_dostring(L, buf)) {
-    lua_getglobal(L, "TMP");
-    if (lua_isnumber(L, -1)) {
-      result = lua_tonumber(L, -1);
-    }
+  double result = fallback;
+  if (lua_evalexpr(L, expr) == 0) {
+    if (lua_isnumber(L, -1))
+      result = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
   }
   return result;
 }
 
-int lua_intexpr(lua_State* L, char* expr, int def)
+int lua_intexpr(lua_State* L, char* expr, int fallback)
 {
-  return (int) lua_doubleexpr(L, expr, (double) def);
+  int result = fallback;
+  if (lua_evalexpr(L, expr) == 0) {
+    if (lua_isnumber(L, -1))
+      result = (int) lua_tonumber(L, -1);
+    lua_pop(L, 1);
+  }
+  return result;
 }
 
-bool lua_boolexpr(lua_State* L, char* expr, bool def)
+bool lua_boolexpr(lua_State* L, char* expr, bool fallback)
 {
-  char buf[EXPR_BUF_SIZE];
-  bool result = def;
-  sprintf(buf, "TMP=%s", expr);
-  if (!luaL_dostring(L, buf)) {
-    lua_getglobal(L, "TMP");
-    if (lua_isboolean(L, -1)) {
+  bool result = fallback;
+  if (lua_evalexpr(L, expr) == 0) {
+    if (lua_isboolean(L, -1))
       result = (bool) lua_toboolean(L, -1);
-    }
     lua_pop(L, 1);
   }
   return result;
