@@ -1,2 +1,2 @@
 all:
-	gcc -pedantic -Wall -lxcb -o bspwm main.c utils.c
+	gcc -pedantic -Wall -llua -lxcb -o bspwm main.c utils.c settings.c luautils.c

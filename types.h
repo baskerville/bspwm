@@ -1,9 +1,4 @@
 typedef enum {
-    false,
-    true
-} bool;
-
-typedef enum {
     LAYOUT_TILED,
     LAYOUT_MAX
 } layout_t;

@@ -4,6 +4,8 @@ set = {
     inner_border_color = "#222222",
     border_width = 3,
     inner_border_width = 2,
+    window_gap = 2,
+    smart_window_surroundings = true
 }
 
-# vim: set ft=lua:
+-- vim: set ft=lua:
