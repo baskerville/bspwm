@@ -6,4 +6,4 @@ typedef enum {
     true
 } bool;
 
-void die(const char *errstr, ...);
+void die(const char *, ...);
