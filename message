@@ -1,0 +1,8 @@
+call {
+    name = "set_split_ratio",
+    params = {
+        split_ratio = 0.333
+    }
+}
+
+# vim: set ft=lua:
