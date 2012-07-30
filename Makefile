@@ -1,2 +1,2 @@
 all:
-	gcc -std=c99 -pedantic -Wall -o bspwm main.c
+	gcc -pedantic -Wall -lxcb -o bspwm main.c utils.c
