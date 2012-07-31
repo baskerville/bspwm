@@ -10,16 +10,18 @@
 #include "main.h"
 #include "types.h"
 #include "settings.h"
+#include "messages.h"
+#include "commands.h"
 
 int main(void)
 {
     fd_set descriptors;
     int fifo, xfd, nbr;
-    char message[BUFSIZ];
+    char msg[BUFSIZ];
     struct timeval timeout;
     xcb_generic_event_t *event;
 
-    load_settings();
+    running = true;
 
     /* O_RDWR is needed, see http://bit.ly/T0C5Mh */
     fifo = open(INPUT_FIFO, O_RDWR | O_NONBLOCK);
@@ -41,13 +43,13 @@ int main(void)
 
     load_settings();
 
-    while (true) {
+    while (running) {
         if (select(fifo + 1, &descriptors, 0, 0, &timeout)) {
 
-            nbr = read(fifo, message, sizeof(message));
+            nbr = read(fifo, msg, sizeof(msg));
             if (nbr > 0) {
-                message[nbr] = '\0';
-                /* process_msg(message); */
+                msg[nbr] = '\0';
+                process_message(msg);
             }
 
             event = xcb_poll_for_event(dpy);

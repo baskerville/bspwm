@@ -1,3 +1,6 @@
+#ifndef _SETTINGS_H
+#define _SETTINGS_H
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -25,3 +28,5 @@ double split_ratio;
 
 void load_settings(void);
 void apply_settings(lua_State*);
+
+#endif

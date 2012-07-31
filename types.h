@@ -1,3 +1,6 @@
+#ifndef _TYPES_H
+#define _TYPES_H
+
 typedef enum {
     LAYOUT_TILED,
     LAYOUT_MAX
@@ -66,3 +69,5 @@ typedef struct {
     struct Desktop *previous;
     struct Desktop *next;
 } Desktop;
+
+#endif
