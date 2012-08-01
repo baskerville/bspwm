@@ -42,7 +42,7 @@ int main(void)
 
     /* printf("fifo: %i\n", fifo); */
     /* printf("xfd: %i\n", xfd); */
-    
+
     sel = MAX(fifo, xfd) + 1;
 
     load_settings();
@@ -52,15 +52,22 @@ int main(void)
 
             printf("in select\n");
 
-            nbr = read(fifo, msg, sizeof(msg));
-            if (nbr > 0) {
-                msg[nbr] = '\0';
-                process_message(msg);
+            if (FD_ISSET(fifo, &descriptors)) {
+                if ((nbr = read(fifo, msg, sizeof(msg))) > 0) {
+                    msg[nbr] = '\0';
+                    process_message(msg);
+                }
             }
 
-            while ((event = xcb_poll_for_event(dpy)) != NULL)
-                handle_event(event);
+            if (FD_ISSET(xfd, &descriptors)) {
+                while ((event = xcb_poll_for_event(dpy)) != NULL)
+                    handle_event(event);
+            }
         }
+
+        FD_ZERO(&descriptors);
+        FD_SET(fifo, &descriptors);
+        FD_SET(xfd, &descriptors);
     }
 
     close(fifo);
