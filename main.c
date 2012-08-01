@@ -17,18 +17,11 @@
 int main(void)
 {
     fd_set descriptors;
-    int fifo, xfd, nbr;
+    int fifo, xfd, sel, nbr;
     char msg[BUFSIZ];
-    struct timeval timeout;
     xcb_generic_event_t *event;
 
     running = true;
-
-    /* O_RDWR is needed, see http://bit.ly/T0C5Mh */
-    fifo = open(INPUT_FIFO, O_RDWR | O_NONBLOCK);
-
-    if (fifo == -1) 
-        die("error: could not open fifo\n");
 
     dpy = xcb_connect(NULL, &default_screen);
 
@@ -36,16 +29,28 @@ int main(void)
         die("error: cannot open display\n");
 
     xfd = xcb_get_file_descriptor(dpy);
-    timeout.tv_sec = SELECT_TIMEOUT;
+
+    /* O_RDWR is needed, see http://bit.ly/T0C5Mh */
+    fifo = open(INPUT_FIFO, O_RDWR | O_NONBLOCK);
+
+    if (fifo == -1) 
+        die("error: could not open fifo\n");
 
     FD_ZERO(&descriptors);
-    FD_SET(xfd, &descriptors);
     FD_SET(fifo, &descriptors);
+    FD_SET(xfd, &descriptors);
+
+    /* printf("fifo: %i\n", fifo); */
+    /* printf("xfd: %i\n", xfd); */
+    
+    sel = MAX(fifo, xfd) + 1;
 
     load_settings();
 
     while (running) {
-        if (select(fifo + 1, &descriptors, 0, 0, &timeout)) {
+        if (select(sel, &descriptors, NULL, NULL, NULL)) {
+
+            printf("in select\n");
 
             nbr = read(fifo, msg, sizeof(msg));
             if (nbr > 0) {
@@ -53,10 +58,8 @@ int main(void)
                 process_message(msg);
             }
 
-            event = xcb_poll_for_event(dpy);
-            if (event != NULL) {
+            while ((event = xcb_poll_for_event(dpy)) != NULL)
                 handle_event(event);
-            }
         }
     }
 
