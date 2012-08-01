@@ -12,6 +12,7 @@
 #include "settings.h"
 #include "messages.h"
 #include "commands.h"
+#include "events.h"
 
 int main(void)
 {
@@ -54,7 +55,7 @@ int main(void)
 
             event = xcb_poll_for_event(dpy);
             if (event != NULL) {
-                /* handle_event(event); */
+                handle_event(event);
             }
         }
     }
