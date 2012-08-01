@@ -1,3 +1,5 @@
+#define _BSD_SOURCE
+
 #include <string.h>
 #include "utils.h"
 #include "luautils.h"

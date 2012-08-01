@@ -2,7 +2,6 @@
 #include "utils.h"
 #include "messages.h"
 #include "luautils.h"
-#include "commands.h"
 #include "settings.h"
 
 void handle_call(lua_State *L)

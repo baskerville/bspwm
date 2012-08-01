@@ -5,7 +5,7 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
-#define CONFIG_FILE         "bspwmrc"
+#define CONFIG_FILE         ".bspwmrc"
 #define OUTER_BORDER_WIDTH  1
 #define INNER_BORDER_WIDTH  2
 
