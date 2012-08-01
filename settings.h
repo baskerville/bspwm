@@ -28,5 +28,7 @@ double split_ratio;
 
 void load_settings(void);
 void apply_settings(lua_State*);
+void set_setting(lua_State*);
+void get_setting(lua_State*);
 
 #endif

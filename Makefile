@@ -1,2 +1,7 @@
+# CFLAGS=-Wall -g -pendantic
+
 all:
-	gcc -pedantic -Wall -llua -lxcb -o bspwm main.c utils.c settings.c luautils.c messages.c commands.c
+	gcc -Wall -g -pedantic -llua -lxcb -o bspwm main.c utils.c settings.c luautils.c messages.c commands.c
+
+clean:
+	rm -f bspwm
