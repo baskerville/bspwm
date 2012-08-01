@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "utils.h"
 #include "luautils.h"
@@ -70,10 +71,13 @@ void set_setting(lua_State *L)
     if (name == NULL)
         return;
 
-    if (strcmp(name, "inner_border_width") == 0)
+    if (strcmp(name, "inner_border_width") == 0) {
         inner_border_width = lua_intexpr(L, "set.value", INNER_BORDER_WIDTH);
-    else if (strcmp(name, "normal_border_color") == 0)
+    } else if (strcmp(name, "normal_border_color") == 0) {
+        free(normal_border_color);
         normal_border_color = lua_stringexpr(L, "set.value", NORMAL_BORDER_COLOR);
-    else if (strcmp(name, "inner_border_color") == 0)
+    } else if (strcmp(name, "inner_border_color") == 0) {
+        free(inner_border_color);
         inner_border_color = lua_stringexpr(L, "set.value", INNER_BORDER_COLOR);
+    }
 }
