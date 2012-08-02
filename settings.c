@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "luautils.h"
 #include "settings.h"
+#include "common.h"
 
 void load_settings(void)
 {
@@ -40,7 +41,7 @@ void apply_settings(lua_State *L)
     /* printf("smart_surroundings: %i\n", smart_surroundings); */
 }
 
-void get_setting(lua_State *L)
+void get_setting(lua_State *L, char* rsp)
 {
     char *name;
 
@@ -52,11 +53,11 @@ void get_setting(lua_State *L)
         return;
 
     if (strcmp(name, "inner_border_width") == 0)
-        printf("%i\n", inner_border_width);
+        sprintf(rsp, "%i\n", inner_border_width);
     else if (strcmp(name, "normal_border_color") == 0)
-        printf("%s\n", normal_border_color);
+        sprintf(rsp, "%s\n", normal_border_color);
     else if (strcmp(name, "inner_border_color") == 0)
-        printf("%s\n", inner_border_color);
+        sprintf(rsp, "%s\n", inner_border_color);
 }
 
 void set_setting(lua_State *L)

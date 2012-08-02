@@ -17,6 +17,7 @@
 #include "settings.h"
 #include "messages.h"
 #include "events.h"
+#include "common.h"
  
 void quit(void)
 {
@@ -48,7 +49,7 @@ void get_atoms(char **names, xcb_atom_t *atoms, unsigned int count)
             /* PRINTF("%s : %d\n", names[i], reply->atom); */
             atoms[i] = reply->atom; free(reply);
         } else {
-            PUTS("warning: monsterwm failed to register atoms");
+            PUTS("warning: failed to register atoms");
         }
     }
 }
@@ -153,6 +154,7 @@ int main(void)
                 ret_fd = accept(sock_fd, NULL, 0);
                 if (ret_fd > 0 && (nbr = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
                     msg[nbr] = '\0';
+                    strcpy(rsp, EMPTY_RESPONSE);
                     process_message(msg, rsp);
                     send(ret_fd, rsp, strlen(rsp), 0);
                 }

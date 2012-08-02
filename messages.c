@@ -22,10 +22,10 @@ void process_message(char *msg, char *rsp)
     if (luaL_loadstring(L, msg) == 0 && lua_pcall(L, 0, 0, 0) == 0) {
         handle_call(L);
         set_setting(L);
-        get_setting(L);
+        get_setting(L, rsp);
     }
 
     lua_close(L);
 
-    strcpy(rsp, "hello\n");
+    /* strcpy(rsp, "hello\n"); */
 }

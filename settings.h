@@ -6,6 +6,7 @@
 #include <lauxlib.h>
 
 #define CONFIG_FILE         ".bspwmrc"
+
 #define OUTER_BORDER_WIDTH  1
 #define INNER_BORDER_WIDTH  2
 
@@ -27,8 +28,8 @@ bool smart_surroundings;
 double split_ratio;
 
 void load_settings(void);
-void apply_settings(lua_State*);
-void set_setting(lua_State*);
-void get_setting(lua_State*);
+void apply_settings(lua_State *);
+void set_setting(lua_State *);
+void get_setting(lua_State *, char *);
 
 #endif
