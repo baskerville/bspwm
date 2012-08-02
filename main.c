@@ -33,7 +33,7 @@ int register_events(void)
 }
  
 /* wrapper to get atoms using xcb */
-void xcb_get_atoms(char **names, xcb_atom_t *atoms, unsigned int count)
+void get_atoms(char **names, xcb_atom_t *atoms, unsigned int count)
 {
     xcb_intern_atom_cookie_t cookies[count];
     xcb_intern_atom_reply_t  *reply;
@@ -51,7 +51,7 @@ void xcb_get_atoms(char **names, xcb_atom_t *atoms, unsigned int count)
     }
 }
 
-xcb_screen_t *xcb_screen_of_display(xcb_connection_t *dpy, int default_screen)
+xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
 {
     xcb_screen_iterator_t iter = xcb_setup_roots_iterator(xcb_get_setup(dpy));
     for (; iter.rem; --default_screen, xcb_screen_next(&iter))
@@ -70,15 +70,15 @@ void sigchld(int sig)
 void setup(int default_screen)
 {
     sigchld(0);
-    screen = xcb_screen_of_display(dpy, default_screen);
+    screen = screen_of_display(dpy, default_screen);
     if (!screen)
         die("error: cannot aquire screen\n");
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
     /* set up atoms for dialog/notification windows */
-    xcb_get_atoms(WM_ATOM_NAME, wmatoms, WM_COUNT);
-    xcb_get_atoms(NET_ATOM_NAME, netatoms, NET_COUNT);
+    get_atoms(WM_ATOM_NAME, wmatoms, WM_COUNT);
+    get_atoms(NET_ATOM_NAME, netatoms, NET_COUNT);
 
     xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms);
 }

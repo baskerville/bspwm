@@ -17,7 +17,7 @@ enum { NET_SUPPORTED, NET_FULLSCREEN, NET_WM_STATE, NET_ACTIVE, NET_COUNT };
 static xcb_atom_t wmatoms[WM_COUNT], netatoms[NET_COUNT];
 
 int xcb_check_other_wm(void);
-xcb_screen_t *xcb_screen_of_display(xcb_connection_t*, int);
+xcb_screen_t *screen_of_display(xcb_connection_t*, int);
 void sigchld(int);
 void setup(int);
 
