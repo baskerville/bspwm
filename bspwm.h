@@ -1,7 +1,7 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
-#define INPUT_FIFO      "/tmp/bspwm-input"
+#define SOCK_PATH  "BSPWM_SOCKET"
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;

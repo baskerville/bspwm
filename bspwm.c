@@ -1,11 +1,13 @@
-#include <sys/select.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/select.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
@@ -86,8 +88,11 @@ void setup(int default_screen)
 int main(void)
 {
     fd_set descriptors;
-    int fifo, xfd, sel, nbr;
-    char msg[BUFSIZ];
+    int sock_fd, ret_fd, xfd, sel, nbr;
+    struct sockaddr_un sock_address;
+    char *sock_path;
+    char msg[BUFSIZ], rsp[BUFSIZ];
+
     xcb_generic_event_t *event;
 
     running = true;
@@ -99,27 +104,38 @@ int main(void)
 
     setup(default_screen);
 
-    if (register_events() == 1) {
-        xcb_disconnect(dpy);
-        die("another WM is already running\n");
-    }
+    /* if (register_events() == 1) { */
+    /*     xcb_disconnect(dpy); */
+    /*     die("another WM is already running\n"); */
+    /* } */
 
     xfd = xcb_get_file_descriptor(dpy);
 
-    /* O_RDWR is needed, see http://bit.ly/T0C5Mh */
-    fifo = open(INPUT_FIFO, O_RDWR | O_NONBLOCK);
+    sock_path = getenv(SOCK_PATH);
 
-    if (fifo == -1) 
-        die("error: could not open fifo\n");
+    if (sock_path == NULL)
+        die("BSPWM_SOCKET environment variable is not set\n");
 
-    sel = MAX(fifo, xfd) + 1;
+    sock_address.sun_family = AF_UNIX;
+    strcpy(sock_address.sun_path, sock_path);
+    unlink(sock_path);
+
+    sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (sock_fd == -1) 
+        die("error: could not create socket\n");
+
+    bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
+    listen(sock_fd, SOMAXCONN);
+
+    sel = MAX(sock_fd, xfd) + 1;
 
     load_settings();
 
     while (running) {
 
         FD_ZERO(&descriptors);
-        FD_SET(fifo, &descriptors);
+        FD_SET(sock_fd, &descriptors);
         FD_SET(xfd, &descriptors);
 
         xcb_flush(dpy);
@@ -133,18 +149,18 @@ int main(void)
                 }
             }
 
-            if (FD_ISSET(fifo, &descriptors)) {
-                if ((nbr = read(fifo, msg, sizeof(msg))) > 0) {
+            if (FD_ISSET(sock_fd, &descriptors)) {
+                ret_fd = accept(sock_fd, NULL, 0);
+                if (ret_fd > 0 && (nbr = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
                     msg[nbr] = '\0';
-                    process_message(msg);
+                    process_message(msg, rsp);
+                    send(ret_fd, rsp, strlen(rsp), 0);
                 }
             }
-
         }
-
     }
 
-    close(fifo);
+    close(sock_fd);
     xcb_disconnect(dpy);
     return 0;
 }

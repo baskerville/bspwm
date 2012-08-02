@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[])
 {
-    int sock_fd, i;
+    int sock_fd, nbr, i;
     struct sockaddr_un sock_address;
     char *sock_path;
     char response[BUFSIZ];
@@ -33,8 +33,9 @@ int main(int argc, char *argv[])
     for (i = 0; i < num_args; i++) {
         send(sock_fd, args[i], strlen(args[i]), 0);
         
-        if (recv(sock_fd, response, sizeof(response), 0) > 0)
-            printf("%s\n", response);
+        if ((nbr = recv(sock_fd, response, sizeof(response), 0)) > 0) {
+            response[nbr] = '\0';
+            printf("%s", response);
+        }
     }
-                
 }

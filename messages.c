@@ -14,7 +14,7 @@ void handle_call(lua_State *L)
         quit();
 }
 
-void process_message(char *msg)
+void process_message(char *msg, char *rsp)
 {
     lua_State *L = lua_open();
     luaopen_base(L);
@@ -26,4 +26,6 @@ void process_message(char *msg)
     }
 
     lua_close(L);
+
+    strcpy(rsp, "hello\n");
 }

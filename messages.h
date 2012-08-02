@@ -6,7 +6,7 @@
 #include <lauxlib.h>
 
 void handle_call(lua_State*);
-void process_message(char*);
+void process_message(char*, char*);
 void quit(void);
 
 #endif

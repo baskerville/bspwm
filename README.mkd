@@ -71,5 +71,5 @@
 - Directional *pair* splitting preselection (feedback in the window border).
 - Don't automatically give the focus to toolbar windows.
 - When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
-- Change settings and call methods at runtime (fifo).
+- Change settings and call methods at runtime.
 - Configuration file in Lua.
