@@ -14,12 +14,17 @@ typedef enum {
 typedef enum {
     TYPE_HORIZONTAL,
     TYPE_VERTICAL
-} splittype_t;
+} split_type_t;
 
 typedef enum {
     MODE_AUTOMATIC,
     MODE_MANUAL
-} splitmode_t;
+} split_mode_t;
+
+typedef enum {
+    STRATEGY_REPLACE,
+    STRATEGY_PAIR
+} insertion_strategy_t;
 
 typedef struct {
     xcb_window_t win;
@@ -30,9 +35,10 @@ typedef struct {
 } Client;
 
 typedef struct {
-    splittype_t split_type;
+    split_type_t split_type;
     double split_ratio;
-    splitmode_t split_mode;
+    split_mode_t split_mode;
+    insertion_strategy_t insertion_strategy;
     xcb_rectangle_t rectangle;
     struct Node *first_child;
     struct Node *second_child;
