@@ -10,7 +10,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "utils.h"
-#include "main.h"
+#include "bspwm.h"
 #include "types.h"
 #include "settings.h"
 #include "messages.h"

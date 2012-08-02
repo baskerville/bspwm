@@ -26,7 +26,7 @@ void apply_settings(lua_State *L)
 {
     normal_border_color = string_expr(L, "normal_border_color", NORMAL_BORDER_COLOR);
     split_ratio = double_expr(L, "split_ratio", SPLIT_RATIO);
-    smart_surroundings = lua_boolexpr(L, "smart_surroundings", SMART_SURROUNDINGS);
+    smart_surroundings = bool_expr(L, "smart_surroundings", SMART_SURROUNDINGS);
     outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
     inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
@@ -44,7 +44,7 @@ void get_setting(lua_State *L)
 {
     char *name;
 
-    if (!lua_hastable(L, "get"))
+    if (!has_table(L, "get"))
         return;
 
     name = string_expr(L, "get.name", NULL);
@@ -63,7 +63,7 @@ void set_setting(lua_State *L)
 {
     char *name;
 
-    if (!lua_hastable(L, "set"))
+    if (!has_table(L, "set"))
         return;
 
     name = string_expr(L, "set.name", NULL);

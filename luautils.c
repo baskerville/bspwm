@@ -11,7 +11,7 @@ int eval_expr(lua_State *L, char *expr)
     return luaL_dostring(L, buf);
 }
 
-int lua_hastable(lua_State *L, char *name)
+int has_table(lua_State *L, char *name)
 {
     int result = 0;
     eval_expr(L, name);
@@ -55,7 +55,7 @@ int int_expr(lua_State *L, char *expr, int fallback)
     return result;
 }
 
-bool lua_boolexpr(lua_State *L, char *expr, bool fallback)
+bool bool_expr(lua_State *L, char *expr, bool fallback)
 {
     bool result = fallback;
     if (eval_expr(L, expr) == 0) {
