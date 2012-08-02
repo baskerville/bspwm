@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "luautils.h"
 
-int lua_evalexpr(lua_State *L, char *expr)
+int eval_expr(lua_State *L, char *expr)
 {
     char buf[BUFSIZ];
     sprintf(buf, "return %s", expr);
@@ -14,16 +14,16 @@ int lua_evalexpr(lua_State *L, char *expr)
 int lua_hastable(lua_State *L, char *name)
 {
     int result = 0;
-    lua_evalexpr(L, name);
+    eval_expr(L, name);
     result = lua_istable(L, -1);
     lua_pop(L, 1);
     return result;
 }
 
-char *lua_stringexpr(lua_State *L, char *expr, char* fallback)
+char *string_expr(lua_State *L, char *expr, char* fallback)
 {
     char *result;
-    if (lua_evalexpr(L, expr) == 0) {
+    if (eval_expr(L, expr) == 0) {
         if (lua_isstring(L, -1))
             result = strdup(lua_tostring(L, -1));
         else
@@ -33,10 +33,10 @@ char *lua_stringexpr(lua_State *L, char *expr, char* fallback)
     return result;
 }
 
-double lua_doubleexpr(lua_State *L, char *expr, double fallback)
+double double_expr(lua_State *L, char *expr, double fallback)
 {
     double result = fallback;
-    if (lua_evalexpr(L, expr) == 0) {
+    if (eval_expr(L, expr) == 0) {
         if (lua_isnumber(L, -1))
             result = (double) lua_tonumber(L, -1);
         lua_pop(L, 1);
@@ -44,10 +44,10 @@ double lua_doubleexpr(lua_State *L, char *expr, double fallback)
     return result;
 }
 
-int lua_intexpr(lua_State *L, char *expr, int fallback)
+int int_expr(lua_State *L, char *expr, int fallback)
 {
     int result = fallback;
-    if (lua_evalexpr(L, expr) == 0) {
+    if (eval_expr(L, expr) == 0) {
         if (lua_isnumber(L, -1))
             result = (int) lua_tonumber(L, -1);
         lua_pop(L, 1);
@@ -58,7 +58,7 @@ int lua_intexpr(lua_State *L, char *expr, int fallback)
 bool lua_boolexpr(lua_State *L, char *expr, bool fallback)
 {
     bool result = fallback;
-    if (lua_evalexpr(L, expr) == 0) {
+    if (eval_expr(L, expr) == 0) {
         if (lua_isboolean(L, -1))
             result = (bool) lua_toboolean(L, -1);
         lua_pop(L, 1);

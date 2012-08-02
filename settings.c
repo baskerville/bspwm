@@ -24,12 +24,12 @@ void load_settings(void)
 
 void apply_settings(lua_State *L)
 {
-    normal_border_color = lua_stringexpr(L, "normal_border_color", NORMAL_BORDER_COLOR);
-    split_ratio = lua_doubleexpr(L, "split_ratio", SPLIT_RATIO);
+    normal_border_color = string_expr(L, "normal_border_color", NORMAL_BORDER_COLOR);
+    split_ratio = double_expr(L, "split_ratio", SPLIT_RATIO);
     smart_surroundings = lua_boolexpr(L, "smart_surroundings", SMART_SURROUNDINGS);
-    outer_border_width = lua_intexpr(L, "outer_border_width", OUTER_BORDER_WIDTH);
-    inner_border_width = lua_intexpr(L, "inner_border_width", INNER_BORDER_WIDTH);
-    inner_border_color = lua_stringexpr(L, "inner_border_color", INNER_BORDER_COLOR);
+    outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
+    inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
+    inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
     border_width = inner_border_width + outer_border_width;
     /* printf("split ratio: %f\n", split_ratio); */
     /* printf("outer_border_width: %i\n", outer_border_width); */
@@ -47,7 +47,7 @@ void get_setting(lua_State *L)
     if (!lua_hastable(L, "get"))
         return;
 
-    name = lua_stringexpr(L, "get.name", NULL);
+    name = string_expr(L, "get.name", NULL);
     if (name == NULL)
         return;
 
@@ -66,18 +66,18 @@ void set_setting(lua_State *L)
     if (!lua_hastable(L, "set"))
         return;
 
-    name = lua_stringexpr(L, "set.name", NULL);
+    name = string_expr(L, "set.name", NULL);
 
     if (name == NULL)
         return;
 
     if (strcmp(name, "inner_border_width") == 0) {
-        inner_border_width = lua_intexpr(L, "set.value", INNER_BORDER_WIDTH);
+        inner_border_width = int_expr(L, "set.value", INNER_BORDER_WIDTH);
     } else if (strcmp(name, "normal_border_color") == 0) {
         free(normal_border_color);
-        normal_border_color = lua_stringexpr(L, "set.value", NORMAL_BORDER_COLOR);
+        normal_border_color = string_expr(L, "set.value", NORMAL_BORDER_COLOR);
     } else if (strcmp(name, "inner_border_color") == 0) {
         free(inner_border_color);
-        inner_border_color = lua_stringexpr(L, "set.value", INNER_BORDER_COLOR);
+        inner_border_color = string_expr(L, "set.value", INNER_BORDER_COLOR);
     }
 }

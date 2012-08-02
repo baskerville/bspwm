@@ -6,11 +6,11 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-int lua_evalexpr(lua_State*, char*);
+int eval_expr(lua_State*, char*);
 int lua_hastable(lua_State*, char*);
-char *lua_stringexpr(lua_State*, char*, char*);
-double lua_doubleexpr(lua_State*, char*, double);
-int lua_intexpr(lua_State*, char*, int);
+char *string_expr(lua_State*, char*, char*);
+double double_expr(lua_State*, char*, double);
+int int_expr(lua_State*, char*, int);
 bool lua_boolexpr(lua_State*, char*, bool);
 
 #endif

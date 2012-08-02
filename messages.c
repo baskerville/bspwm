@@ -7,7 +7,7 @@
 void handle_call(lua_State *L)
 {
     char *name;
-    name = lua_stringexpr(L, "run.name", NULL);
+    name = string_expr(L, "run.name", NULL);
     if (name == NULL)
         return;
     if (strcmp(name, "quit") == 0)
