@@ -1,11 +1,6 @@
-    .                       
-    |-. ,-. ,-. . , , ,-,-. 
-    | | `-. | | |/|/  | | | 
-    ^-' `-' |-' ' '   ' ' ' 
-            |               
-            '               
+![logo](https://github.com/baskerville/bspwm/raw/master/resources/bspwm_logo.png)
 
-# Description
+## Description
 
 - Windows are represented as the leaves of a binary tree.
 - To each leaf corresponds exactly one window.
@@ -60,7 +55,7 @@
 - Several tree transformations will be provided: directional leaf swap, node
   pulling, rotation, contraction, dilatation...
 
-# Planned Features
+## Planned Features
 
 - Directional focus movement.
 - Float individual windows (it means there will be a floating layer).
