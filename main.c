@@ -22,7 +22,7 @@ void quit(void)
 }
 
 // check for other WM and initiate events capture
-int xcb_check_other_wm(void)
+int register_events(void)
 {
     xcb_generic_error_t *error;
     unsigned int values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS};
@@ -99,7 +99,7 @@ int main(void)
 
     setup(default_screen);
 
-    if (xcb_check_other_wm() == 1) {
+    if (register_events() == 1) {
         xcb_disconnect(dpy);
         die("another WM is already running\n");
     }
