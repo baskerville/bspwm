@@ -48,10 +48,6 @@
         +-------------------------+         +-------------------------+
 
 - Each container node is a split rectangle.
-- The splitting method of a container node is either *automatic* or *manual*.
-- In the *automatic* splitting mode, the split type is vertical if the width of
-  the rectangle of the node is greater that its height and horizontal
-  otherwise.
 - Several tree transformations will be provided: directional leaf swap, node
   pulling, rotation, contraction, dilatation...
 

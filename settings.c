@@ -26,19 +26,11 @@ void load_settings(void)
 void apply_settings(lua_State *L)
 {
     normal_border_color = string_expr(L, "normal_border_color", NORMAL_BORDER_COLOR);
-    split_ratio = double_expr(L, "split_ratio", SPLIT_RATIO);
     smart_surroundings = bool_expr(L, "smart_surroundings", SMART_SURROUNDINGS);
     outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
     inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
     border_width = inner_border_width + outer_border_width;
-    /* printf("split ratio: %f\n", split_ratio); */
-    /* printf("outer_border_width: %i\n", outer_border_width); */
-    /* printf("inner_border_color: %s\n", inner_border_color); */
-    /* printf("normal_border_color: %s\n", normal_border_color); */
-    /* printf("default normal_border_color: %s\n", NORMAL_BORDER_COLOR); */
-    /* printf("outer_border_color: %s\n", outer_border_color); */
-    /* printf("smart_surroundings: %i\n", smart_surroundings); */
 }
 
 void get_setting(lua_State *L, char* rsp)

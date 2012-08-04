@@ -1,4 +1,8 @@
--- normal_border_color = "#654321"
+--
+-- bspwm configuration file
+--
+
+normal_border_color = "#654321"
 active_border_color = "#456"
 locked_border_color = "#123"
 urgent_border_color = "#156"
@@ -6,7 +10,8 @@ inner_border_color = "#222222"
 outer_border_width = 1
 inner_border_width = 2
 smart_surroundings = true
-split_ratio = 0.333
 window_gap = 2
+
+padding = { top = 24 }
 
 -- vim: set ft=lua:

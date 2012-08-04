@@ -16,16 +16,21 @@
 #define NORMAL_BORDER_COLOR  "#333333"
 #define ACTIVE_BORDER_COLOR  "#DDDDDD"
 #define INNER_BORDER_COLOR   "#111111"
+#define LOCKED_BORDER_COLOR  "#333333"
+#define URGENT_BORDER_COLOR  "#333333"
 
 char *normal_border_color;
 char *active_border_color;
+char *locked_border_color;
+char *urgent_border_color;
 char *inner_border_color;
 
 int outer_border_width;
 int inner_border_width;
 int border_width;
+int window_gap;
+
 bool smart_surroundings;
-double split_ratio;
 
 void load_settings(void);
 void apply_settings(lua_State *);

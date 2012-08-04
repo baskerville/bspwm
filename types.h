@@ -22,6 +22,11 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
+    FIRST_CHILD,
+    SECOND_CHILD
+} pair_polarity_t;
+
+typedef enum {
     DIR_LEFT,
     DIR_UP,
     DIR_RIGHT,
@@ -44,8 +49,8 @@ typedef struct {
 typedef struct {
     split_type_t split_type;
     double split_ratio;
-    split_mode_t split_mode;
     xcb_rectangle_t rectangle;
+    pair_polarity_t pair_polarity;
     struct Node *first_child;
     struct Node *second_child;
     struct Node *parent;
@@ -67,11 +72,12 @@ typedef Layer FloatingLayer;
 
 typedef struct {
     char *name;
-    layout_t layout;
-    layer_t focus;
-    TilingLayer tiling_layer;
-    FloatingLayer floating_layer;
+    Layer tiling_layer;
+    Layer floating_layer;
+    layer_t selected_layer;
+    layout_t tiling_layout;
     insertion_strategy_t insertion_strategy;
+    split_mode_t split_mode;
     struct Desktop *previous;
     struct Desktop *next;
 } Desktop;
