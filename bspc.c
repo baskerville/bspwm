@@ -8,19 +8,19 @@
 
 int main(int argc, char *argv[])
 {
-    int sock_fd, nbr, i;
+    int sock_fd, nbr;
     struct sockaddr_un sock_address;
     char *sock_path;
     char rsp[BUFSIZ];
     char *msg;
 
     if (argc < 2)
-        return;
+        return -1;
 
     sock_path = getenv(SOCK_PATH);
 
     if (sock_path == NULL)
-        return;
+        return -1;
 
     msg = *(argv + 1);
     sock_address.sun_family = AF_UNIX;
@@ -35,4 +35,6 @@ int main(int argc, char *argv[])
         if (strcmp(rsp, EMPTY_RESPONSE) != 0)
             printf("%s", rsp);
     }
+
+    return 0;
 }

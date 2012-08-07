@@ -17,26 +17,16 @@ typedef enum {
 } split_type_t;
 
 typedef enum {
-    MODE_ROTATE_CWISE,
-    MODE_ROTATE_CCWISE
-} split_mode_t;
-
-typedef enum {
-    FIRST_CHILD,
-    SECOND_CHILD
-} pair_polarity_t;
+    ROTATE_CWISE,
+    ROTATE_CCWISE
+} tree_rotate_t;
 
 typedef enum {
     DIR_LEFT,
     DIR_UP,
     DIR_RIGHT,
     DIR_DOWN
-} split_dir_t;
-
-typedef enum {
-    STRATEGY_REPLACE,
-    STRATEGY_PAIR
-} insertion_strategy_t;
+} pair_dir_t;
 
 typedef struct {
     xcb_window_t win;
@@ -50,7 +40,6 @@ typedef struct {
     split_type_t split_type;
     double split_ratio;
     xcb_rectangle_t rectangle;
-    pair_polarity_t pair_polarity;
     struct Node *first_child;
     struct Node *second_child;
     struct Node *parent;
@@ -58,11 +47,12 @@ typedef struct {
 } Node;
 
 typedef struct {
-    Node *prev;
+    Node *node;
+    struct NodeFocusHistory *prev;
 } NodeFocusHistory;
 
 typedef struct {
-    Node *first;
+    Node *head;
     Node *focus;
     NodeFocusHistory *focus_history;
 } Layer;
@@ -76,8 +66,6 @@ typedef struct {
     Layer floating_layer;
     layer_t selected_layer;
     layout_t tiling_layout;
-    insertion_strategy_t insertion_strategy;
-    split_mode_t split_mode;
     struct Desktop *previous;
     struct Desktop *next;
 } Desktop;

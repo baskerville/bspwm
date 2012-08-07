@@ -1,7 +1,51 @@
-# CFLAGS=-Wall -g -pendantic
+VERSION = 0.01
 
-all:
-	gcc -std=c99 -Wall -g -pedantic -llua -lxcb -o bspwm bspwm.c utils.c settings.c luautils.c messages.c events.c
+CC = gcc
+LIBS    = `pkg-config --libs xcb lua`
+CFLAGS  = -g -std=c99 -pedantic -Wall -Wextra
+LDFLAGS = $(LIBS)
+
+PREFIX ?= /usr/local
+BINPREFIX = $(PREFIX)/bin
+
+WM_SRC = bspwm.c events.c luautils.c messages.c settings.c utils.c
+CL_SRC = bspc.c
+
+WM_OBJ = $(WM_SRC:.c=.o)
+CL_OBJ = $(CL_SRC:.c=.o)
+
+all: options bspwm bspc
+
+options:
+	@echo "bspwm build options:"
+	@echo "CC      = $(CC)"
+	@echo "CFLAGS  = $(CFLAGS)"
+	@echo "LDFLAGS = $(LDFLAGS)"
+	@echo "PREFIX  = $(PREFIX)"
+
+.c.o:
+	@echo "CC $<"
+	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -c -o $@ $<
+
+bspwm:  $(WM_OBJ)
+	@echo CC -o $@
+	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS)
+
+bspc:   $(CL_OBJ)
+	@echo CC -o $@
+	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS)
 
 clean:
-	rm -f bspwm
+	@echo "cleaning"
+	@rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}
+
+install: all
+	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
+	@install -D -m 755 bspwm $(DESTDIR)$(BINPREFIX)/bspwm
+	@install -D -m 755 bspc $(DESTDIR)$(BINPREFIX)/bspc
+
+uninstall:
+	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
+	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c}
+
+.PHONY: all options clean install uninstall

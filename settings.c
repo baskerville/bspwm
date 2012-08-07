@@ -26,11 +26,18 @@ void load_settings(void)
 void apply_settings(lua_State *L)
 {
     normal_border_color = string_expr(L, "normal_border_color", NORMAL_BORDER_COLOR);
+    active_border_color = string_expr(L, "active_border_color", ACTIVE_BORDER_COLOR);
+    locked_border_color = string_expr(L, "locked_border_color", LOCKED_BORDER_COLOR);
+    urgent_border_color = string_expr(L, "urgent_border_color", URGENT_BORDER_COLOR);
+    inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
+
     smart_surroundings = bool_expr(L, "smart_surroundings", SMART_SURROUNDINGS);
+
     outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
-    inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
     border_width = inner_border_width + outer_border_width;
+
+    window_gap = int_expr(L, "window_gap", WINDOW_GAP);
 }
 
 void get_setting(lua_State *L, char* rsp)
@@ -46,10 +53,22 @@ void get_setting(lua_State *L, char* rsp)
 
     if (strcmp(name, "inner_border_width") == 0)
         sprintf(rsp, "%i\n", inner_border_width);
+    else if (strcmp(name, "outer_border_width") == 0)
+        sprintf(rsp, "%i\n", outer_border_width);
+    else if (strcmp(name, "window_gap") == 0)
+        sprintf(rsp, "%i\n", window_gap);
     else if (strcmp(name, "normal_border_color") == 0)
         sprintf(rsp, "%s\n", normal_border_color);
+    else if (strcmp(name, "active_border_color") == 0)
+        sprintf(rsp, "%s\n", active_border_color);
+    else if (strcmp(name, "locked_border_color") == 0)
+        sprintf(rsp, "%s\n", locked_border_color);
+    else if (strcmp(name, "urgent_border_color") == 0)
+        sprintf(rsp, "%s\n", urgent_border_color);
     else if (strcmp(name, "inner_border_color") == 0)
         sprintf(rsp, "%s\n", inner_border_color);
+    else if (strcmp(name, "smart_surroundings") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(smart_surroundings));
 }
 
 void set_setting(lua_State *L)

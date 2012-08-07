@@ -13,7 +13,7 @@
 #include <xcb/xcb_event.h>
 #include "utils.h"
 #include "bspwm.h"
-#include "types.h"
+#include "structures.h"
 #include "settings.h"
 #include "messages.h"
 #include "events.h"
@@ -64,6 +64,7 @@ xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
 
 void sigchld(int sig)
 {
+    sig = sig; /* to prevent an "ununsed parameter" warning */
     if (signal(SIGCHLD, sigchld) == SIG_ERR)
         die("cannot install SIGCHLD handler\n");
     while (0 < waitpid(-1, NULL, WNOHANG))

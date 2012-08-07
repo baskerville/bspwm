@@ -4,7 +4,7 @@
 #define LENGTH(x)         (sizeof(x) / sizeof(*x))
 #define MAX(A, B)         ((A) > (B) ? (A) : (B))
 #define MIN(A, B)         ((A) < (B) ? (A) : (B))
-#define RESPONSE_TYPE(e)  (e->response_type & ~0x80)
+#define BOOLSTR(A)        ((A) ? "true" : "false")
 
 #if 1
 #  define PUTS(x)            puts(x);

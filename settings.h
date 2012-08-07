@@ -10,6 +10,8 @@
 #define OUTER_BORDER_WIDTH  1
 #define INNER_BORDER_WIDTH  2
 
+#define WINDOW_GAP  2
+
 #define SPLIT_RATIO         0.5
 #define SMART_SURROUNDINGS  true
 
