@@ -54,7 +54,7 @@
 ## Planned Features
 
 - Directional focus movement.
-- Float individual windows (it means there will be a floating layer).
+- Float individual windows.
 - Resize and move floating windows with the keyboard.
 - Resize and move floating windows on a regular magnetic grid (the granularity of the grid might be related to GCD(screen\_width, screen\_height)).
 - Double window borders. Rationale: with single borders, it might happen that the color of the window border is too close to the color of the window content to be visible.

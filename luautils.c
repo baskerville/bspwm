@@ -26,8 +26,10 @@ char *string_expr(lua_State *L, char *expr, char* fallback)
     if (eval_expr(L, expr) == 0) {
         if (lua_isstring(L, -1))
             result = strdup(lua_tostring(L, -1));
-        else
+        else if (fallback != NULL)
             result = strdup(fallback);
+        else
+            result = NULL;
         lua_pop(L, 1);
     }
     return result;

@@ -14,7 +14,7 @@ void handle_event(xcb_generic_event_t *evt)
             PUTS("received a map request\n");
             break;
         case XCB_UNGRAB_KEY:
-            PUTS("ungrab key received");
+            /* PUTS("ungrab key received"); */
             break;
         case XCB_KEY_PRESS:
             PUTS("keypress received");

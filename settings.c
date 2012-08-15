@@ -1,3 +1,5 @@
+#define _BSD_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +75,7 @@ void get_setting(lua_State *L, char* rsp)
 
 void set_setting(lua_State *L)
 {
-    char *name;
+    char *name, *backup;
 
     if (!has_table(L, "set"))
         return;
@@ -84,12 +86,19 @@ void set_setting(lua_State *L)
         return;
 
     if (strcmp(name, "inner_border_width") == 0) {
-        inner_border_width = int_expr(L, "set.value", INNER_BORDER_WIDTH);
+        inner_border_width = int_expr(L, "set.value", inner_border_width);
     } else if (strcmp(name, "normal_border_color") == 0) {
+        backup = strdup(normal_border_color);
         free(normal_border_color);
-        normal_border_color = string_expr(L, "set.value", NORMAL_BORDER_COLOR);
+        normal_border_color = string_expr(L, "set.value", backup);
     } else if (strcmp(name, "inner_border_color") == 0) {
+        backup = strdup(inner_border_color);
         free(inner_border_color);
-        inner_border_color = string_expr(L, "set.value", INNER_BORDER_COLOR);
+        inner_border_color = string_expr(L, "set.value", backup);
+    } else if (strcmp(name, "smart_surroundings") == 0) {
+        smart_surroundings = bool_expr(L, "set.value", smart_surroundings);
     }
+
+    if (backup != NULL)
+        free(backup);
 }

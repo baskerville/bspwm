@@ -26,6 +26,4 @@ void process_message(char *msg, char *rsp)
     }
 
     lua_close(L);
-
-    /* strcpy(rsp, "hello\n"); */
 }
