@@ -17,16 +17,17 @@ typedef enum {
 } split_type_t;
 
 typedef enum {
-    ROTATE_CWISE,
-    ROTATE_CCWISE
-} tree_rotate_t;
+    ROTATE_CLOCK_WISE,
+    ROTATE_COUNTER_CW,
+    ROTATE_FULL_CYCLE
+} rotate_t;
 
 typedef enum {
     DIR_LEFT,
     DIR_UP,
     DIR_RIGHT,
     DIR_DOWN
-} pair_dir_t;
+} direction_t;
 
 typedef struct {
     xcb_window_t win;
@@ -36,20 +37,22 @@ typedef struct {
     bool locked;
 } Client;
 
-typedef struct {
+typedef struct Node Node;
+struct Node {
     split_type_t split_type;
     double split_ratio;
     xcb_rectangle_t rectangle;
-    struct Node *first_child;
-    struct Node *second_child;
-    struct Node *parent;
+    Node *first_child;
+    Node *second_child;
+    Node *parent;
     Client *client; /* equals NULL except for leaves */
-} Node;
+};
 
-typedef struct {
+typedef struct NodeFocusHistory NodeFocusHistory;
+struct NodeFocusHistory {
     Node *node;
-    struct NodeFocusHistory *prev;
-} NodeFocusHistory;
+    NodeFocusHistory *prev;
+};
 
 typedef struct {
     Node *head;
@@ -60,14 +63,15 @@ typedef struct {
 typedef Layer TilingLayer;
 typedef Layer FloatingLayer;
 
-typedef struct {
+typedef struct Desktop Desktop;
+struct Desktop {
     char *name;
     Layer tiling_layer;
     Layer floating_layer;
     layer_t selected_layer;
     layout_t tiling_layout;
-    struct Desktop *previous;
-    struct Desktop *next;
-} Desktop;
+    Desktop *previous;
+    Desktop *next;
+};
 
 #endif
