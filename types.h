@@ -35,7 +35,7 @@ typedef enum {
 } direction_t;
 
 typedef struct {
-    xcb_window_t win;
+    xcb_window_t window;
     bool floating;
     bool fullscreen;
     bool urgent;

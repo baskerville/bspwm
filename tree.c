@@ -20,36 +20,38 @@ Node *second_extrema(Node *n)
         return second_extrema(n->second_child);
 }
 
-Node *find_neighbor(Node *n, direction_t dir)
+Node *find_fence(Node *n, direction_t dir)
 {
     Node *p = n->parent;
-    Node *neighbor = NULL;
 
     if (n == NULL || p == NULL)
         return NULL;
 
-    while (p != NULL && neighbor == NULL) {
-        switch (dir) {
-            case DIR_UP:
-                if (p->split_type == TYPE_HORIZONTAL && p->rectangle.y < n->rectangle.y)
-                    neighbor = second_extrema(p->first_child);
-                break;
-            case DIR_LEFT:
-                if (p->split_type == TYPE_VERTICAL && p->rectangle.x < n->rectangle.x)
-                    neighbor = second_extrema(p->first_child);
-                break;
-            case DIR_DOWN:
-                if (p->split_type == TYPE_HORIZONTAL && (p->rectangle.y + p->rectangle.height) > (n->rectangle.y + n->rectangle.height))
-                    neighbor = first_extrema(p->second_child);
-                break;
-            case DIR_RIGHT:
-                if (p->split_type == TYPE_VERTICAL && (p->rectangle.x + p->rectangle.width) > (n->rectangle.x + n->rectangle.width))
-                    neighbor = first_extrema(p->second_child);
-                break;
-        }
+    while (p != NULL) {
+        if ((dir == DIR_UP && p->split_type == TYPE_HORIZONTAL && p->rectangle.y < n->rectangle.y)
+                || (dir == DIR_LEFT && p->split_type == TYPE_VERTICAL && p->rectangle.x < n->rectangle.x)
+                || (dir == DIR_DOWN && p->split_type == TYPE_HORIZONTAL && (p->rectangle.y + p->rectangle.height) > (n->rectangle.y + n->rectangle.height))
+                || (dir == DIR_RIGHT && p->split_type == TYPE_VERTICAL && (p->rectangle.x + p->rectangle.width) > (n->rectangle.x + n->rectangle.width)))
+            return p;
         p = p->parent;
     }
-    return neighbor;
+
+    return NULL;
+}
+
+Node *find_neighbor(Node *n, direction_t dir)
+{
+    Node *fence = find_fence(n, dir);
+
+    if (fence == NULL)
+        return NULL;
+
+    if (dir == DIR_UP || dir == DIR_LEFT)
+        return second_extrema(fence->first_child);
+    else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+        return first_extrema(fence->second_child);
+
+    return NULL;
 }
 
 void rotate_tree(Node *n, rotate_t rot)
@@ -73,4 +75,23 @@ void rotate_tree(Node *n, rotate_t rot)
         else if (n->split_type == TYPE_VERTICAL)
             n->split_type = TYPE_HORIZONTAL;
     }
+}
+
+void dump_tree(Node *n, char *rsp, int depth)
+{
+    int i;
+
+    if (n == NULL)
+        return;
+
+    for (i = 0; i < depth; i++)
+        sprintf(rsp, "%s", "    ");
+
+    if (n->client == NULL)
+        sprintf(rsp, "%s %.2f\n", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
+    else
+        sprintf(rsp, "%X\n", n->client->window); 
+
+    dump_tree(n->first_child, rsp, depth + 1);
+    dump_tree(n->second_child, rsp, depth + 1);
 }
