@@ -81,5 +81,6 @@ struct Desktop {
 
 Node *make_node(void);
 Desktop *make_desktop(void);
+void rotate_tree(Node *, rotate_t);
 
 #endif
