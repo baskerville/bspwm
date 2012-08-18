@@ -1,6 +1,11 @@
 #ifndef _TYPES_H
 #define _TYPES_H
 
+#include <stdlib.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_event.h>
+#include "utils.h"
+
 typedef enum {
     LAYOUT_TILED,
     LAYOUT_MAX
@@ -73,5 +78,8 @@ struct Desktop {
     Desktop *previous;
     Desktop *next;
 };
+
+Node *make_node(void);
+Desktop *make_desktop(void);
 
 #endif

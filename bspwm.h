@@ -1,5 +1,5 @@
-#ifndef _MAIN_H
-#define _MAIN_H
+#ifndef _BSPWM_H
+#define _BSPWM_H
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
