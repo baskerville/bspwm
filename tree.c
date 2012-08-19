@@ -90,7 +90,7 @@ void dump_tree(Node *n, char *rsp, int depth)
         return;
 
     for (i = 0; i < depth; i++)
-        sprintf(rsp, "%s", "    ");
+        sprintf(rsp, "%s", "  ");
 
     if (n->client == NULL)
         sprintf(rsp, "%s %.2f\n", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);

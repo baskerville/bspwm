@@ -47,6 +47,7 @@ struct Node {
     split_type_t split_type;
     double split_ratio;
     xcb_rectangle_t rectangle;
+    bool vacant;
     Node *first_child;
     Node *second_child;
     Node *parent;
