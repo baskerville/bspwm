@@ -12,8 +12,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "utils.h"
-#include "bspwm.h"
 #include "types.h"
+#include "bspwm.h"
 #include "settings.h"
 #include "messages.h"
 #include "events.h"

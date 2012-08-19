@@ -4,6 +4,8 @@
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
 xcb_screen_t *screen;
+split_mode_t split_mode;
+direction_t split_dir;
 bool running;
 
 static char *WM_ATOM_NAME[]   = { "WM_PROTOCOLS", "WM_DELETE_WINDOW" };

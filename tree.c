@@ -1,5 +1,10 @@
 #include "tree.h"
 
+bool isleaf(Node *n)
+{
+    return (n != NULL && n->first_child == NULL && n->second_child == NULL);
+}
+    
 Node *first_extrema(Node *n)
 {
     if (n == NULL)

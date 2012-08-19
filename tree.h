@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "types.h"
 
+bool isleaf(Node *);
 Node *first_extrema(Node *);
 Node *second_extrema(Node *);
 Node *find_fence(Node *, direction_t);

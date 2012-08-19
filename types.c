@@ -13,11 +13,6 @@ Desktop *make_desktop(void)
     Desktop *d = malloc(sizeof(Desktop));
     d->name = NULL;
     d->previous = d->next = NULL;
-    d->tiling_layout = LAYOUT_TILED;
-    d->selected_layer = LAYER_TILING;
-    d->tiling_layer.head = NULL;
-    d->tiling_layer.focus = NULL;
-    d->floating_layer.head = NULL;
-    d->floating_layer.focus = NULL;
+    d->layout = LAYOUT_TILED;
     return d;
 }

@@ -12,14 +12,14 @@ typedef enum {
 } layout_t;
 
 typedef enum {
-    LAYER_TILING,
-    LAYER_FLOATING
-} layer_t;
-
-typedef enum {
     TYPE_HORIZONTAL,
     TYPE_VERTICAL
 } split_type_t;
+
+typedef enum {
+    MODE_AUTOMATIC,
+    MODE_MANUAL
+} split_mode_t;
 
 typedef enum {
     ROTATE_CLOCK_WISE,
@@ -60,27 +60,21 @@ struct NodeFocusHistory {
 };
 
 typedef struct {
-    Node *head;
+    Node *root;
     Node *focus;
     NodeFocusHistory *focus_history;
 } Layer;
 
-typedef Layer TilingLayer;
-typedef Layer FloatingLayer;
-
 typedef struct Desktop Desktop;
 struct Desktop {
     char *name;
-    Layer tiling_layer;
-    Layer floating_layer;
-    layer_t selected_layer;
-    layout_t tiling_layout;
+    layout_t layout;
+    Layer layer;
     Desktop *previous;
     Desktop *next;
 };
 
 Node *make_node(void);
 Desktop *make_desktop(void);
-void rotate_tree(Node *, rotate_t);
 
 #endif

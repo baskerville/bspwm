@@ -57,10 +57,9 @@
 - Float individual windows.
 - Resize and move floating windows with the keyboard.
 - Resize and move floating windows on a regular magnetic grid (the granularity of the grid might be related to GCD(screen\_width, screen\_height)).
-- Double window borders. Rationale: with single borders, it might happen that the color of the window border is too close to the color of the window content to be visible.
-- For floating windows, double borders will not be enough to always see the external borders: in order to solve the problem a custom X window property will be set, and a patch for `compton` will be provided (the third border will be the generated shadow).
-- Directional *pair* splitting preselection (feedback in the window border).
+- Triple window borders. Rationale: with single borders, it might happen that the color of the window border is too close to the color of its inner or outer environment to be visible.
+- Directional *pair* splitting preselection (the feedback will be drawn in the window border pixman).
 - Don't automatically give the focus to toolbar windows.
 - When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
-- Change settings and call methods at runtime.
+- Set or get settings and call methods at runtime.
 - Configuration file in Lua.
