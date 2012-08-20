@@ -1,10 +1,14 @@
 #include "tree.h"
 
-bool isleaf(Node *n)
+bool is_leaf(Node *n)
 {
     return (n != NULL && n->first_child == NULL && n->second_child == NULL);
 }
     
+void change_split_ratio(Node *n, value_change_t chg) {
+    n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
+}
+
 Node *first_extrema(Node *n)
 {
     if (n == NULL)
@@ -27,10 +31,12 @@ Node *second_extrema(Node *n)
 
 Node *find_fence(Node *n, direction_t dir)
 {
-    Node *p = n->parent;
+    Node *p;
 
-    if (n == NULL || p == NULL)
+    if (n == NULL)
         return NULL;
+
+    p = n->parent;
 
     while (p != NULL) {
         if ((dir == DIR_UP && p->split_type == TYPE_HORIZONTAL && p->rectangle.y < n->rectangle.y)
@@ -58,6 +64,21 @@ Node *find_neighbor(Node *n, direction_t dir)
 
     return NULL;
 }
+
+void move_fence(Node *n, direction_t dir, fence_move_t mov)
+{
+    Node *fence = find_fence(n, dir);
+    
+    if (fence == NULL)
+        return;
+
+    if ((mov == MOVE_PUSH && (dir == DIR_RIGHT || dir == DIR_DOWN)) 
+            || (mov == MOVE_PULL && (dir == DIR_LEFT || dir == DIR_UP)))
+        change_split_ratio(fence, CHANGE_INCREASE);
+    else
+        change_split_ratio(fence, CHANGE_DECREASE);
+}
+
 
 void rotate_tree(Node *n, rotate_t rot)
 {

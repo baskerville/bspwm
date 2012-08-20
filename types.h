@@ -22,6 +22,16 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
+    MOVE_PULL,
+    MOVE_PUSH
+} fence_move_t;
+
+typedef enum {
+    CHANGE_INCREASE,
+    CHANGE_DECREASE
+} value_change_t;
+
+typedef enum {
     ROTATE_CLOCK_WISE,
     ROTATE_COUNTER_CW,
     ROTATE_FULL_CYCLE
@@ -47,7 +57,7 @@ struct Node {
     split_type_t split_type;
     double split_ratio;
     xcb_rectangle_t rectangle;
-    bool vacant;
+    bool vacant; /* vacant nodes only hold floating clients */
     Node *first_child;
     Node *second_child;
     Node *parent;
