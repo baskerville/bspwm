@@ -3,10 +3,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_event.h>
+#include "helpers.h"
 #include "utils.h"
 #include "luautils.h"
-#include "settings.h"
 #include "common.h"
+#include "settings.h"
 
 void load_settings(void)
 {
@@ -29,16 +35,19 @@ void apply_settings(lua_State *L)
 {
     normal_border_color = string_expr(L, "normal_border_color", NORMAL_BORDER_COLOR);
     active_border_color = string_expr(L, "active_border_color", ACTIVE_BORDER_COLOR);
-    locked_border_color = string_expr(L, "locked_border_color", LOCKED_BORDER_COLOR);
-    urgent_border_color = string_expr(L, "urgent_border_color", URGENT_BORDER_COLOR);
     inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
+    outer_border_color = string_expr(L, "outer_border_color", OUTER_BORDER_COLOR);
+    preselect_border_color = string_expr(L, "preselect_border_color", PRESELECT_BORDER_COLOR);
+    locked_border_color = string_expr(L, "locked_border_color", LOCKED_BORDER_COLOR);
 
-    smart_surroundings = bool_expr(L, "smart_surroundings", SMART_SURROUNDINGS);
+    smart_window_border = bool_expr(L, "smart_window_border", SMART_WINDOW_BORDER);
+    smart_window_gap = bool_expr(L, "smart_window_gap", SMART_WINDOW_GAP);
 
-    outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
-    border_width = inner_border_width + outer_border_width;
+    main_border_width = int_expr(L, "main_border_width", MAIN_BORDER_WIDTH);
+    outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
 
+    border_width = inner_border_width + main_border_width + outer_border_width;
     window_gap = int_expr(L, "window_gap", WINDOW_GAP);
 }
 
@@ -55,22 +64,30 @@ void get_setting(lua_State *L, char* rsp)
 
     if (strcmp(name, "inner_border_width") == 0)
         sprintf(rsp, "%i\n", inner_border_width);
+    else if (strcmp(name, "main_border_width") == 0)
+        sprintf(rsp, "%i\n", main_border_width);
     else if (strcmp(name, "outer_border_width") == 0)
         sprintf(rsp, "%i\n", outer_border_width);
+    else if (strcmp(name, "border_width") == 0)
+        sprintf(rsp, "%i\n", border_width);
     else if (strcmp(name, "window_gap") == 0)
         sprintf(rsp, "%i\n", window_gap);
     else if (strcmp(name, "normal_border_color") == 0)
         sprintf(rsp, "%s\n", normal_border_color);
     else if (strcmp(name, "active_border_color") == 0)
         sprintf(rsp, "%s\n", active_border_color);
-    else if (strcmp(name, "locked_border_color") == 0)
-        sprintf(rsp, "%s\n", locked_border_color);
-    else if (strcmp(name, "urgent_border_color") == 0)
-        sprintf(rsp, "%s\n", urgent_border_color);
     else if (strcmp(name, "inner_border_color") == 0)
         sprintf(rsp, "%s\n", inner_border_color);
-    else if (strcmp(name, "smart_surroundings") == 0)
-        sprintf(rsp, "%s\n", BOOLSTR(smart_surroundings));
+    else if (strcmp(name, "outer_border_color") == 0)
+        sprintf(rsp, "%s\n", outer_border_color);
+    else if (strcmp(name, "preselect_border_color") == 0)
+        sprintf(rsp, "%s\n", preselect_border_color);
+    else if (strcmp(name, "locked_border_color") == 0)
+        sprintf(rsp, "%s\n", locked_border_color);
+    else if (strcmp(name, "smart_window_border") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(smart_window_border));
+    else if (strcmp(name, "smart_window_gap") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(smart_window_gap));
 }
 
 void set_setting(lua_State *L)
@@ -87,16 +104,41 @@ void set_setting(lua_State *L)
 
     if (strcmp(name, "inner_border_width") == 0) {
         inner_border_width = int_expr(L, "set.value", inner_border_width);
+        border_width = inner_border_width + main_border_width + outer_border_width;
+    } else if (strcmp(name, "main_border_width") == 0) {
+        main_border_width = int_expr(L, "set.value", main_border_width);
+        border_width = inner_border_width + main_border_width + outer_border_width;
+    } else if (strcmp(name, "outer_border_width") == 0) {
+        outer_border_width = int_expr(L, "set.value", outer_border_width);
+        border_width = inner_border_width + main_border_width + outer_border_width;
     } else if (strcmp(name, "normal_border_color") == 0) {
         backup = strdup(normal_border_color);
         free(normal_border_color);
         normal_border_color = string_expr(L, "set.value", backup);
+    } else if (strcmp(name, "active_border_color") == 0) {
+        backup = strdup(active_border_color);
+        free(active_border_color);
+        active_border_color = string_expr(L, "set.value", backup);
     } else if (strcmp(name, "inner_border_color") == 0) {
         backup = strdup(inner_border_color);
         free(inner_border_color);
         inner_border_color = string_expr(L, "set.value", backup);
-    } else if (strcmp(name, "smart_surroundings") == 0) {
-        smart_surroundings = bool_expr(L, "set.value", smart_surroundings);
+    } else if (strcmp(name, "outer_border_color") == 0) {
+        backup = strdup(outer_border_color);
+        free(outer_border_color);
+        outer_border_color = string_expr(L, "set.value", backup);
+    } else if (strcmp(name, "preselect_border_color") == 0) {
+        backup = strdup(preselect_border_color);
+        free(preselect_border_color);
+        preselect_border_color = string_expr(L, "set.value", backup);
+    } else if (strcmp(name, "locked_border_color") == 0) {
+        backup = strdup(locked_border_color);
+        free(locked_border_color);
+        locked_border_color = string_expr(L, "set.value", backup);
+    } else if (strcmp(name, "smart_window_border") == 0) {
+        smart_window_border = bool_expr(L, "set.value", smart_window_border);
+    } else if (strcmp(name, "smart_window_gap") == 0) {
+        smart_window_gap = bool_expr(L, "set.value", smart_window_gap);
     }
 
     if (backup != NULL)

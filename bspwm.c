@@ -11,13 +11,14 @@
 #include <sys/wait.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
-#include "utils.h"
+#include "helpers.h"
 #include "types.h"
-#include "bspwm.h"
 #include "settings.h"
 #include "messages.h"
 #include "events.h"
 #include "common.h"
+#include "utils.h"
+#include "bspwm.h"
  
 void quit(void)
 {
@@ -36,18 +37,20 @@ int register_events(void)
 }
  
 /* wrapper to get atoms using xcb */
-void get_atoms(char **names, xcb_atom_t *atoms, unsigned int count)
+void get_atoms(char **names, xcb_atom_t *atoms, int count)
 {
+    int i;
     xcb_intern_atom_cookie_t cookies[count];
     xcb_intern_atom_reply_t  *reply;
 
-    for (unsigned int i = 0; i < count; i++)
+    for (i = 0; i < count; i++)
         cookies[i] = xcb_intern_atom(dpy, 0, strlen(names[i]), names[i]);
-    for (unsigned int i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         reply = xcb_intern_atom_reply(dpy, cookies[i], NULL);
         if (reply) {
             /* PRINTF("%s : %d\n", names[i], reply->atom); */
-            atoms[i] = reply->atom; free(reply);
+            atoms[i] = reply->atom;
+            free(reply);
         } else {
             PUTS("warning: failed to register atoms");
         }
@@ -79,6 +82,9 @@ void setup(int default_screen)
         die("error: cannot aquire screen\n");
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
+
+    char *WM_ATOM_NAME[] = { "WM_PROTOCOLS", "WM_DELETE_WINDOW" };
+    char *NET_ATOM_NAME[] = { "_NET_SUPPORTED", "_NET_WM_STATE_FULLSCREEN", "_NET_WM_STATE", "_NET_ACTIVE_WINDOW" };
 
     /* set up atoms for dialog/notification windows */
     get_atoms(WM_ATOM_NAME, wmatoms, WM_COUNT);

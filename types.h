@@ -1,15 +1,9 @@
 #ifndef _TYPES_H
 #define _TYPES_H
 
-#include <stdlib.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
-#include "utils.h"
-
-typedef enum {
-    LAYOUT_TILED,
-    LAYOUT_MAX
-} layout_t;
+#include "helpers.h"
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -47,8 +41,8 @@ typedef enum {
 typedef struct {
     xcb_window_t window;
     bool floating;
+    bool maximized;
     bool fullscreen;
-    bool urgent;
     bool locked;
 } Client;
 
@@ -82,7 +76,6 @@ struct Rule {
 typedef struct Desktop Desktop;
 struct Desktop {
     char *name;
-    layout_t layout;
     Layer layer;
     Desktop *previous;
     Desktop *next;

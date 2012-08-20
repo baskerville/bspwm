@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
-#include "utils.h"
+#include "helpers.h"
 #include "events.h"
 
 void handle_event(xcb_generic_event_t *evt)

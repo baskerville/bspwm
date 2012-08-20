@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <math.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_event.h>
+#include "utils.h"
+#include "types.h"
 #include "tree.h"
 
 bool is_leaf(Node *n)

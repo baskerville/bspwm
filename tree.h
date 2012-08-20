@@ -1,13 +1,6 @@
 #ifndef _TREE_H
 #define _TREE_H
 
-#include <stdio.h>
-#include <math.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
-#include "utils.h"
-#include "types.h"
-
 #define INC_EXP 0.9
 #define DEC_EXP 1.1
 

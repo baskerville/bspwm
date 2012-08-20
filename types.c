@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_event.h>
 #include "types.h"
 
 Node *make_node(void)
@@ -13,6 +16,5 @@ Desktop *make_desktop(void)
     Desktop *d = malloc(sizeof(Desktop));
     d->name = NULL;
     d->previous = d->next = NULL;
-    d->layout = LAYOUT_TILED;
     return d;
 }

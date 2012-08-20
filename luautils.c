@@ -1,7 +1,11 @@
 #define _BSD_SOURCE
 
+#include <stdio.h>
 #include <string.h>
-#include "utils.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#include "helpers.h"
 #include "luautils.h"
 
 int eval_expr(lua_State *L, char *expr)

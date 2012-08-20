@@ -1,7 +1,6 @@
 #ifndef _LUAUTILS_H
 #define _LUAUTILS_H
 
-#include <stdio.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
