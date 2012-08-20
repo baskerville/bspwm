@@ -64,17 +64,20 @@ struct Node {
     Client *client; /* equals NULL except for leaves */
 };
 
-typedef struct NodeFocusHistory NodeFocusHistory;
-struct NodeFocusHistory {
-    Node *node;
-    NodeFocusHistory *prev;
-};
-
 typedef struct {
     Node *root;
     Node *focus;
-    NodeFocusHistory *focus_history;
+    Node *prev_focus;
 } Layer;
+
+typedef struct Rule Rule;
+struct Rule {
+    char *class_name;
+    char *desk_name;
+    bool floating;
+    bool fullscreen;
+    Rule *next;
+};
 
 typedef struct Desktop Desktop;
 struct Desktop {
