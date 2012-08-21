@@ -53,10 +53,6 @@
 
 ## Planned Features
 
-- Directional focus movement.
-- Float individual windows.
-- Resize and move floating windows with the keyboard.
-- Resize and move floating windows on a regular magnetic grid (the granularity of the grid might be related to GCD(screen\_width, screen\_height)).
 - Triple window borders. Rationale: with single borders, it might happen that the color of the window border is too close to the color of its inner or outer environment to be visible.
 - Directional *pair* splitting preselection (the feedback will be drawn in the window border pixman).
 - Don't automatically give the focus to toolbar windows.
