@@ -58,25 +58,23 @@ struct Node {
     Client *client; /* equals NULL except for leaves */
 };
 
-typedef struct {
-    Node *root;
-    Node *focus;
-    Node *prev_focus;
-} Layer;
-
 typedef struct Rule Rule;
 struct Rule {
     char *class_name;
     char *desk_name;
     bool floating;
+    bool maximized;
     bool fullscreen;
+    bool locked;
     Rule *next;
 };
 
 typedef struct Desktop Desktop;
 struct Desktop {
     char *name;
-    Layer layer;
+    Node *root;
+    Node *focus;
+    Node *prev_focus;
     Desktop *previous;
     Desktop *next;
 };

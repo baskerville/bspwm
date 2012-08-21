@@ -29,14 +29,14 @@ char *normal_border_color;
 char *active_border_color;
 char *inner_border_color;
 char *outer_border_color;
-char *preselect_border_color;
+char *presel_border_color;
 char *locked_border_color;
 
 uint32_t normal_border_color_pxl;
 uint32_t active_border_color_pxl;
 uint32_t inner_border_color_pxl;
 uint32_t outer_border_color_pxl;
-uint32_t preselect_border_color_pxl;
+uint32_t presel_border_color_pxl;
 uint32_t locked_border_color_pxl;
 
 int inner_border_width;
