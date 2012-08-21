@@ -49,7 +49,7 @@
 
 - Each container node is a split rectangle.
 - Several tree transformations will be provided: directional leaf swap, node
-  pulling, rotation, contraction, dilatation...
+  pulling, rotation, contraction (?), dilatation (?), zooming (?), ...
 
 ## Planned Features
 
