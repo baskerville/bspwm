@@ -55,7 +55,10 @@ struct Node {
     Node *first_child;
     Node *second_child;
     Node *parent;
-    Client *client; /* equals NULL except for leaves */
+    /* the value of the following properties is NULL except for leaves: */
+    Client *client; 
+    Node *prev_leaf;
+    Node *next_leaf;
 };
 
 typedef struct Rule Rule;
@@ -73,9 +76,12 @@ typedef struct Desktop Desktop;
 struct Desktop {
     char *name;
     Node *root;
+    Node *view; /* initially view = root, can be changed by zooming */
     Node *focus;
-    Node *prev_focus;
-    Desktop *previous;
+    Node *last_focus;
+    Node *head; /* first element in the list of leaves */
+    Node *tail;
+    Desktop *prev;
     Desktop *next;
 };
 
