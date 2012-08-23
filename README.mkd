@@ -7,6 +7,7 @@
 - The only nodes which can be focused are the leaves.
 - The leaves are called *window nodes*.
 - The other nodes are called *container nodes*.
+- Each container node is a split rectangle.
 - Only two methods of node insertion will be provided: *replace* and *pair*.
 
         Example: insertion of a new node (number 4) into the given tree with the
@@ -47,9 +48,6 @@
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
-- Each container node is a split rectangle.
-- Several tree transformations will be provided: directional leaf swap, node
-  pulling, rotation, contraction (?), dilatation (?), zooming (?), ...
 
 ## Features
 
@@ -62,3 +60,5 @@
 
 - Don't automatically give the focus to toolbar windows.
 - When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
+- Close every window except the focused one.
+- Tree transformations: directional leaf swap, node pulling, rotation, contraction (?), dilatation (?), zooming (?), ...

@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include <xcb/xcb_ewmh.h>
 #include "helpers.h"
 #include "types.h"
 #include "settings.h"
@@ -19,6 +20,7 @@
 #include "common.h"
 #include "utils.h"
 #include "bspwm.h"
+#include "ewmh.h"
  
 void quit(void)
 {
@@ -91,6 +93,8 @@ void setup(int default_screen)
     get_atoms(NET_ATOM_NAME, netatoms, NET_COUNT);
 
     xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms);
+
+    ewmh_init();
 }
 
 int main(void)
