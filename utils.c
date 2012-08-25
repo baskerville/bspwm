@@ -25,6 +25,27 @@ uint32_t color_pixel(char *hex)
     return (rgb16[0] << 16) + (rgb16[1] << 8) + rgb16[2];
 }
 
+Node *win_to_node(xcb_window_t win)
+{
+    Node *n;
+    Desktop *d = desk_head;
+
+    if (d == NULL)
+        return NULL;
+
+    while (d != NULL) {
+        n = d->head;
+        while (n != NULL) {
+            if (n->client->window == win)
+                return n;
+            n = n->next_leaf;
+        }
+        d = d->next;
+    }
+
+    return NULL;
+}
+
 uint32_t get_color(char *col)
 {
     xcb_colormap_t map = screen->default_colormap;

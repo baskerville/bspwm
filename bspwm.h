@@ -3,11 +3,14 @@
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
+unsigned int num_clients;
 xcb_screen_t *screen;
 split_mode_t split_mode;
 direction_t split_dir;
 Desktop *desk;
 Desktop *prev_desk;
+Desktop *desk_head;
+Desktop *desk_tail;
 bool running;
 
 enum { WM_PROTOCOLS, WM_DELETE_WINDOW, WM_COUNT };

@@ -16,6 +16,11 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
+    LAYOUT_TILED,
+    LAYOUT_MONOCLE
+} layout_t;
+
+typedef enum {
     MOVE_PULL,
     MOVE_PUSH
 } fence_move_t;
@@ -24,6 +29,17 @@ typedef enum {
     CHANGE_INCREASE,
     CHANGE_DECREASE
 } value_change_t;
+
+typedef enum {
+    SKIP_NONE,
+    SKIP_FLOATING,
+    SKIP_TILED
+} skip_client_t;
+
+typedef enum {
+    DIR_NEXT,
+    DIR_PREV
+} cycle_dir_t;
 
 typedef enum {
     ROTATE_CLOCK_WISE,
@@ -41,7 +57,6 @@ typedef enum {
 typedef struct {
     xcb_window_t window;
     bool floating;
-    bool maximized;
     bool fullscreen;
     bool locked;
 } Client;
@@ -66,7 +81,6 @@ struct Rule {
     char *class_name;
     char *desk_name;
     bool floating;
-    bool maximized;
     bool fullscreen;
     bool locked;
     Rule *next;
@@ -75,6 +89,7 @@ struct Rule {
 typedef struct Desktop Desktop;
 struct Desktop {
     char *name;
+    layout_t layout;
     Node *root;
     Node *view; /* initially view = root, can be changed by zooming */
     Node *focus;
@@ -87,5 +102,6 @@ struct Desktop {
 
 Node *make_node(void);
 Desktop *make_desktop(void);
+Client *make_client(void);
 
 #endif

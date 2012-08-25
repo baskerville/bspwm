@@ -15,6 +15,18 @@ Desktop *make_desktop(void)
 {
     Desktop *d = malloc(sizeof(Desktop));
     d->name = NULL;
+    d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
+    d->root = d->view = d->focus = d->last_focus = d->head = d->tail = NULL;
     return d;
+}
+
+Client *make_client(void)
+{
+    Client *c = malloc(sizeof(Client));
+    c->window = 0;
+    c->floating = false;
+    c->fullscreen = false;
+    c->locked = false;
+    return c;
 }
