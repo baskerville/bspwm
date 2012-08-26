@@ -46,8 +46,8 @@ int outer_border_width;
 int border_width;
 int window_gap;
 
-bool smart_window_border;
-bool smart_window_gap;
+bool adaptive_window_border;
+bool adaptive_window_gap;
 
 void load_settings(void);
 void apply_settings(lua_State *);

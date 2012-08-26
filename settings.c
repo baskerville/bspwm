@@ -47,8 +47,8 @@ void apply_settings(lua_State *L)
     presel_border_color_pxl = get_color(presel_border_color);
     locked_border_color_pxl = get_color(locked_border_color);
 
-    smart_window_border = bool_expr(L, "smart_window_border", SMART_WINDOW_BORDER);
-    smart_window_gap = bool_expr(L, "smart_window_gap", SMART_WINDOW_GAP);
+    adaptive_window_border = bool_expr(L, "adaptive_window_border", SMART_WINDOW_BORDER);
+    adaptive_window_gap = bool_expr(L, "adaptive_window_gap", SMART_WINDOW_GAP);
 
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
     main_border_width = int_expr(L, "main_border_width", MAIN_BORDER_WIDTH);
@@ -91,10 +91,10 @@ void get_setting(lua_State *L, char* rsp)
         sprintf(rsp, "%s\n", presel_border_color);
     else if (strcmp(name, "locked_border_color") == 0)
         sprintf(rsp, "%s\n", locked_border_color);
-    else if (strcmp(name, "smart_window_border") == 0)
-        sprintf(rsp, "%s\n", BOOLSTR(smart_window_border));
-    else if (strcmp(name, "smart_window_gap") == 0)
-        sprintf(rsp, "%s\n", BOOLSTR(smart_window_gap));
+    else if (strcmp(name, "adaptive_window_border") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_border));
+    else if (strcmp(name, "adaptive_window_gap") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_gap));
 }
 
 void set_setting(lua_State *L)
@@ -149,10 +149,10 @@ void set_setting(lua_State *L)
         free(locked_border_color);
         locked_border_color = string_expr(L, "set.value", backup);
         locked_border_color_pxl = get_color(locked_border_color);
-    } else if (strcmp(name, "smart_window_border") == 0) {
-        smart_window_border = bool_expr(L, "set.value", smart_window_border);
-    } else if (strcmp(name, "smart_window_gap") == 0) {
-        smart_window_gap = bool_expr(L, "set.value", smart_window_gap);
+    } else if (strcmp(name, "adaptive_window_border") == 0) {
+        adaptive_window_border = bool_expr(L, "set.value", adaptive_window_border);
+    } else if (strcmp(name, "adaptive_window_gap") == 0) {
+        adaptive_window_gap = bool_expr(L, "set.value", adaptive_window_gap);
     }
 
     if (backup != NULL)
