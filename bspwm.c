@@ -79,7 +79,9 @@ void sigchld(int sig)
 void setup(int default_screen)
 {
     sigchld(0);
-    screen = screen_of_display(dpy, default_screen);
+    ewmh_init();
+    screen = ewmh.screens[default_screen];
+    /* screen = screen_of_display(dpy, default_screen); */
     if (!screen)
         die("error: cannot aquire screen\n");
     screen_width = screen->width_in_pixels;
@@ -93,8 +95,6 @@ void setup(int default_screen)
     get_atoms(NET_ATOM_NAME, netatoms, NET_COUNT);
 
     xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms);
-
-    ewmh_init();
 }
 
 int main(void)
@@ -168,6 +168,7 @@ int main(void)
                     strcpy(rsp, EMPTY_RESPONSE);
                     process_message(msg, rsp);
                     send(ret_fd, rsp, strlen(rsp), 0);
+                    close(ret_fd);
                 }
             }
         }

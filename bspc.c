@@ -30,11 +30,13 @@ int main(int argc, char *argv[])
     connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
 
     send(sock_fd, msg, strlen(msg), 0);
+
     if ((nbr = recv(sock_fd, rsp, sizeof(rsp), 0)) > 0) {
         rsp[nbr] = '\0';
         if (strcmp(rsp, EMPTY_RESPONSE) != 0)
             printf("%s", rsp);
     }
 
+    close(sock_fd);
     return 0;
 }

@@ -18,13 +18,6 @@ void die(const char *errstr, ...) {
     exit(EXIT_FAILURE);
 }
 
-uint32_t color_pixel(char *hex)
-{
-    char strgroups[3][3]  = {{hex[1], hex[2], '\0'}, {hex[3], hex[4], '\0'}, {hex[5], hex[6], '\0'}};
-    uint16_t rgb16[3] = {(strtol(strgroups[0], NULL, 16)), (strtol(strgroups[1], NULL, 16)), (strtol(strgroups[2], NULL, 16))};
-    return (rgb16[0] << 16) + (rgb16[1] << 8) + rgb16[2];
-}
-
 Node *win_to_node(xcb_window_t win)
 {
     Node *n;
@@ -44,6 +37,13 @@ Node *win_to_node(xcb_window_t win)
     }
 
     return NULL;
+}
+
+uint32_t color_pixel(char *hex)
+{
+    char strgroups[3][3]  = {{hex[1], hex[2], '\0'}, {hex[3], hex[4], '\0'}, {hex[5], hex[6], '\0'}};
+    uint16_t rgb16[3] = {(strtol(strgroups[0], NULL, 16)), (strtol(strgroups[1], NULL, 16)), (strtol(strgroups[2], NULL, 16))};
+    return (rgb16[0] << 16) + (rgb16[1] << 8) + rgb16[2];
 }
 
 uint32_t get_color(char *col)
