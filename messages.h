@@ -5,8 +5,11 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
-void handle_call(lua_State*);
 void process_message(char*, char*);
-void quit(void);
+void get_setting(char*, char*);
+void set_setting(char*, char*);
+void split_ratio_cmd(char *);
+bool is_bool(char *);
+bool parse_bool(char *);
 
 #endif

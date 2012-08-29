@@ -23,5 +23,6 @@ int register_events(void);
 xcb_screen_t *screen_of_display(xcb_connection_t *, int);
 void sigchld(int);
 void setup(int);
+void quit(void);
 
 #endif

@@ -8,11 +8,11 @@
 
 int main(int argc, char *argv[])
 {
-    int sock_fd, nbr;
+    int sock_fd, nbr, i;
     struct sockaddr_un sock_address;
     char *sock_path;
+    char msg[BUFSIZ];
     char rsp[BUFSIZ];
-    char *msg;
 
     if (argc < 2)
         return -1;
@@ -22,7 +22,14 @@ int main(int argc, char *argv[])
     if (sock_path == NULL)
         return -1;
 
-    msg = *(argv + 1);
+    msg[0] = '\0';
+
+    for (i = 1; i < argc; i++) {
+        strcat(msg, argv[i]);
+        if (i < (argc - 1))
+            strcat(msg, TOKEN_SEP);
+    }
+
     sock_address.sun_family = AF_UNIX;
     strcpy(sock_address.sun_path, sock_path);
 

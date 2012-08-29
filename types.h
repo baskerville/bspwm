@@ -5,6 +5,8 @@
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
+#define DEFAULT_NAME "one"
+
 typedef enum {
     TYPE_HORIZONTAL,
     TYPE_VERTICAL

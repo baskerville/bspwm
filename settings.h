@@ -51,7 +51,5 @@ bool adaptive_window_gap;
 
 void load_settings(void);
 void apply_settings(lua_State *);
-void set_setting(lua_State *);
-void get_setting(lua_State *, char *);
 
 #endif
