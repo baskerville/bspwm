@@ -3,17 +3,17 @@
 #include <xcb/xcb_event.h>
 #include "types.h"
 
-Node *make_node(void)
+node_t *make_node(void)
 {
-    Node *n = malloc(sizeof(Node));
+    node_t *n = malloc(sizeof(node_t));
     n->parent = n->first_child = n->second_child = n->next_leaf = n->prev_leaf = NULL;
     n->client = NULL;
     return n;
 }
 
-Desktop *make_desktop(void)
+desktop_t *make_desktop(void)
 {
-    Desktop *d = malloc(sizeof(Desktop));
+    desktop_t *d = malloc(sizeof(desktop_t));
     d->name = NULL;
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
@@ -21,9 +21,9 @@ Desktop *make_desktop(void)
     return d;
 }
 
-Client *make_client(void)
+client_t *make_client(void)
 {
-    Client *c = malloc(sizeof(Client));
+    client_t *c = malloc(sizeof(client_t));
     c->window = 0;
     c->floating = false;
     c->fullscreen = false;

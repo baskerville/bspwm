@@ -4,14 +4,14 @@
 #define INC_EXP 0.9
 #define DEC_EXP 1.1
 
-bool is_leaf(Node *);
-void change_split_ratio(Node *, value_change_t);
-Node *first_extrema(Node *);
-Node *second_extrema(Node *);
-Node *find_fence(Node *, direction_t);
-Node *find_neighbor(Node *, direction_t);
-void move_fence(Node *, direction_t, fence_move_t);
-void rotate_tree(Node *, rotate_t);
-void dump_tree(Node *, char *, int);
+bool is_leaf(node_t *);
+void change_split_ratio(node_t *, value_change_t);
+node_t *first_extrema(node_t *);
+node_t *second_extrema(node_t *);
+node_t *find_fence(node_t *, direction_t);
+node_t *find_neighbor(node_t *, direction_t);
+void move_fence(node_t *, direction_t, fence_move_t);
+void rotate_tree(node_t *, rotate_t);
+void dump_tree(node_t *, char *, int);
 
 #endif

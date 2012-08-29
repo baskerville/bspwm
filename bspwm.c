@@ -61,9 +61,10 @@ void get_atoms(char **names, xcb_atom_t *atoms, int count)
 
 xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
 {
-    xcb_screen_iterator_t iter = xcb_setup_roots_iterator(xcb_get_setup(dpy));
-    for (; iter.rem; --default_screen, xcb_screen_next(&iter))
-        if (default_screen == 0) return iter.data;
+    xcb_screen_iterator_t iter;
+    for (iter = xcb_setup_roots_iterator(xcb_get_setup(dpy)); iter.rem; --default_screen, xcb_screen_next(&iter))
+        if (default_screen == 0)
+            return iter.data;
     return NULL;
 }
 
@@ -80,21 +81,23 @@ void setup(int default_screen)
 {
     sigchld(0);
     ewmh_init();
-    screen = ewmh.screens[default_screen];
-    /* screen = screen_of_display(dpy, default_screen); */
+    /* screen = ewmh.screens[default_screen]; */
+    /* screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data; */
+    screen = screen_of_display(dpy, default_screen);
     if (!screen)
         die("error: cannot aquire screen\n");
+
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
     char *WM_ATOM_NAME[] = { "WM_PROTOCOLS", "WM_DELETE_WINDOW" };
-    char *NET_ATOM_NAME[] = { "_NET_SUPPORTED", "_NET_WM_STATE_FULLSCREEN", "_NET_WM_STATE", "_NET_ACTIVE_WINDOW" };
 
-    /* set up atoms for dialog/notification windows */
+    xcb_atom_t net_atoms[] = {ewmh._NET_SUPPORTED, ewmh._NET_WM_STATE_FULLSCREEN, ewmh._NET_WM_STATE, ewmh._NET_ACTIVE_WINDOW};
+
     get_atoms(WM_ATOM_NAME, wmatoms, WM_COUNT);
-    get_atoms(NET_ATOM_NAME, netatoms, NET_COUNT);
 
-    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms);
+    /* xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms); */
+    xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 }
 
 int main(void)

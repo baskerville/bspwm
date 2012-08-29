@@ -18,10 +18,10 @@ void die(const char *errstr, ...) {
     exit(EXIT_FAILURE);
 }
 
-Node *win_to_node(xcb_window_t win)
+node_t *win_to_node(xcb_window_t win)
 {
-    Node *n;
-    Desktop *d = desk_head;
+    node_t *n;
+    desktop_t *d = desk_head;
 
     if (d == NULL)
         return NULL;
@@ -67,7 +67,7 @@ uint32_t get_color(char *col)
     return pxl;
 }
 
-void draw_triple_border(Node *n, uint32_t main_border_color_pxl)
+void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
 {
     if (border_width < 1)
         return;

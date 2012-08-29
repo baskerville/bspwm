@@ -6,16 +6,16 @@
 #include "types.h"
 #include "tree.h"
 
-bool is_leaf(Node *n)
+bool is_leaf(node_t *n)
 {
     return (n != NULL && n->first_child == NULL && n->second_child == NULL);
 }
     
-void change_split_ratio(Node *n, value_change_t chg) {
+void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
 }
 
-Node *first_extrema(Node *n)
+node_t *first_extrema(node_t *n)
 {
     if (n == NULL)
         return NULL;
@@ -25,7 +25,7 @@ Node *first_extrema(Node *n)
         return first_extrema(n->first_child);
 }
 
-Node *second_extrema(Node *n)
+node_t *second_extrema(node_t *n)
 {
     if (n == NULL)
         return NULL;
@@ -35,9 +35,9 @@ Node *second_extrema(Node *n)
         return second_extrema(n->second_child);
 }
 
-Node *find_fence(Node *n, direction_t dir)
+node_t *find_fence(node_t *n, direction_t dir)
 {
-    Node *p;
+    node_t *p;
 
     if (n == NULL)
         return NULL;
@@ -56,9 +56,9 @@ Node *find_fence(Node *n, direction_t dir)
     return NULL;
 }
 
-Node *find_neighbor(Node *n, direction_t dir)
+node_t *find_neighbor(node_t *n, direction_t dir)
 {
-    Node *fence = find_fence(n, dir);
+    node_t *fence = find_fence(n, dir);
 
     if (fence == NULL)
         return NULL;
@@ -71,9 +71,9 @@ Node *find_neighbor(Node *n, direction_t dir)
     return NULL;
 }
 
-void move_fence(Node *n, direction_t dir, fence_move_t mov)
+void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 {
-    Node *fence = find_fence(n, dir);
+    node_t *fence = find_fence(n, dir);
     
     if (fence == NULL)
         return;
@@ -86,9 +86,9 @@ void move_fence(Node *n, direction_t dir, fence_move_t mov)
 }
 
 
-void rotate_tree(Node *n, rotate_t rot)
+void rotate_tree(node_t *n, rotate_t rot)
 {
-    Node *tmp;
+    node_t *tmp;
     if (n == NULL)
         return;
     rotate_tree(n->first_child, rot);
@@ -109,7 +109,7 @@ void rotate_tree(Node *n, rotate_t rot)
     }
 }
 
-void dump_tree(Node *n, char *rsp, int depth)
+void dump_tree(node_t *n, char *rsp, int depth)
 {
     int i;
 

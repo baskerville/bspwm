@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
@@ -43,7 +44,8 @@ void map_request(xcb_generic_event_t *evt)
     wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
     if ((wa != NULL && wa->override_redirect) || win_to_node(win) != NULL)
         return;
-    Client *c = make_client();
+    free(wa);
+    client_t *c = make_client();
     c->window = win;
     num_clients++;
 }

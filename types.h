@@ -61,49 +61,49 @@ typedef struct {
     bool floating;
     bool fullscreen;
     bool locked;
-} Client;
+} client_t;
 
-typedef struct Node Node;
-struct Node {
+typedef struct node_t node_t;
+struct node_t {
     split_type_t split_type;
     double split_ratio;
     xcb_rectangle_t rectangle;
     bool vacant; /* vacant nodes only hold floating clients */
-    Node *first_child;
-    Node *second_child;
-    Node *parent;
+    node_t *first_child;
+    node_t *second_child;
+    node_t *parent;
     /* the value of the following properties is NULL except for leaves: */
-    Client *client; 
-    Node *prev_leaf;
-    Node *next_leaf;
+    client_t *client; 
+    node_t *prev_leaf;
+    node_t *next_leaf;
 };
 
-typedef struct Rule Rule;
-struct Rule {
+typedef struct rule_t rule_t;
+struct rule_t {
     char *class_name;
     char *desk_name;
     bool floating;
     bool fullscreen;
     bool locked;
-    Rule *next;
+    rule_t *next;
 };
 
-typedef struct Desktop Desktop;
-struct Desktop {
+typedef struct desktop_t desktop_t;
+struct desktop_t {
     char *name;
     layout_t layout;
-    Node *root;
-    Node *view; /* initially view = root, can be changed by zooming */
-    Node *focus;
-    Node *last_focus;
-    Node *head; /* first element in the list of leaves */
-    Node *tail;
-    Desktop *prev;
-    Desktop *next;
+    node_t *root;
+    node_t *view; /* initially view = root, can be changed by zooming */
+    node_t *focus;
+    node_t *last_focus;
+    node_t *head; /* first element in the list of leaves */
+    node_t *tail;
+    desktop_t *prev;
+    desktop_t *next;
 };
 
-Node *make_node(void);
-Desktop *make_desktop(void);
-Client *make_client(void);
+node_t *make_node(void);
+desktop_t *make_desktop(void);
+client_t *make_client(void);
 
 #endif
