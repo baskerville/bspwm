@@ -60,6 +60,8 @@ void get_setting(char *name, char* rsp)
         sprintf(rsp, "%s\n", presel_border_color);
     else if (strcmp(name, "locked_border_color") == 0)
         sprintf(rsp, "%s\n", locked_border_color);
+    else if (strcmp(name, "wm_name") == 0)
+        sprintf(rsp, "%s\n", wm_name);
     else if (strcmp(name, "adaptive_window_border") == 0)
         sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_border));
     else if (strcmp(name, "adaptive_window_gap") == 0)
@@ -105,6 +107,9 @@ void set_setting(char *name, char *value)
         free(locked_border_color);
         locked_border_color = strdup(value);
         locked_border_color_pxl = get_color(locked_border_color);
+    } else if (strcmp(name, "wm_name") == 0) {
+        free(wm_name);
+        wm_name = strdup(value);
     } else if (strcmp(name, "adaptive_window_border") == 0) {
         if (is_bool(value))
             adaptive_window_border = parse_bool(value);

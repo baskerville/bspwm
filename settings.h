@@ -7,6 +7,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 
+#define WM_NAME             "bspwm"
 #define CONFIG_FILE         ".bspwmrc"
 
 #define OUTER_BORDER_WIDTH  2
@@ -31,6 +32,8 @@ char *inner_border_color;
 char *outer_border_color;
 char *presel_border_color;
 char *locked_border_color;
+
+char *wm_name;
 
 uint32_t normal_border_color_pxl;
 uint32_t active_border_color_pxl;

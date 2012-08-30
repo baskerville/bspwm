@@ -16,7 +16,7 @@ void handle_event(xcb_generic_event_t *evt)
             map_request(evt);
             break;
         case XCB_CONFIGURE_REQUEST:
-            PUTS("received a map request\n");
+            PUTS("received a configure request\n");
             break;
         case XCB_UNGRAB_KEY:
             /* PUTS("ungrab key received"); */
@@ -48,4 +48,16 @@ void map_request(xcb_generic_event_t *evt)
     client_t *c = make_client();
     c->window = win;
     num_clients++;
+    node_t *focus = desk->focus;
+    if (focus == NULL) {
+        focus = make_node();
+        focus->client = c;
+    } else {
+        switch (split_mode) {
+            case MODE_AUTOMATIC:
+                break;
+            case MODE_MANUAL:
+                break;
+        }
+    }
 }

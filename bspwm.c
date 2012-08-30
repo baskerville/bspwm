@@ -30,14 +30,14 @@ void quit(void)
 // check for other WM and initiate events capture
 int register_events(void)
 {
-    xcb_generic_error_t *error;
-    unsigned int values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS};
-    error = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
-    xcb_flush(dpy);
-    if (error) return 1;
+    xcb_generic_error_t *err;
+    uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS};
+    err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
+    if (err != NULL)
+        return 1;
     return 0;
 }
- 
+
 /* wrapper to get atoms using xcb */
 void get_atoms(char **names, xcb_atom_t *atoms, int count)
 {
@@ -70,16 +70,14 @@ xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
 
 void sigchld(int sig)
 {
-    sig = sig; /* to prevent an "ununsed parameter" warning */
-    if (signal(SIGCHLD, sigchld) == SIG_ERR)
-        die("cannot install SIGCHLD handler\n");
-    while (0 < waitpid(-1, NULL, WNOHANG))
-        ;
+    if (sig == SIGCHLD)
+        while (waitpid(-1, NULL, WNOHANG) > 0)
+            ;
 }
 
 void setup(int default_screen)
 {
-    sigchld(0);
+    signal(SIGCHLD, sigchld);
     ewmh_init();
     /* screen = ewmh.screens[default_screen]; */
     /* screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data; */
@@ -98,6 +96,7 @@ void setup(int default_screen)
 
     /* xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms); */
     xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
+    xcb_ewmh_set_wm_name(&ewmh, screen->root, LENGTH(WM_NAME), WM_NAME);
 }
 
 int main(void)
@@ -146,14 +145,13 @@ int main(void)
     sel = MAX(sock_fd, xfd) + 1;
 
     load_settings();
+    xcb_flush(dpy);
 
     while (running) {
 
         FD_ZERO(&descriptors);
         FD_SET(sock_fd, &descriptors);
         FD_SET(xfd, &descriptors);
-
-        xcb_flush(dpy);
 
         if (select(sel, &descriptors, NULL, NULL, NULL)) {
 

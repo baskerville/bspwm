@@ -47,6 +47,8 @@ void apply_settings(lua_State *L)
     presel_border_color_pxl = get_color(presel_border_color);
     locked_border_color_pxl = get_color(locked_border_color);
 
+    wm_name = string_expr(L, "wm_name", WM_NAME);
+
     adaptive_window_border = bool_expr(L, "adaptive_window_border", SMART_WINDOW_BORDER);
     adaptive_window_gap = bool_expr(L, "adaptive_window_gap", SMART_WINDOW_GAP);
 
