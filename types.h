@@ -5,7 +5,8 @@
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
-#define DEFAULT_NAME "one"
+#define SPLIT_RATIO  0.5
+#define DESK_NAME    "One"
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -78,16 +79,6 @@ struct node_t {
     node_t *next_leaf;
 };
 
-typedef struct rule_t rule_t;
-struct rule_t {
-    char *class_name;
-    char *desk_name;
-    bool floating;
-    bool fullscreen;
-    bool locked;
-    rule_t *next;
-};
-
 typedef struct desktop_t desktop_t;
 struct desktop_t {
     char *name;
@@ -100,6 +91,16 @@ struct desktop_t {
     node_t *tail;
     desktop_t *prev;
     desktop_t *next;
+};
+
+typedef struct rule_t rule_t;
+struct rule_t {
+    char *class_name;
+    char *win_title;
+    bool floating;
+    bool fullscreen;
+    bool locked;
+    rule_t *next;
 };
 
 node_t *make_node(void);

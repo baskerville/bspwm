@@ -97,6 +97,13 @@ void setup(int default_screen)
     /* xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms); */
     xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
     xcb_ewmh_set_wm_name(&ewmh, screen->root, LENGTH(WM_NAME), WM_NAME);
+
+    desk = make_desktop();
+    last_desk = NULL;
+    desk_head = desk;
+    desk_tail = desk;
+    
+    split_mode = MODE_AUTOMATIC;
 }
 
 int main(void)

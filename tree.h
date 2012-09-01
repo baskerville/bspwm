@@ -5,6 +5,7 @@
 #define DEC_EXP 1.1
 
 bool is_leaf(node_t *);
+bool is_first_child(node_t *n);
 void change_split_ratio(node_t *, value_change_t);
 node_t *first_extrema(node_t *);
 node_t *second_extrema(node_t *);

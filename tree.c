@@ -10,6 +10,12 @@ bool is_leaf(node_t *n)
 {
     return (n != NULL && n->first_child == NULL && n->second_child == NULL);
 }
+
+bool is_first_child(node_t *n)
+{
+    return (n != NULL && n->parent != NULL && n->parent->first_child == n);
+}
+
     
 void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
