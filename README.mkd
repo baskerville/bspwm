@@ -62,3 +62,4 @@
 - When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
 - Close every window except the focused one.
 - Tree transformations: directional leaf swap, node pulling, rotation, contraction (?), dilatation (?), zooming (?), ...
+- Rounded corners ? (cairo).

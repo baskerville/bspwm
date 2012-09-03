@@ -43,8 +43,10 @@ void map_request(xcb_generic_event_t *evt)
     xcb_get_window_attributes_reply_t  *wa;
     xcb_window_t win = e->window;
     wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
+
     if ((wa != NULL && wa->override_redirect) || win_to_node(win) != NULL)
         return;
+
     free(wa);
     bool takes_focus = true;
     client_t *c = make_client();
@@ -58,25 +60,53 @@ void map_request(xcb_generic_event_t *evt)
         desk->root = desk->view = desk->head = desk->tail = birth;
     } else {
         node_t *dad = make_node();
+        node_t *fopar = focus->parent;
+        node_t *fopre = focus->prev_leaf;
+        node_t *fonex = focus->next_leaf;
         birth->parent = dad;
         switch (split_mode) {
             case MODE_AUTOMATIC:
-                if (focus->parent == NULL) {
+                if (fopar == NULL) {
+                    dad->first_child = birth;
+                    dad->second_child = focus;
+                    dad->split_type = TYPE_VERTICAL;
+                    focus->parent = dad;
+                    birth->next_leaf = focus;
+                    focus->prev_leaf = birth;
+                    desk->head = birth;
+                    desk->tail = focus;
+                    desk->root = dad;
+                    desk->view = dad;
                 } else {
-                    node_t *grandpa = focus->parent->parent;
+                    node_t *grandpa = fopar->parent;
                     dad->parent = grandpa;
                     if (grandpa != NULL) {
-                        if (is_first_child(focus->parent))
+                        if (is_first_child(fopar))
                             grandpa->first_child = dad;
                         else
                             grandpa->second_child = dad;
                     }
+                    dad->split_type = fopar->split_type;
+                    dad->split_ratio = fopar->split_ratio;
+                    fopar->parent = dad;
                     if (is_first_child(focus)) {
                         dad->first_child = birth;
-                        dad->second_child = focus->parent;
+                        dad->second_child = fopar;
+                        if (fopre != NULL)
+                            fopre->next_leaf = birth;
+                        birth->prev_leaf = fopre;
+                        birth->next_leaf = focus;
+                        focus->prev_leaf = birth;
+                        rotate_tree(fopar, ROTATE_CLOCK_WISE);
                     } else {
-                        dad->first_child = focus->parent;
+                        dad->first_child = fopar;
                         dad->second_child = birth;
+                        if (fonex != NULL)
+                            fonex->prev_leaf = birth;
+                        birth->next_leaf = fonex;
+                        birth->prev_leaf = focus;
+                        focus->next_leaf = birth;
+                        rotate_tree(fopar, ROTATE_COUNTER_CW);
                     }
                 }
                 break;
