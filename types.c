@@ -9,11 +9,11 @@
 node_t *make_node(void)
 {
     node_t *n = malloc(sizeof(node_t));
-    n->parent = n->first_child = n->second_child = n->next_leaf = n->prev_leaf = NULL;
-    n->client = NULL;
-    n->vacant = false;
+    n->parent = n->first_child = n->second_child = NULL;
     n->split_ratio = SPLIT_RATIO;
     n->split_type = TYPE_VERTICAL;
+    n->client = NULL;
+    n->vacant = false;
     return n;
 }
 
@@ -23,7 +23,7 @@ desktop_t *make_desktop(void)
     d->name = strdup(DESK_NAME);
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
-    d->root = d->view = d->focus = d->last_focus = d->head = d->tail = NULL;
+    d->root = d->focus = d->last_focus = NULL;
     return d;
 }
 

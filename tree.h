@@ -6,9 +6,12 @@
 
 bool is_leaf(node_t *);
 bool is_first_child(node_t *n);
+bool is_second_child(node_t *n);
 void change_split_ratio(node_t *, value_change_t);
 node_t *first_extrema(node_t *);
 node_t *second_extrema(node_t *);
+node_t *next_leaf(node_t *);
+node_t *prev_leaf(node_t *);
 node_t *find_fence(node_t *, direction_t);
 node_t *find_neighbor(node_t *, direction_t);
 void move_fence(node_t *, direction_t, fence_move_t);

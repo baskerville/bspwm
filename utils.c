@@ -6,6 +6,7 @@
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 #include "types.h"
+#include "tree.h"
 #include "bspwm.h"
 #include "settings.h"
 #include "utils.h"
@@ -28,11 +29,11 @@ node_t *win_to_node(xcb_window_t win)
         return NULL;
 
     while (d != NULL) {
-        n = d->head;
+        n = first_extrema(d->root);
         while (n != NULL) {
             if (n->client->window == win)
                 return n;
-            n = n->next_leaf;
+            n = next_leaf(n);
         }
         d = d->next;
     }

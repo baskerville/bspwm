@@ -16,6 +16,11 @@ bool is_first_child(node_t *n)
     return (n != NULL && n->parent != NULL && n->parent->first_child == n);
 }
 
+bool is_second_child(node_t *n)
+{
+    return (n != NULL && n->parent != NULL && n->parent->second_child == n);
+}
+
     
 void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
@@ -39,6 +44,30 @@ node_t *second_extrema(node_t *n)
         return n;
     else
         return second_extrema(n->second_child);
+}
+
+node_t *next_leaf(node_t *n)
+{
+    if (n == NULL)
+        return NULL;
+    node_t *p = n;
+    while (is_second_child(p))
+        p = p->parent;
+    if (p->parent == NULL)
+        return NULL;
+    return first_extrema(p->parent->second_child);
+}
+
+node_t *prev_leaf(node_t *n)
+{
+    if (n == NULL)
+        return NULL;
+    node_t *p = n;
+    while (is_first_child(p))
+        p = p->parent;
+    if (p->parent == NULL)
+        return NULL;
+    return second_extrema(p->parent->first_child);
 }
 
 node_t *find_fence(node_t *n, direction_t dir)

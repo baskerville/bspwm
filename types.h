@@ -73,10 +73,7 @@ struct node_t {
     node_t *first_child;
     node_t *second_child;
     node_t *parent;
-    /* the value of the following properties is NULL except for leaves: */
-    client_t *client; 
-    node_t *prev_leaf;
-    node_t *next_leaf;
+    client_t *client; /* NULL except for leaves */
 };
 
 typedef struct desktop_t desktop_t;
@@ -84,11 +81,8 @@ struct desktop_t {
     char *name;
     layout_t layout;
     node_t *root;
-    node_t *view; /* initially view = root, can be changed by zooming */
     node_t *focus;
     node_t *last_focus;
-    node_t *head; /* first element in the list of leaves */
-    node_t *tail;
     desktop_t *prev;
     desktop_t *next;
 };
@@ -96,6 +90,7 @@ struct desktop_t {
 typedef struct rule_t rule_t;
 struct rule_t {
     char *class_name;
+    char *instance_name;
     char *win_title;
     bool floating;
     bool fullscreen;

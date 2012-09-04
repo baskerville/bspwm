@@ -57,12 +57,10 @@ void map_request(xcb_generic_event_t *evt)
     birth->client = c;
 
     if (focus == NULL) {
-        desk->root = desk->view = desk->head = desk->tail = birth;
+        desk->root = birth;
     } else {
         node_t *dad = make_node();
         node_t *fopar = focus->parent;
-        node_t *fopre = focus->prev_leaf;
-        node_t *fonex = focus->next_leaf;
         birth->parent = dad;
         switch (split_mode) {
             case MODE_AUTOMATIC:
@@ -71,12 +69,7 @@ void map_request(xcb_generic_event_t *evt)
                     dad->second_child = focus;
                     dad->split_type = TYPE_VERTICAL;
                     focus->parent = dad;
-                    birth->next_leaf = focus;
-                    focus->prev_leaf = birth;
-                    desk->head = birth;
-                    desk->tail = focus;
                     desk->root = dad;
-                    desk->view = dad;
                 } else {
                     node_t *grandpa = fopar->parent;
                     dad->parent = grandpa;
@@ -92,20 +85,10 @@ void map_request(xcb_generic_event_t *evt)
                     if (is_first_child(focus)) {
                         dad->first_child = birth;
                         dad->second_child = fopar;
-                        if (fopre != NULL)
-                            fopre->next_leaf = birth;
-                        birth->prev_leaf = fopre;
-                        birth->next_leaf = focus;
-                        focus->prev_leaf = birth;
                         rotate_tree(fopar, ROTATE_CLOCK_WISE);
                     } else {
                         dad->first_child = fopar;
                         dad->second_child = birth;
-                        if (fonex != NULL)
-                            fonex->prev_leaf = birth;
-                        birth->next_leaf = fonex;
-                        birth->prev_leaf = focus;
-                        focus->next_leaf = birth;
                         rotate_tree(fopar, ROTATE_COUNTER_CW);
                     }
                 }
@@ -136,8 +119,6 @@ void map_request(xcb_generic_event_t *evt)
                 }
                 if (desk->root == focus)
                     desk->root = dad;
-                if (desk->view == focus)
-                    desk->view = dad;
                 split_mode = MODE_AUTOMATIC;
                 break;
         }
