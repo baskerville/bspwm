@@ -37,7 +37,7 @@ void apply_settings(lua_State *L)
     active_border_color = string_expr(L, "active_border_color", ACTIVE_BORDER_COLOR);
     inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
     outer_border_color = string_expr(L, "outer_border_color", OUTER_BORDER_COLOR);
-    presel_border_color = string_expr(L, "presel_border_color", PRESELECT_BORDER_COLOR);
+    presel_border_color = string_expr(L, "presel_border_color", PRESEL_BORDER_COLOR);
     locked_border_color = string_expr(L, "locked_border_color", LOCKED_BORDER_COLOR);
 
     normal_border_color_pxl = get_color(normal_border_color);
@@ -49,13 +49,18 @@ void apply_settings(lua_State *L)
 
     wm_name = string_expr(L, "wm_name", WM_NAME);
 
-    adaptive_window_border = bool_expr(L, "adaptive_window_border", SMART_WINDOW_BORDER);
-    adaptive_window_gap = bool_expr(L, "adaptive_window_gap", SMART_WINDOW_GAP);
+    adaptive_window_border = bool_expr(L, "adaptive_window_border", ADAPTIVE_WINDOW_BORDER);
+    adaptive_window_gap = bool_expr(L, "adaptive_window_gap", ADAPTIVE_WINDOW_GAP);
 
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
     main_border_width = int_expr(L, "main_border_width", MAIN_BORDER_WIDTH);
     outer_border_width = int_expr(L, "outer_border_width", OUTER_BORDER_WIDTH);
 
     border_width = inner_border_width + main_border_width + outer_border_width;
+
     window_gap = int_expr(L, "window_gap", WINDOW_GAP);
+    left_padding = int_expr(L, "left_padding", LEFT_PADDING);
+    right_padding = int_expr(L, "right_padding", RIGHT_PADDING);
+    top_padding = int_expr(L, "top_padding", TOP_PADDING);
+    bottom_padding = int_expr(L, "bottom_padding", BOTTOM_PADDING);
 }

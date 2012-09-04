@@ -48,6 +48,14 @@ void get_setting(char *name, char* rsp)
         sprintf(rsp, "%i\n", border_width);
     else if (strcmp(name, "window_gap") == 0)
         sprintf(rsp, "%i\n", window_gap);
+    else if (strcmp(name, "left_padding") == 0)
+        sprintf(rsp, "%i\n", left_padding);
+    else if (strcmp(name, "right_padding") == 0)
+        sprintf(rsp, "%i\n", right_padding);
+    else if (strcmp(name, "top_padding") == 0)
+        sprintf(rsp, "%i\n", top_padding);
+    else if (strcmp(name, "bottom_padding") == 0)
+        sprintf(rsp, "%i\n", bottom_padding);
     else if (strcmp(name, "normal_border_color") == 0)
         sprintf(rsp, "%s\n", normal_border_color);
     else if (strcmp(name, "active_border_color") == 0)
@@ -82,6 +90,16 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "outer_border_width") == 0) {
         sscanf(value, "%i", &outer_border_width);
         border_width = inner_border_width + main_border_width + outer_border_width;
+    } else if (strcmp(name, "window_gap") == 0) {
+        sscanf(value, "%i", &window_gap);
+    } else if (strcmp(name, "left_padding") == 0) {
+        sscanf(value, "%i", &left_padding);
+    } else if (strcmp(name, "right_padding") == 0) {
+        sscanf(value, "%i", &right_padding);
+    } else if (strcmp(name, "top_padding") == 0) {
+        sscanf(value, "%i", &top_padding);
+    } else if (strcmp(name, "bottom_padding") == 0) {
+        sscanf(value, "%i", &bottom_padding);
     } else if (strcmp(name, "normal_border_color") == 0) {
         free(normal_border_color);
         normal_border_color = strdup(value);
@@ -98,7 +116,6 @@ void set_setting(char *name, char *value)
         free(outer_border_color);
         outer_border_color = strdup(value);
         outer_border_color_pxl = get_color(outer_border_color);
-    } else if (strcmp(name, "outer_border_color") == 0) {
     } else if (strcmp(name, "presel_border_color") == 0) {
         free(presel_border_color);
         presel_border_color = strdup(value);

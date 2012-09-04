@@ -2,8 +2,11 @@
 #include <math.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include "settings.h"
+#include "helpers.h"
 #include "utils.h"
 #include "types.h"
+#include "bspwm.h"
 #include "tree.h"
 
 bool is_leaf(node_t *n)
@@ -162,3 +165,45 @@ void dump_tree(node_t *n, char *rsp, int depth)
     dump_tree(n->first_child, rsp, depth + 1);
     dump_tree(n->second_child, rsp, depth + 1);
 }
+
+void update_root_dimensions(void)
+{
+    desktop_t *d = desk_head;
+    while (d != NULL) {
+        d->root->rectangle = (xcb_rectangle_t) {left_padding, top_padding, screen_width - (left_padding + right_padding), screen_height - (top_padding + bottom_padding)};
+        d = d->next;
+    }
+}
+
+void apply_layout(desktop_t *d, node_t *n)
+{
+    if (n == NULL)
+        return;
+    if (is_leaf(n)) {
+        switch (desk->layout) {
+            case LAYOUT_MONOCLE:
+                xcb_configure_window(dpy, n->client->window, XCB_MOVE_RESIZE, (uint32_t *) &d->root->rectangle);
+                break;
+            case LAYOUT_TILED:
+                xcb_configure_window(dpy, n->client->window, XCB_MOVE_RESIZE, (uint32_t *) &n->rectangle);
+                break;
+        }
+    } else {
+        unsigned int fence;
+        xcb_rectangle_t rect = n->rectangle;
+        if (n->split_type == TYPE_VERTICAL) {
+            fence = rect.width * n->split_ratio;
+            n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+            n->second_child->rectangle = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+
+        } else if (n->split_type == TYPE_HORIZONTAL) {
+            fence = rect.height * n->split_ratio;
+            n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+            n->second_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+        }
+        apply_layout(d, n->first_child);
+        apply_layout(d, n->second_child);
+    }
+}
+
+
