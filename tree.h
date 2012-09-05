@@ -14,8 +14,10 @@ node_t *next_leaf(node_t *);
 node_t *prev_leaf(node_t *);
 node_t *find_fence(node_t *, direction_t);
 node_t *find_neighbor(node_t *, direction_t);
+void insert_node(desktop_t *, node_t *);
 void move_fence(node_t *, direction_t, fence_move_t);
 void rotate_tree(node_t *, rotate_t);
 void dump_tree(node_t *, char *, int);
+void focus_node(desktop_t *, node_t *);
 
 #endif

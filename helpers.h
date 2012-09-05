@@ -6,7 +6,7 @@
 #define MIN(A, B)         ((A) < (B) ? (A) : (B))
 #define BOOLSTR(A)        ((A) ? "true" : "false")
 
-#define XCB_MOVE_RESIZE XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT
+#define MOVE_RESIZE_MASK XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT
 
 #if 1
 #  define PUTS(x)            puts(x);

@@ -27,10 +27,10 @@ desktop_t *make_desktop(void)
     return d;
 }
 
-client_t *make_client(void)
+client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
-    c->window = 0;
+    c->window = win;
     c->floating = false;
     c->fullscreen = false;
     c->locked = false;

@@ -126,11 +126,11 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 
 void rotate_tree(node_t *n, rotate_t rot)
 {
-    node_t *tmp;
-    if (n == NULL)
+    if (n == NULL || is_leaf(n))
         return;
-    rotate_tree(n->first_child, rot);
-    rotate_tree(n->second_child, rot);
+
+    node_t *tmp;
+
     if ((rot == ROTATE_CLOCK_WISE && n->split_type == TYPE_HORIZONTAL)
             || (rot == ROTATE_COUNTER_CW && n->split_type == TYPE_VERTICAL)
             || rot == ROTATE_FULL_CYCLE) {
@@ -139,22 +139,24 @@ void rotate_tree(node_t *n, rotate_t rot)
         n->second_child = tmp;
         n->split_ratio = 1.0 - n->split_ratio;
     }
+
     if (rot != ROTATE_FULL_CYCLE) {
         if (n->split_type == TYPE_HORIZONTAL)
             n->split_type = TYPE_VERTICAL;
         else if (n->split_type == TYPE_VERTICAL)
             n->split_type = TYPE_HORIZONTAL;
     }
+
+    rotate_tree(n->first_child, rot);
+    rotate_tree(n->second_child, rot);
 }
 
 void dump_tree(node_t *n, char *rsp, int depth)
 {
-    int i;
-
     if (n == NULL)
         return;
 
-    for (i = 0; i < depth; i++)
+    for (int i = 0; i < depth; i++)
         sprintf(rsp, "%s", "  ");
 
     if (n->client == NULL)
@@ -180,14 +182,17 @@ void apply_layout(desktop_t *d, node_t *n)
     if (n == NULL)
         return;
     if (is_leaf(n)) {
-        switch (desk->layout) {
-            case LAYOUT_MONOCLE:
-                xcb_configure_window(dpy, n->client->window, XCB_MOVE_RESIZE, (uint32_t *) &d->root->rectangle);
-                break;
-            case LAYOUT_TILED:
-                xcb_configure_window(dpy, n->client->window, XCB_MOVE_RESIZE, (uint32_t *) &n->rectangle);
-                break;
-        }
+        uint32_t values[4];
+        xcb_rectangle_t rect;
+        if (desk->layout == LAYOUT_TILED)
+            rect = n->rectangle;
+        else if (desk->layout == LAYOUT_MONOCLE)
+            rect = d->root->rectangle;
+        values[0] = rect.x;
+        values[1] = rect.y;
+        values[2] = rect.width;
+        values[3] = rect.height;
+        xcb_configure_window(dpy, n->client->window, MOVE_RESIZE_MASK, values);
     } else {
         unsigned int fence;
         xcb_rectangle_t rect = n->rectangle;
@@ -206,4 +211,97 @@ void apply_layout(desktop_t *d, node_t *n)
     }
 }
 
+void insert_node(desktop_t *d, node_t *n)
+{
+    if (d == NULL || n == NULL)
+        return;
 
+    node_t *focus = d->focus;
+
+    if (focus == NULL) {
+        d->root = n;
+    } else {
+        node_t *dad = make_node();
+        node_t *fopar = focus->parent;
+        n->parent = dad;
+        switch (split_mode) {
+            case MODE_AUTOMATIC:
+                if (fopar == NULL) {
+                    dad->first_child = n;
+                    dad->second_child = focus;
+                    dad->split_type = TYPE_VERTICAL;
+                    focus->parent = dad;
+                    d->root = dad;
+                } else {
+                    node_t *grandpa = fopar->parent;
+                    dad->parent = grandpa;
+                    if (grandpa != NULL) {
+                        if (is_first_child(fopar))
+                            grandpa->first_child = dad;
+                        else
+                            grandpa->second_child = dad;
+                    } else {
+                        d->root = dad;
+                    }
+                    dad->split_type = fopar->split_type;
+                    dad->split_ratio = fopar->split_ratio;
+                    fopar->parent = dad;
+                    if (is_first_child(focus)) {
+                        dad->first_child = n;
+                        dad->second_child = fopar;
+                        rotate_tree(fopar, ROTATE_CLOCK_WISE);
+                    } else {
+                        dad->first_child = fopar;
+                        dad->second_child = n;
+                        rotate_tree(fopar, ROTATE_COUNTER_CW);
+                    }
+                }
+                break;
+            case MODE_MANUAL:
+                focus->parent = dad;
+                switch (split_dir) {
+                    case DIR_LEFT:
+                    dad->split_type = TYPE_VERTICAL;
+                    dad->first_child = n;
+                    dad->second_child = focus;
+                    break;
+                    case DIR_RIGHT:
+                    dad->split_type = TYPE_VERTICAL;
+                    dad->first_child = focus;
+                    dad->second_child = n;
+                    break;
+                    case DIR_UP:
+                    dad->split_type = TYPE_HORIZONTAL;
+                    dad->first_child = n;
+                    dad->second_child = focus;
+                    break;
+                    case DIR_DOWN:
+                    dad->split_type = TYPE_HORIZONTAL;
+                    dad->first_child = focus;
+                    dad->second_child = n;
+                    break;
+                }
+                if (d->root == focus)
+                    d->root = dad;
+                split_mode = MODE_AUTOMATIC;
+                break;
+        }
+    }
+}
+
+void focus_node(desktop_t *d, node_t *n)
+{
+    if (d == NULL || n == NULL || d->focus == n)
+        return;
+
+    draw_triple_border(d->focus, normal_border_color_pxl);
+    draw_triple_border(n, active_border_color_pxl);
+
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+}
+
+void select_desktop(desktop_t *d)
+{
+    if (d == NULL)
+        return;
+}

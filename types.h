@@ -100,6 +100,6 @@ struct rule_t {
 
 node_t *make_node(void);
 desktop_t *make_desktop(void);
-client_t *make_client(void);
+client_t *make_client(xcb_window_t);
 
 #endif
