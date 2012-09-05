@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
@@ -24,7 +25,7 @@ bool is_second_child(node_t *n)
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
 
-    
+
 void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
 }
@@ -112,7 +113,7 @@ node_t *find_neighbor(node_t *n, direction_t dir)
 void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 {
     node_t *fence = find_fence(n, dir);
-    
+
     if (fence == NULL)
         return;
 
@@ -261,25 +262,25 @@ void insert_node(desktop_t *d, node_t *n)
                 focus->parent = dad;
                 switch (split_dir) {
                     case DIR_LEFT:
-                    dad->split_type = TYPE_VERTICAL;
-                    dad->first_child = n;
-                    dad->second_child = focus;
-                    break;
+                        dad->split_type = TYPE_VERTICAL;
+                        dad->first_child = n;
+                        dad->second_child = focus;
+                        break;
                     case DIR_RIGHT:
-                    dad->split_type = TYPE_VERTICAL;
-                    dad->first_child = focus;
-                    dad->second_child = n;
-                    break;
+                        dad->split_type = TYPE_VERTICAL;
+                        dad->first_child = focus;
+                        dad->second_child = n;
+                        break;
                     case DIR_UP:
-                    dad->split_type = TYPE_HORIZONTAL;
-                    dad->first_child = n;
-                    dad->second_child = focus;
-                    break;
+                        dad->split_type = TYPE_HORIZONTAL;
+                        dad->first_child = n;
+                        dad->second_child = focus;
+                        break;
                     case DIR_DOWN:
-                    dad->split_type = TYPE_HORIZONTAL;
-                    dad->first_child = focus;
-                    dad->second_child = n;
-                    break;
+                        dad->split_type = TYPE_HORIZONTAL;
+                        dad->first_child = focus;
+                        dad->second_child = n;
+                        break;
                 }
                 if (d->root == focus)
                     d->root = dad;
@@ -305,3 +306,40 @@ void select_desktop(desktop_t *d)
     if (d == NULL)
         return;
 }
+
+void remove_node(desktop_t *d, node_t *n)
+{
+    if (d == NULL || n == NULL)
+        return;
+
+    node_t *p = n->parent;
+
+    if (p == NULL) {
+        d->root = NULL;
+        d->focus = NULL;
+        d->last_focus = NULL;
+    } else {
+        node_t *b;
+        node_t *g = p->parent;
+        if (is_first_child(n))
+            b = p->second_child;
+        else
+            b = p->first_child;
+        b->parent = g;
+        if (g != NULL) {
+            if (is_first_child(p))
+                g->first_child = b;
+            else
+                g->second_child = b;
+        } else {
+            d->root = b;
+        }
+        free(p->client);
+        free(p);
+    }
+
+    free(n->client);
+    free(n);
+}
+
+
