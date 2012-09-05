@@ -334,7 +334,6 @@ void remove_node(desktop_t *d, node_t *n)
         } else {
             d->root = b;
         }
-        free(p->client);
         free(p);
     }
 
