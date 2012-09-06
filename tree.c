@@ -337,8 +337,14 @@ void remove_node(desktop_t *d, node_t *n)
         free(p);
     }
 
-    free(n->client);
-    free(n);
+    /* free(n->client); */
+    /* free(n); */
 }
 
-
+void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
+{
+    if (ds == NULL || dd == NULL || n == NULL)
+        return;
+    remove_node(ds, n);
+    insert_node(dd, n);
+}
