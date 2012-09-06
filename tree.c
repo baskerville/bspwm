@@ -171,9 +171,15 @@ void dump_tree(node_t *n, char *rsp, int depth)
 
 void update_root_dimensions(void)
 {
+    xcb_rectangle_t root_rect = {
+        left_padding + window_gap,
+        top_padding + window_gap,
+        screen_width - (left_padding + right_padding + window_gap),
+        screen_height - (top_padding + bottom_padding + window_gap)
+    };
     desktop_t *d = desk_head;
     while (d != NULL) {
-        d->root->rectangle = (xcb_rectangle_t) {left_padding, top_padding, screen_width - (left_padding + right_padding), screen_height - (top_padding + bottom_padding)};
+        d->root->rectangle = root_rect;
         d = d->next;
     }
 }
@@ -185,14 +191,14 @@ void apply_layout(desktop_t *d, node_t *n)
     if (is_leaf(n)) {
         uint32_t values[4];
         xcb_rectangle_t rect;
-        if (desk->layout == LAYOUT_TILED)
+        if (d->layout == LAYOUT_TILED)
             rect = n->rectangle;
-        else if (desk->layout == LAYOUT_MONOCLE)
+        else if (d->layout == LAYOUT_MONOCLE)
             rect = d->root->rectangle;
         values[0] = rect.x;
         values[1] = rect.y;
-        values[2] = rect.width;
-        values[3] = rect.height;
+        values[2] = rect.width - window_gap;
+        values[3] = rect.height - window_gap;
         xcb_configure_window(dpy, n->client->window, MOVE_RESIZE_MASK, values);
     } else {
         unsigned int fence;
@@ -301,12 +307,6 @@ void focus_node(desktop_t *d, node_t *n)
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 }
 
-void select_desktop(desktop_t *d)
-{
-    if (d == NULL)
-        return;
-}
-
 void remove_node(desktop_t *d, node_t *n)
 {
     if (d == NULL || n == NULL)
@@ -347,4 +347,10 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
         return;
     remove_node(ds, n);
     insert_node(dd, n);
+}
+
+void select_desktop(desktop_t *d)
+{
+    if (d == NULL)
+        return;
 }
