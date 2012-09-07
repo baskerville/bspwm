@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
+/* #include <signal.h> */
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -21,7 +21,7 @@
 #include "utils.h"
 #include "bspwm.h"
 #include "ewmh.h"
- 
+
 void quit(void)
 {
     running = false;
@@ -68,16 +68,16 @@ xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
     return NULL;
 }
 
-void sigchld(int sig)
-{
-    if (sig == SIGCHLD)
-        while (waitpid(-1, NULL, WNOHANG) > 0)
-            ;
-}
+/* void handle_zombie(int sig) */
+/* { */
+/*     while (waitpid(-1, NULL, WNOHANG) > 0) */
+/*         ; */
+/*     signal(sig, handle_zombie); */
+/* } */
 
 void setup(int default_screen)
 {
-    signal(SIGCHLD, sigchld);
+    /* signal(SIGCHLD, handle_zombie); */
     ewmh_init();
     /* screen = ewmh.screens[default_screen]; */
     /* screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data; */
@@ -102,7 +102,7 @@ void setup(int default_screen)
     last_desk = NULL;
     desk_head = desk;
     desk_tail = desk;
-    
+
     split_mode = MODE_AUTOMATIC;
 }
 
