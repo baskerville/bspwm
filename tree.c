@@ -349,6 +349,15 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     insert_node(dd, n);
 }
 
+void update_vacant_state(node_t *n)
+{
+    if (n == NULL)
+        return;
+    if (!is_leaf(n))
+        n->vacant = (n->first_child->vacant && n->second_child->vacant);
+    update_vacant_state(n->parent);
+}
+
 void select_desktop(desktop_t *d)
 {
     if (d == NULL)
