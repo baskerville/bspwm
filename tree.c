@@ -188,7 +188,7 @@ void apply_layout(desktop_t *d, node_t *n)
 {
     if (n == NULL)
         return;
-    if (is_leaf(n)) {
+    if (is_leaf(n) && !n->client->floating && !n->client->fullscreen) {
         uint32_t values[4];
         xcb_rectangle_t rect;
         if (d->layout == LAYOUT_TILED)
@@ -201,17 +201,21 @@ void apply_layout(desktop_t *d, node_t *n)
         values[3] = rect.height - window_gap;
         xcb_configure_window(dpy, n->client->window, MOVE_RESIZE_MASK, values);
     } else {
-        unsigned int fence;
         xcb_rectangle_t rect = n->rectangle;
-        if (n->split_type == TYPE_VERTICAL) {
-            fence = rect.width * n->split_ratio;
-            n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
-            n->second_child->rectangle = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+        if (n->first_child->vacant || n->second_child->vacant) {
+            n->first_child->rectangle = n->second_child->rectangle = rect;
+        } else {
+            unsigned int fence;
+            if (n->split_type == TYPE_VERTICAL) {
+                fence = rect.width * n->split_ratio;
+                n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+                n->second_child->rectangle = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
 
-        } else if (n->split_type == TYPE_HORIZONTAL) {
-            fence = rect.height * n->split_ratio;
-            n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
-            n->second_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+            } else if (n->split_type == TYPE_HORIZONTAL) {
+                fence = rect.height * n->split_ratio;
+                n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+                n->second_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+            }
         }
         apply_layout(d, n->first_child);
         apply_layout(d, n->second_child);
