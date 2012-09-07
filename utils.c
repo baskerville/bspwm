@@ -20,25 +20,35 @@ void die(const char *errstr, ...) {
     exit(EXIT_FAILURE);
 }
 
-node_t *win_to_node(xcb_window_t win)
+window_location_t locate_window(xcb_window_t w)
 {
     node_t *n;
     desktop_t *d = desk_head;
+    window_location_t l = {NULL, NULL};
 
     if (d == NULL)
-        return NULL;
+        return l;
 
     while (d != NULL) {
         n = first_extrema(d->root);
         while (n != NULL) {
-            if (n->client->window == win)
-                return n;
+            if (n->client->window == w) {
+                l.desktop = d;
+                l.node = n;
+                return l;
+            }
             n = next_leaf(n);
         }
         d = d->next;
     }
 
-    return NULL;
+    return l;
+}
+
+bool is_managed(xcb_window_t w)
+{
+    window_location_t l = locate_window(w);
+    return (l.desktop != NULL && l.node != NULL);
 }
 
 uint32_t color_pixel(char *hex)

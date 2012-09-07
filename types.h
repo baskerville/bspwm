@@ -98,6 +98,11 @@ struct rule_t {
     rule_t *next;
 };
 
+typedef struct {
+    node_t *node;
+    desktop_t *desktop;
+} window_location_t;
+
 node_t *make_node(void);
 desktop_t *make_desktop(void);
 client_t *make_client(xcb_window_t);

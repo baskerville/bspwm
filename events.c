@@ -44,7 +44,7 @@ void map_request(xcb_generic_event_t *evt)
     xcb_window_t win = e->window;
     wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
 
-    if ((wa != NULL && wa->override_redirect) || win_to_node(win) != NULL)
+    if ((wa != NULL && wa->override_redirect) || is_managed(win))
         return;
 
     free(wa);

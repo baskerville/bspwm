@@ -9,7 +9,8 @@
 void die(const char *, ...);
 uint32_t color_pixel(char *);
 uint32_t get_color(char *);
-node_t *win_to_node(xcb_window_t);
+window_location_t locate_window(xcb_window_t);
+bool is_managed(xcb_window_t);
 void draw_triple_border(node_t *, uint32_t);
 
 #endif
