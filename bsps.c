@@ -1,5 +1,9 @@
 #define _BSD_SOURCE
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,17 +14,24 @@
 #include <xcb/xcb_ewmh.h>
 #include "bsps.h"
 
-#define NO_VALUE  " "
-#define NAME_SEP  "\0"
+#define MAX(A, B)         ((A) > (B) ? (A) : (B))
+
+#define FIFO_PATH  "BSPWM_FIFO"
+#define NO_VALUE   " "
+#define NAME_SEP   "\0"
 
 typedef enum {
     false,
     true
 } bool;
 
-char *deskname = NO_VALUE;
-char *wintitle = NO_VALUE;
+char *desktop_name = NO_VALUE;
+char *window_title = NO_VALUE;
+char external_info[BUFSIZ] = NO_VALUE;
 xcb_window_t curwin;
+
+char *fifo_path;
+int fifo_fd, dpy_fd, sel_fd;
 
 xcb_connection_t *dpy;
 xcb_ewmh_connection_t ewmh;
@@ -35,6 +46,13 @@ void setup(void)
     xcb_intern_atom_cookie_t *ewmh_cookies;
     ewmh_cookies = xcb_ewmh_init_atoms(dpy, &ewmh);
     xcb_ewmh_init_atoms_replies(&ewmh, ewmh_cookies, NULL);
+    fifo_path = getenv(FIFO_PATH);
+    mkfifo(fifo_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    /* fifo_fd = open(fifo_path, O_RDONLY); */
+    fifo_fd = open(fifo_path, O_RDWR | O_NONBLOCK);
+    /* fprintf(stderr, "fifo_fd %i\n", fifo_fd); */
+    dpy_fd = xcb_get_file_descriptor(dpy);
+    sel_fd = MAX(fifo_fd, dpy_fd) + 1;
     curwin = 0;
     running = true;
 }
@@ -54,7 +72,7 @@ void handle_signal(int sig)
         running = false;
 }
 
-void update_wintitle(void)
+void update_window_title(void)
 {
     xcb_window_t win;
     xcb_ewmh_get_utf8_strings_reply_t name;
@@ -65,7 +83,7 @@ void update_wintitle(void)
     if (xcb_ewmh_get_active_window_reply(&ewmh, xcb_ewmh_get_active_window(&ewmh, default_screen), &win, NULL) == 1)
     {
         if (xcb_ewmh_get_wm_name_reply(&ewmh, xcb_ewmh_get_wm_name(&ewmh, win), &name, NULL) == 1) {
-            wintitle = strdup(name.strings);
+            window_title = strdup(name.strings);
             if (win != curwin) {
                 xcb_change_window_attributes(dpy, curwin, XCB_CW_EVENT_MASK, values_reset);
                 curwin = win;
@@ -75,12 +93,12 @@ void update_wintitle(void)
                 running = false;
 
         } else {
-            wintitle = strdup(NO_VALUE);
+            window_title = strdup(NO_VALUE);
         }
     }
 }
 
-void update_deskname(void)
+void update_desktop_name(void)
 {
     uint32_t cd;
     xcb_ewmh_get_utf8_strings_reply_t names;
@@ -91,60 +109,75 @@ void update_deskname(void)
             pos += strlen(names.strings + pos) + 1;
             cnt++;
         }
-        deskname = strdup(names.strings + pos);
-        for (cnt = 0; cnt < strlen(deskname); cnt++)
-            deskname[cnt] = toupper(deskname[cnt]);
+        desktop_name = strdup(names.strings + pos);
+        for (cnt = 0; cnt < strlen(desktop_name); cnt++)
+            desktop_name[cnt] = toupper(desktop_name[cnt]);
     } else {
-        deskname = strdup(NO_VALUE);
+        desktop_name = strdup(NO_VALUE);
     }
 }
 
 void output_infos(void)
 {
-    printf("\\l %s\\c%s\\r12:34 \n", deskname, wintitle);
+    printf("\\l %s\\c%s\\r%s \n", desktop_name, window_title, external_info);
     fflush(stdout);
 }
 
-/* int main(int argc, char *argv[]) */
+void handle_event(xcb_generic_event_t *evt)
+{
+    xcb_property_notify_event_t *pne;
+    switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
+        case XCB_PROPERTY_NOTIFY:
+            pne = (xcb_property_notify_event_t *) evt;
+            if (pne->atom == ewmh._NET_CURRENT_DESKTOP) {
+                update_desktop_name();
+                output_infos();
+            } else if (pne->atom == ewmh._NET_ACTIVE_WINDOW) {
+                update_window_title();
+                output_infos();
+            } else if (pne->window != screen->root && (pne->atom == ewmh._NET_WM_NAME || pne->atom == XCB_ATOM_WM_NAME)) {
+                update_window_title();
+                output_infos();
+            } else {
+            }
+        default:
+            break;
+    }
+}
+
 int main(void)
 {
+    fd_set descriptors;
     xcb_generic_event_t *evt;
-    xcb_property_notify_event_t *pne;
     signal(SIGTERM, handle_signal);
     signal(SIGINT, handle_signal);
     signal(SIGHUP, handle_signal);
     setup();
     screen = ewmh.screens[default_screen];
     register_events();
-    update_deskname();
-    update_wintitle();
+    update_desktop_name();
+    update_window_title();
     output_infos();
     xcb_flush(dpy);
+
     while (running) {
-        evt = xcb_wait_for_event(dpy);
-        switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
-            case XCB_PROPERTY_NOTIFY:
-                pne = (xcb_property_notify_event_t *) evt;
-                if (pne->atom == ewmh._NET_CURRENT_DESKTOP) {
-                    update_deskname();
-                    output_infos();
-                } else if (pne->atom == ewmh._NET_ACTIVE_WINDOW) {
-                    update_wintitle();
-                    output_infos();
-                } else if (pne->window != screen->root && (pne->atom == ewmh._NET_WM_NAME || pne->atom == XCB_ATOM_WM_NAME)) {
-                    update_wintitle();
-                    output_infos();
-                } else {
-                    /* printf("property %i\n", pne->atom); */
+        FD_ZERO(&descriptors);
+        FD_SET(fifo_fd, &descriptors);
+        FD_SET(dpy_fd, &descriptors);
+
+        if (select(sel_fd, &descriptors, NULL, NULL, NULL)) {
+            if (FD_ISSET(dpy_fd, &descriptors)) {
+                while ((evt = xcb_poll_for_event(dpy)) != NULL) {
+                    handle_event(evt);
+                    free(evt);
                 }
-            case XCB_CLIENT_MESSAGE:
-                /* puts("client message"); */
-                break;
-            default:
-                /* printf("event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
-                break;
+            }
+
+            if (FD_ISSET(fifo_fd, &descriptors)) {
+                read(fifo_fd, external_info, sizeof(external_info));
+                output_infos();
+            }
         }
-        free(evt);
     }
 
     xcb_disconnect(dpy);
