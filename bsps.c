@@ -48,9 +48,8 @@ void setup(void)
     xcb_ewmh_init_atoms_replies(&ewmh, ewmh_cookies, NULL);
     fifo_path = getenv(FIFO_PATH);
     mkfifo(fifo_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    /* fifo_fd = open(fifo_path, O_RDONLY); */
+    /* http://www.outflux.net/blog/archives/2008/03/09/using-select-on-a-fifo/ */
     fifo_fd = open(fifo_path, O_RDWR | O_NONBLOCK);
-    /* fprintf(stderr, "fifo_fd %i\n", fifo_fd); */
     dpy_fd = xcb_get_file_descriptor(dpy);
     sel_fd = MAX(fifo_fd, dpy_fd) + 1;
     curwin = 0;
@@ -119,7 +118,8 @@ void update_desktop_name(void)
 
 void output_infos(void)
 {
-    printf("\\l %s\\c%s\\r%s \n", desktop_name, window_title, external_info);
+    /* printf("\\l %s\\c%s\\r%s \n", desktop_name, window_title, external_info); */
+    printf("%s                %s                %s\n", desktop_name, window_title, external_info);
     fflush(stdout);
 }
 
@@ -174,12 +174,14 @@ int main(void)
             }
 
             if (FD_ISSET(fifo_fd, &descriptors)) {
-                read(fifo_fd, external_info, sizeof(external_info));
+                int bytes = read(fifo_fd, external_info, sizeof(external_info));
+                external_info[bytes] = '\0';
                 output_infos();
             }
         }
     }
 
+    close(fifo_fd);
     xcb_disconnect(dpy);
     return 0;
 }
