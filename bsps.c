@@ -12,6 +12,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>
+#include <cairo/cairo.h>
 #include "bsps.h"
 
 #define MAX(A, B)         ((A) > (B) ? (A) : (B))
@@ -19,6 +20,8 @@
 #define FIFO_PATH  "BSPWM_FIFO"
 #define NO_VALUE   " "
 #define NAME_SEP   "\0"
+#define FONT_FAMILY "sans-serif"
+#define FONT_SIZE   11
 
 typedef enum {
     false,
@@ -27,6 +30,8 @@ typedef enum {
 
 char *desktop_name = NO_VALUE;
 char *window_title = NO_VALUE;
+char *font_family = FONT_FAMILY;
+int font_size = FONT_SIZE;
 char external_info[BUFSIZ] = NO_VALUE;
 xcb_window_t curwin;
 
@@ -38,7 +43,19 @@ xcb_ewmh_connection_t ewmh;
 xcb_screen_t *screen;
 int default_screen;
 
+cairo_surface_t *surface;
+cairo_t *cr;
+
 bool running;
+
+double text_width(char *s)
+{
+    cairo_text_extents_t te;
+    cairo_select_font_face(cr, font_family, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, font_size);
+    cairo_text_extents(cr, s, &te);
+    return te.x_advance;
+}
 
 void setup(void)
 {
@@ -46,6 +63,8 @@ void setup(void)
     xcb_intern_atom_cookie_t *ewmh_cookies;
     ewmh_cookies = xcb_ewmh_init_atoms(dpy, &ewmh);
     xcb_ewmh_init_atoms_replies(&ewmh, ewmh_cookies, NULL);
+    surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 0, 0);
+    cr = cairo_create(surface);
     fifo_path = getenv(FIFO_PATH);
     mkfifo(fifo_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     /* http://www.outflux.net/blog/archives/2008/03/09/using-select-on-a-fifo/ */
@@ -145,13 +164,18 @@ void handle_event(xcb_generic_event_t *evt)
     }
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     fd_set descriptors;
     xcb_generic_event_t *evt;
     signal(SIGTERM, handle_signal);
     signal(SIGINT, handle_signal);
     signal(SIGHUP, handle_signal);
+    if (argc > 1) {
+        font_family = strdup(argv[1]);
+        if (argc > 2)
+            font_size = atoi(argv[2]);
+    }
     setup();
     screen = ewmh.screens[default_screen];
     register_events();
@@ -181,6 +205,8 @@ int main(void)
         }
     }
 
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
     close(fifo_fd);
     xcb_disconnect(dpy);
     return 0;
