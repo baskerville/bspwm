@@ -1,7 +1,7 @@
 VERSION = 0.01
 
 CC      = gcc
-LIBS    = `pkg-config --libs xcb xcb-ewmh lua cairo`
+LIBS    = `pkg-config --libs xcb xcb-icccm xcb-ewmh lua cairo`
 CFLAGS  = -g -std=c99 -pedantic -Wall -Wextra
 LDFLAGS = $(LIBS)
 

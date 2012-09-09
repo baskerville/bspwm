@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include <xcb/xcb_icccm.h>
 #include <xcb/xcb_ewmh.h>
 #include <cairo/cairo.h>
 #include "bsps.h"
@@ -74,15 +75,24 @@ void handle_signal(int sig)
 void update_window_title(void)
 {
     xcb_window_t win;
-    xcb_ewmh_get_utf8_strings_reply_t name;
+    xcb_ewmh_get_utf8_strings_reply_t ewmh_txt_prop;
+    xcb_icccm_get_text_property_reply_t icccm_txt_prop;
     uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
     uint32_t values_reset[] = {XCB_EVENT_MASK_NO_EVENT};
 
     free(window_title);
+    ewmh_txt_prop.strings = NULL;
+    icccm_txt_prop.name = NULL;
 
     if (xcb_ewmh_get_active_window_reply(&ewmh, xcb_ewmh_get_active_window(&ewmh, default_screen), &win, NULL) == 1
-            && xcb_ewmh_get_wm_name_reply(&ewmh, xcb_ewmh_get_wm_name(&ewmh, win), &name, NULL) == 1) {
-        window_title = strdup(name.strings);
+            && (xcb_ewmh_get_wm_name_reply(&ewmh, xcb_ewmh_get_wm_name(&ewmh, win), &ewmh_txt_prop, NULL) == 1
+                || xcb_icccm_get_wm_name_reply(dpy, xcb_icccm_get_wm_name(dpy, win), &icccm_txt_prop, NULL) == 1)) {
+        if (ewmh_txt_prop.strings != NULL)
+            window_title = strdup(ewmh_txt_prop.strings);
+        else if (icccm_txt_prop.name != NULL)
+            window_title = strdup(icccm_txt_prop.name);
+        else
+            window_title = strdup(NO_VALUE);
         if (win != curwin) {
             xcb_change_window_attributes(dpy, curwin, XCB_CW_EVENT_MASK, values_reset);
             curwin = win;
@@ -90,7 +100,6 @@ void update_window_title(void)
         xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, win, XCB_CW_EVENT_MASK, values));
         if (err != NULL)
             running = false;
-
     } else {
         window_title = strdup(NO_VALUE);
     }
