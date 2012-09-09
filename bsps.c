@@ -46,18 +46,23 @@ int default_screen;
 uint16_t screen_width;
 unsigned int horizontal_padding = HORIZONTAL_PADDING;
 
-cairo_surface_t *surface;
-cairo_t *cr;
 
 bool running;
 
 double text_width(char *s)
 {
+    int w;
+    cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 1, 1);
+    cairo_t *cr = cairo_create(surface);
     cairo_text_extents_t te;
     cairo_select_font_face(cr, font_family, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, font_size);
     cairo_text_extents(cr, s, &te);
-    return te.x_advance;
+    w = te.x_advance;
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
+    /* fprintf(stderr, "%s\n", cairo_status_to_string(cairo_status(cr))); */
+    return w;
 }
 
 void handle_signal(int sig)
@@ -140,7 +145,6 @@ void handle_event(xcb_generic_event_t *evt)
             } else if (pne->window != screen->root && (pne->atom == ewmh._NET_WM_NAME || pne->atom == XCB_ATOM_WM_NAME)) {
                 update_window_title();
                 output_infos();
-            } else {
             }
         default:
             break;
@@ -164,8 +168,6 @@ void setup(void)
     xcb_ewmh_init_atoms_replies(&ewmh, ewmh_cookies, NULL);
     screen = ewmh.screens[default_screen];
     screen_width = screen->width_in_pixels;
-    surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 0, 0);
-    cr = cairo_create(surface);
     fifo_path = getenv(FIFO_PATH);
     mkfifo(fifo_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     /* http://www.outflux.net/blog/archives/2008/03/09/using-select-on-a-fifo/ */
@@ -219,14 +221,14 @@ int main(int argc, char *argv[])
 
             if (FD_ISSET(fifo_fd, &descriptors)) {
                 int bytes = read(fifo_fd, external_infos, sizeof(external_infos));
-                external_infos[bytes] = '\0';
-                output_infos();
+                if (bytes > 0) {
+                    external_infos[bytes] = '\0';
+                    output_infos();
+                }
             }
         }
     }
 
-    cairo_destroy(cr);
-    cairo_surface_destroy(surface);
     close(fifo_fd);
     xcb_disconnect(dpy);
     return 0;
