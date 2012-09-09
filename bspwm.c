@@ -38,27 +38,6 @@ int register_events(void)
     return 0;
 }
 
-/* wrapper to get atoms using xcb */
-void get_atoms(char **names, xcb_atom_t *atoms, int count)
-{
-    int i;
-    xcb_intern_atom_cookie_t cookies[count];
-    xcb_intern_atom_reply_t  *reply;
-
-    for (i = 0; i < count; i++)
-        cookies[i] = xcb_intern_atom(dpy, 0, strlen(names[i]), names[i]);
-    for (i = 0; i < count; i++) {
-        reply = xcb_intern_atom_reply(dpy, cookies[i], NULL);
-        if (reply) {
-            /* PRINTF("%s : %d\n", names[i], reply->atom); */
-            atoms[i] = reply->atom;
-            free(reply);
-        } else {
-            PUTS("warning: failed to register atoms");
-        }
-    }
-}
-
 xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
 {
     xcb_screen_iterator_t iter;
@@ -81,6 +60,7 @@ void setup(int default_screen)
     ewmh_init();
     /* screen = ewmh.screens[default_screen]; */
     /* screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data; */
+    /* screen = ewmh.screens[default_screen]; */
     screen = screen_of_display(dpy, default_screen);
     if (!screen)
         die("error: cannot aquire screen\n");
@@ -88,11 +68,9 @@ void setup(int default_screen)
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
-    char *WM_ATOM_NAME[] = { "WM_PROTOCOLS", "WM_DELETE_WINDOW" };
+    /* char *WM_ATOM_NAME[] = { "WM_PROTOCOLS", "WM_DELETE_WINDOW" }; */
 
     xcb_atom_t net_atoms[] = {ewmh._NET_SUPPORTED, ewmh._NET_WM_STATE_FULLSCREEN, ewmh._NET_WM_STATE, ewmh._NET_ACTIVE_WINDOW};
-
-    get_atoms(WM_ATOM_NAME, wmatoms, WM_COUNT);
 
     /* xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms); */
     xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
@@ -109,7 +87,7 @@ void setup(int default_screen)
 int main(void)
 {
     fd_set descriptors;
-    int sock_fd, ret_fd, xfd, sel, nbr;
+    int sock_fd, ret_fd, dpy_fd, sel, nbr;
     struct sockaddr_un sock_address;
     char *sock_path;
     char msg[BUFSIZ], rsp[BUFSIZ];
@@ -130,7 +108,7 @@ int main(void)
     /*     die("another WM is already running\n"); */
     /* } */
 
-    xfd = xcb_get_file_descriptor(dpy);
+    dpy_fd = xcb_get_file_descriptor(dpy);
 
     sock_path = getenv(SOCK_PATH);
 
@@ -149,7 +127,7 @@ int main(void)
     bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
     listen(sock_fd, SOMAXCONN);
 
-    sel = MAX(sock_fd, xfd) + 1;
+    sel = MAX(sock_fd, dpy_fd) + 1;
 
     load_settings();
     xcb_flush(dpy);
@@ -158,11 +136,11 @@ int main(void)
 
         FD_ZERO(&descriptors);
         FD_SET(sock_fd, &descriptors);
-        FD_SET(xfd, &descriptors);
+        FD_SET(dpy_fd, &descriptors);
 
         if (select(sel, &descriptors, NULL, NULL, NULL)) {
 
-            if (FD_ISSET(xfd, &descriptors)) {
+            if (FD_ISSET(dpy_fd, &descriptors)) {
                 while ((event = xcb_poll_for_event(dpy)) != NULL) {
                     handle_event(event);
                     free(event);

@@ -20,7 +20,7 @@ xcb_atom_t wmatoms[WM_COUNT];
 
 int register_events(void);
 xcb_screen_t *screen_of_display(xcb_connection_t *, int);
-void sigchld(int);
+/* void handle_zombie(int); */
 void setup(int);
 void quit(void);
 
