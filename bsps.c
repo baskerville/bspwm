@@ -207,7 +207,7 @@ void setup(void)
     screen = ewmh.screens[default_screen];
     screen_width = screen->width_in_pixels;
     fifo_path = getenv(FIFO_ENV_VAR);
-    mkfifo(fifo_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    /* mkfifo(fifo_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH); */
     /* http://www.outflux.net/blog/archives/2008/03/09/using-select-on-a-fifo/ */
     fifo_fd = open(fifo_path, O_RDWR | O_NONBLOCK);
     dpy_fd = xcb_get_file_descriptor(dpy);
