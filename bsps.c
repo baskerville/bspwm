@@ -135,19 +135,10 @@ void update_window_title(void)
 
 void update_desktop_name(void)
 {
-    /* uint32_t cd; */
     xcb_ewmh_get_utf8_strings_reply_t names;
-    /* unsigned int pos = 0, cnt = 0; */
 
-
-    /* if (xcb_ewmh_get_current_desktop_reply(&ewmh, xcb_ewmh_get_current_desktop(&ewmh, default_screen), &cd, NULL) == 1  && xcb_ewmh_get_desktop_names_reply(&ewmh, xcb_ewmh_get_desktop_names(&ewmh, default_screen), &names, NULL) == 1) { */
     if (xcb_ewmh_get_desktop_names_reply(&ewmh, xcb_ewmh_get_desktop_names(&ewmh, default_screen), &names, NULL) == 1) {
         copy_prop(desktop_name, names.strings, names.strings_len, cur_desktop, num_desktops);
-        /* while (cnt < cd && pos < names.strings_len) { */
-        /*     pos += strlen(names.strings + pos) + 1; */
-        /*     cnt++; */
-        /* } */
-        /* desktop_name = strdup(names.strings + pos); */
     } else {
         strcpy(desktop_name, NO_VALUE);
     }
@@ -167,7 +158,6 @@ void output_infos(void)
     if (center_width > available_center)
         center_pos = left_width + 2 * horiz_padding;
 
-    /* printf("^pa(%i)%s^pa(%i)%s^pa(%i)%s\n", left_pos, desktop_name, center_pos, window_title, right_pos, external_infos); */
     printf("^pa(%i)%s^pa(%i)%s^pa(%i)%s\n", center_pos, window_title, right_pos, external_infos, left_pos, desktop_name);
     fflush(stdout);
 }
