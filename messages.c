@@ -1,5 +1,3 @@
-#define _BSD_SOURCE
-
 #include <string.h>
 #include <stdlib.h>
 #include "helpers.h"
@@ -101,32 +99,25 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "bottom_padding") == 0) {
         sscanf(value, "%i", &bottom_padding);
     } else if (strcmp(name, "normal_border_color") == 0) {
-        free(normal_border_color);
-        normal_border_color = strdup(value);
+        strncpy(normal_border_color, value, sizeof(normal_border_color));
         normal_border_color_pxl = get_color(normal_border_color);
     } else if (strcmp(name, "active_border_color") == 0) {
-        free(active_border_color);
-        active_border_color = strdup(value);
+        strncpy(active_border_color, value, sizeof(active_border_color));
         active_border_color_pxl = get_color(active_border_color);
     } else if (strcmp(name, "inner_border_color") == 0) {
-        free(inner_border_color);
-        inner_border_color = strdup(value);
+        strncpy(inner_border_color, value, sizeof(inner_border_color));
         inner_border_color_pxl = get_color(inner_border_color);
     } else if (strcmp(name, "outer_border_color") == 0) {
-        free(outer_border_color);
-        outer_border_color = strdup(value);
+        strncpy(outer_border_color, value, sizeof(outer_border_color));
         outer_border_color_pxl = get_color(outer_border_color);
     } else if (strcmp(name, "presel_border_color") == 0) {
-        free(presel_border_color);
-        presel_border_color = strdup(value);
+        strncpy(presel_border_color, value, sizeof(presel_border_color));
         presel_border_color_pxl = get_color(presel_border_color);
     } else if (strcmp(name, "locked_border_color") == 0) {
-        free(locked_border_color);
-        locked_border_color = strdup(value);
+        strncpy(locked_border_color, value, sizeof(locked_border_color));
         locked_border_color_pxl = get_color(locked_border_color);
     } else if (strcmp(name, "wm_name") == 0) {
-        free(wm_name);
-        wm_name = strdup(value);
+        strncpy(wm_name, value, sizeof(wm_name));
     } else if (strcmp(name, "adaptive_window_border") == 0) {
         if (is_bool(value))
             adaptive_window_border = parse_bool(value);

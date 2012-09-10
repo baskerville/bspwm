@@ -32,14 +32,14 @@
 #define PRESEL_BORDER_COLOR  "#331122"
 #define LOCKED_BORDER_COLOR  "#331122"
 
-char *normal_border_color;
-char *active_border_color;
-char *inner_border_color;
-char *outer_border_color;
-char *presel_border_color;
-char *locked_border_color;
+char normal_border_color[MAXLEN];
+char active_border_color[MAXLEN];
+char inner_border_color[MAXLEN];
+char outer_border_color[MAXLEN];
+char presel_border_color[MAXLEN];
+char locked_border_color[MAXLEN];
 
-char *wm_name;
+char wm_name[MAXLEN];
 
 uint32_t normal_border_color_pxl;
 uint32_t active_border_color_pxl;

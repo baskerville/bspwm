@@ -78,7 +78,7 @@ struct node_t {
 
 typedef struct desktop_t desktop_t;
 struct desktop_t {
-    char *name;
+    char name[MAXLEN];
     layout_t layout;
     node_t *root;
     node_t *focus;
@@ -95,6 +95,7 @@ struct rule_t {
     bool floating;
     bool fullscreen;
     bool locked;
+    bool centered;
     rule_t *next;
 };
 

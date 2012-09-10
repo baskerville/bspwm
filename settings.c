@@ -1,5 +1,3 @@
-#define _BSD_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,12 +31,12 @@ void load_settings(void)
 
 void apply_settings(lua_State *L)
 {
-    normal_border_color = string_expr(L, "normal_border_color", NORMAL_BORDER_COLOR);
-    active_border_color = string_expr(L, "active_border_color", ACTIVE_BORDER_COLOR);
-    inner_border_color = string_expr(L, "inner_border_color", INNER_BORDER_COLOR);
-    outer_border_color = string_expr(L, "outer_border_color", OUTER_BORDER_COLOR);
-    presel_border_color = string_expr(L, "presel_border_color", PRESEL_BORDER_COLOR);
-    locked_border_color = string_expr(L, "locked_border_color", LOCKED_BORDER_COLOR);
+    string_expr(L, normal_border_color, "normal_border_color", NORMAL_BORDER_COLOR);
+    string_expr(L, active_border_color, "active_border_color", ACTIVE_BORDER_COLOR);
+    string_expr(L, inner_border_color, "inner_border_color", INNER_BORDER_COLOR);
+    string_expr(L, outer_border_color, "outer_border_color", OUTER_BORDER_COLOR);
+    string_expr(L, presel_border_color, "presel_border_color", PRESEL_BORDER_COLOR);
+    string_expr(L, locked_border_color, "locked_border_color", LOCKED_BORDER_COLOR);
 
     normal_border_color_pxl = get_color(normal_border_color);
     active_border_color_pxl = get_color(active_border_color);
@@ -47,7 +45,7 @@ void apply_settings(lua_State *L)
     presel_border_color_pxl = get_color(presel_border_color);
     locked_border_color_pxl = get_color(locked_border_color);
 
-    wm_name = string_expr(L, "wm_name", WM_NAME);
+    string_expr(L, wm_name, "wm_name", WM_NAME);
 
     adaptive_window_border = bool_expr(L, "adaptive_window_border", ADAPTIVE_WINDOW_BORDER);
     adaptive_window_gap = bool_expr(L, "adaptive_window_gap", ADAPTIVE_WINDOW_GAP);

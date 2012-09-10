@@ -1,5 +1,3 @@
-#define _BSD_SOURCE
-
 #include <stdio.h>
 #include <string.h>
 #include <lua.h>
@@ -24,19 +22,15 @@ int has_table(lua_State *L, char *name)
     return result;
 }
 
-char *string_expr(lua_State *L, char *expr, char* fallback)
+void string_expr(lua_State *L, char *dest, char *expr, const char* fallback)
 {
-    char *result;
     if (eval_expr(L, expr) == 0) {
         if (lua_isstring(L, -1))
-            result = strdup(lua_tostring(L, -1));
+            strncpy(dest, lua_tostring(L, -1), sizeof(dest));
         else if (fallback != NULL)
-            result = strdup(fallback);
-        else
-            result = NULL;
+            strncpy(dest, fallback, sizeof(dest));
         lua_pop(L, 1);
     }
-    return result;
 }
 
 double double_expr(lua_State *L, char *expr, double fallback)

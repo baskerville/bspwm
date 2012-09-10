@@ -7,7 +7,7 @@
 
 int eval_expr(lua_State *, char *);
 int has_table(lua_State *, char *);
-char *string_expr(lua_State *, char *, char *);
+void string_expr(lua_State *, char *, char *, const char *);
 double double_expr(lua_State *, char *, double);
 int int_expr(lua_State *, char *, int);
 bool bool_expr(lua_State *, char *, bool);
