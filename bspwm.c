@@ -132,6 +132,7 @@ int main(void)
     sel = MAX(sock_fd, dpy_fd) + 1;
 
     load_settings();
+    run_autostart();
     xcb_flush(dpy);
 
     while (running) {

@@ -65,6 +65,7 @@ bool adaptive_window_border;
 bool adaptive_window_gap;
 
 void load_settings(void);
+void run_autostart(void);
 void apply_settings(lua_State *);
 
 #endif
