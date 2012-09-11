@@ -12,7 +12,7 @@ void set_setting(char*, char*);
 void split_ratio_cmd(char *);
 bool is_bool(char *);
 bool parse_bool(char *);
-layout_t parse_layout(char *);
+bool parse_layout(char *, layout_t *);
 direction_t parse_direction(char *);
 fence_move_t parse_fence_move(char *);
 

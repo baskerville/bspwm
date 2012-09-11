@@ -27,10 +27,13 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "dump") == 0) {
         dump_tree(desk->root, rsp, 0);
     } else if (strcmp(cmd, "layout") == 0) {
-        char *lyt = strtok(NULL, TOKEN_SEP);
-        if (lyt != NULL) {
-            desk->layout = parse_layout(lyt);
-            apply_layout(desk, desk->root);
+        char *arg = strtok(NULL, TOKEN_SEP);
+        if (arg != NULL) {
+            layout_t l;
+            if (parse_layout(arg, &l)) {
+                desk->layout = l;
+                apply_layout(desk, desk->root);
+            }
         }
     } else if (strcmp(cmd, "split_ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
@@ -188,12 +191,15 @@ bool parse_bool(char *value)
     return true;
 }
 
-layout_t parse_layout(char *lyt) {
-    if (strcmp(lyt, "monocle") == 0)
-        return LAYOUT_MONOCLE;
-    else if (strcmp(lyt, "tiled") == 0)
-        return LAYOUT_TILED;
-    return LAYOUT_TILED;
+bool parse_layout(char *s, layout_t *l) {
+    if (strcmp(s, "monocle") == 0) {
+        *l = LAYOUT_MONOCLE;
+        return true;
+    } else if (strcmp(s, "tiled") == 0) {
+        *l = LAYOUT_TILED;
+        return true;
+    }
+    return false;
 }
 
 direction_t parse_direction(char *dir) {
