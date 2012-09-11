@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
+#include "types.h"
+#include "bspwm.h"
 #include "utils.h"
 #include "luautils.h"
 #include "common.h"
@@ -14,19 +17,40 @@
 
 void load_settings(void)
 {
+    char path[MAXLEN];
     lua_State *L = lua_open();
     luaopen_base(L);
+    /* luaL_openlibs(L); */
 
-    if (luaL_loadfile(L, CONFIG_FILE) == 0) {
+    snprintf(path, sizeof(path), "%s/%s/%s", getenv("XDG_CONFIG_HOME"), WM_NAME, CONFIG_FILE);
+
+    if (luaL_loadfile(L, path) == 0) {
         if (lua_pcall(L, 0, 0, 0) == 0)
             apply_settings(L);
         else
-            die("error: cannot interpret configuration file\n");
+            PUTS("error: cannot interpret configuration file\n");
     } else {
-        die("error: could not load configuration file\n");
+        PUTS("error: could not load configuration file\n");
     }
 
     lua_close(L);
+}
+
+void run_autostart(void)
+{
+    char path[MAXLEN];
+
+    snprintf(path, sizeof(path), "%s/%s/%s", getenv("XDG_CONFIG_HOME"), WM_NAME, AUTOSTART_FILE);
+
+    if (fork() != 0)
+        return;
+
+    if (dpy != NULL)
+        close(xcb_get_file_descriptor(dpy));
+
+    execl(path, path);
+        
+    PUTS("error: could not load autostart file\n");
 }
 
 void apply_settings(lua_State *L)

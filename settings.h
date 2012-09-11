@@ -9,7 +9,8 @@
 #include "helpers.h"
 
 #define WM_NAME             "bspwm"
-#define CONFIG_FILE         ".bspwmrc"
+#define CONFIG_FILE         "bspwmrc"
+#define AUTOSTART_FILE      "autostart"
 
 #define OUTER_BORDER_WIDTH  2
 #define MAIN_BORDER_WIDTH   1

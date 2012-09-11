@@ -29,13 +29,14 @@ client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
     c->window = win;
-    c->floating = c->fullscreen = c->locked = false;
+    c->floating = c->transient = c->fullscreen = c->locked = false;
     return c;
 }
 
 rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
-    r->floating = r->fullscreen = r->locked = r->centered = false;
+    r->cause.class_name = r->cause.instance_name = NULL;
+    r->effect.floating = r->effect.fullscreen = r->effect.locked = r->effect.centered = false;
     return r;
 }

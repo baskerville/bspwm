@@ -5,10 +5,10 @@ LIBS    = `pkg-config --libs xcb xcb-icccm xcb-ewmh lua cairo`
 CFLAGS  = -g -std=c99 -pedantic -Wall -Wextra
 LDFLAGS = $(LIBS)
 
-PREFIX    = /usr/local
+PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 
-WM_SRC = bspwm.c events.c luautils.c messages.c ewmh.c settings.c utils.c tree.c types.c
+WM_SRC = bspwm.c events.c luautils.c messages.c ewmh.c settings.c utils.c tree.c types.c rules.c
 CL_SRC = bspc.c
 ST_SRC = bsps.c
 

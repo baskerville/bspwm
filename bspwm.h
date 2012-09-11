@@ -12,6 +12,7 @@ desktop_t *desk;
 desktop_t *last_desk;
 desktop_t *desk_head;
 desktop_t *desk_tail;
+rule_t *rule_head;
 bool running;
 
 enum { WM_PROTOCOLS, WM_DELETE_WINDOW, WM_COUNT };

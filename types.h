@@ -60,6 +60,7 @@ typedef enum {
 typedef struct {
     xcb_window_t window;
     bool floating;
+    bool transient;
     bool fullscreen;
     bool locked;
 } client_t;
@@ -87,15 +88,22 @@ struct desktop_t {
     desktop_t *next;
 };
 
-typedef struct rule_t rule_t;
-struct rule_t {
+typedef struct {
     char *class_name;
     char *instance_name;
-    char *win_title;
+} rule_cause_t;
+
+typedef struct {
     bool floating;
     bool fullscreen;
     bool locked;
     bool centered;
+} rule_effect_t;
+
+typedef struct rule_t rule_t;
+struct rule_t {
+    rule_cause_t cause;
+    rule_effect_t effect;
     rule_t *next;
 };
 
@@ -107,5 +115,6 @@ typedef struct {
 node_t *make_node(void);
 desktop_t *make_desktop(void);
 client_t *make_client(xcb_window_t);
+rule_t *make_rule(void);
 
 #endif
