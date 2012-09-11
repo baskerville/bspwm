@@ -42,7 +42,7 @@ void process_message(char *msg, char *rsp)
             split_dir = parse_direction(dir);
             draw_triple_border(desk->focus, active_border_color_pxl);
         }
-    } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull")) {
+    } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
             fence_move_t m = parse_fence_move(cmd);
