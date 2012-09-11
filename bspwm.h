@@ -15,9 +15,7 @@ desktop_t *desk_tail;
 rule_t *rule_head;
 bool running;
 
-enum { WM_PROTOCOLS, WM_DELETE_WINDOW, WM_COUNT };
-
-xcb_atom_t wmatoms[WM_COUNT];
+/* enum { WM_PROTOCOLS, WM_DELETE_WINDOW, WM_COUNT }; */
 
 int register_events(void);
 xcb_screen_t *screen_of_display(xcb_connection_t *, int);

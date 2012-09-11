@@ -51,6 +51,7 @@ void run_autostart(void)
     execl(path, path, NULL);
         
     PUTS("error: could not load autostart file\n");
+    exit(EXIT_SUCCESS);
 }
 
 void apply_settings(lua_State *L)

@@ -8,6 +8,7 @@
 #include "types.h"
 #include "bspwm.h"
 #include "utils.h"
+#include "tree.h"
 
 void process_message(char *msg, char *rsp)
 {
@@ -23,9 +24,38 @@ void process_message(char *msg, char *rsp)
         char *name = strtok(NULL, TOKEN_SEP);
         char *value = strtok(NULL, TOKEN_SEP);
         set_setting(name, value);
+    } else if (strcmp(cmd, "dump") == 0) {
+        dump_tree(desk->root, rsp, 0);
+    } else if (strcmp(cmd, "layout") == 0) {
+        char *lyt = strtok(NULL, TOKEN_SEP);
+        if (lyt != NULL) {
+            desk->layout = parse_layout(lyt);
+            apply_layout(desk, desk->root);
+        }
     } else if (strcmp(cmd, "split_ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
         split_ratio_cmd(value);
+    } else if (strcmp(cmd, "presel") == 0) {
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            split_mode = MODE_MANUAL;
+            split_dir = parse_direction(dir);
+            draw_triple_border(desk->focus, active_border_color_pxl);
+        }
+    } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull")) {
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            fence_move_t m = parse_fence_move(cmd);
+            direction_t d = parse_direction(dir);
+            move_fence(desk->focus, d, m);
+        }
+    } else if (strcmp(cmd, "move") == 0) {
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            direction_t d = parse_direction(dir);
+            node_t *n = find_neighbor(desk->focus, d);
+            focus_node(desk, n);
+        }
     } else if (strcmp(cmd, "quit") == 0) {
         quit();
     }
@@ -92,12 +122,16 @@ void set_setting(char *name, char *value)
         sscanf(value, "%i", &window_gap);
     } else if (strcmp(name, "left_padding") == 0) {
         sscanf(value, "%i", &left_padding);
+        update_root_dimensions();
     } else if (strcmp(name, "right_padding") == 0) {
         sscanf(value, "%i", &right_padding);
+        update_root_dimensions();
     } else if (strcmp(name, "top_padding") == 0) {
         sscanf(value, "%i", &top_padding);
+        update_root_dimensions();
     } else if (strcmp(name, "bottom_padding") == 0) {
         sscanf(value, "%i", &bottom_padding);
+        update_root_dimensions();
     } else if (strcmp(name, "normal_border_color") == 0) {
         strncpy(normal_border_color, value, sizeof(normal_border_color));
         normal_border_color_pxl = get_color(normal_border_color);
@@ -116,20 +150,22 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "locked_border_color") == 0) {
         strncpy(locked_border_color, value, sizeof(locked_border_color));
         locked_border_color_pxl = get_color(locked_border_color);
-    } else if (strcmp(name, "wm_name") == 0) {
-        strncpy(wm_name, value, sizeof(wm_name));
     } else if (strcmp(name, "adaptive_window_border") == 0) {
         if (is_bool(value))
             adaptive_window_border = parse_bool(value);
     } else if (strcmp(name, "adaptive_window_gap") == 0) {
         if (is_bool(value))
             adaptive_window_gap = parse_bool(value);
+    } else if (strcmp(name, "wm_name") == 0) {
+        strncpy(wm_name, value, sizeof(wm_name));
+        return;
     }
+    apply_layout(desk, desk->root);
 }
 
 void split_ratio_cmd(char *value)
 {
-    if (desk == NULL || desk->focus == NULL || value == NULL)
+    if (value == NULL || desk == NULL || desk->focus == NULL)
         return;
 
     sscanf(value, "%lf", &desk->focus->split_ratio);
@@ -150,4 +186,32 @@ bool parse_bool(char *value)
     else if (strcmp(value, "false") == 0)
         return false;
     return true;
+}
+
+layout_t parse_layout(char *lyt) {
+    if (strcmp(lyt, "monocle") == 0)
+        return LAYOUT_MONOCLE;
+    else if (strcmp(lyt, "tiled") == 0)
+        return LAYOUT_TILED;
+    return LAYOUT_TILED;
+}
+
+direction_t parse_direction(char *dir) {
+    if (strcmp(dir, "up") == 0)
+        return DIR_UP;
+    else if (strcmp(dir, "down") == 0)
+        return DIR_DOWN;
+    else if (strcmp(dir, "left") == 0)
+        return DIR_LEFT;
+    else if (strcmp(dir, "right") == 0)
+        return DIR_RIGHT;
+    return DIR_LEFT;
+}
+
+fence_move_t parse_fence_move(char *mov) {
+    if (strcmp(mov, "push") == 0)
+        return MOVE_PUSH;
+    else if (strcmp(mov, "pull") == 0)
+        return MOVE_PULL;
+    return MOVE_PUSH;
 }

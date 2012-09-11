@@ -186,7 +186,7 @@ void update_root_dimensions(void)
 
 void apply_layout(desktop_t *d, node_t *n)
 {
-    if (n == NULL)
+    if (d == NULL || n == NULL)
         return;
     if (is_leaf(n) && !n->client->floating && !n->client->fullscreen) {
         uint32_t values[4];
@@ -311,7 +311,7 @@ void focus_node(desktop_t *d, node_t *n)
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 }
 
-void remove_node(desktop_t *d, node_t *n)
+void unlink_node(desktop_t *d, node_t *n)
 {
     if (d == NULL || n == NULL)
         return;
@@ -341,16 +341,27 @@ void remove_node(desktop_t *d, node_t *n)
         free(p);
     }
 
-    /* free(n->client); */
-    /* free(n); */
+}
+
+void remove_node(desktop_t *d, node_t *n)
+{
+    unlink_node(d, n);
+    free(n->client);
+    free(n);
 }
 
 void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
 {
     if (ds == NULL || dd == NULL || n == NULL)
         return;
-    remove_node(ds, n);
+    unlink_node(ds, n);
     insert_node(dd, n);
+}
+
+void select_desktop(desktop_t *d)
+{
+    if (d == NULL)
+        return;
 }
 
 void update_vacant_state(node_t *n)
@@ -360,10 +371,4 @@ void update_vacant_state(node_t *n)
     if (!is_leaf(n))
         n->vacant = (n->first_child->vacant && n->second_child->vacant);
     update_vacant_state(n->parent);
-}
-
-void select_desktop(desktop_t *d)
-{
-    if (d == NULL)
-        return;
 }

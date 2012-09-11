@@ -69,11 +69,8 @@ void setup(int default_screen)
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
-    /* char *WM_ATOM_NAME[] = { "WM_PROTOCOLS", "WM_DELETE_WINDOW" }; */
-
     xcb_atom_t net_atoms[] = {ewmh._NET_SUPPORTED, ewmh._NET_WM_STATE_FULLSCREEN, ewmh._NET_WM_STATE, ewmh._NET_ACTIVE_WINDOW};
 
-    /* xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, screen->root, netatoms[NET_SUPPORTED], XCB_ATOM_ATOM, 32, NET_COUNT, netatoms); */
     xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
     xcb_ewmh_set_wm_name(&ewmh, screen->root, LENGTH(WM_NAME), WM_NAME);
 
