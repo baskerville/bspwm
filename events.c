@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "events.h"
 #include "tree.h"
+#include "ewmh.h"
 
 void handle_event(xcb_generic_event_t *evt)
 {
@@ -16,21 +17,15 @@ void handle_event(xcb_generic_event_t *evt)
             PUTS("received a map request\n");
             map_request(evt);
             break;
+        case XCB_CLIENT_MESSAGE:
+            PUTS("received a map request\n");
+            client_message(evt);
+            break;
         case XCB_CONFIGURE_REQUEST:
             PUTS("received a configure request\n");
             break;
-        case XCB_UNGRAB_KEY:
-            /* PUTS("ungrab key received"); */
-            break;
-        case XCB_KEY_PRESS:
-            PUTS("keypress received");
-            break;
-        case XCB_KEY_RELEASE:
-            PUTS("keyrelease received");
-            break;
         case XCB_BUTTON_PRESS:
-        case XCB_BUTTON_RELEASE:
-            PUTS("button event");
+            PUTS("button press event");
             break;
         default:
             PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt));
@@ -57,4 +52,30 @@ void map_request(xcb_generic_event_t *evt)
     if (takes_focus)
         focus_node(desk, birth);
     xcb_map_window(dpy, c->window);
+}
+
+void client_message(xcb_generic_event_t *evt)
+{
+    xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
+    window_location_t wl = locate_window(e->window);
+    if (wl.desktop == NULL || wl.node == NULL)
+        return;
+
+    if (e->type == ewmh._NET_WM_STATE) {
+        handle_state(wl.node, e->data.data32[1], e->data.data32[0]);
+        handle_state(wl.node, e->data.data32[2], e->data.data32[0]);
+    } else if (e->type == ewmh._NET_ACTIVE_WINDOW) {
+        focus_node(wl.desktop, wl.node);
+    }
+}
+
+void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
+{
+    if (state == ewmh._NET_WM_STATE_FULLSCREEN) {
+        bool fs = n->client->fullscreen;
+        if (action == XCB_EWMH_WM_STATE_TOGGLE
+                || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD))
+            toggle_fullscreen(n);
+    }
 }

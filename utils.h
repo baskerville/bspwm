@@ -12,5 +12,6 @@ uint32_t get_color(char *);
 window_location_t locate_window(xcb_window_t);
 bool is_managed(xcb_window_t);
 void draw_triple_border(node_t *, uint32_t);
+void toggle_fullscreen(node_t *);
 
 #endif

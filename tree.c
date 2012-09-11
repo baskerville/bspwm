@@ -302,11 +302,15 @@ void insert_node(desktop_t *d, node_t *n)
 
 void focus_node(desktop_t *d, node_t *n)
 {
-    if (d == NULL || n == NULL || d->focus == n)
+    if (d == NULL || n == NULL || desk->focus == n)
         return;
 
-    draw_triple_border(d->focus, normal_border_color_pxl);
-    draw_triple_border(n, active_border_color_pxl);
+    select_desktop(d);
+    
+    if (d->focus != n) {
+        draw_triple_border(d->focus, normal_border_color_pxl);
+        draw_triple_border(n, active_border_color_pxl);
+    }
 
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 }
@@ -360,8 +364,32 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
 
 void select_desktop(desktop_t *d)
 {
-    if (d == NULL)
+    if (d == NULL || d == desk)
         return;
+
+    if (d->focus != NULL)
+        xcb_map_window(dpy, d->focus->client->window);
+
+    node_t *n = first_extrema(d->root);
+
+    while (n != NULL) {
+        if (n != d->focus)
+            xcb_map_window(dpy, n->client->window);
+        n = next_leaf(n);
+    }
+
+    n = first_extrema(desk->root);
+    while (n != NULL) {
+        if (n != desk->focus)
+            xcb_unmap_window(dpy, n->client->window);
+        n = next_leaf(n);
+    }
+
+    if (desk->focus != NULL)
+        xcb_unmap_window(dpy, desk->focus->client->window);
+
+    last_desk = desk;
+    desk = d;
 }
 
 void update_vacant_state(node_t *n)

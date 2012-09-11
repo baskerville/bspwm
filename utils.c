@@ -186,3 +186,8 @@ void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
     xcb_free_gc(dpy, gc);
     xcb_free_pixmap(dpy, pix);
 }
+
+void toggle_fullscreen(node_t *n)
+{
+    n = n;
+}

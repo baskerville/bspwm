@@ -27,10 +27,10 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "dump") == 0) {
         dump_tree(desk->root, rsp, 0);
     } else if (strcmp(cmd, "layout") == 0) {
-        char *arg = strtok(NULL, TOKEN_SEP);
-        if (arg != NULL) {
+        char *lyt = strtok(NULL, TOKEN_SEP);
+        if (lyt != NULL) {
             layout_t l;
-            if (parse_layout(arg, &l)) {
+            if (parse_layout(lyt, &l)) {
                 desk->layout = l;
                 apply_layout(desk, desk->root);
             }
@@ -41,23 +41,29 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "presel") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
-            split_mode = MODE_MANUAL;
-            split_dir = parse_direction(dir);
-            draw_triple_border(desk->focus, active_border_color_pxl);
+            direction_t d;
+            if (parse_direction(dir, &d)) {
+                split_mode = MODE_MANUAL;
+                split_dir = d;
+                draw_triple_border(desk->focus, active_border_color_pxl);
+            }
         }
     } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
-            fence_move_t m = parse_fence_move(cmd);
-            direction_t d = parse_direction(dir);
-            move_fence(desk->focus, d, m);
+            fence_move_t m;
+            direction_t d;
+            if (parse_fence_move(cmd, &m) && parse_direction(dir, &d))
+                move_fence(desk->focus, d, m);
         }
     } else if (strcmp(cmd, "move") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
-            direction_t d = parse_direction(dir);
-            node_t *n = find_neighbor(desk->focus, d);
-            focus_node(desk, n);
+            direction_t d;
+            if (parse_direction(dir, &d)) {
+                node_t *n = find_neighbor(desk->focus, d);
+                focus_node(desk, n);
+            }
         }
     } else if (strcmp(cmd, "quit") == 0) {
         quit();
@@ -202,22 +208,30 @@ bool parse_layout(char *s, layout_t *l) {
     return false;
 }
 
-direction_t parse_direction(char *dir) {
-    if (strcmp(dir, "up") == 0)
-        return DIR_UP;
-    else if (strcmp(dir, "down") == 0)
-        return DIR_DOWN;
-    else if (strcmp(dir, "left") == 0)
-        return DIR_LEFT;
-    else if (strcmp(dir, "right") == 0)
-        return DIR_RIGHT;
-    return DIR_LEFT;
+bool parse_direction(char *s, direction_t *d) {
+    if (strcmp(s, "up") == 0) {
+        *d = DIR_UP;
+        return true;
+    } else if (strcmp(s, "down") == 0) {
+        *d = DIR_DOWN;
+        return true;
+    } else if (strcmp(s, "left") == 0) {
+        *d = DIR_LEFT;
+        return true;
+    } else if (strcmp(s, "right") == 0) {
+        *d = DIR_RIGHT;
+        return true;
+    }
+    return false;
 }
 
-fence_move_t parse_fence_move(char *mov) {
-    if (strcmp(mov, "push") == 0)
-        return MOVE_PUSH;
-    else if (strcmp(mov, "pull") == 0)
-        return MOVE_PULL;
-    return MOVE_PUSH;
+bool parse_fence_move(char *s, fence_move_t *m) {
+    if (strcmp(s, "push") == 0) {
+        *m = MOVE_PUSH;
+        return true;
+    } else if (strcmp(s, "pull") == 0) {
+        *m = MOVE_PULL;
+        return true;
+    }
+    return false;
 }

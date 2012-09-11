@@ -13,7 +13,7 @@ void split_ratio_cmd(char *);
 bool is_bool(char *);
 bool parse_bool(char *);
 bool parse_layout(char *, layout_t *);
-direction_t parse_direction(char *);
-fence_move_t parse_fence_move(char *);
+bool parse_direction(char *, direction_t *);
+bool parse_fence_move(char *, fence_move_t *);
 
 #endif
