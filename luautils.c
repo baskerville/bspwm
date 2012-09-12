@@ -26,9 +26,9 @@ void string_expr(lua_State *L, char *dest, char *expr, const char* fallback)
 {
     if (eval_expr(L, expr) == 0) {
         if (lua_isstring(L, -1))
-            strncpy(dest, lua_tostring(L, -1), sizeof(dest));
+            strcpy(dest, lua_tostring(L, -1));
         else if (fallback != NULL)
-            strncpy(dest, fallback, sizeof(dest));
+            strcpy(dest, fallback);
         lua_pop(L, 1);
     }
 }

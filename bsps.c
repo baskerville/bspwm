@@ -80,7 +80,7 @@ void copy_prop(char *dest, char *src, int len, int idx, int num_itm)
         if (cnt < idx)
             copy_prop(dest, src + pos, len - pos, 0, 1);
         else
-            strncpy(dest, src + pos, sizeof(dest));
+            strcpy(dest, src + pos);
     }
 }
 
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
     update_window_title();
 
     if (argc > 1) {
-        strncpy(font_family, argv[1], sizeof(font_family));
+        strcpy(font_family, argv[1]);
         if (argc > 2) {
             font_size = atoi(argv[2]);
             if (argc > 3)

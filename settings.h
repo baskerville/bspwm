@@ -26,12 +26,12 @@
 #define ADAPTIVE_WINDOW_GAP     true
 #define ADAPTIVE_WINDOW_BORDER  true
 
-#define NORMAL_BORDER_COLOR  "#333333"
-#define ACTIVE_BORDER_COLOR  "#DDDDDD"
-#define INNER_BORDER_COLOR   "#111111"
-#define OUTER_BORDER_COLOR   "#222222"
-#define PRESEL_BORDER_COLOR  "#331122"
-#define LOCKED_BORDER_COLOR  "#331122"
+#define NORMAL_BORDER_COLOR  "slategray"
+#define ACTIVE_BORDER_COLOR  "lightslategray"
+#define INNER_BORDER_COLOR   "darkslategray"
+#define OUTER_BORDER_COLOR   "darkslategray"
+#define PRESEL_BORDER_COLOR  "dimgray"
+#define LOCKED_BORDER_COLOR  "slateblue"
 
 char normal_border_color[MAXLEN];
 char active_border_color[MAXLEN];

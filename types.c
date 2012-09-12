@@ -18,7 +18,7 @@ node_t *make_node(void)
 desktop_t *make_desktop(const char *name)
 {
     desktop_t *d = malloc(sizeof(desktop_t));
-    strncpy(d->name, name, sizeof(d->name));
+    strcpy(d->name, name);
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
     d->root = d->focus = d->last_focus = NULL;

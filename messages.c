@@ -124,17 +124,17 @@ void get_setting(char *name, char* rsp)
     else if (strcmp(name, "bottom_padding") == 0)
         sprintf(rsp, "%i\n", bottom_padding);
     else if (strcmp(name, "normal_border_color") == 0)
-        sprintf(rsp, "%s\n", normal_border_color);
+        sprintf(rsp, "%s (0x%06X)\n", normal_border_color, normal_border_color_pxl);
     else if (strcmp(name, "active_border_color") == 0)
-        sprintf(rsp, "%s\n", active_border_color);
+        sprintf(rsp, "%s (0x%06X)\n", active_border_color, active_border_color_pxl);
     else if (strcmp(name, "inner_border_color") == 0)
-        sprintf(rsp, "%s\n", inner_border_color);
+        sprintf(rsp, "%s (0x%06X)\n", inner_border_color, inner_border_color_pxl);
     else if (strcmp(name, "outer_border_color") == 0)
-        sprintf(rsp, "%s\n", outer_border_color);
+        sprintf(rsp, "%s (0x%06X)\n", outer_border_color, outer_border_color_pxl);
     else if (strcmp(name, "presel_border_color") == 0)
-        sprintf(rsp, "%s\n", presel_border_color);
+        sprintf(rsp, "%s (0x%06X)\n", presel_border_color, presel_border_color_pxl);
     else if (strcmp(name, "locked_border_color") == 0)
-        sprintf(rsp, "%s\n", locked_border_color);
+        sprintf(rsp, "%s (0x%06X)\n", locked_border_color, locked_border_color_pxl);
     else if (strcmp(name, "wm_name") == 0)
         sprintf(rsp, "%s\n", wm_name);
     else if (strcmp(name, "adaptive_window_border") == 0)
@@ -172,22 +172,22 @@ void set_setting(char *name, char *value)
         sscanf(value, "%i", &bottom_padding);
         update_root_dimensions();
     } else if (strcmp(name, "normal_border_color") == 0) {
-        strncpy(normal_border_color, value, sizeof(normal_border_color));
+        strcpy(normal_border_color, value);
         normal_border_color_pxl = get_color(normal_border_color);
     } else if (strcmp(name, "active_border_color") == 0) {
-        strncpy(active_border_color, value, sizeof(active_border_color));
+        strcpy(active_border_color, value);
         active_border_color_pxl = get_color(active_border_color);
     } else if (strcmp(name, "inner_border_color") == 0) {
-        strncpy(inner_border_color, value, sizeof(inner_border_color));
+        strcpy(inner_border_color, value);
         inner_border_color_pxl = get_color(inner_border_color);
     } else if (strcmp(name, "outer_border_color") == 0) {
-        strncpy(outer_border_color, value, sizeof(outer_border_color));
+        strcpy(outer_border_color, value);
         outer_border_color_pxl = get_color(outer_border_color);
     } else if (strcmp(name, "presel_border_color") == 0) {
-        strncpy(presel_border_color, value, sizeof(presel_border_color));
+        strcpy(presel_border_color, value);
         presel_border_color_pxl = get_color(presel_border_color);
     } else if (strcmp(name, "locked_border_color") == 0) {
-        strncpy(locked_border_color, value, sizeof(locked_border_color));
+        strcpy(locked_border_color, value);
         locked_border_color_pxl = get_color(locked_border_color);
     } else if (strcmp(name, "adaptive_window_border") == 0) {
         bool b;
@@ -198,7 +198,7 @@ void set_setting(char *name, char *value)
         if (parse_bool(value, &b))
             adaptive_window_gap = b;
     } else if (strcmp(name, "wm_name") == 0) {
-        strncpy(wm_name, value, sizeof(wm_name));
+        strcpy(wm_name, value);
         return;
     }
     apply_layout(desk, desk->root);
