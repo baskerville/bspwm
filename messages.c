@@ -56,6 +56,36 @@ void process_message(char *msg, char *rsp)
             if (parse_fence_move(cmd, &m) && parse_direction(dir, &d))
                 move_fence(desk->focus, d, m);
         }
+    } else if (strcmp(cmd, "send_to") == 0) {
+        char *name = strtok(NULL, TOKEN_SEP);
+        if (name != NULL) {
+            desktop_t *d = find_desktop(name);
+            transfer_node(desk, d, desk->focus);
+        }
+    } else if (strcmp(cmd, "use") == 0) {
+        char *name = strtok(NULL, TOKEN_SEP);
+        if (name != NULL) {
+            desktop_t *d = find_desktop(name);
+            select_desktop(d);
+        }
+    } else if (strcmp(cmd, "cycle") == 0) {
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            cycle_dir_t d;
+            if (parse_cycle_direction(dir, &d)) {
+                skip_client_t k;
+                char *skip = strtok(NULL, TOKEN_SEP);
+                if (parse_skip_client(skip, &k))
+                    cycle_leaf(desk, desk->focus, d, k);
+            }
+        }
+    } else if (strcmp(cmd, "alternate") == 0) {
+        alternate_desktop();
+    } else if (strcmp(cmd, "add") == 0) {
+        char *name = strtok(NULL, TOKEN_SEP);
+        if (name != NULL) {
+            add_desktop(name);
+        }
     } else if (strcmp(cmd, "move") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -76,13 +106,13 @@ void get_setting(char *name, char* rsp)
         return;
 
     if (strcmp(name, "inner_border_width") == 0)
-        sprintf(rsp, "%i\n", inner_border_width);
+        sprintf(rsp, "%u\n", inner_border_width);
     else if (strcmp(name, "main_border_width") == 0)
-        sprintf(rsp, "%i\n", main_border_width);
+        sprintf(rsp, "%u\n", main_border_width);
     else if (strcmp(name, "outer_border_width") == 0)
-        sprintf(rsp, "%i\n", outer_border_width);
+        sprintf(rsp, "%u\n", outer_border_width);
     else if (strcmp(name, "border_width") == 0)
-        sprintf(rsp, "%i\n", border_width);
+        sprintf(rsp, "%u\n", border_width);
     else if (strcmp(name, "window_gap") == 0)
         sprintf(rsp, "%i\n", window_gap);
     else if (strcmp(name, "left_padding") == 0)
@@ -119,13 +149,13 @@ void set_setting(char *name, char *value)
         return;
 
     if (strcmp(name, "inner_border_width") == 0) {
-        sscanf(value, "%i", &inner_border_width);
+        sscanf(value, "%u", &inner_border_width);
         border_width = inner_border_width + main_border_width + outer_border_width;
     } else if (strcmp(name, "main_border_width") == 0) {
-        sscanf(value, "%i", &main_border_width);
+        sscanf(value, "%u", &main_border_width);
         border_width = inner_border_width + main_border_width + outer_border_width;
     } else if (strcmp(name, "outer_border_width") == 0) {
-        sscanf(value, "%i", &outer_border_width);
+        sscanf(value, "%u", &outer_border_width);
         border_width = inner_border_width + main_border_width + outer_border_width;
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
@@ -160,11 +190,13 @@ void set_setting(char *name, char *value)
         strncpy(locked_border_color, value, sizeof(locked_border_color));
         locked_border_color_pxl = get_color(locked_border_color);
     } else if (strcmp(name, "adaptive_window_border") == 0) {
-        if (is_bool(value))
-            adaptive_window_border = parse_bool(value);
+        bool b;
+        if (parse_bool(value, &b))
+            adaptive_window_border = b;
     } else if (strcmp(name, "adaptive_window_gap") == 0) {
-        if (is_bool(value))
-            adaptive_window_gap = parse_bool(value);
+        bool b;
+        if (parse_bool(value, &b))
+            adaptive_window_gap = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         return;
@@ -180,24 +212,20 @@ void split_ratio_cmd(char *value)
     sscanf(value, "%lf", &desk->focus->split_ratio);
 }
 
-bool is_bool(char *value)
+bool parse_bool(char *value, bool *b)
 {
-    if (value == NULL)
-        return false;
-
-    return (strcmp(value, "true") == 0 || strcmp(value, "false") == 0);
-}
-
-bool parse_bool(char *value)
-{
-    if (strcmp(value, "true") == 0)
+    if (strcmp(value, "true") == 0) {
+        *b = true;
         return true;
-    else if (strcmp(value, "false") == 0)
-        return false;
-    return true;
+    } else if (strcmp(value, "false") == 0) {
+        *b = false;
+        return true;
+    }
+    return false;
 }
 
-bool parse_layout(char *s, layout_t *l) {
+bool parse_layout(char *s, layout_t *l)
+{
     if (strcmp(s, "monocle") == 0) {
         *l = LAYOUT_MONOCLE;
         return true;
@@ -208,7 +236,8 @@ bool parse_layout(char *s, layout_t *l) {
     return false;
 }
 
-bool parse_direction(char *s, direction_t *d) {
+bool parse_direction(char *s, direction_t *d)
+{
     if (strcmp(s, "up") == 0) {
         *d = DIR_UP;
         return true;
@@ -225,7 +254,35 @@ bool parse_direction(char *s, direction_t *d) {
     return false;
 }
 
-bool parse_fence_move(char *s, fence_move_t *m) {
+bool parse_cycle_direction(char *s, cycle_dir_t *d)
+{
+    if (strcmp(s, "prev") == 0) {
+        *d = DIR_PREV;
+        return true;
+    } else if (strcmp(s, "next") == 0) {
+        *d = DIR_NEXT;
+        return true;
+    }
+    return false;
+}
+
+bool parse_skip_client(char *s, skip_client_t *k)
+{
+    if (s == NULL || strcmp(s, "--skip-none") == 0) {
+        *k = SKIP_NONE;
+        return true;
+    } else if (strcmp(s, "--skip-floating") == 0) {
+        *k = SKIP_FLOATING;
+        return true;
+    } else if (strcmp(s, "--skip-tiled") == 0) {
+        *k = SKIP_TILED;
+        return true;
+    }
+    return false;
+}
+
+bool parse_fence_move(char *s, fence_move_t *m)
+{
     if (strcmp(s, "push") == 0) {
         *m = MOVE_PUSH;
         return true;
@@ -234,4 +291,33 @@ bool parse_fence_move(char *s, fence_move_t *m) {
         return true;
     }
     return false;
+}
+
+desktop_t *find_desktop(char *name)
+{
+    desktop_t *d = desk_head;
+    while (d != NULL) {
+        if (strcmp(d->name, name) == 0)
+            return d;
+        d = d->next;
+    }
+    return NULL;
+}
+
+void add_desktop(char *name)
+{
+    desktop_t *d = make_desktop(name);
+    desk_tail->next = d;
+    d->prev = desk_tail;
+    desk_tail = d;
+}
+
+void alternate_desktop(void)
+{
+    if (last_desk == NULL)
+        return;
+    desktop_t *tmp = desk;
+    desk = last_desk;
+    last_desk = tmp;
+    select_desktop(desk);
 }

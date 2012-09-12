@@ -21,6 +21,7 @@
 #include "common.h"
 #include "utils.h"
 #include "bspwm.h"
+#include "tree.h"
 #include "ewmh.h"
 
 void quit(void)
@@ -28,7 +29,6 @@ void quit(void)
     running = false;
 }
 
-// check for other WM and initiate events capture
 int register_events(void)
 {
     xcb_generic_error_t *err;
@@ -39,14 +39,6 @@ int register_events(void)
     return 0;
 }
 
-xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
-{
-    xcb_screen_iterator_t iter;
-    for (iter = xcb_setup_roots_iterator(xcb_get_setup(dpy)); iter.rem; --default_screen, xcb_screen_next(&iter))
-        if (default_screen == 0)
-            return iter.data;
-    return NULL;
-}
 
 void handle_zombie(int sig)
 {
@@ -59,9 +51,6 @@ void setup(int default_screen)
 {
     signal(SIGCHLD, handle_zombie);
     ewmh_init();
-    /* screen = ewmh.screens[default_screen]; */
-    /* screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data; */
-    /* screen = ewmh.screens[default_screen]; */
     screen = screen_of_display(dpy, default_screen);
     if (!screen)
         die("error: cannot aquire screen\n");
@@ -74,7 +63,7 @@ void setup(int default_screen)
     xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
     xcb_ewmh_set_wm_name(&ewmh, screen->root, LENGTH(WM_NAME), WM_NAME);
 
-    desk = make_desktop();
+    desk = make_desktop(DESK_NAME);
     last_desk = NULL;
     desk_head = desk;
     desk_tail = desk;
@@ -130,6 +119,8 @@ int main(void)
 
     load_settings();
     run_autostart();
+    update_root_dimensions();
+
     xcb_flush(dpy);
 
     while (running) {

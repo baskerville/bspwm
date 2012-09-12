@@ -6,6 +6,7 @@ int default_screen, screen_width, screen_height;
 unsigned int num_clients;
 unsigned int num_desktops;
 xcb_screen_t *screen;
+xcb_rectangle_t root_rect;
 split_mode_t split_mode;
 direction_t split_dir;
 desktop_t *desk;
@@ -18,7 +19,6 @@ bool running;
 /* enum { WM_PROTOCOLS, WM_DELETE_WINDOW, WM_COUNT }; */
 
 int register_events(void);
-xcb_screen_t *screen_of_display(xcb_connection_t *, int);
 /* void handle_zombie(int); */
 void setup(int);
 void quit(void);

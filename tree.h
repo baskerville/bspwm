@@ -25,6 +25,8 @@ void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
 void transfer_node(desktop_t *, desktop_t *, node_t *);
 void select_desktop(desktop_t *);
+void cycle_leaf(desktop_t *, node_t *, cycle_dir_t, skip_client_t);
 void update_vacant_state(node_t *);
+bool is_tiled(client_t *);
 
 #endif

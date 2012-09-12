@@ -19,6 +19,15 @@ void die(const char *errstr, ...) {
     exit(EXIT_FAILURE);
 }
 
+xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
+{
+    xcb_screen_iterator_t iter;
+    for (iter = xcb_setup_roots_iterator(xcb_get_setup(dpy)); iter.rem; --default_screen, xcb_screen_next(&iter))
+        if (default_screen == 0)
+            return iter.data;
+    return NULL;
+}
+
 window_location_t locate_window(xcb_window_t w)
 {
     node_t *n;
@@ -91,6 +100,9 @@ uint32_t get_color(char *col)
 
 void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
 {
+    if (n == NULL)
+        return;
+
     if (border_width < 1)
         return;
 
@@ -153,7 +165,6 @@ void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
 
     if (split_mode == MODE_MANUAL) {
         split_pos = (int16_t) n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width);
-        printf("%i\n", split_pos);
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
         switch (split_dir) {
             case DIR_UP:
@@ -187,7 +198,41 @@ void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
     xcb_free_pixmap(dpy, pix);
 }
 
-void toggle_fullscreen(node_t *n)
+void toggle_fullscreen(client_t *c)
 {
-    n = n;
+    if (c->fullscreen) {
+        c->fullscreen = false;
+        xcb_rectangle_t rect = c->rectangle;
+        window_border_width(c->window, border_width);
+        window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
+    } else {
+        c->fullscreen = true;
+        xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
+        if (geom != NULL) {
+            c->rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
+            free(geom);
+        }
+        window_border_width(c->window, 0);
+        window_move_resize(c->window, 0, 0, screen_width, screen_height);
+    }
+}
+
+void transfer_rectangle(xcb_rectangle_t rect, uint32_t *a)
+{
+    a[0] = rect.x;
+    a[1] = rect.y;
+    a[2] = rect.width;
+    a[3] = rect.height;
+}
+
+void window_border_width(xcb_window_t win, uint32_t bw)
+{
+    uint32_t values[] = {bw};
+    xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
+}
+
+void window_move_resize(xcb_window_t win, int16_t x, int16_t y, uint16_t w, uint16_t h)
+{
+    uint32_t values[] = {x, y, w, h};
+    xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT, values);
 }

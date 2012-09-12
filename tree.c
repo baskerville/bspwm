@@ -171,38 +171,28 @@ void dump_tree(node_t *n, char *rsp, int depth)
 
 void update_root_dimensions(void)
 {
-    xcb_rectangle_t root_rect = {
-        left_padding + window_gap,
-        top_padding + window_gap,
-        screen_width - (left_padding + right_padding + window_gap),
-        screen_height - (top_padding + bottom_padding + window_gap)
-    };
-    desktop_t *d = desk_head;
-    while (d != NULL) {
-        d->root->rectangle = root_rect;
-        d = d->next;
-    }
+    root_rect.x = left_padding + window_gap;
+    root_rect.y = top_padding + window_gap;
+    root_rect.width = screen_width - (left_padding + right_padding + window_gap);
+    root_rect.height = screen_height - (top_padding + bottom_padding + window_gap);
 }
 
 void apply_layout(desktop_t *d, node_t *n)
 {
     if (d == NULL || n == NULL)
         return;
-    if (is_leaf(n) && !n->client->floating && !n->client->fullscreen) {
-        uint32_t values[4];
+    if (is_leaf(n) && is_tiled(n->client)) {
         xcb_rectangle_t rect;
         if (d->layout == LAYOUT_TILED)
             rect = n->rectangle;
         else if (d->layout == LAYOUT_MONOCLE)
             rect = d->root->rectangle;
-        values[0] = rect.x;
-        values[1] = rect.y;
-        values[2] = rect.width - window_gap;
-        values[3] = rect.height - window_gap;
-        xcb_configure_window(dpy, n->client->window, MOVE_RESIZE_MASK, values);
+        window_move_resize(n->client->window, rect.x + border_width, rect.y + border_width, rect.width - window_gap - 2 * border_width, rect.height - window_gap - 2 * border_width);
     } else {
         xcb_rectangle_t rect = n->rectangle;
-        if (n->first_child->vacant || n->second_child->vacant) {
+        if (n->parent == NULL) {
+            rect = root_rect;
+        } else if (n->first_child->vacant || n->second_child->vacant) {
             n->first_child->rectangle = n->second_child->rectangle = rect;
         } else {
             unsigned int fence;
@@ -306,7 +296,7 @@ void focus_node(desktop_t *d, node_t *n)
         return;
 
     select_desktop(d);
-    
+
     if (d->focus != n) {
         draw_triple_border(d->focus, normal_border_color_pxl);
         draw_triple_border(n, active_border_color_pxl);
@@ -356,7 +346,7 @@ void remove_node(desktop_t *d, node_t *n)
 
 void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
 {
-    if (ds == NULL || dd == NULL || n == NULL)
+    if (n == NULL || ds == NULL || dd == NULL || dd == ds)
         return;
     unlink_node(ds, n);
     insert_node(dd, n);
@@ -392,6 +382,21 @@ void select_desktop(desktop_t *d)
     desk = d;
 }
 
+void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
+{
+    if (n == NULL)
+        return;
+
+    node_t *f = (dir == DIR_PREV ? prev_leaf(n) : next_leaf(n));
+
+    while (f != NULL) {
+        bool tiled = is_tiled(f->client);
+        if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled))
+            focus_node(d, f);
+        f = (dir == DIR_PREV ? prev_leaf(f) : next_leaf(f));
+    }
+}
+
 void update_vacant_state(node_t *n)
 {
     if (n == NULL)
@@ -399,4 +404,11 @@ void update_vacant_state(node_t *n)
     if (!is_leaf(n))
         n->vacant = (n->first_child->vacant && n->second_child->vacant);
     update_vacant_state(n->parent);
+}
+
+bool is_tiled(client_t *c)
+{
+    if (c == NULL)
+        return false;
+    return (!c->floating && !c->transient && !c->fullscreen);
 }

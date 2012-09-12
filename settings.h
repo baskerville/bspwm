@@ -49,13 +49,14 @@ uint32_t outer_border_color_pxl;
 uint32_t presel_border_color_pxl;
 uint32_t locked_border_color_pxl;
 
-int inner_border_width;
-int main_border_width;
-int outer_border_width;
+unsigned int inner_border_width;
+unsigned int main_border_width;
+unsigned int outer_border_width;
 
-int border_width;
+unsigned int border_width;
 
 int window_gap;
+
 int top_padding;
 int bottom_padding;
 int left_padding;

@@ -28,7 +28,8 @@ void handle_event(xcb_generic_event_t *evt)
             PUTS("button press event");
             break;
         default:
-            PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt));
+            /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
+            break;
     }
 }
 
@@ -76,6 +77,6 @@ void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
         if (action == XCB_EWMH_WM_STATE_TOGGLE
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
                 || (!fs && action == XCB_EWMH_WM_STATE_ADD))
-            toggle_fullscreen(n);
+            toggle_fullscreen(n->client);
     }
 }

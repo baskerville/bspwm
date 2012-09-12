@@ -52,8 +52,8 @@ typedef enum {
 
 typedef enum {
     DIR_LEFT,
-    DIR_UP,
     DIR_RIGHT,
+    DIR_UP,
     DIR_DOWN
 } direction_t;
 
@@ -63,6 +63,7 @@ typedef struct {
     bool transient;
     bool fullscreen;
     bool locked;
+    xcb_rectangle_t rectangle;
 } client_t;
 
 typedef struct node_t node_t;
@@ -113,7 +114,7 @@ typedef struct {
 } window_location_t;
 
 node_t *make_node(void);
-desktop_t *make_desktop(void);
+desktop_t *make_desktop(const char *);
 client_t *make_client(xcb_window_t);
 rule_t *make_rule(void);
 
