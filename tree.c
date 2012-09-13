@@ -457,12 +457,24 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
     }
 }
 
+void toggle_floating(node_t *n)
+{
+    if (n == NULL)
+        return;
+
+    client_t *c = n->client;
+    c->floating = !c->floating;
+    n->vacant = !n->vacant;
+    update_vacant_state(n->parent);
+}
+
+
 void update_vacant_state(node_t *n)
 {
     if (n == NULL)
         return;
-    if (!is_leaf(n))
-        n->vacant = (n->first_child->vacant && n->second_child->vacant);
+    /* n is not a leaf */
+    n->vacant = (n->first_child->vacant && n->second_child->vacant);
     update_vacant_state(n->parent);
 }
 
