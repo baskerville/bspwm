@@ -25,7 +25,7 @@ void process_message(char *msg, char *rsp)
         char *value = strtok(NULL, TOKEN_SEP);
         set_setting(name, value);
     } else if (strcmp(cmd, "dump") == 0) {
-        dump_tree(desk->root, rsp, 0);
+        dump_tree(desk, desk->root, rsp, 0);
     } else if (strcmp(cmd, "list") == 0) {
         list_desktops(rsp);
     } else if (strcmp(cmd, "close") == 0) {
@@ -50,7 +50,7 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "insert") == 0) {
-        static unsigned int fake_id = 0;
+        static unsigned int fake_id = 1;
         client_t *c = make_client((xcb_window_t) fake_id++);
         node_t *n = make_node();
         n->client = c;
@@ -85,6 +85,7 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_t *d = find_desktop(name);
             transfer_node(desk, d, desk->focus);
+            apply_layout(desk, desk->root, root_rect);
         }
     } else if (strcmp(cmd, "use") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);

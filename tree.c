@@ -153,7 +153,7 @@ void rotate_tree(node_t *n, rotate_t rot)
     rotate_tree(n->second_child, rot);
 }
 
-void dump_tree(node_t *n, char *rsp, int depth)
+void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 {
     if (n == NULL)
         return;
@@ -164,19 +164,21 @@ void dump_tree(node_t *n, char *rsp, int depth)
         strcat(rsp, "  ");
 
     if (is_leaf(n))
-        sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); 
+        /* sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */ 
+        sprintf(line, "C %X", n->client->window); 
     else
-        sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height);
+        /* sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */
+        sprintf(line, "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
 
     strcat(rsp, line);
 
-    if (n == desk->focus)
+    if (n == d->focus)
         strcat(rsp, " *\n");
     else
         strcat(rsp, "\n");
 
-    dump_tree(n->first_child, rsp, depth + 1);
-    dump_tree(n->second_child, rsp, depth + 1);
+    dump_tree(d, n->first_child, rsp, depth + 1);
+    dump_tree(d, n->second_child, rsp, depth + 1);
 }
 
 void list_desktops(char *rsp)
@@ -186,10 +188,10 @@ void list_desktops(char *rsp)
     while (d != NULL) {
         strcat(rsp, d->name);
         if (desk == d)
-            strcat(rsp, " *\n");
+            strcat(rsp, " @\n");
         else
             strcat(rsp, "\n");
-        dump_tree(d->root, rsp, 1);
+        dump_tree(d, d->root, rsp, 1);
         d = d->next;
     }
 }
@@ -380,7 +382,10 @@ void unlink_node(desktop_t *d, node_t *n)
         } else {
             d->root = b;
         }
+
+        n->parent = NULL;
         free(p);
+
         if (d->last_focus != NULL)
             d->focus = d->last_focus;
         else
@@ -444,8 +449,10 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
 
     while (f != NULL) {
         bool tiled = is_tiled(f->client);
-        if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled))
+        if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)) {
             focus_node(d, f);
+            return;
+        }
         f = (dir == DIR_PREV ? prev_leaf(f) : next_leaf(f));
     }
 }

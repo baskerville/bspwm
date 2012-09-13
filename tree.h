@@ -19,7 +19,7 @@ void rotate_tree(node_t *, rotate_t);
 void update_root_dimensions(void);
 void apply_layout(desktop_t *, node_t *, xcb_rectangle_t);
 void insert_node(desktop_t *, node_t *);
-void dump_tree(node_t *, char *, int);
+void dump_tree(desktop_t *, node_t *, char *, int);
 void list_desktops(char *);
 void focus_node(desktop_t *, node_t *);
 void unlink_node(desktop_t *, node_t *);
