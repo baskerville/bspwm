@@ -29,7 +29,6 @@ bool is_second_child(node_t *n)
 
 void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
-    PRINTF("SR %s\n", (chg == CHANGE_INCREASE ? "inc" : "dec"));
 }
 
 node_t *first_extrema(node_t *n)
@@ -341,15 +340,16 @@ void focus_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL || desk->focus == n)
         return;
 
-    select_desktop(d);
+    /* select_desktop(d); */
 
-    if (d->focus != n) {
-        draw_triple_border(d->focus, normal_border_color_pxl);
-        draw_triple_border(n, active_border_color_pxl);
-    }
+    /* if (d->focus != n) { */
+    /*     draw_triple_border(d->focus, normal_border_color_pxl); */
+    /*     draw_triple_border(n, active_border_color_pxl); */
+    /* } */
 
-    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+    /* xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME); */
 
+    d->last_focus = d->focus;
     d->focus = n;
 }
 
@@ -381,6 +381,11 @@ void unlink_node(desktop_t *d, node_t *n)
             d->root = b;
         }
         free(p);
+        if (d->last_focus != NULL)
+            d->focus = d->last_focus;
+        else
+            d->focus = (is_first_child(b) ? second_extrema(b) : first_extrema(b));
+        d->last_focus = NULL;
     }
 
 }

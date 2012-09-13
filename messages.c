@@ -28,6 +28,9 @@ void process_message(char *msg, char *rsp)
         dump_tree(desk->root, rsp, 0);
     } else if (strcmp(cmd, "list") == 0) {
         list_desktops(rsp);
+    } else if (strcmp(cmd, "close") == 0) {
+        remove_node(desk, desk->focus);
+        apply_layout(desk, desk->root, root_rect);
     } else if (strcmp(cmd, "rotate") == 0) {
         char *deg = strtok(NULL, TOKEN_SEP);
         if (deg != NULL) {
@@ -74,7 +77,7 @@ void process_message(char *msg, char *rsp)
             direction_t d;
             if (parse_fence_move(cmd, &m) && parse_direction(dir, &d)) {
                 move_fence(desk->focus, d, m);
-                apply_layout(desk, desk->focus, root_rect);
+                apply_layout(desk, desk->root, root_rect);
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
@@ -113,9 +116,7 @@ void process_message(char *msg, char *rsp)
             direction_t d;
             if (parse_direction(dir, &d)) {
                 node_t *n = find_neighbor(desk->focus, d);
-                if (n != NULL)
-                    desk->focus = n;
-                /* focus_node(desk, n); */
+                focus_node(desk, n);
             }
         }
     } else if (strcmp(cmd, "quit") == 0) {
@@ -304,7 +305,7 @@ bool parse_rotate(char *s, rotate_t *r)
     if (strcmp(s, "clockwise") == 0) {
         *r = ROTATE_CLOCKWISE;
         return true;
-    } else if (strcmp(s, "counter_cw") == 0) {
+    } else if (strcmp(s, "counter_clockwise") == 0) {
         *r = ROTATE_COUNTER_CLOCKWISE;
         return true;
     } else if (strcmp(s, "full_cycle") == 0) {
