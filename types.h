@@ -45,8 +45,8 @@ typedef enum {
 } cycle_dir_t;
 
 typedef enum {
-    ROTATE_CLOCK_WISE,
-    ROTATE_COUNTER_CW,
+    ROTATE_CLOCKWISE,
+    ROTATE_COUNTER_CLOCKWISE,
     ROTATE_FULL_CYCLE
 } rotate_t;
 

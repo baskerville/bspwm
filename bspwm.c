@@ -91,10 +91,10 @@ int main(void)
 
     setup(default_screen);
 
-    if (register_events() == 1) {
-        xcb_disconnect(dpy);
-        die("another WM is already running\n");
-    }
+    /* if (register_events() == 1) { */
+    /*     xcb_disconnect(dpy); */
+    /*     die("another WM is already running\n"); */
+    /* } */
 
     dpy_fd = xcb_get_file_descriptor(dpy);
 

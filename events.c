@@ -5,6 +5,7 @@
 #include "helpers.h"
 #include "types.h"
 #include "bspwm.h"
+#include "settings.h"
 #include "utils.h"
 #include "events.h"
 #include "tree.h"
@@ -50,9 +51,11 @@ void map_request(xcb_generic_event_t *evt)
     node_t *birth = make_node();
     birth->client = c;
     insert_node(desk, birth);
+    window_border_width(c->window, border_width);
+    apply_layout(desk, desk->root, root_rect);
+    xcb_map_window(dpy, c->window);
     if (takes_focus)
         focus_node(desk, birth);
-    xcb_map_window(dpy, c->window);
 }
 
 void client_message(xcb_generic_event_t *evt)

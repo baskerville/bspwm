@@ -26,18 +26,37 @@ void process_message(char *msg, char *rsp)
         set_setting(name, value);
     } else if (strcmp(cmd, "dump") == 0) {
         dump_tree(desk->root, rsp, 0);
+    } else if (strcmp(cmd, "list") == 0) {
+        list_desktops(rsp);
+    } else if (strcmp(cmd, "rotate") == 0) {
+        char *deg = strtok(NULL, TOKEN_SEP);
+        if (deg != NULL) {
+            rotate_t r;
+            if (parse_rotate(deg, &r)) {
+                rotate_tree(desk->root, r);
+                apply_layout(desk, desk->root, root_rect);
+            }
+        }
     } else if (strcmp(cmd, "layout") == 0) {
         char *lyt = strtok(NULL, TOKEN_SEP);
         if (lyt != NULL) {
             layout_t l;
             if (parse_layout(lyt, &l)) {
                 desk->layout = l;
-                apply_layout(desk, desk->root);
+                apply_layout(desk, desk->root, root_rect);
             }
         }
-    } else if (strcmp(cmd, "split_ratio") == 0) {
+    } else if (strcmp(cmd, "insert") == 0) {
+        static unsigned int fake_id = 0;
+        client_t *c = make_client((xcb_window_t) fake_id++);
+        node_t *n = make_node();
+        n->client = c;
+        insert_node(desk, n);
+        apply_layout(desk, desk->root, root_rect);
+    } else if (strcmp(cmd, "ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
-        split_ratio_cmd(value);
+        if (value != NULL && desk->focus != NULL)
+            sscanf(value, "%lf", &desk->focus->split_ratio);
     } else if (strcmp(cmd, "presel") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -45,7 +64,7 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 split_mode = MODE_MANUAL;
                 split_dir = d;
-                draw_triple_border(desk->focus, active_border_color_pxl);
+                /* draw_triple_border(desk->focus, active_border_color_pxl); */
             }
         }
     } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
@@ -53,8 +72,10 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             fence_move_t m;
             direction_t d;
-            if (parse_fence_move(cmd, &m) && parse_direction(dir, &d))
+            if (parse_fence_move(cmd, &m) && parse_direction(dir, &d)) {
                 move_fence(desk->focus, d, m);
+                apply_layout(desk, desk->focus, root_rect);
+            }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
@@ -86,17 +107,21 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             add_desktop(name);
         }
-    } else if (strcmp(cmd, "move") == 0) {
+    } else if (strcmp(cmd, "focus") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
                 node_t *n = find_neighbor(desk->focus, d);
-                focus_node(desk, n);
+                if (n != NULL)
+                    desk->focus = n;
+                /* focus_node(desk, n); */
             }
         }
     } else if (strcmp(cmd, "quit") == 0) {
         quit();
+    } else {
+        sprintf(rsp, "unknown command: %s\n", cmd);
     }
 }
 
@@ -201,15 +226,8 @@ void set_setting(char *name, char *value)
         strcpy(wm_name, value);
         return;
     }
-    apply_layout(desk, desk->root);
-}
 
-void split_ratio_cmd(char *value)
-{
-    if (value == NULL || desk == NULL || desk->focus == NULL)
-        return;
-
-    sscanf(value, "%lf", &desk->focus->split_ratio);
+    apply_layout(desk, desk->root, root_rect);
 }
 
 bool parse_bool(char *value, bool *b)
@@ -276,6 +294,21 @@ bool parse_skip_client(char *s, skip_client_t *k)
         return true;
     } else if (strcmp(s, "--skip-tiled") == 0) {
         *k = SKIP_TILED;
+        return true;
+    }
+    return false;
+}
+
+bool parse_rotate(char *s, rotate_t *r)
+{
+    if (strcmp(s, "clockwise") == 0) {
+        *r = ROTATE_CLOCKWISE;
+        return true;
+    } else if (strcmp(s, "counter_cw") == 0) {
+        *r = ROTATE_COUNTER_CLOCKWISE;
+        return true;
+    } else if (strcmp(s, "full_cycle") == 0) {
+        *r = ROTATE_FULL_CYCLE;
         return true;
     }
     return false;

@@ -1,7 +1,7 @@
 VERSION = 0.01
 
 CC      = gcc
-LIBS    = `pkg-config --libs xcb xcb-icccm xcb-ewmh lua cairo`
+LIBS    = `pkg-config --libs xcb xcb-ewmh xcb-icccm lua`
 CFLAGS  = -g -std=c99 -pedantic -Wall -Wextra
 LDFLAGS = $(LIBS)
 
@@ -10,13 +10,11 @@ BINPREFIX = $(PREFIX)/bin
 
 WM_SRC = bspwm.c events.c luautils.c messages.c ewmh.c settings.c utils.c tree.c types.c rules.c
 CL_SRC = bspc.c
-ST_SRC = bsps.c
 
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_OBJ = $(CL_SRC:.c=.o)
-ST_OBJ = $(ST_SRC:.c=.o)
 
-all: options clean bspwm bspc bsps
+all: options clean bspwm bspc
 
 options:
 #	@echo "bspwm build options:"
@@ -32,10 +30,6 @@ options:
 bspwm:  $(WM_OBJ)
 #	@echo CC -o $@
 	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS)
-
-bsps:   $(ST_OBJ)
-#	@echo CC -o $@
-	@$(CC) -o $@ $(ST_OBJ) $(LDFLAGS)
 
 bspc:   $(CL_OBJ)
 #	@echo CC -o $@

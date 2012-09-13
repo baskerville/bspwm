@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
@@ -28,6 +29,7 @@ bool is_second_child(node_t *n)
 
 void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
+    PRINTF("SR %s\n", (chg == CHANGE_INCREASE ? "inc" : "dec"));
 }
 
 node_t *first_extrema(node_t *n)
@@ -132,8 +134,8 @@ void rotate_tree(node_t *n, rotate_t rot)
 
     node_t *tmp;
 
-    if ((rot == ROTATE_CLOCK_WISE && n->split_type == TYPE_HORIZONTAL)
-            || (rot == ROTATE_COUNTER_CW && n->split_type == TYPE_VERTICAL)
+    if ((rot == ROTATE_CLOCKWISE && n->split_type == TYPE_HORIZONTAL)
+            || (rot == ROTATE_COUNTER_CLOCKWISE && n->split_type == TYPE_VERTICAL)
             || rot == ROTATE_FULL_CYCLE) {
         tmp = n->first_child;
         n->first_child = n->second_child;
@@ -157,16 +159,40 @@ void dump_tree(node_t *n, char *rsp, int depth)
     if (n == NULL)
         return;
 
-    for (int i = 0; i < depth; i++)
-        sprintf(rsp, "%s", "  ");
+    char line[MAXLEN];
 
-    if (n->client == NULL)
-        sprintf(rsp, "%s %.2f\n", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
+    for (int i = 0; i < depth; i++)
+        strcat(rsp, "  ");
+
+    if (is_leaf(n))
+        sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); 
     else
-        sprintf(rsp, "%X\n", n->client->window); 
+        sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height);
+
+    strcat(rsp, line);
+
+    if (n == desk->focus)
+        strcat(rsp, " *\n");
+    else
+        strcat(rsp, "\n");
 
     dump_tree(n->first_child, rsp, depth + 1);
     dump_tree(n->second_child, rsp, depth + 1);
+}
+
+void list_desktops(char *rsp)
+{
+    desktop_t *d = desk_head;
+
+    while (d != NULL) {
+        strcat(rsp, d->name);
+        if (desk == d)
+            strcat(rsp, " *\n");
+        else
+            strcat(rsp, "\n");
+        dump_tree(d->root, rsp, 1);
+        d = d->next;
+    }
 }
 
 void update_root_dimensions(void)
@@ -177,38 +203,48 @@ void update_root_dimensions(void)
     root_rect.height = screen_height - (top_padding + bottom_padding + window_gap);
 }
 
-void apply_layout(desktop_t *d, node_t *n)
+void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
 {
     if (d == NULL || n == NULL)
         return;
-    if (is_leaf(n) && is_tiled(n->client)) {
-        xcb_rectangle_t rect;
-        if (d->layout == LAYOUT_TILED)
-            rect = n->rectangle;
-        else if (d->layout == LAYOUT_MONOCLE)
-            rect = d->root->rectangle;
-        window_move_resize(n->client->window, rect.x + border_width, rect.y + border_width, rect.width - window_gap - 2 * border_width, rect.height - window_gap - 2 * border_width);
+
+    n->rectangle = rect;
+
+    if (is_leaf(n)) {
+        if (is_tiled(n->client)) {
+            xcb_rectangle_t r;
+            if (d->layout == LAYOUT_TILED)
+                r = rect;
+            else if (d->layout == LAYOUT_MONOCLE)
+                r = root_rect;
+            r.x += border_width;
+            r.y += border_width;
+            r.width -= (window_gap + 2 * border_width);
+            r.height -= (window_gap + 2 * border_width);
+            /* window_move_resize(n->client->window, r.x, r.y, r.width, r.height); */
+        }
     } else {
-        xcb_rectangle_t rect = n->rectangle;
-        if (n->parent == NULL) {
-            rect = root_rect;
-        } else if (n->first_child->vacant || n->second_child->vacant) {
-            n->first_child->rectangle = n->second_child->rectangle = rect;
+        xcb_rectangle_t first_rect;
+        xcb_rectangle_t second_rect;
+
+        if (n->first_child->vacant || n->second_child->vacant) {
+            first_rect = second_rect = rect;
         } else {
             unsigned int fence;
             if (n->split_type == TYPE_VERTICAL) {
                 fence = rect.width * n->split_ratio;
-                n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
-                n->second_child->rectangle = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+                first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+                second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
 
             } else if (n->split_type == TYPE_HORIZONTAL) {
                 fence = rect.height * n->split_ratio;
-                n->first_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
-                n->second_child->rectangle = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+                first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+                second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
             }
         }
-        apply_layout(d, n->first_child);
-        apply_layout(d, n->second_child);
+
+        apply_layout(d, n->first_child, first_rect);
+        apply_layout(d, n->second_child, second_rect);
     }
 }
 
@@ -250,15 +286,23 @@ void insert_node(desktop_t *d, node_t *n)
                     if (is_first_child(focus)) {
                         dad->first_child = n;
                         dad->second_child = fopar;
-                        rotate_tree(fopar, ROTATE_CLOCK_WISE);
+                        rotate_tree(fopar, ROTATE_CLOCKWISE);
                     } else {
                         dad->first_child = fopar;
                         dad->second_child = n;
-                        rotate_tree(fopar, ROTATE_COUNTER_CW);
+                        rotate_tree(fopar, ROTATE_COUNTER_CLOCKWISE);
                     }
                 }
                 break;
             case MODE_MANUAL:
+                if (fopar != NULL) {
+                    if (is_first_child(focus))
+                        fopar->first_child = dad;
+                    else
+                        fopar->second_child = dad;
+                }
+                dad->split_ratio = focus->split_ratio;
+                dad->parent = fopar;
                 focus->parent = dad;
                 switch (split_dir) {
                     case DIR_LEFT:
@@ -288,6 +332,8 @@ void insert_node(desktop_t *d, node_t *n)
                 break;
         }
     }
+
+    d->focus = n;
 }
 
 void focus_node(desktop_t *d, node_t *n)
@@ -303,6 +349,8 @@ void focus_node(desktop_t *d, node_t *n)
     }
 
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+
+    d->focus = n;
 }
 
 void unlink_node(desktop_t *d, node_t *n)
