@@ -73,7 +73,6 @@ void apply_settings(lua_State *L)
     string_expr(L, wm_name, "wm_name", WM_NAME);
 
     adaptive_window_border = bool_expr(L, "adaptive_window_border", ADAPTIVE_WINDOW_BORDER);
-    adaptive_window_gap = bool_expr(L, "adaptive_window_gap", ADAPTIVE_WINDOW_GAP);
 
     inner_border_width = int_expr(L, "inner_border_width", INNER_BORDER_WIDTH);
     main_border_width = int_expr(L, "main_border_width", MAIN_BORDER_WIDTH);

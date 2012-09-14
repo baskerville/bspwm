@@ -23,7 +23,6 @@
 #define LEFT_PADDING        0
 #define RIGHT_PADDING       0
 
-#define ADAPTIVE_WINDOW_GAP     true
 #define ADAPTIVE_WINDOW_BORDER  true
 
 #define NORMAL_BORDER_COLOR  "slategray"
@@ -63,7 +62,6 @@ int left_padding;
 int right_padding;
 
 bool adaptive_window_border;
-bool adaptive_window_gap;
 
 void load_settings(void);
 void run_autostart(void);

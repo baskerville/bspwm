@@ -6,5 +6,6 @@
 xcb_ewmh_connection_t ewmh;
 
 void ewmh_init(void);
+void ewmh_update_wm_name(void);
 
 #endif

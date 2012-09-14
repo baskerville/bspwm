@@ -20,24 +20,26 @@ void process_message(char *msg, char *rsp)
     if (strcmp(cmd, "get") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         get_setting(name, rsp);
+        return;
     } else if (strcmp(cmd, "set") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         char *value = strtok(NULL, TOKEN_SEP);
         set_setting(name, value);
+        return;
     } else if (strcmp(cmd, "dump") == 0) {
         dump_tree(desk, desk->root, rsp, 0);
+        return;
     } else if (strcmp(cmd, "list") == 0) {
         list_desktops(rsp);
+        return;
     } else if (strcmp(cmd, "close") == 0) {
         remove_node(desk, desk->focus);
-        apply_layout(desk, desk->root, root_rect);
     } else if (strcmp(cmd, "rotate") == 0) {
         char *deg = strtok(NULL, TOKEN_SEP);
         if (deg != NULL) {
             rotate_t r;
             if (parse_rotate(deg, &r)) {
                 rotate_tree(desk->root, r);
-                apply_layout(desk, desk->root, root_rect);
             }
         }
     } else if (strcmp(cmd, "layout") == 0) {
@@ -46,7 +48,6 @@ void process_message(char *msg, char *rsp)
             layout_t l;
             if (parse_layout(lyt, &l)) {
                 desk->layout = l;
-                apply_layout(desk, desk->root, root_rect);
             }
         }
     } else if (strcmp(cmd, "insert") == 0) {
@@ -55,7 +56,6 @@ void process_message(char *msg, char *rsp)
         node_t *n = make_node();
         n->client = c;
         insert_node(desk, n);
-        apply_layout(desk, desk->root, root_rect);
     } else if (strcmp(cmd, "ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
         if (value != NULL && desk->focus != NULL)
@@ -70,6 +70,7 @@ void process_message(char *msg, char *rsp)
                 /* draw_triple_border(desk->focus, active_border_color_pxl); */
             }
         }
+        return;
     } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -77,7 +78,6 @@ void process_message(char *msg, char *rsp)
             direction_t d;
             if (parse_fence_move(cmd, &m) && parse_direction(dir, &d)) {
                 move_fence(desk->focus, d, m);
-                apply_layout(desk, desk->root, root_rect);
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
@@ -85,7 +85,6 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_t *d = find_desktop(name);
             transfer_node(desk, d, desk->focus);
-            apply_layout(desk, desk->root, root_rect);
         }
     } else if (strcmp(cmd, "use") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
@@ -104,6 +103,7 @@ void process_message(char *msg, char *rsp)
                     cycle_leaf(desk, desk->focus, d, k);
             }
         }
+        return;
     } else if (strcmp(cmd, "alternate") == 0) {
         alternate_desktop();
     } else if (strcmp(cmd, "add") == 0) {
@@ -111,6 +111,7 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             add_desktop(name);
         }
+        return;
     } else if (strcmp(cmd, "focus") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -120,54 +121,16 @@ void process_message(char *msg, char *rsp)
                 focus_node(desk, n);
             }
         }
+        return;
     } else if (strcmp(cmd, "quit") == 0) {
         quit();
+        return;
     } else {
         sprintf(rsp, "unknown command: %s\n", cmd);
-    }
-}
-
-void get_setting(char *name, char* rsp)
-{
-    if (name == NULL)
         return;
+    }
 
-    if (strcmp(name, "inner_border_width") == 0)
-        sprintf(rsp, "%u\n", inner_border_width);
-    else if (strcmp(name, "main_border_width") == 0)
-        sprintf(rsp, "%u\n", main_border_width);
-    else if (strcmp(name, "outer_border_width") == 0)
-        sprintf(rsp, "%u\n", outer_border_width);
-    else if (strcmp(name, "border_width") == 0)
-        sprintf(rsp, "%u\n", border_width);
-    else if (strcmp(name, "window_gap") == 0)
-        sprintf(rsp, "%i\n", window_gap);
-    else if (strcmp(name, "left_padding") == 0)
-        sprintf(rsp, "%i\n", left_padding);
-    else if (strcmp(name, "right_padding") == 0)
-        sprintf(rsp, "%i\n", right_padding);
-    else if (strcmp(name, "top_padding") == 0)
-        sprintf(rsp, "%i\n", top_padding);
-    else if (strcmp(name, "bottom_padding") == 0)
-        sprintf(rsp, "%i\n", bottom_padding);
-    else if (strcmp(name, "normal_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", normal_border_color, normal_border_color_pxl);
-    else if (strcmp(name, "active_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", active_border_color, active_border_color_pxl);
-    else if (strcmp(name, "inner_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", inner_border_color, inner_border_color_pxl);
-    else if (strcmp(name, "outer_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", outer_border_color, outer_border_color_pxl);
-    else if (strcmp(name, "presel_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", presel_border_color, presel_border_color_pxl);
-    else if (strcmp(name, "locked_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", locked_border_color, locked_border_color_pxl);
-    else if (strcmp(name, "wm_name") == 0)
-        sprintf(rsp, "%s\n", wm_name);
-    else if (strcmp(name, "adaptive_window_border") == 0)
-        sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_border));
-    else if (strcmp(name, "adaptive_window_gap") == 0)
-        sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_gap));
+    apply_layout(desk, desk->root, root_rect);
 }
 
 void set_setting(char *name, char *value)
@@ -220,10 +183,6 @@ void set_setting(char *name, char *value)
         bool b;
         if (parse_bool(value, &b))
             adaptive_window_border = b;
-    } else if (strcmp(name, "adaptive_window_gap") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            adaptive_window_gap = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strcpy(wm_name, value);
         return;
@@ -231,6 +190,48 @@ void set_setting(char *name, char *value)
 
     apply_layout(desk, desk->root, root_rect);
 }
+
+void get_setting(char *name, char* rsp)
+{
+    if (name == NULL)
+        return;
+
+    if (strcmp(name, "inner_border_width") == 0)
+        sprintf(rsp, "%u\n", inner_border_width);
+    else if (strcmp(name, "main_border_width") == 0)
+        sprintf(rsp, "%u\n", main_border_width);
+    else if (strcmp(name, "outer_border_width") == 0)
+        sprintf(rsp, "%u\n", outer_border_width);
+    else if (strcmp(name, "border_width") == 0)
+        sprintf(rsp, "%u\n", border_width);
+    else if (strcmp(name, "window_gap") == 0)
+        sprintf(rsp, "%i\n", window_gap);
+    else if (strcmp(name, "left_padding") == 0)
+        sprintf(rsp, "%i\n", left_padding);
+    else if (strcmp(name, "right_padding") == 0)
+        sprintf(rsp, "%i\n", right_padding);
+    else if (strcmp(name, "top_padding") == 0)
+        sprintf(rsp, "%i\n", top_padding);
+    else if (strcmp(name, "bottom_padding") == 0)
+        sprintf(rsp, "%i\n", bottom_padding);
+    else if (strcmp(name, "normal_border_color") == 0)
+        sprintf(rsp, "%s (0x%06X)\n", normal_border_color, normal_border_color_pxl);
+    else if (strcmp(name, "active_border_color") == 0)
+        sprintf(rsp, "%s (0x%06X)\n", active_border_color, active_border_color_pxl);
+    else if (strcmp(name, "inner_border_color") == 0)
+        sprintf(rsp, "%s (0x%06X)\n", inner_border_color, inner_border_color_pxl);
+    else if (strcmp(name, "outer_border_color") == 0)
+        sprintf(rsp, "%s (0x%06X)\n", outer_border_color, outer_border_color_pxl);
+    else if (strcmp(name, "presel_border_color") == 0)
+        sprintf(rsp, "%s (0x%06X)\n", presel_border_color, presel_border_color_pxl);
+    else if (strcmp(name, "locked_border_color") == 0)
+        sprintf(rsp, "%s (0x%06X)\n", locked_border_color, locked_border_color_pxl);
+    else if (strcmp(name, "wm_name") == 0)
+        sprintf(rsp, "%s\n", wm_name);
+    else if (strcmp(name, "adaptive_window_border") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_border));
+}
+
 
 bool parse_bool(char *value, bool *b)
 {

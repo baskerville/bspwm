@@ -61,7 +61,6 @@ void setup(int default_screen)
     xcb_atom_t net_atoms[] = {ewmh._NET_SUPPORTED, ewmh._NET_WM_STATE_FULLSCREEN, ewmh._NET_WM_STATE, ewmh._NET_ACTIVE_WINDOW};
 
     xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
-    xcb_ewmh_set_wm_name(&ewmh, screen->root, LENGTH(WM_NAME), WM_NAME);
 
     desk = make_desktop(DESK_NAME);
     last_desk = NULL;
@@ -119,6 +118,7 @@ int main(void)
 
     load_settings();
     run_autostart();
+    ewmh_update_wm_name();
     update_root_dimensions();
 
     xcb_flush(dpy);

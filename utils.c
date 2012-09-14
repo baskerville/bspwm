@@ -59,41 +59,31 @@ bool is_managed(xcb_window_t w)
     return (l.desktop != NULL && l.node != NULL);
 }
 
-uint32_t color_pixel(char *hex)
-{
-    char strgroups[3][3]  = {{hex[1], hex[2], '\0'}, {hex[3], hex[4], '\0'}, {hex[5], hex[6], '\0'}};
-    uint16_t rgb16[3] = {(strtol(strgroups[0], NULL, 16)), (strtol(strgroups[1], NULL, 16)), (strtol(strgroups[2], NULL, 16))};
-    return (rgb16[0] << 16) + (rgb16[1] << 8) + rgb16[2];
-}
-
 uint32_t get_color(char *col)
 {
     xcb_colormap_t map = screen->default_colormap;
-    xcb_alloc_color_reply_t *rpl;
-    xcb_alloc_named_color_reply_t *rpln;
-    uint32_t rgb, pxl;
-    uint16_t r, g, b;
+    uint32_t pxl = 0;
 
     if (col[0] == '#') {
-        rgb = color_pixel(col);
-        r = rgb >> 16;
-        g = rgb >> 8 & 0xFF;
-        b = rgb & 0xFF;
-        rpl = xcb_alloc_color_reply(dpy, xcb_alloc_color(dpy, map, r * 257, g * 257, b * 257), NULL);
-        if (rpl != NULL) {
-            pxl = rpl->pixel;
-            free(rpl);
+        unsigned int red, green, blue;
+        if (sscanf(col + 1, "%02x%02x%02x", &red, &green, &blue) == 3) {
+            /* 2**16 - 1 == 0xffff and 0x101 * 0xij == 0xijij */
+            red *= 0x101;
+            green *= 0x101;
+            blue *= 0x101;
+            xcb_alloc_color_reply_t *reply = xcb_alloc_color_reply(dpy, xcb_alloc_color(dpy, map, red, green, blue), NULL);
+            if (reply != NULL) {
+                pxl = reply->pixel;
+                free(reply);
+            }
         }
     } else {
-        rpln = xcb_alloc_named_color_reply(dpy, xcb_alloc_named_color(dpy, map, strlen(col), col), NULL);
-        if (rpln != NULL) {
-            pxl = rpln->pixel;
-            free(rpln);
+        xcb_alloc_named_color_reply_t *reply = xcb_alloc_named_color_reply(dpy, xcb_alloc_named_color(dpy, map, strlen(col), col), NULL);
+        if (reply != NULL) {
+            pxl = reply->pixel;
+            free(reply);
         }
     }
-
-    /* if (!rpl) */
-    /*     die("error: cannot allocate color '%s'\n", col); */
 
     return pxl;
 }
