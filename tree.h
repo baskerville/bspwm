@@ -21,12 +21,15 @@ void apply_layout(desktop_t *, node_t *, xcb_rectangle_t);
 void insert_node(desktop_t *, node_t *);
 void dump_tree(desktop_t *, node_t *, char *, int);
 void list_desktops(char *);
-void focus_node(desktop_t *, node_t *);
+void focus_node(desktop_t *, node_t *, bool);
 void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
+void swap_nodes(node_t *, node_t *);
+void close_window(desktop_t *, node_t *);
 void transfer_node(desktop_t *, desktop_t *, node_t *);
 void select_desktop(desktop_t *);
 void cycle_leaf(desktop_t *, node_t *, cycle_dir_t, skip_client_t);
+void toggle_floating(node_t *);
 void update_vacant_state(node_t *);
 bool is_tiled(client_t *);
 

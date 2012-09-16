@@ -3,9 +3,14 @@
 
 #include <xcb/xcb_ewmh.h>
 
-xcb_ewmh_connection_t ewmh;
+xcb_ewmh_connection_t *ewmh;
 
 void ewmh_init(void);
 void ewmh_update_wm_name(void);
+void ewmh_update_active_window(void);
+void ewmh_update_number_of_desktops(void);
+void ewmh_update_current_desktop(void);
+void ewmh_update_desktop_names(void);
+void ewmh_update_client_list(void);
 
 #endif

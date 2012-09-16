@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "types.h"
 #include "bspwm.h"
+#include "ewmh.h"
 #include "tree.h"
 
 bool is_leaf(node_t *n)
@@ -25,7 +26,6 @@ bool is_second_child(node_t *n)
 {
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
-
 
 void change_split_ratio(node_t *n, value_change_t chg) {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
@@ -125,7 +125,6 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
         change_split_ratio(fence, CHANGE_DECREASE);
 }
 
-
 void rotate_tree(node_t *n, rotate_t rot)
 {
     if (n == NULL || is_leaf(n))
@@ -165,10 +164,10 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     if (is_leaf(n))
         /* sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */ 
-        sprintf(line, "C %X", n->client->window); 
+        sprintf(line, "C %X (%s%s) [%i %i %u %u]", n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->rectangle.x, n->client->rectangle.y, n->client->rectangle.width, n->client->rectangle.height); 
     else
         /* sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */
-        sprintf(line, "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
+        sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height);
 
     strcat(rsp, line);
 
@@ -212,18 +211,22 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
     n->rectangle = rect;
 
     if (is_leaf(n)) {
+        xcb_rectangle_t r;
         if (is_tiled(n->client)) {
-            xcb_rectangle_t r;
             if (d->layout == LAYOUT_TILED)
                 r = rect;
             else if (d->layout == LAYOUT_MONOCLE)
                 r = root_rect;
-            r.x += border_width;
-            r.y += border_width;
             r.width -= (window_gap + 2 * border_width);
             r.height -= (window_gap + 2 * border_width);
-            /* window_move_resize(n->client->window, r.x, r.y, r.width, r.height); */
+        } else {
+            r = n->client->rectangle;
         }
+        window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
+        window_border_width(n->client->window, border_width);
+        draw_triple_border(n, (n == d->focus ? active_border_color_pxl : normal_border_color_pxl));
+        if (d->layout == LAYOUT_MONOCLE && n == d->focus)
+            window_raise(n->client->window);
     } else {
         xcb_rectangle_t first_rect;
         xcb_rectangle_t second_rect;
@@ -333,23 +336,29 @@ void insert_node(desktop_t *d, node_t *n)
                 break;
         }
     }
-
-    d->focus = n;
 }
 
-void focus_node(desktop_t *d, node_t *n)
+void focus_node(desktop_t *d, node_t *n, bool draw_border)
 {
     if (d == NULL || n == NULL || desk->focus == n)
         return;
 
-    /* select_desktop(d); */
+    if (desk->focus != NULL && desk->focus->client->fullscreen)
+        return;
 
-    /* if (d->focus != n) { */
-    /*     draw_triple_border(d->focus, normal_border_color_pxl); */
-    /*     draw_triple_border(n, active_border_color_pxl); */
-    /* } */
+    split_mode = MODE_AUTOMATIC;
+    PRINTF("focus_node %x\n", n->client->window);
+    select_desktop(d);
 
-    /* xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME); */
+    if (draw_border && d->focus != n) {
+        draw_triple_border(d->focus, normal_border_color_pxl);
+        draw_triple_border(n, active_border_color_pxl);
+    }
+
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+
+    if (!is_tiled(n->client))
+        window_raise(n->client->window);
 
     d->last_focus = d->focus;
     d->focus = n;
@@ -400,6 +409,53 @@ void remove_node(desktop_t *d, node_t *n)
     unlink_node(d, n);
     free(n->client);
     free(n);
+    num_clients--;
+}
+
+void swap_nodes(node_t *n1, node_t *n2)
+{
+    if (n1 == NULL || n2 == NULL || n1 == n2)
+        return;
+
+    /* (n1 and n2 are leaves) */
+    node_t *pn1 = n1->parent;
+    node_t *pn2 = n2->parent;
+
+    if (pn1 != NULL) {
+        if (is_first_child(n1))
+            pn1->first_child = n2;
+        else
+            pn1->second_child = n2;
+    }
+
+    if (pn2 != NULL) {
+        if (is_first_child(n2))
+            pn2->first_child = n1;
+        else
+            pn2->second_child = n1;
+    }
+
+    n1->parent = pn2;
+    n2->parent = pn1;
+}
+
+void close_window(desktop_t *d, node_t *n)
+{
+    if (n == NULL || n->client->locked)
+        return;
+    xcb_window_t win = n->client->window;
+    xcb_client_message_event_t e;
+
+    e.response_type = XCB_CLIENT_MESSAGE;
+    e.window = win;
+    e.format = 32;
+    e.sequence = 0;
+    e.type = ewmh->WM_PROTOCOLS;
+    e.data.data32[0] = WM_DELETE_WINDOW;
+    e.data.data32[1] = XCB_CURRENT_TIME;
+
+    xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
+    remove_node(d, n);
 }
 
 void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
@@ -450,7 +506,7 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
     while (f != NULL) {
         bool tiled = is_tiled(f->client);
         if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)) {
-            focus_node(d, f);
+            focus_node(d, f, true);
             return;
         }
         f = (dir == DIR_PREV ? prev_leaf(f) : next_leaf(f));
@@ -459,15 +515,16 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
 
 void toggle_floating(node_t *n)
 {
-    if (n == NULL)
+    if (n == NULL || n->client->transient)
         return;
 
     client_t *c = n->client;
     c->floating = !c->floating;
     n->vacant = !n->vacant;
     update_vacant_state(n->parent);
+    if (c->floating)
+        window_raise(c->window);
 }
-
 
 void update_vacant_state(node_t *n)
 {

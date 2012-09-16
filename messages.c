@@ -7,6 +7,7 @@
 #include "common.h"
 #include "types.h"
 #include "bspwm.h"
+#include "ewmh.h"
 #include "utils.h"
 #include "tree.h"
 
@@ -56,6 +57,20 @@ void process_message(char *msg, char *rsp)
         node_t *n = make_node();
         n->client = c;
         insert_node(desk, n);
+    } else if (strcmp(cmd, "shift") == 0) {
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            direction_t d;
+            if (parse_direction(dir, &d)) {
+                swap_nodes(desk->focus, find_neighbor(desk->focus, d));
+            }
+        }
+    } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
+        if (desk->focus != NULL)
+            toggle_fullscreen(desk->focus->client);
+        return;
+    } else if (strcmp(cmd, "toggle_floating") == 0) {
+        toggle_floating(desk->focus);
     } else if (strcmp(cmd, "ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
         if (value != NULL && desk->focus != NULL)
@@ -67,10 +82,19 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 split_mode = MODE_MANUAL;
                 split_dir = d;
-                /* draw_triple_border(desk->focus, active_border_color_pxl); */
+                draw_triple_border(desk->focus, active_border_color_pxl);
             }
         }
         return;
+    } else if (strcmp(cmd, "locate") == 0) {
+        char *wid = strtok(NULL, TOKEN_SEP);
+        if (wid != NULL) {
+            window_location_t loc;
+            xcb_window_t win = atoi(wid);
+            if (locate_window(win, &loc))
+                sprintf(rsp, "%s", loc.desktop->name);
+
+        }
     } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -118,7 +142,7 @@ void process_message(char *msg, char *rsp)
             direction_t d;
             if (parse_direction(dir, &d)) {
                 node_t *n = find_neighbor(desk->focus, d);
-                focus_node(desk, n);
+                focus_node(desk, n, true);
             }
         }
         return;
@@ -149,6 +173,7 @@ void set_setting(char *name, char *value)
         border_width = inner_border_width + main_border_width + outer_border_width;
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
+        update_root_dimensions();
     } else if (strcmp(name, "left_padding") == 0) {
         sscanf(value, "%i", &left_padding);
         update_root_dimensions();
@@ -185,6 +210,7 @@ void set_setting(char *name, char *value)
             adaptive_window_border = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strcpy(wm_name, value);
+        ewmh_update_wm_name();
         return;
     }
 
@@ -346,6 +372,9 @@ void add_desktop(char *name)
     desk_tail->next = d;
     d->prev = desk_tail;
     desk_tail = d;
+    num_desktops++;
+    ewmh_update_number_of_desktops();
+    /* ewmh_update_desktop_names(); */
 }
 
 void alternate_desktop(void)

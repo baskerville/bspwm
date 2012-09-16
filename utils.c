@@ -10,6 +10,7 @@
 #include "bspwm.h"
 #include "settings.h"
 #include "utils.h"
+#include "ewmh.h"
 
 void die(const char *errstr, ...) {
     va_list ap;
@@ -28,35 +29,28 @@ xcb_screen_t *screen_of_display(xcb_connection_t *dpy, int default_screen)
     return NULL;
 }
 
-window_location_t locate_window(xcb_window_t w)
+bool locate_window(xcb_window_t win, window_location_t *loc)
 {
     node_t *n;
     desktop_t *d = desk_head;
-    window_location_t l = {NULL, NULL};
 
     if (d == NULL)
-        return l;
+        return false;
 
     while (d != NULL) {
         n = first_extrema(d->root);
         while (n != NULL) {
-            if (n->client->window == w) {
-                l.desktop = d;
-                l.node = n;
-                return l;
+            if (n->client->window == win) {
+                loc->desktop = d;
+                loc->node = n;
+                return true;
             }
             n = next_leaf(n);
         }
         d = d->next;
     }
 
-    return l;
-}
-
-bool is_managed(xcb_window_t w)
-{
-    window_location_t l = locate_window(w);
-    return (l.desktop != NULL && l.node != NULL);
+    return false;
 }
 
 uint32_t get_color(char *col)
@@ -107,8 +101,6 @@ void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
     uint16_t full_width = width + 2 * border_width;
     uint16_t full_height = height + 2 * border_width;
 
-    uint16_t split_pos;
-
     xcb_rectangle_t inner_rectangles[] =
     {
         { width, 0, 2 * border_width, height + 2 * border_width },
@@ -153,29 +145,29 @@ void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
         xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(outer_rectangles), outer_rectangles);
     }
 
-    if (split_mode == MODE_MANUAL) {
-        split_pos = (int16_t) n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width);
+    if (split_mode == MODE_MANUAL && main_border_color_pxl == active_border_color_pxl) {
+        uint16_t fence = (int16_t) (n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width));
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
         switch (split_dir) {
             case DIR_UP:
-                presel_rectangles[0] = (xcb_rectangle_t) {width, 0, 2 * border_width, split_pos};
+                presel_rectangles[0] = (xcb_rectangle_t) {width, 0, 2 * border_width, fence};
                 presel_rectangles[1] = (xcb_rectangle_t) {0, height + border_width, full_width, border_width};
                 break;
             case DIR_DOWN:
-                presel_rectangles[0] = (xcb_rectangle_t) {width, split_pos + 1, 2 * border_width, height + border_width - (split_pos + 1)};
-                presel_rectangles[1] = (xcb_rectangle_t) {0, height + border_width, full_width, border_width};
+                presel_rectangles[0] = (xcb_rectangle_t) {width, fence + 1, 2 * border_width, height + border_width - (fence + 1)};
+                presel_rectangles[1] = (xcb_rectangle_t) {0, height, full_width, border_width};
                 break;
             case DIR_LEFT:
-                presel_rectangles[0] = (xcb_rectangle_t) {0, height, split_pos, 2 * border_width};
+                presel_rectangles[0] = (xcb_rectangle_t) {0, height, fence, 2 * border_width};
                 presel_rectangles[1] = (xcb_rectangle_t) {width + border_width, 0, border_width, full_height};
                 break;
             case DIR_RIGHT:
-                presel_rectangles[0] = (xcb_rectangle_t) {split_pos + 1, height, width + border_width - (split_pos + 1), 2 * border_width};
+                presel_rectangles[0] = (xcb_rectangle_t) {fence + 1, height, width + border_width - (fence + 1), 2 * border_width};
                 presel_rectangles[1] = (xcb_rectangle_t) {width, 0, border_width, full_height};
                 break;
         }
         xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &presel_border_color_pxl);
-        xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(presel_rectangles), presel_rectangles);
+        xcb_poly_fill_rectangle(dpy, pix, gc, 2, presel_rectangles);
         free(presel_rectangles);
     }
 
@@ -192,6 +184,8 @@ void toggle_fullscreen(client_t *c)
 {
     if (c->fullscreen) {
         c->fullscreen = false;
+        xcb_atom_t values[] = {XCB_NONE};
+        xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         xcb_rectangle_t rect = c->rectangle;
         window_border_width(c->window, border_width);
         window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
@@ -202,6 +196,8 @@ void toggle_fullscreen(client_t *c)
             c->rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
             free(geom);
         }
+        xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
+        xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         window_border_width(c->window, 0);
         window_move_resize(c->window, 0, 0, screen_width, screen_height);
     }
@@ -225,4 +221,10 @@ void window_move_resize(xcb_window_t win, int16_t x, int16_t y, uint16_t w, uint
 {
     uint32_t values[] = {x, y, w, h};
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT, values);
+}
+
+void window_raise(xcb_window_t win)
+{
+    uint32_t values[] = {XCB_STACK_MODE_ABOVE};
+    xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }

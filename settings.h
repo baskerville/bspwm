@@ -25,7 +25,7 @@
 
 #define ADAPTIVE_WINDOW_BORDER  true
 
-#define NORMAL_BORDER_COLOR  "slategray"
+#define NORMAL_BORDER_COLOR  "gray22"
 #define ACTIVE_BORDER_COLOR  "lightslategray"
 #define INNER_BORDER_COLOR   "darkslategray"
 #define OUTER_BORDER_COLOR   "darkslategray"

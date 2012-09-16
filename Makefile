@@ -37,16 +37,15 @@ bspc:   $(CL_OBJ)
 
 clean:
 #	@echo "cleaning"
-	@rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c,s}
+	@rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}
 
 install: all
 #	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
 	@install -D -m 755 bspwm $(DESTDIR)$(BINPREFIX)/bspwm
 	@install -D -m 755 bspc $(DESTDIR)$(BINPREFIX)/bspc
-	@install -D -m 755 bsps $(DESTDIR)$(BINPREFIX)/bsps
 
 uninstall:
 #	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
-	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c,s}
+	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c}
 
 .PHONY: all options clean install uninstall

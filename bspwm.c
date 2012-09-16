@@ -39,7 +39,6 @@ int register_events(void)
     return 0;
 }
 
-
 void handle_zombie(int sig)
 {
     while (waitpid(-1, NULL, WNOHANG) > 0)
@@ -58,14 +57,25 @@ void setup(int default_screen)
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
-    xcb_atom_t net_atoms[] = {ewmh._NET_SUPPORTED, ewmh._NET_WM_STATE_FULLSCREEN, ewmh._NET_WM_STATE, ewmh._NET_ACTIVE_WINDOW};
+    xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED, ewmh->_NET_WM_STATE_FULLSCREEN, ewmh->_NET_WM_STATE, ewmh->_NET_ACTIVE_WINDOW};
 
-    xcb_ewmh_set_supported(&ewmh, default_screen, LENGTH(net_atoms), net_atoms);
+    xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
+
+    xcb_intern_atom_reply_t *reply;
+    reply = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW"), NULL);
+    if (reply) {
+        WM_DELETE_WINDOW = reply->atom;
+        free(reply);
+    }
 
     desk = make_desktop(DESK_NAME);
     last_desk = NULL;
     desk_head = desk;
     desk_tail = desk;
+    num_desktops++;
+    /* ewmh_update_number_of_desktops(); */
+    /* ewmh_update_desktop_names(); */
+
     rule_head = make_rule();
 
     split_mode = MODE_AUTOMATIC;
@@ -90,10 +100,10 @@ int main(void)
 
     setup(default_screen);
 
-    /* if (register_events() == 1) { */
-    /*     xcb_disconnect(dpy); */
-    /*     die("another WM is already running\n"); */
-    /* } */
+    if (register_events() == 1) {
+        xcb_disconnect(dpy);
+        die("another WM is already running\n");
+    }
 
     dpy_fd = xcb_get_file_descriptor(dpy);
 
@@ -121,9 +131,9 @@ int main(void)
     ewmh_update_wm_name();
     update_root_dimensions();
 
-    xcb_flush(dpy);
-
     while (running) {
+
+        xcb_flush(dpy);
 
         FD_ZERO(&descriptors);
         FD_SET(sock_fd, &descriptors);
@@ -133,8 +143,12 @@ int main(void)
 
             if (FD_ISSET(dpy_fd, &descriptors)) {
                 while ((event = xcb_poll_for_event(dpy)) != NULL) {
+                    PUTS("got one X event\n");
                     handle_event(event);
                     free(event);
+                }
+                if (xcb_connection_has_error(dpy)) {
+                    die("connection has errors\n");
                 }
             }
 
@@ -152,6 +166,8 @@ int main(void)
     }
 
     close(sock_fd);
+    xcb_ewmh_connection_wipe(ewmh);
+    free(ewmh);
     xcb_disconnect(dpy);
     return 0;
 }

@@ -60,9 +60,9 @@ typedef enum {
 typedef struct {
     xcb_window_t window;
     bool floating;
-    bool transient;
+    bool transient; /* transient window are always floating */
     bool fullscreen;
-    bool locked;
+    bool locked; /* protects window from being closed */
     xcb_rectangle_t rectangle;
 } client_t;
 

@@ -4,7 +4,7 @@
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
 unsigned int num_clients;
-unsigned int num_desktops;
+uint32_t num_desktops;
 xcb_screen_t *screen;
 xcb_rectangle_t root_rect;
 split_mode_t split_mode;
@@ -15,11 +15,10 @@ desktop_t *desk_head;
 desktop_t *desk_tail;
 rule_t *rule_head;
 bool running;
-
-/* enum { WM_PROTOCOLS, WM_DELETE_WINDOW, WM_COUNT }; */
+xcb_atom_t WM_DELETE_WINDOW;
 
 int register_events(void);
-/* void handle_zombie(int); */
+void handle_zombie(int);
 void setup(int);
 void quit(void);
 
