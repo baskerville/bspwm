@@ -8,8 +8,10 @@
 #include "bspwm.h"
 #include "settings.h"
 #include "utils.h"
+#include "window.h"
 #include "events.h"
 #include "tree.h"
+#include "rules.h"
 #include "ewmh.h"
 
 void handle_event(xcb_generic_event_t *evt)
@@ -39,7 +41,7 @@ void handle_event(xcb_generic_event_t *evt)
             PUTS("button press\n");
             break;
         default:
-            /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
+            PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt));
             break;
     }
 }
@@ -58,7 +60,6 @@ void map_request(xcb_generic_event_t *evt)
     free(wa);
 
     client_t *c = make_client(win);
-    num_clients++;
 
     xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
 
@@ -70,25 +71,8 @@ void map_request(xcb_generic_event_t *evt)
     }
 
     bool floating = false, transient = false, takes_focus = true;
-    xcb_ewmh_get_atoms_reply_t win_type;
 
-    if (xcb_ewmh_get_wm_window_type_reply(ewmh, xcb_ewmh_get_wm_window_type(ewmh, win), &win_type, NULL) == 1) {
-        for (unsigned int i = 0; i < win_type.atoms_len; i++) {
-            xcb_atom_t a = win_type.atoms[i];
-            if (a == ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR
-                    || a == ewmh->_NET_WM_WINDOW_TYPE_UTILITY) {
-                takes_focus = false;
-            } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
-                floating = true;
-            }
-        }
-    }
-
-    /* xcb_ewmh_get_atoms_reply_wipe(&win_type); */
-
-    xcb_window_t transient_for = XCB_NONE;
-    xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
-    transient = (transient_for == XCB_NONE ? false : true);
+    handle_rules(win, &floating, &transient, &takes_focus);
 
     if (c->transient)
         floating = true;
@@ -100,13 +84,19 @@ void map_request(xcb_generic_event_t *evt)
     if (floating)
         toggle_floating(birth);
 
+    if (desk->focus != NULL && desk->focus->client->fullscreen)
+        toggle_fullscreen(desk->focus->client);
+
     c->transient = transient;
 
     if (takes_focus)
         focus_node(desk, birth, false);
 
     apply_layout(desk, desk->root, root_rect);
+
     xcb_map_window(dpy, c->window);
+    xcb_flush(dpy);
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 }
 
 void configure_request(xcb_generic_event_t *evt)
@@ -114,6 +104,7 @@ void configure_request(xcb_generic_event_t *evt)
     xcb_configure_request_event_t *e = (xcb_configure_request_event_t *) evt;
     window_location_t loc;
     bool is_managed = locate_window(e->window, &loc);
+
     if (!is_managed || (is_managed && !is_tiled(loc.node->client))) {
         uint16_t mask = 0;
         uint32_t values[7];
@@ -164,6 +155,9 @@ void configure_request(xcb_generic_event_t *evt)
 
         xcb_configure_window(dpy, e->window, mask, values);
     }
+
+    if (is_managed && is_floating(loc.node->client))
+        apply_layout(loc.desktop, loc.node, root_rect);
 }
 
 void destroy_notify(xcb_generic_event_t *evt)
@@ -175,7 +169,6 @@ void destroy_notify(xcb_generic_event_t *evt)
         remove_node(loc.desktop, loc.node);
         apply_layout(loc.desktop, loc.desktop->root, root_rect);
     }
-
 }
 
 void unmap_notify(xcb_generic_event_t *evt)

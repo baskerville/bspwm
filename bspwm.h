@@ -1,6 +1,8 @@
 #ifndef _BSPWM_H
 #define _BSPWM_H
 
+#include "types.h"
+
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
 unsigned int num_clients;
@@ -15,7 +17,6 @@ desktop_t *desk_head;
 desktop_t *desk_tail;
 rule_t *rule_head;
 bool running;
-xcb_atom_t WM_DELETE_WINDOW;
 
 int register_events(void);
 void handle_zombie(int);

@@ -5,8 +5,10 @@
 #define DEC_EXP 1.1
 
 bool is_leaf(node_t *);
-bool is_first_child(node_t *n);
-bool is_second_child(node_t *n);
+bool is_tiled(client_t *);
+bool is_floating(client_t *);
+bool is_first_child(node_t *);
+bool is_second_child(node_t *);
 void change_split_ratio(node_t *, value_change_t);
 node_t *first_extrema(node_t *);
 node_t *second_extrema(node_t *);
@@ -25,12 +27,13 @@ void focus_node(desktop_t *, node_t *, bool);
 void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
 void swap_nodes(node_t *, node_t *);
-void close_window(desktop_t *, node_t *);
 void transfer_node(desktop_t *, desktop_t *, node_t *);
 void select_desktop(desktop_t *);
 void cycle_leaf(desktop_t *, node_t *, cycle_dir_t, skip_client_t);
 void toggle_floating(node_t *);
 void update_vacant_state(node_t *);
-bool is_tiled(client_t *);
+desktop_t *find_desktop(char *);
+void add_desktop(char *);
+void alternate_desktop(void);
 
 #endif

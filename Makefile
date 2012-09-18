@@ -8,7 +8,7 @@ LDFLAGS = $(LIBS)
 PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 
-WM_SRC = bspwm.c events.c luautils.c messages.c ewmh.c settings.c utils.c tree.c types.c rules.c
+WM_SRC = bspwm.c events.c luautils.c messages.c ewmh.c settings.c utils.c tree.c types.c rules.c window.c
 CL_SRC = bspc.c
 
 WM_OBJ = $(WM_SRC:.c=.o)

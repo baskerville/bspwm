@@ -36,7 +36,7 @@ client_t *make_client(xcb_window_t win)
 rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
-    r->cause.class_name = r->cause.instance_name = NULL;
-    r->effect.floating = r->effect.fullscreen = r->effect.locked = r->effect.centered = false;
+    r->effect.floating = false;
+    r->next = NULL;
     return r;
 }

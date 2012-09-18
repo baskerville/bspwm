@@ -31,9 +31,9 @@ void quit(void)
 
 int register_events(void)
 {
-    xcb_generic_error_t *err;
     uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS};
-    err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
+    xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
+    xcb_flush(dpy);
     if (err != NULL)
         return 1;
     return 0;
@@ -50,7 +50,7 @@ void setup(int default_screen)
 {
     signal(SIGCHLD, handle_zombie);
     ewmh_init();
-    screen = screen_of_display(dpy, default_screen);
+    screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (!screen)
         die("error: cannot aquire screen\n");
 
@@ -61,20 +61,13 @@ void setup(int default_screen)
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 
-    xcb_intern_atom_reply_t *reply;
-    reply = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW"), NULL);
-    if (reply) {
-        WM_DELETE_WINDOW = reply->atom;
-        free(reply);
-    }
-
     desk = make_desktop(DESK_NAME);
     last_desk = NULL;
     desk_head = desk;
     desk_tail = desk;
     num_desktops++;
-    /* ewmh_update_number_of_desktops(); */
-    /* ewmh_update_desktop_names(); */
+    ewmh_update_number_of_desktops();
+    ewmh_update_desktop_names();
 
     rule_head = make_rule();
 
@@ -141,17 +134,6 @@ int main(void)
 
         if (select(sel, &descriptors, NULL, NULL, NULL)) {
 
-            if (FD_ISSET(dpy_fd, &descriptors)) {
-                while ((event = xcb_poll_for_event(dpy)) != NULL) {
-                    PUTS("got one X event\n");
-                    handle_event(event);
-                    free(event);
-                }
-                if (xcb_connection_has_error(dpy)) {
-                    die("connection has errors\n");
-                }
-            }
-
             if (FD_ISSET(sock_fd, &descriptors)) {
                 ret_fd = accept(sock_fd, NULL, 0);
                 if (ret_fd > 0 && (nbr = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
@@ -162,12 +144,25 @@ int main(void)
                     close(ret_fd);
                 }
             }
+
+            if (FD_ISSET(dpy_fd, &descriptors)) {
+                while ((event = xcb_poll_for_event(dpy)) != NULL) {
+                    handle_event(event);
+                    free(event);
+                }
+            }
+
+        }
+
+        if (xcb_connection_has_error(dpy)) {
+            die("connection has errors\n");
         }
     }
 
     close(sock_fd);
     xcb_ewmh_connection_wipe(ewmh);
     free(ewmh);
+    xcb_flush(dpy);
     xcb_disconnect(dpy);
     return 0;
 }

@@ -16,8 +16,5 @@ bool parse_cycle_direction(char *, cycle_dir_t *);
 bool parse_skip_client(char *, skip_client_t *);
 bool parse_rotate(char *s, rotate_t *);
 bool parse_fence_move(char *, fence_move_t *);
-desktop_t *find_desktop(char *);
-void add_desktop(char *);
-void alternate_desktop(void);
 
 #endif

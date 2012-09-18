@@ -90,15 +90,12 @@ struct desktop_t {
 };
 
 typedef struct {
-    char *class_name;
-    char *instance_name;
+    char name[MAXLEN];
 } rule_cause_t;
 
 typedef struct {
     bool floating;
-    bool fullscreen;
-    bool locked;
-    bool centered;
+    char desk_name[MAXLEN];
 } rule_effect_t;
 
 typedef struct rule_t rule_t;

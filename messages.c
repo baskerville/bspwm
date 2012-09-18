@@ -9,6 +9,7 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "utils.h"
+#include "window.h"
 #include "tree.h"
 
 void process_message(char *msg, char *rsp)
@@ -33,8 +34,11 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "list") == 0) {
         list_desktops(rsp);
         return;
+    } else if (strcmp(cmd, "windows") == 0) {
+        list_windows(rsp);
+        return;
     } else if (strcmp(cmd, "close") == 0) {
-        remove_node(desk, desk->focus);
+        close_window(desk, desk->focus);
     } else if (strcmp(cmd, "rotate") == 0) {
         char *deg = strtok(NULL, TOKEN_SEP);
         if (deg != NULL) {
@@ -51,12 +55,12 @@ void process_message(char *msg, char *rsp)
                 desk->layout = l;
             }
         }
-    } else if (strcmp(cmd, "insert") == 0) {
-        static unsigned int fake_id = 1;
-        client_t *c = make_client((xcb_window_t) fake_id++);
-        node_t *n = make_node();
-        n->client = c;
-        insert_node(desk, n);
+    /* } else if (strcmp(cmd, "insert") == 0) { */
+    /*     static unsigned int fake_id = 1; */
+    /*     client_t *c = make_client((xcb_window_t) fake_id++); */
+    /*     node_t *n = make_node(); */
+    /*     n->client = c; */
+    /*     insert_node(desk, n); */
     } else if (strcmp(cmd, "shift") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -126,6 +130,24 @@ void process_message(char *msg, char *rsp)
                 if (parse_skip_client(skip, &k))
                     cycle_leaf(desk, desk->focus, d, k);
             }
+        }
+        return;
+    } else if (strcmp(cmd, "rule") == 0) {
+        char *name = strtok(NULL, TOKEN_SEP);
+        if (name != NULL) {
+            rule_t *rule = make_rule();
+            strcpy(rule->cause.name, name);
+            char *arg = strtok(NULL, TOKEN_SEP);
+            while (arg != NULL) {
+                if (strcmp(arg, "floating") == 0) {
+                    rule->effect.floating = true;
+                } else {
+                    strcpy(rule->effect.desk_name, arg);
+                }
+                arg = strtok(NULL, TOKEN_SEP);
+            }
+            rule->next = rule_head;
+            rule_head = rule;
         }
         return;
     } else if (strcmp(cmd, "alternate") == 0) {
@@ -355,34 +377,3 @@ bool parse_fence_move(char *s, fence_move_t *m)
     return false;
 }
 
-desktop_t *find_desktop(char *name)
-{
-    desktop_t *d = desk_head;
-    while (d != NULL) {
-        if (strcmp(d->name, name) == 0)
-            return d;
-        d = d->next;
-    }
-    return NULL;
-}
-
-void add_desktop(char *name)
-{
-    desktop_t *d = make_desktop(name);
-    desk_tail->next = d;
-    d->prev = desk_tail;
-    desk_tail = d;
-    num_desktops++;
-    ewmh_update_number_of_desktops();
-    /* ewmh_update_desktop_names(); */
-}
-
-void alternate_desktop(void)
-{
-    if (last_desk == NULL)
-        return;
-    desktop_t *tmp = desk;
-    desk = last_desk;
-    last_desk = tmp;
-    select_desktop(desk);
-}
