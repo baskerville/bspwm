@@ -48,6 +48,7 @@ void run_autostart(void)
     if (dpy != NULL)
         close(xcb_get_file_descriptor(dpy));
 
+    setsid();
     execl(path, path, NULL);
         
     PUTS("error: could not load autostart file\n");

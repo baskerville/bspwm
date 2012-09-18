@@ -29,7 +29,7 @@ bool is_floating(client_t *c)
 {
     if (c == NULL)
         return false;
-    return (c->floating || c->transient);
+    return (c->floating && !c->fullscreen);
 }
 
 bool is_first_child(node_t *n)

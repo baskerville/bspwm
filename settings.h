@@ -13,7 +13,7 @@
 #define AUTOSTART_FILE      "autostart"
 
 #define OUTER_BORDER_WIDTH  2
-#define MAIN_BORDER_WIDTH   1
+#define MAIN_BORDER_WIDTH   2
 #define INNER_BORDER_WIDTH  2
 #define SPLIT_RATIO         0.5
 
@@ -25,12 +25,12 @@
 
 #define ADAPTIVE_WINDOW_BORDER  true
 
-#define NORMAL_BORDER_COLOR  "gray22"
-#define ACTIVE_BORDER_COLOR  "lightslategray"
-#define INNER_BORDER_COLOR   "darkslategray"
-#define OUTER_BORDER_COLOR   "darkslategray"
-#define PRESEL_BORDER_COLOR  "dimgray"
-#define LOCKED_BORDER_COLOR  "slateblue"
+#define NORMAL_BORDER_COLOR  "red"
+#define ACTIVE_BORDER_COLOR  "yellow"
+#define INNER_BORDER_COLOR   "green"
+#define OUTER_BORDER_COLOR   "cyan"
+#define PRESEL_BORDER_COLOR  "blue"
+#define LOCKED_BORDER_COLOR  "magenta"
 
 char normal_border_color[MAXLEN];
 char active_border_color[MAXLEN];

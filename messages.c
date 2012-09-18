@@ -168,6 +168,8 @@ void process_message(char *msg, char *rsp)
             }
         }
         return;
+    } else if (strcmp(cmd, "reload") == 0) {
+        load_settings();
     } else if (strcmp(cmd, "quit") == 0) {
         quit();
         return;

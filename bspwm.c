@@ -31,24 +31,15 @@ void quit(void)
 
 int register_events(void)
 {
-    uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS};
+    uint32_t values[1] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE };
     xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
-    xcb_flush(dpy);
     if (err != NULL)
         return 1;
     return 0;
 }
 
-void handle_zombie(int sig)
+void setup(void)
 {
-    while (waitpid(-1, NULL, WNOHANG) > 0)
-        ;
-    signal(sig, handle_zombie);
-}
-
-void setup(int default_screen)
-{
-    signal(SIGCHLD, handle_zombie);
     ewmh_init();
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (!screen)
@@ -66,11 +57,10 @@ void setup(int default_screen)
     desk_head = desk;
     desk_tail = desk;
     num_desktops++;
+
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
-
     rule_head = make_rule();
-
     split_mode = MODE_AUTOMATIC;
 }
 
@@ -91,7 +81,7 @@ int main(void)
     if (xcb_connection_has_error(dpy))
         die("error: cannot open display\n");
 
-    setup(default_screen);
+    setup();
 
     if (register_events() == 1) {
         xcb_disconnect(dpy);

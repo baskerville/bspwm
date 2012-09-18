@@ -20,7 +20,7 @@ bool running;
 
 int register_events(void);
 void handle_zombie(int);
-void setup(int);
+void setup(void);
 void quit(void);
 
 #endif

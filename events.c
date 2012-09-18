@@ -95,7 +95,6 @@ void map_request(xcb_generic_event_t *evt)
     apply_layout(desk, desk->root, root_rect);
 
     xcb_map_window(dpy, c->window);
-    xcb_flush(dpy);
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 }
 
