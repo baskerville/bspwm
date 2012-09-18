@@ -105,7 +105,7 @@ void configure_request(xcb_generic_event_t *evt)
     window_location_t loc;
     bool is_managed = locate_window(e->window, &loc);
 
-    if (!is_managed || (is_managed && !is_tiled(loc.node->client))) {
+    if (!is_managed || is_floating(loc.node->client)) {
         uint16_t mask = 0;
         uint32_t values[7];
         unsigned short i = 0;
