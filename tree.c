@@ -289,7 +289,7 @@ void insert_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL)
         return;
 
-    PUTS("insert node\n");
+    PUTS("insert node");
 
     node_t *focus = d->focus;
 
@@ -384,8 +384,6 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
 
     split_mode = MODE_AUTOMATIC;
 
-    select_desktop(d);
-
     if (is_mapped) {
         if (d->focus != n) {
             draw_triple_border(d->focus, normal_border_color_pxl);
@@ -420,7 +418,7 @@ void unlink_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL)
         return;
 
-    PUTS("unlink node\n");
+    PUTS("unlink node");
 
     node_t *p = n->parent;
 
@@ -463,7 +461,7 @@ void remove_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL)
         return;
 
-    PUTS("remove node\n");
+    PUTS("remove node");
 
     unlink_node(d, n);
     free(n->client);
@@ -481,7 +479,7 @@ void swap_nodes(node_t *n1, node_t *n2)
     if (n1 == NULL || n2 == NULL || n1 == n2)
         return;
 
-    PUTS("swap nodes\n");
+    PUTS("swap nodes");
 
     /* (n1 and n2 are leaves) */
     node_t *pn1 = n1->parent;
@@ -512,15 +510,20 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     if (n == NULL || ds == NULL || dd == NULL || dd == ds)
         return;
 
-    PUTS("transfer node\n");
+    PUTS("transfer node");
 
     unlink_node(ds, n);
     if (ds == desk)
         xcb_unmap_window(dpy, n->client->window);
 
     insert_node(dd, n);
-    if (dd == desk)
+    if (dd == desk) {
+        apply_layout(dd, dd->root, root_rect);
         xcb_map_window(dpy, n->client->window);
+        focus_node(dd, n, true);
+    } else {
+        focus_node(dd, n, false);
+    }
 
     if (ds == desk || dd == desk)
         update_current();
@@ -531,7 +534,7 @@ void select_desktop(desktop_t *d)
     if (d == NULL || d == desk)
         return;
 
-    PUTS("select desktop\n");
+    PUTS("select desktop");
 
     if (d->focus != NULL)
         xcb_map_window(dpy, d->focus->client->window);
@@ -576,7 +579,7 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
     if (n == NULL)
         return;
 
-    PUTS("cycle leaf\n");
+    PUTS("cycle leaf");
 
     node_t *f = (dir == DIR_PREV ? prev_leaf(n) : next_leaf(n));
 
@@ -595,7 +598,7 @@ void toggle_floating(node_t *n)
     if (n == NULL || n->client->transient)
         return;
 
-    PUTS("toggle floating\n");
+    PUTS("toggle floating");
 
     client_t *c = n->client;
     c->floating = !c->floating;
@@ -610,7 +613,7 @@ void update_vacant_state(node_t *n)
     if (n == NULL)
         return;
 
-    PUTS("update vacant state\n");
+    PUTS("update vacant state");
 
     /* n is not a leaf */
     node_t *p = n;

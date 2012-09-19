@@ -143,7 +143,7 @@ void close_window(desktop_t *d, node_t *n)
     if (n == NULL || n->client->locked)
         return;
 
-    PUTS("close window\n");
+    PUTS("close window");
 
     xcb_atom_t WM_DELETE_WINDOW;
     xcb_window_t win = n->client->window;
@@ -154,7 +154,7 @@ void close_window(desktop_t *d, node_t *n)
         WM_DELETE_WINDOW = reply->atom;
         free(reply);
     } else {
-        PUTS("could not acquire WM_DELETE_WINDOW atom\n");
+        PUTS("could not acquire WM_DELETE_WINDOW atom");
         return;
     }
 

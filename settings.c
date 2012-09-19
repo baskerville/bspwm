@@ -28,9 +28,9 @@ void load_settings(void)
         if (lua_pcall(L, 0, 0, 0) == 0)
             apply_settings(L);
         else
-            PUTS("error: cannot interpret configuration file\n");
+            PUTS("error: cannot interpret configuration file");
     } else {
-        PUTS("error: could not load configuration file\n");
+        PUTS("error: could not load configuration file");
     }
 
     lua_close(L);
@@ -51,7 +51,7 @@ void run_autostart(void)
     setsid();
     execl(path, path, NULL);
         
-    PUTS("error: could not load autostart file\n");
+    PUTS("error: could not load autostart file");
     exit(EXIT_SUCCESS);
 }
 

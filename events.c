@@ -18,27 +18,27 @@ void handle_event(xcb_generic_event_t *evt)
 {
     switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
         case XCB_MAP_REQUEST:
-            PUTS("map request\n");
+            PUTS("map request");
             map_request(evt);
             break;
         case XCB_DESTROY_NOTIFY:
-            PUTS("destroy notify\n");
+            PUTS("destroy notify");
             destroy_notify(evt);
             break;
         case XCB_UNMAP_NOTIFY:
-            PUTS("unmap notify\n");
+            PUTS("unmap notify");
             unmap_notify(evt);
             break;
         case XCB_CLIENT_MESSAGE:
-            PUTS("client message\n");
+            PUTS("client message");
             client_message(evt);
             break;
         case XCB_CONFIGURE_REQUEST:
-            PUTS("configure request\n");
+            PUTS("configure request");
             configure_request(evt);
             break;
         case XCB_BUTTON_PRESS:
-            PUTS("button press\n");
+            PUTS("button press");
             break;
         default:
             /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
@@ -197,6 +197,8 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
+        if (desk != loc.desktop)
+            select_desktop(loc.desktop);
         focus_node(loc.desktop, loc.node, true);
     }
 }
