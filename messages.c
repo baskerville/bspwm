@@ -119,7 +119,9 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_t *d = find_desktop(name);
             select_desktop(d);
+            apply_layout(d, d->root, root_rect);
         }
+        return;
     } else if (strcmp(cmd, "cycle_desktop") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
