@@ -17,5 +17,6 @@ void list_windows(char *);
 void window_border_width(xcb_window_t, uint32_t);
 void window_move_resize(xcb_window_t, int16_t, int16_t, uint16_t, uint16_t);
 void window_raise(xcb_window_t);
+void window_lower(xcb_window_t);
 
 #endif

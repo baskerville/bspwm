@@ -120,6 +120,15 @@ void process_message(char *msg, char *rsp)
             desktop_t *d = find_desktop(name);
             select_desktop(d);
         }
+    } else if (strcmp(cmd, "cycle_desktop") == 0) {
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            cycle_dir_t d;
+            if (parse_cycle_direction(dir, &d)) {
+                cycle_desktop(d);
+            }
+        }
+        return;
     } else if (strcmp(cmd, "cycle") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {

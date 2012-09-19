@@ -228,3 +228,9 @@ void window_raise(xcb_window_t win)
     uint32_t values[] = {XCB_STACK_MODE_ABOVE};
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }
+
+void window_lower(xcb_window_t win)
+{
+    uint32_t values[] = {XCB_STACK_MODE_BELOW};
+    xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
+}

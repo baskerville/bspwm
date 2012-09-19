@@ -41,7 +41,7 @@ void handle_event(xcb_generic_event_t *evt)
             PUTS("button press\n");
             break;
         default:
-            PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt));
+            /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
             break;
     }
 }
@@ -96,6 +96,9 @@ void map_request(xcb_generic_event_t *evt)
 
     xcb_map_window(dpy, c->window);
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
+
+    num_clients++;
+    ewmh_update_client_list();
 }
 
 void configure_request(xcb_generic_event_t *evt)

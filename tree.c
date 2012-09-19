@@ -179,7 +179,7 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     if (is_leaf(n))
         /* sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */ 
-        sprintf(line, "C %X (%s%s) [%i %i %u %u]", n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->rectangle.x, n->client->rectangle.y, n->client->rectangle.width, n->client->rectangle.height); 
+        sprintf(line, "C %X [%i %i %u %u] (%s%s) [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->rectangle.x, n->client->rectangle.y, n->client->rectangle.width, n->client->rectangle.height); 
     else
         /* sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */
         sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height);
@@ -193,6 +193,13 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     dump_tree(d, n->first_child, rsp, depth + 1);
     dump_tree(d, n->second_child, rsp, depth + 1);
+}
+
+void refresh_current(void) {
+    if (desk->focus == NULL)
+        ewmh_update_active_window();
+    else
+        focus_node(desk, desk->focus, true);
 }
 
 void list_desktops(char *rsp)
@@ -363,14 +370,11 @@ void insert_node(desktop_t *d, node_t *n)
                 break;
         }
     }
-
-    num_clients++;
-    ewmh_update_client_list();
 }
 
 void focus_node(desktop_t *d, node_t *n, bool is_mapped)
 {
-    if (d == NULL || n == NULL || desk->focus == n)
+    if (n == NULL)
         return;
 
     if (desk->focus != NULL && desk->focus->client->fullscreen)
@@ -392,11 +396,23 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
 
     if (!is_tiled(n->client) || d->layout == LAYOUT_MONOCLE)
         window_raise(n->client->window);
+    else if (is_tiled(n->client))
+        window_lower(n->client->window);
 
-    d->last_focus = d->focus;
-    d->focus = n;
+    if (d->focus != n) {
+        d->last_focus = d->focus;
+        d->focus = n;
+    }
 
     ewmh_update_active_window();
+}
+
+void update_current(void)
+{
+    if (desk->focus == NULL)
+        ewmh_update_active_window();
+    else
+        focus_node(desk, desk->focus, true);
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -432,8 +448,6 @@ void unlink_node(desktop_t *d, node_t *n)
         n->parent = NULL;
         free(p);
 
-        PUTS("unlink: parent is free\n");
-
         if (n == d->focus) {
             if (d->last_focus != NULL && d->last_focus != n)
                 d->focus = d->last_focus;
@@ -442,7 +456,6 @@ void unlink_node(desktop_t *d, node_t *n)
             d->last_focus = NULL;
         }
     }
-
 }
 
 void remove_node(desktop_t *d, node_t *n)
@@ -459,8 +472,8 @@ void remove_node(desktop_t *d, node_t *n)
     num_clients--;
     ewmh_update_client_list();
 
-    if (desk == d && d->focus != NULL)
-        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, d->focus->client->window, XCB_CURRENT_TIME);
+    if (desk == d)
+        update_current();
 }
 
 void swap_nodes(node_t *n1, node_t *n2)
@@ -502,7 +515,15 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     PUTS("transfer node\n");
 
     unlink_node(ds, n);
+    if (ds == desk)
+        xcb_unmap_window(dpy, n->client->window);
+
     insert_node(dd, n);
+    if (dd == desk)
+        xcb_map_window(dpy, n->client->window);
+
+    if (ds == desk || dd == desk)
+        update_current();
 }
 
 void select_desktop(desktop_t *d)
@@ -524,6 +545,7 @@ void select_desktop(desktop_t *d)
     }
 
     n = first_extrema(desk->root);
+
     while (n != NULL) {
         if (n != desk->focus)
             xcb_unmap_window(dpy, n->client->window);
@@ -536,10 +558,17 @@ void select_desktop(desktop_t *d)
     last_desk = desk;
     desk = d;
 
-    if (d->focus != NULL)
-        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, d->focus->client->window, XCB_CURRENT_TIME);
+    update_current();
 
     ewmh_update_current_desktop();
+}
+
+void cycle_desktop(cycle_dir_t dir)
+{
+    if (dir == DIR_NEXT)
+        select_desktop((desk->next == NULL ? desk_head : desk->next));
+    else if (dir == DIR_PREV)
+        select_desktop((desk->prev == NULL ? desk_tail : desk->prev));
 }
 
 void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
