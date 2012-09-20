@@ -107,7 +107,7 @@ void window_draw_border(node_t *n, bool focused)
         xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(outer_rectangles), outer_rectangles);
     }
 
-    if (split_mode == MODE_MANUAL && main_border_color_pxl == active_border_color_pxl) {
+    if (split_mode == MODE_MANUAL && focused) {
         uint16_t fence = (int16_t) (n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width));
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
         switch (split_dir) {
