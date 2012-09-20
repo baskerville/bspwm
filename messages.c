@@ -176,6 +176,11 @@ void process_message(char *msg, char *rsp)
         return;
     } else if (strcmp(cmd, "reload") == 0) {
         load_settings();
+        run_autostart();
+    } else if (strcmp(cmd, "reload_autostart") == 0) {
+        run_autostart();
+    } else if (strcmp(cmd, "reload_settings") == 0) {
+        load_settings();
     } else if (strcmp(cmd, "quit") == 0) {
         quit();
         return;

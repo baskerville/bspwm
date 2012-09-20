@@ -72,6 +72,7 @@ struct node_t {
     double split_ratio;
     xcb_rectangle_t rectangle;
     bool vacant; /* vacant nodes only hold floating clients */
+    split_mode_t born_as; /* container node property used to when removing leaves */
     node_t *first_child;
     node_t *second_child;
     node_t *parent;

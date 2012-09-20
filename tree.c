@@ -296,6 +296,7 @@ void insert_node(desktop_t *d, node_t *n)
         node_t *dad = make_node();
         node_t *fopar = focus->parent;
         n->parent = dad;
+        dad->born_as = split_mode;
         switch (split_mode) {
             case MODE_AUTOMATIC:
                 if (fopar == NULL) {
@@ -426,10 +427,15 @@ void unlink_node(desktop_t *d, node_t *n)
     } else {
         node_t *b;
         node_t *g = p->parent;
-        if (is_first_child(n))
+        if (is_first_child(n)) {
             b = p->second_child;
-        else
+            if (b->born_as == MODE_AUTOMATIC)
+                rotate_tree(b, ROTATE_COUNTER_CLOCKWISE);
+        } else {
             b = p->first_child;
+            if (b->born_as == MODE_AUTOMATIC)
+                rotate_tree(b, ROTATE_CLOCKWISE);
+        }
         b->parent = g;
         if (g != NULL) {
             if (is_first_child(p))
