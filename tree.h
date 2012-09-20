@@ -36,6 +36,5 @@ void toggle_floating(node_t *);
 void update_vacant_state(node_t *);
 desktop_t *find_desktop(char *);
 void add_desktop(char *);
-void alternate_desktop(void);
 
 #endif

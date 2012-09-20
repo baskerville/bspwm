@@ -6,9 +6,6 @@
 #include <xcb/xcb_event.h>
 #include "types.h"
 
-#define MIN_WIDTH  32
-#define MIN_HEIGHT 32
-
 bool locate_window(xcb_window_t, window_location_t *);
 void draw_triple_border(node_t *, uint32_t);
 void close_window(desktop_t *, node_t *);

@@ -55,12 +55,6 @@ void process_message(char *msg, char *rsp)
                 desk->layout = l;
             }
         }
-    /* } else if (strcmp(cmd, "insert") == 0) { */
-    /*     static unsigned int fake_id = 1; */
-    /*     client_t *c = make_client((xcb_window_t) fake_id++); */
-    /*     node_t *n = make_node(); */
-    /*     n->client = c; */
-    /*     insert_node(desk, n); */
     } else if (strcmp(cmd, "shift") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -74,12 +68,15 @@ void process_message(char *msg, char *rsp)
             toggle_fullscreen(desk->focus->client);
         return;
     } else if (strcmp(cmd, "toggle_floating") == 0) {
+        split_mode = MODE_AUTOMATIC;
         toggle_floating(desk->focus);
     } else if (strcmp(cmd, "ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
         if (value != NULL && desk->focus != NULL)
             sscanf(value, "%lf", &desk->focus->split_ratio);
     } else if (strcmp(cmd, "presel") == 0) {
+        if (desk->focus == NULL || !is_tiled(desk->focus->client) || desk->layout != LAYOUT_TILED)
+            return;
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
             direction_t d;
@@ -119,9 +116,7 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_t *d = find_desktop(name);
             select_desktop(d);
-            apply_layout(d, d->root, root_rect);
         }
-        return;
     } else if (strcmp(cmd, "cycle_desktop") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -162,7 +157,7 @@ void process_message(char *msg, char *rsp)
         }
         return;
     } else if (strcmp(cmd, "alternate") == 0) {
-        alternate_desktop();
+        select_desktop(last_desk);
     } else if (strcmp(cmd, "add") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
@@ -188,6 +183,7 @@ void process_message(char *msg, char *rsp)
         sprintf(rsp, "unknown command: %s\n", cmd);
         return;
     }
+
 
     apply_layout(desk, desk->root, root_rect);
 }

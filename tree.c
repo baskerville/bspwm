@@ -242,14 +242,11 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
             else if (d->layout == LAYOUT_MONOCLE)
                 r = root_rect;
             int bleed = window_gap + 2 * border_width;
-            r.width = (bleed < r.width ? r.width - bleed : MIN_WIDTH);
-            r.height = (bleed < r.height ? r.height - bleed : MIN_HEIGHT);
+            r.width = (bleed < r.width ? r.width - bleed : 1);
+            r.height = (bleed < r.height ? r.height - bleed : 1);
         } else {
             r = n->client->rectangle;
         }
-
-        r.width = MAX(r.width, MIN_WIDTH);
-        r.height = MAX(r.height, MIN_HEIGHT);
 
         window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
         window_border_width(n->client->window, border_width);
@@ -562,7 +559,6 @@ void select_desktop(desktop_t *d)
     desk = d;
 
     update_current();
-
     ewmh_update_current_desktop();
 }
 
@@ -590,6 +586,13 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
             return;
         }
         f = (dir == DIR_PREV ? prev_leaf(f) : next_leaf(f));
+    }
+
+    if (skip == SKIP_NONE && f == NULL) {
+        if (dir == DIR_PREV)
+            focus_node(d, second_extrema(d->root), true);
+        else
+            focus_node(d, first_extrema(d->root), true);
     }
 }
 
@@ -644,14 +647,4 @@ void add_desktop(char *name)
     num_desktops++;
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
-}
-
-void alternate_desktop(void)
-{
-    if (last_desk == NULL)
-        return;
-    desktop_t *tmp = desk;
-    desk = last_desk;
-    last_desk = tmp;
-    select_desktop(desk);
 }

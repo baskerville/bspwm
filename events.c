@@ -70,9 +70,9 @@ void map_request(xcb_generic_event_t *evt)
         c->rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
     }
 
-    bool floating = false, transient = false, takes_focus = true;
+    bool floating = false, transient = false, fullscreen = false, takes_focus = true;
 
-    handle_rules(win, &floating, &transient, &takes_focus);
+    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus);
 
     if (c->transient)
         floating = true;
@@ -86,6 +86,9 @@ void map_request(xcb_generic_event_t *evt)
 
     if (desk->focus != NULL && desk->focus->client->fullscreen)
         toggle_fullscreen(desk->focus->client);
+
+    if (fullscreen)
+        toggle_fullscreen(birth->client);
 
     c->transient = transient;
 
