@@ -70,6 +70,9 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "toggle_floating") == 0) {
         split_mode = MODE_AUTOMATIC;
         toggle_floating(desk->focus);
+    } else if (strcmp(cmd, "toggle_locked") == 0) {
+        if (desk->focus != NULL)
+            toggle_locked(desk->focus->client);
     } else if (strcmp(cmd, "ratio") == 0) {
         char *value = strtok(NULL, TOKEN_SEP);
         if (value != NULL && desk->focus != NULL)
@@ -83,7 +86,7 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 split_mode = MODE_MANUAL;
                 split_dir = d;
-                draw_triple_border(desk->focus, active_border_color_pxl);
+                window_draw_border(desk->focus, active_border_color_pxl);
             }
         }
         return;
@@ -220,12 +223,12 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "bottom_padding") == 0) {
         sscanf(value, "%i", &bottom_padding);
         update_root_dimensions();
-    } else if (strcmp(name, "normal_border_color") == 0) {
-        strcpy(normal_border_color, value);
-        normal_border_color_pxl = get_color(normal_border_color);
     } else if (strcmp(name, "active_border_color") == 0) {
         strcpy(active_border_color, value);
         active_border_color_pxl = get_color(active_border_color);
+    } else if (strcmp(name, "normal_border_color") == 0) {
+        strcpy(normal_border_color, value);
+        normal_border_color_pxl = get_color(normal_border_color);
     } else if (strcmp(name, "inner_border_color") == 0) {
         strcpy(inner_border_color, value);
         inner_border_color_pxl = get_color(inner_border_color);
@@ -235,9 +238,15 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "presel_border_color") == 0) {
         strcpy(presel_border_color, value);
         presel_border_color_pxl = get_color(presel_border_color);
-    } else if (strcmp(name, "locked_border_color") == 0) {
-        strcpy(locked_border_color, value);
-        locked_border_color_pxl = get_color(locked_border_color);
+    } else if (strcmp(name, "active_locked_border_color") == 0) {
+        strcpy(active_locked_border_color, value);
+        active_locked_border_color_pxl = get_color(active_locked_border_color);
+    } else if (strcmp(name, "normal_locked_border_color") == 0) {
+        strcpy(normal_locked_border_color, value);
+        normal_locked_border_color_pxl = get_color(normal_locked_border_color);
+    } else if (strcmp(name, "urgent_border_color") == 0) {
+        strcpy(urgent_border_color, value);
+        urgent_border_color_pxl = get_color(urgent_border_color);
     } else if (strcmp(name, "adaptive_window_border") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -274,18 +283,22 @@ void get_setting(char *name, char* rsp)
         sprintf(rsp, "%i\n", top_padding);
     else if (strcmp(name, "bottom_padding") == 0)
         sprintf(rsp, "%i\n", bottom_padding);
-    else if (strcmp(name, "normal_border_color") == 0)
-        sprintf(rsp, "%s (%06X)\n", normal_border_color, normal_border_color_pxl);
     else if (strcmp(name, "active_border_color") == 0)
         sprintf(rsp, "%s (%06X)\n", active_border_color, active_border_color_pxl);
+    else if (strcmp(name, "normal_border_color") == 0)
+        sprintf(rsp, "%s (%06X)\n", normal_border_color, normal_border_color_pxl);
     else if (strcmp(name, "inner_border_color") == 0)
         sprintf(rsp, "%s (%06X)\n", inner_border_color, inner_border_color_pxl);
     else if (strcmp(name, "outer_border_color") == 0)
         sprintf(rsp, "%s (%06X)\n", outer_border_color, outer_border_color_pxl);
     else if (strcmp(name, "presel_border_color") == 0)
         sprintf(rsp, "%s (%06X)\n", presel_border_color, presel_border_color_pxl);
-    else if (strcmp(name, "locked_border_color") == 0)
-        sprintf(rsp, "%s (%06X)\n", locked_border_color, locked_border_color_pxl);
+    else if (strcmp(name, "active_locked_border_color") == 0)
+        sprintf(rsp, "%s (%06X)\n", active_locked_border_color, active_locked_border_color_pxl);
+    else if (strcmp(name, "normal_locked_border_color") == 0)
+        sprintf(rsp, "%s (%06X)\n", normal_locked_border_color, normal_locked_border_color_pxl);
+    else if (strcmp(name, "urgent_border_color") == 0)
+        sprintf(rsp, "%s (%06X)\n", urgent_border_color, urgent_border_color_pxl);
     else if (strcmp(name, "wm_name") == 0)
         sprintf(rsp, "%s\n", wm_name);
     else if (strcmp(name, "adaptive_window_border") == 0)

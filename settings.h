@@ -25,28 +25,32 @@
 
 #define ADAPTIVE_WINDOW_BORDER  true
 
-#define NORMAL_BORDER_COLOR  "red"
-#define ACTIVE_BORDER_COLOR  "yellow"
-#define INNER_BORDER_COLOR   "green"
-#define OUTER_BORDER_COLOR   "cyan"
-#define PRESEL_BORDER_COLOR  "blue"
-#define LOCKED_BORDER_COLOR  "magenta"
+#define ACTIVE_BORDER_COLOR         "#7D7F8A"
+#define NORMAL_BORDER_COLOR         "#3F3E3B"
+#define INNER_BORDER_COLOR          "#32312E"
+#define OUTER_BORDER_COLOR          "#32312E"
+#define PRESEL_BORDER_COLOR         "#97AE71"
+#define ACTIVE_LOCKED_BORDER_COLOR  "#B6A56A"
+#define NORMAL_LOCKED_BORDER_COLOR  "#8D7E45"
+#define URGENT_BORDER_COLOR         "#DE928B"
 
-char normal_border_color[MAXLEN];
 char active_border_color[MAXLEN];
+char normal_border_color[MAXLEN];
 char inner_border_color[MAXLEN];
 char outer_border_color[MAXLEN];
 char presel_border_color[MAXLEN];
-char locked_border_color[MAXLEN];
+char active_locked_border_color[MAXLEN];
+char normal_locked_border_color[MAXLEN];
+char urgent_border_color[MAXLEN];
 
-char wm_name[MAXLEN];
-
-uint32_t normal_border_color_pxl;
 uint32_t active_border_color_pxl;
+uint32_t normal_border_color_pxl;
 uint32_t inner_border_color_pxl;
 uint32_t outer_border_color_pxl;
 uint32_t presel_border_color_pxl;
-uint32_t locked_border_color_pxl;
+uint32_t active_locked_border_color_pxl;
+uint32_t normal_locked_border_color_pxl;
+uint32_t urgent_border_color_pxl;
 
 unsigned int inner_border_width;
 unsigned int main_border_width;
@@ -62,6 +66,8 @@ int left_padding;
 int right_padding;
 
 bool adaptive_window_border;
+
+char wm_name[MAXLEN];
 
 void load_settings(void);
 void run_autostart(void);

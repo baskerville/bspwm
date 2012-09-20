@@ -32,6 +32,9 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_CONFIGURE_REQUEST:
             configure_request(evt);
             break;
+        case XCB_PROPERTY_NOTIFY:
+            property_notify(evt);
+            break;
         case XCB_BUTTON_PRESS:
             PUTS("button press");
             break;
@@ -99,6 +102,9 @@ void map_request(xcb_generic_event_t *evt)
 
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
+
+    uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
+    xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
     ewmh_update_client_list();
@@ -171,10 +177,10 @@ void configure_request(xcb_generic_event_t *evt)
 void destroy_notify(xcb_generic_event_t *evt)
 {
     xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *) evt;
-    window_location_t loc;
 
     PRINTF("destroy notify %X\n", e->window);
 
+    window_location_t loc;
     if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
         apply_layout(loc.desktop, loc.desktop->root, root_rect);
@@ -190,9 +196,31 @@ void unmap_notify(xcb_generic_event_t *evt)
     return;
 
     window_location_t loc;
-    if (locate_window(e->window, &loc) && !loc.node->client->hidden) {
+    if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
         apply_layout(loc.desktop, loc.desktop->root, root_rect);
+    }
+}
+
+void property_notify(xcb_generic_event_t *evt)
+{
+    xcb_property_notify_event_t *e = (xcb_property_notify_event_t *) evt;
+    xcb_icccm_wm_hints_t hints;
+
+    PRINTF("property notify %X\n", e->window);
+
+    if (e->atom != XCB_ATOM_WM_HINTS)
+        return;
+
+    window_location_t loc;
+    if (locate_window(e->window, &loc)) {
+        if (loc.node == loc.desktop->focus)
+            return;
+        if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1) {
+            loc.node->client->urgent = (hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY);
+            if (desk == loc.desktop)
+                apply_layout(loc.desktop, loc.desktop->root, root_rect);
+        }
     }
 }
 
@@ -213,6 +241,7 @@ void client_message(xcb_generic_event_t *evt)
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
         if (desk != loc.desktop)
             select_desktop(loc.desktop);
+        apply_layout(loc.desktop, loc.desktop->root, root_rect);
         focus_node(loc.desktop, loc.node, true);
     }
 }

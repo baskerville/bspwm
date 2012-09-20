@@ -38,7 +38,7 @@ bool locate_window(xcb_window_t win, window_location_t *loc)
     return false;
 }
 
-void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
+void window_draw_border(node_t *n, bool focused)
 {
     if (n == NULL)
         return;
@@ -86,6 +86,8 @@ void draw_triple_border(node_t *n, uint32_t main_border_color_pxl)
 
     xcb_gcontext_t gc = xcb_generate_id(dpy);
     xcb_create_gc(dpy, gc, pix, 0, NULL);
+
+    uint32_t main_border_color_pxl = get_main_border_color(n->client, focused);
 
     /* inner border */
     if (inner_border_width > 0) {
@@ -194,6 +196,26 @@ void toggle_fullscreen(client_t *c)
     }
 }
 
+void toggle_floating(node_t *n)
+{
+    if (n == NULL || n->client->transient)
+        return;
+
+    PUTS("toggle floating");
+
+    client_t *c = n->client;
+    c->floating = !c->floating;
+    n->vacant = !n->vacant;
+    update_vacant_state(n->parent);
+    if (c->floating)
+        window_raise(c->window);
+}
+
+void toggle_locked(client_t *c)
+{
+    c->locked = !c->locked;
+}
+
 void list_windows(char *rsp)
 {
     char line[MAXLEN];
@@ -208,6 +230,26 @@ void list_windows(char *rsp)
             n = next_leaf(n);
         }
         d = d->next;
+    }
+}
+
+uint32_t get_main_border_color(client_t *c, bool focused)
+{
+    if (c == NULL)
+        return 0;
+
+    if (focused) {
+        if (c->locked)
+            return active_locked_border_color_pxl;
+        else
+            return active_border_color_pxl;
+    } else {
+        if (c->urgent)
+            return urgent_border_color_pxl;
+        else if (c->locked)
+            return normal_locked_border_color_pxl;
+        else
+            return normal_border_color_pxl;
     }
 }
 

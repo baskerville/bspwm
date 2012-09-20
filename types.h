@@ -6,7 +6,7 @@
 #include "helpers.h"
 
 #define SPLIT_RATIO  0.5
-#define DESK_NAME    "One"
+#define DEFAULT_DESK_NAME    "One"
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -60,10 +60,10 @@ typedef enum {
 typedef struct {
     xcb_window_t window;
     bool floating;
-    bool transient; /* transient window are always floating */
+    bool transient;  /* transient window are always floating */
     bool fullscreen;
-    bool locked; /* protects window from being closed */
-    bool hidden; /* to avoid removing nodes on internal unmap events */
+    bool locked;     /* protects window from being closed */
+    bool urgent;
     xcb_rectangle_t rectangle;
 } client_t;
 

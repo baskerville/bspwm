@@ -31,7 +31,7 @@ void quit(void)
 
 int register_events(void)
 {
-    uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS };
+    uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
     xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
     if (err != NULL)
         return 1;
@@ -52,7 +52,7 @@ void setup(void)
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 
-    desk = make_desktop(DESK_NAME);
+    desk = make_desktop(DEFAULT_DESK_NAME);
     last_desk = NULL;
     desk_head = desk;
     desk_tail = desk;

@@ -250,7 +250,7 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
 
         window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
         window_border_width(n->client->window, border_width);
-        draw_triple_border(n, (n == d->focus ? active_border_color_pxl : normal_border_color_pxl));
+        window_draw_border(n, n == d->focus);
 
         if (d->layout == LAYOUT_MONOCLE && n == d->focus)
             window_raise(n->client->window);
@@ -381,11 +381,12 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
     PRINTF("focus_node %X\n", n->client->window);
 
     split_mode = MODE_AUTOMATIC;
+    n->client->urgent = false;
 
     if (is_mapped) {
         if (d->focus != n) {
-            draw_triple_border(d->focus, normal_border_color_pxl);
-            draw_triple_border(n, active_border_color_pxl);
+            window_draw_border(d->focus, false);
+            window_draw_border(n, true);
         }
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
@@ -517,15 +518,12 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
 
     unlink_node(ds, n);
 
-    if (ds == desk) {
-        n->client->hidden = true;
+    if (ds == desk)
         xcb_unmap_window(dpy, n->client->window);
-    }
 
     insert_node(dd, n);
 
     if (dd == desk) {
-        n->client->hidden = false;
         xcb_map_window(dpy, n->client->window);
         focus_node(dd, n, true);
     } else {
@@ -543,15 +541,9 @@ void select_desktop(desktop_t *d)
 
     PRINTF("select desktop %s\n", desk->name);
 
-    /* if (d->focus != NULL) */
-    /*     xcb_map_window(dpy, d->focus->client->window); */
-
     node_t *n = first_extrema(d->root);
 
     while (n != NULL) {
-        n->client->hidden = false;
-        /* if (n != d->focus) */
-        /*     xcb_map_window(dpy, n->client->window); */
         xcb_map_window(dpy, n->client->window);
         n = next_leaf(n);
     }
@@ -559,15 +551,9 @@ void select_desktop(desktop_t *d)
     n = first_extrema(desk->root);
 
     while (n != NULL) {
-        n->client->hidden = true;
-        /* if (n != desk->focus) */
-        /*     xcb_unmap_window(dpy, n->client->window); */
         xcb_unmap_window(dpy, n->client->window);
         n = next_leaf(n);
     }
-
-    /* if (desk->focus != NULL) */
-    /*     xcb_unmap_window(dpy, desk->focus->client->window); */
 
     last_desk = desk;
     desk = d;
@@ -608,21 +594,6 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
         else
             focus_node(d, first_extrema(d->root), true);
     }
-}
-
-void toggle_floating(node_t *n)
-{
-    if (n == NULL || n->client->transient)
-        return;
-
-    PUTS("toggle floating");
-
-    client_t *c = n->client;
-    c->floating = !c->floating;
-    n->vacant = !n->vacant;
-    update_vacant_state(n->parent);
-    if (c->floating)
-        window_raise(c->window);
 }
 
 void update_vacant_state(node_t *n)
