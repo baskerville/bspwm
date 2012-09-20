@@ -125,7 +125,6 @@ void process_message(char *msg, char *rsp)
                 cycle_desktop(d);
             }
         }
-        return;
     } else if (strcmp(cmd, "cycle") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -188,7 +187,6 @@ void process_message(char *msg, char *rsp)
         sprintf(rsp, "unknown command: %s\n", cmd);
         return;
     }
-
 
     apply_layout(desk, desk->root, root_rect);
 }
@@ -277,17 +275,17 @@ void get_setting(char *name, char* rsp)
     else if (strcmp(name, "bottom_padding") == 0)
         sprintf(rsp, "%i\n", bottom_padding);
     else if (strcmp(name, "normal_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", normal_border_color, normal_border_color_pxl);
+        sprintf(rsp, "%s (%06X)\n", normal_border_color, normal_border_color_pxl);
     else if (strcmp(name, "active_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", active_border_color, active_border_color_pxl);
+        sprintf(rsp, "%s (%06X)\n", active_border_color, active_border_color_pxl);
     else if (strcmp(name, "inner_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", inner_border_color, inner_border_color_pxl);
+        sprintf(rsp, "%s (%06X)\n", inner_border_color, inner_border_color_pxl);
     else if (strcmp(name, "outer_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", outer_border_color, outer_border_color_pxl);
+        sprintf(rsp, "%s (%06X)\n", outer_border_color, outer_border_color_pxl);
     else if (strcmp(name, "presel_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", presel_border_color, presel_border_color_pxl);
+        sprintf(rsp, "%s (%06X)\n", presel_border_color, presel_border_color_pxl);
     else if (strcmp(name, "locked_border_color") == 0)
-        sprintf(rsp, "%s (0x%06X)\n", locked_border_color, locked_border_color_pxl);
+        sprintf(rsp, "%s (%06X)\n", locked_border_color, locked_border_color_pxl);
     else if (strcmp(name, "wm_name") == 0)
         sprintf(rsp, "%s\n", wm_name);
     else if (strcmp(name, "adaptive_window_border") == 0)

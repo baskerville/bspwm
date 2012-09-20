@@ -63,6 +63,7 @@ typedef struct {
     bool transient; /* transient window are always floating */
     bool fullscreen;
     bool locked; /* protects window from being closed */
+    bool hidden; /* to avoid removing nodes on internal unmap events */
     xcb_rectangle_t rectangle;
 } client_t;
 

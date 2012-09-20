@@ -378,7 +378,7 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
     if (desk->focus != NULL && desk->focus->client->fullscreen)
         return;
 
-    PRINTF("focus_node %x\n", n->client->window);
+    PRINTF("focus_node %X\n", n->client->window);
 
     split_mode = MODE_AUTOMATIC;
 
@@ -464,7 +464,7 @@ void remove_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL)
         return;
 
-    PUTS("remove node");
+    PRINTF("remove node %X\n", n->client->window);
 
     unlink_node(d, n);
     free(n->client);
@@ -516,12 +516,16 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     PUTS("transfer node");
 
     unlink_node(ds, n);
-    if (ds == desk)
+
+    if (ds == desk) {
+        n->client->hidden = true;
         xcb_unmap_window(dpy, n->client->window);
+    }
 
     insert_node(dd, n);
+
     if (dd == desk) {
-        apply_layout(dd, dd->root, root_rect);
+        n->client->hidden = false;
         xcb_map_window(dpy, n->client->window);
         focus_node(dd, n, true);
     } else {
@@ -537,29 +541,33 @@ void select_desktop(desktop_t *d)
     if (d == NULL || d == desk)
         return;
 
-    PUTS("select desktop");
+    PRINTF("select desktop %s\n", desk->name);
 
-    if (d->focus != NULL)
-        xcb_map_window(dpy, d->focus->client->window);
+    /* if (d->focus != NULL) */
+    /*     xcb_map_window(dpy, d->focus->client->window); */
 
     node_t *n = first_extrema(d->root);
 
     while (n != NULL) {
-        if (n != d->focus)
-            xcb_map_window(dpy, n->client->window);
+        n->client->hidden = false;
+        /* if (n != d->focus) */
+        /*     xcb_map_window(dpy, n->client->window); */
+        xcb_map_window(dpy, n->client->window);
         n = next_leaf(n);
     }
 
     n = first_extrema(desk->root);
 
     while (n != NULL) {
-        if (n != desk->focus)
-            xcb_unmap_window(dpy, n->client->window);
+        n->client->hidden = true;
+        /* if (n != desk->focus) */
+        /*     xcb_unmap_window(dpy, n->client->window); */
+        xcb_unmap_window(dpy, n->client->window);
         n = next_leaf(n);
     }
 
-    if (desk->focus != NULL)
-        xcb_unmap_window(dpy, desk->focus->client->window);
+    /* if (desk->focus != NULL) */
+    /*     xcb_unmap_window(dpy, desk->focus->client->window); */
 
     last_desk = desk;
     desk = d;

@@ -51,15 +51,8 @@
 
 ## Features
 
-- Triple window borders. Rationale: with single borders, it might happen that the color of the window border is too close to the color of its inner or outer environment to be visible.
-- Directional *pair* splitting preselection (the feedback will be drawn in the window border pixman).
+- Triple window borders. (Rationale: with single borders, it might happen that the color of the window border is too close to the color of its inner or outer environment to be visible.)
+- Directional *pair* splitting preselection (the feedback is drawn in the window border pixman).
+- Don't automatically give the focus to toolbar windows.
 - Set or get settings and call methods at runtime.
 - Configuration file in Lua.
-
-## Planned Features
-
-- Don't automatically give the focus to toolbar windows.
-- When a fullscreen window looses the focus, its fullscreen state will be set to *false* if the window to be focused is in the same desktop.
-- Close every window except the focused one.
-- Tree transformations: directional leaf swap, node pulling, rotation...
-- Rounded corners ? (cairo).

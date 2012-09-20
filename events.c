@@ -18,23 +18,18 @@ void handle_event(xcb_generic_event_t *evt)
 {
     switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
         case XCB_MAP_REQUEST:
-            PUTS("map request");
             map_request(evt);
             break;
         case XCB_DESTROY_NOTIFY:
-            PUTS("destroy notify");
             destroy_notify(evt);
             break;
         case XCB_UNMAP_NOTIFY:
-            PUTS("unmap notify");
             unmap_notify(evt);
             break;
         case XCB_CLIENT_MESSAGE:
-            PUTS("client message");
             client_message(evt);
             break;
         case XCB_CONFIGURE_REQUEST:
-            PUTS("configure request");
             configure_request(evt);
             break;
         case XCB_BUTTON_PRESS:
@@ -49,6 +44,9 @@ void handle_event(xcb_generic_event_t *evt)
 void map_request(xcb_generic_event_t *evt)
 {
     xcb_map_request_event_t *e = (xcb_map_request_event_t *) evt;
+
+    PRINTF("map request %X\n", e->window);
+
     xcb_get_window_attributes_reply_t  *wa;
     xcb_window_t win = e->window;
     window_location_t loc;
@@ -98,7 +96,9 @@ void map_request(xcb_generic_event_t *evt)
     apply_layout(desk, desk->root, root_rect);
 
     xcb_map_window(dpy, c->window);
-    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
+
+    if (takes_focus)
+        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
     num_clients++;
     ewmh_update_client_list();
@@ -107,6 +107,9 @@ void map_request(xcb_generic_event_t *evt)
 void configure_request(xcb_generic_event_t *evt)
 {
     xcb_configure_request_event_t *e = (xcb_configure_request_event_t *) evt;
+
+    PRINTF("configure request %X\n", e->window);
+
     window_location_t loc;
     bool is_managed = locate_window(e->window, &loc);
 
@@ -170,6 +173,8 @@ void destroy_notify(xcb_generic_event_t *evt)
     xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *) evt;
     window_location_t loc;
 
+    PRINTF("destroy notify %X\n", e->window);
+
     if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
         apply_layout(loc.desktop, loc.desktop->root, root_rect);
@@ -179,18 +184,24 @@ void destroy_notify(xcb_generic_event_t *evt)
 void unmap_notify(xcb_generic_event_t *evt)
 {
     xcb_unmap_notify_event_t *e = (xcb_unmap_notify_event_t *) evt;
-    if (e->event != screen->root) {
-        window_location_t loc;
-        if (locate_window(e->window, &loc)) {
-            remove_node(loc.desktop, loc.node);
-            apply_layout(loc.desktop, loc.desktop->root, root_rect);
-        }
+
+    PRINTF("unmap notify %X\n", e->window);
+
+    return;
+
+    window_location_t loc;
+    if (locate_window(e->window, &loc) && !loc.node->client->hidden) {
+        remove_node(loc.desktop, loc.node);
+        apply_layout(loc.desktop, loc.desktop->root, root_rect);
     }
 }
 
 void client_message(xcb_generic_event_t *evt)
 {
     xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
+
+    PRINTF("client message %X\n", e->window);
+
     window_location_t loc;
 
     if (!locate_window(e->window, &loc))
