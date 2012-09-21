@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#define ROOT_EVENT_MASK  (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY)
+
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
 unsigned int num_clients;

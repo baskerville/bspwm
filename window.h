@@ -16,6 +16,9 @@ void window_border_width(xcb_window_t, uint32_t);
 void window_move_resize(xcb_window_t, int16_t, int16_t, uint16_t, uint16_t);
 void window_raise(xcb_window_t);
 void window_lower(xcb_window_t);
+void window_set_visibility(xcb_window_t, bool);
+void window_hide(xcb_window_t);
+void window_show(xcb_window_t);
 uint32_t get_main_border_color(client_t *, bool);
 void list_windows(char *);
 

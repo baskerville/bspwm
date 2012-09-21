@@ -31,7 +31,7 @@ void quit(void)
 
 void register_events(void)
 {
-    uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
+    uint32_t values[] = {ROOT_EVENT_MASK};
     xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
     if (err != NULL) {
         xcb_disconnect(dpy);

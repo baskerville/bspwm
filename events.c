@@ -24,7 +24,7 @@ void handle_event(xcb_generic_event_t *evt)
             destroy_notify(evt);
             break;
         case XCB_UNMAP_NOTIFY:
-            /* unmap_notify(evt); */
+            unmap_notify(evt);
             break;
         case XCB_CLIENT_MESSAGE:
             client_message(evt);
@@ -98,9 +98,7 @@ void map_request(xcb_generic_event_t *evt)
 
     apply_layout(desk, desk->root, root_rect);
 
-    xcb_map_window(dpy, c->window);
-
-    c->visible = true;
+    window_show(c->window);
 
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
@@ -193,15 +191,16 @@ void unmap_notify(xcb_generic_event_t *evt)
 {
     xcb_unmap_notify_event_t *e = (xcb_unmap_notify_event_t *) evt;
 
-    PRINTF("unmap notify %X %u\n", e->window, e->from_configure);
+    PRINTF("unmap notify %X %u\n", e->window, XCB_EVENT_SENT(e));
+
+    if (!XCB_EVENT_SENT(e))
+        return;
 
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
-        if (loc.node->client->visible) {
-            PRINTF("remove node in unmap notify %X\n", e->window);
-            remove_node(loc.desktop, loc.node);
-            apply_layout(loc.desktop, loc.desktop->root, root_rect);
-        }
+        PRINTF("remove node in unmap notify %X\n", e->window);
+        remove_node(loc.desktop, loc.node);
+        apply_layout(loc.desktop, loc.desktop->root, root_rect);
     }
 }
 
