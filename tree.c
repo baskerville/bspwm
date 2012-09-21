@@ -584,21 +584,18 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
     PUTS("cycle leaf");
 
     node_t *f = (dir == DIR_PREV ? prev_leaf(n) : next_leaf(n));
+    if (f == NULL)
+        f = (dir == DIR_PREV ? second_extrema(d->root) : first_extrema(d->root));
 
-    while (f != NULL) {
+    while (f != n) {
         bool tiled = is_tiled(f->client);
         if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)) {
             focus_node(d, f, true);
             return;
         }
         f = (dir == DIR_PREV ? prev_leaf(f) : next_leaf(f));
-    }
-
-    if (skip == SKIP_NONE && f == NULL) {
-        if (dir == DIR_PREV)
-            focus_node(d, second_extrema(d->root), true);
-        else
-            focus_node(d, first_extrema(d->root), true);
+        if (f == NULL)
+            f = (dir == DIR_PREV ? second_extrema(d->root) : first_extrema(d->root));
     }
 }
 
