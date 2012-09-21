@@ -100,6 +100,8 @@ void map_request(xcb_generic_event_t *evt)
 
     xcb_map_window(dpy, c->window);
 
+    c->visible = true;
+
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
@@ -193,12 +195,12 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     PRINTF("unmap notify %X\n", e->window);
 
-    return;
-
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
-        remove_node(loc.desktop, loc.node);
-        apply_layout(loc.desktop, loc.desktop->root, root_rect);
+        if (loc.node->client->visible) {
+            remove_node(loc.desktop, loc.node);
+            apply_layout(loc.desktop, loc.desktop->root, root_rect);
+        }
     }
 }
 
@@ -239,9 +241,11 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
+        if (desk->focus != NULL && desk->focus->client->fullscreen)
+            return;
+        apply_layout(loc.desktop, loc.desktop->root, root_rect);
         if (desk != loc.desktop)
             select_desktop(loc.desktop);
-        apply_layout(loc.desktop, loc.desktop->root, root_rect);
         focus_node(loc.desktop, loc.node, true);
     }
 }

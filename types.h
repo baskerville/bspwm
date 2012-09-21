@@ -64,6 +64,7 @@ typedef struct {
     bool fullscreen;
     bool locked;     /* protects window from being closed */
     bool urgent;
+    bool visible;
     xcb_rectangle_t rectangle;
 } client_t;
 

@@ -179,10 +179,11 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     if (is_leaf(n))
         /* sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */ 
-        sprintf(line, "C %X [%i %i %u %u] (%s%s) [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->rectangle.x, n->client->rectangle.y, n->client->rectangle.width, n->client->rectangle.height); 
+        /* sprintf(line, "C %X [%i %i %u %u] (%s%s) [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->rectangle.x, n->client->rectangle.y, n->client->rectangle.width, n->client->rectangle.height); */ 
+        sprintf(line, "C %X %s%s%s%s%s%s", n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-"), (n->client->visible ? "v" : "-")); 
     else
         /* sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */
-        sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height);
+        sprintf(line, "%s %.2f %s", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, (n->vacant ? "f" : "-"));
 
     strcat(rsp, line);
 
@@ -286,7 +287,7 @@ void insert_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL)
         return;
 
-    PUTS("insert node");
+    PRINTF("insert node %X\n", n->client->window);
 
     node_t *focus = d->focus;
 
@@ -378,7 +379,7 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
     if (desk->focus != NULL && desk->focus->client->fullscreen)
         return;
 
-    PRINTF("focus_node %X\n", n->client->window);
+    PRINTF("focus node %X\n", n->client->window);
 
     split_mode = MODE_AUTOMATIC;
     n->client->urgent = false;
@@ -417,7 +418,7 @@ void unlink_node(desktop_t *d, node_t *n)
     if (d == NULL || n == NULL)
         return;
 
-    PUTS("unlink node");
+    PRINTF("unlink node %X\n", n->client->window);
 
     node_t *p = n->parent;
 
@@ -514,16 +515,19 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     if (n == NULL || ds == NULL || dd == NULL || dd == ds)
         return;
 
-    PUTS("transfer node");
+    PRINTF("transfer node %X\n", n->client->window);
 
     unlink_node(ds, n);
 
-    if (ds == desk)
+    if (ds == desk) {
+        n->client->visible = false;
         xcb_unmap_window(dpy, n->client->window);
+    }
 
     insert_node(dd, n);
 
     if (dd == desk) {
+        n->client->visible = true;
         xcb_map_window(dpy, n->client->window);
         focus_node(dd, n, true);
     } else {
@@ -544,6 +548,7 @@ void select_desktop(desktop_t *d)
     node_t *n = first_extrema(d->root);
 
     while (n != NULL) {
+        n->client->visible = true;
         xcb_map_window(dpy, n->client->window);
         n = next_leaf(n);
     }
@@ -551,6 +556,7 @@ void select_desktop(desktop_t *d)
     n = first_extrema(desk->root);
 
     while (n != NULL) {
+        n->client->visible = false;
         xcb_unmap_window(dpy, n->client->window);
         n = next_leaf(n);
     }

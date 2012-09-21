@@ -145,7 +145,7 @@ void close_window(desktop_t *d, node_t *n)
     if (n == NULL || n->client->locked)
         return;
 
-    PUTS("close window");
+    PRINTF("close window %X\n", n->client->window);
 
     xcb_atom_t WM_DELETE_WINDOW;
     xcb_window_t win = n->client->window;
@@ -209,6 +209,9 @@ void toggle_floating(node_t *n)
     update_vacant_state(n->parent);
     if (c->floating)
         window_raise(c->window);
+    else if (is_tiled(c))
+        window_lower(c->window);
+
 }
 
 void toggle_locked(client_t *c)
