@@ -129,6 +129,8 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "cycle") == 0) {
+        if (desk->focus != NULL && desk->focus->client->fullscreen)
+            return;
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
             cycle_dir_t d;
@@ -167,6 +169,8 @@ void process_message(char *msg, char *rsp)
         }
         return;
     } else if (strcmp(cmd, "focus") == 0) {
+        if (desk->focus != NULL && desk->focus->client->fullscreen)
+            return;
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
             direction_t d;

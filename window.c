@@ -47,16 +47,21 @@ void window_draw_border(node_t *n, bool focused)
         return;
 
     xcb_window_t win = n->client->window;
-    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
+    /* xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL); */
 
-    if (geom == NULL)
-        return;
+    /* if (geom == NULL) */
+    /*     return; */
 
-    uint16_t width = geom->width;
-    uint16_t height = geom->height;
-    uint8_t depth = geom->depth;
+    /* uint16_t width = geom->width; */
+    /* uint16_t height = geom->height; */
+    /* uint8_t depth = geom->depth; */
 
-    free(geom);
+    /* free(geom); */
+
+    xcb_rectangle_t actual_rectangle = (is_tiled(n->client) ? n->client->tiled_rectangle : n->client->floating_rectangle);
+
+    uint16_t width = actual_rectangle.width;
+    uint16_t height = actual_rectangle.height;
 
     uint16_t full_width = width + 2 * border_width;
     uint16_t full_height = height + 2 * border_width;
@@ -82,7 +87,7 @@ void window_draw_border(node_t *n, bool focused)
     xcb_rectangle_t *presel_rectangles;
 
     xcb_pixmap_t pix = xcb_generate_id(dpy);
-    xcb_create_pixmap(dpy, depth, pix, win, full_width, full_height);
+    xcb_create_pixmap(dpy, root_depth, pix, win, full_width, full_height);
 
     xcb_gcontext_t gc = xcb_generate_id(dpy);
     xcb_create_gc(dpy, gc, pix, 0, NULL);
@@ -178,14 +183,14 @@ void toggle_fullscreen(client_t *c)
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        xcb_rectangle_t rect = c->rectangle;
+        xcb_rectangle_t rect = c->floating_rectangle;
         window_border_width(c->window, border_width);
         window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
     } else {
         c->fullscreen = true;
         xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
         if (geom != NULL) {
-            c->rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
+            c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
             free(geom);
         }
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};

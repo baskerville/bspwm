@@ -29,13 +29,14 @@ void quit(void)
     running = false;
 }
 
-int register_events(void)
+void register_events(void)
 {
     uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
     xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
-    if (err != NULL)
-        return 1;
-    return 0;
+    if (err != NULL) {
+        xcb_disconnect(dpy);
+        die("another WM is already running\n");
+    }
 }
 
 void setup(void)
@@ -47,6 +48,7 @@ void setup(void)
 
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
+    root_depth = screen->root_depth;
 
     xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED, ewmh->_NET_WM_STATE_FULLSCREEN, ewmh->_NET_WM_STATE, ewmh->_NET_ACTIVE_WINDOW};
 
@@ -67,9 +69,9 @@ void setup(void)
 int main(void)
 {
     fd_set descriptors;
+    char *socket_path;
     int sock_fd, ret_fd, dpy_fd, sel, nbr;
     struct sockaddr_un sock_address;
-    char *sock_path;
     char msg[BUFSIZ], rsp[BUFSIZ];
 
     xcb_generic_event_t *event;
@@ -82,22 +84,20 @@ int main(void)
         die("error: cannot open display\n");
 
     setup();
-
-    if (register_events() == 1) {
-        xcb_disconnect(dpy);
-        die("another WM is already running\n");
-    }
+    register_events();
 
     dpy_fd = xcb_get_file_descriptor(dpy);
 
-    sock_path = getenv(SOCK_PATH);
+    socket_path = getenv(SOCKET_ENV_VAR);
 
-    if (sock_path == NULL)
-        die("BSPWM_SOCKET environment variable is not set\n");
+    if (socket_path == NULL) {
+        xcb_disconnect(dpy);
+        die("the socket path environment variable is not defined\n");
+    }
 
     sock_address.sun_family = AF_UNIX;
-    strcpy(sock_address.sun_path, sock_path);
-    unlink(sock_path);
+    strcpy(sock_address.sun_path, socket_path);
+    unlink(socket_path);
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 

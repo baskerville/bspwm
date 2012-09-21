@@ -24,7 +24,7 @@ void handle_event(xcb_generic_event_t *evt)
             destroy_notify(evt);
             break;
         case XCB_UNMAP_NOTIFY:
-            unmap_notify(evt);
+            /* unmap_notify(evt); */
             break;
         case XCB_CLIENT_MESSAGE:
             client_message(evt);
@@ -65,10 +65,10 @@ void map_request(xcb_generic_event_t *evt)
     xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
 
     if (geom) {
-        c->rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
+        c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
         free(geom);
     } else {
-        c->rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
+        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
     }
 
     bool floating = false, transient = false, fullscreen = false, takes_focus = true;
@@ -130,28 +130,28 @@ void configure_request(xcb_generic_event_t *evt)
             mask |= XCB_CONFIG_WINDOW_X;
             values[i++] = e->x;
             if (is_managed)
-                loc.node->client->rectangle.x = e->x;
+                loc.node->client->floating_rectangle.x = e->x;
         }
 
         if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
             mask |= XCB_CONFIG_WINDOW_Y;
             values[i++] = e->y;
             if (is_managed)
-                loc.node->client->rectangle.y = e->y;
+                loc.node->client->floating_rectangle.y = e->y;
         }
 
         if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
             mask |= XCB_CONFIG_WINDOW_WIDTH;
             values[i++] = e->width;
             if (is_managed)
-                loc.node->client->rectangle.width = e->width;
+                loc.node->client->floating_rectangle.width = e->width;
         }
 
         if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
             mask |= XCB_CONFIG_WINDOW_HEIGHT;
             values[i++] = e->height;
             if (is_managed)
-                loc.node->client->rectangle.height = e->height;
+                loc.node->client->floating_rectangle.height = e->height;
         }
 
         if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) {
@@ -193,11 +193,12 @@ void unmap_notify(xcb_generic_event_t *evt)
 {
     xcb_unmap_notify_event_t *e = (xcb_unmap_notify_event_t *) evt;
 
-    PRINTF("unmap notify %X\n", e->window);
+    PRINTF("unmap notify %X %u\n", e->window, e->from_configure);
 
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
         if (loc.node->client->visible) {
+            PRINTF("remove node in unmap notify %X\n", e->window);
             remove_node(loc.desktop, loc.node);
             apply_layout(loc.desktop, loc.desktop->root, root_rect);
         }
@@ -209,7 +210,7 @@ void property_notify(xcb_generic_event_t *evt)
     xcb_property_notify_event_t *e = (xcb_property_notify_event_t *) evt;
     xcb_icccm_wm_hints_t hints;
 
-    PRINTF("property notify %X\n", e->window);
+    /* PRINTF("property notify %X\n", e->window); */
 
     if (e->atom != XCB_ATOM_WM_HINTS)
         return;

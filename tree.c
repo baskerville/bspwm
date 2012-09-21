@@ -179,7 +179,7 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     if (is_leaf(n))
         /* sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */ 
-        /* sprintf(line, "C %X [%i %i %u %u] (%s%s) [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->rectangle.x, n->client->rectangle.y, n->client->rectangle.width, n->client->rectangle.height); */ 
+        /* sprintf(line, "C %X [%i %i %u %u] (%s%s) [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->floating_rectangle.x, n->client->floating_rectangle.y, n->client->floating_rectangle.width, n->client->floating_rectangle.height); */ 
         sprintf(line, "C %X %s%s%s%s%s%s", n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-"), (n->client->visible ? "v" : "-")); 
     else
         /* sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */
@@ -245,8 +245,9 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
             int bleed = window_gap + 2 * border_width;
             r.width = (bleed < r.width ? r.width - bleed : 1);
             r.height = (bleed < r.height ? r.height - bleed : 1);
+            n->client->tiled_rectangle = r;
         } else {
-            r = n->client->rectangle;
+            r = n->client->floating_rectangle;
         }
 
         window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
@@ -257,7 +258,6 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
             window_raise(n->client->window);
 
     } else {
-
         xcb_rectangle_t first_rect;
         xcb_rectangle_t second_rect;
 
@@ -374,9 +374,6 @@ void insert_node(desktop_t *d, node_t *n)
 void focus_node(desktop_t *d, node_t *n, bool is_mapped)
 {
     if (n == NULL)
-        return;
-
-    if (desk->focus != NULL && desk->focus->client->fullscreen)
         return;
 
     PRINTF("focus node %X\n", n->client->window);
@@ -543,7 +540,7 @@ void select_desktop(desktop_t *d)
     if (d == NULL || d == desk)
         return;
 
-    PRINTF("select desktop %s\n", desk->name);
+    PRINTF("select desktop %s\n", d->name);
 
     node_t *n = first_extrema(d->root);
 

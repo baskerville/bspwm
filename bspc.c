@@ -10,16 +10,16 @@ int main(int argc, char *argv[])
 {
     int sock_fd, nbr, i;
     struct sockaddr_un sock_address;
-    char *sock_path;
+    char *socket_path;
     char msg[BUFSIZ];
     char rsp[BUFSIZ];
 
     if (argc < 2)
         return -1;
 
-    sock_path = getenv(SOCK_PATH);
+    socket_path = getenv(SOCKET_ENV_VAR);
 
-    if (sock_path == NULL)
+    if (socket_path == NULL)
         return -1;
 
     msg[0] = '\0';
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     }
 
     sock_address.sun_family = AF_UNIX;
-    strcpy(sock_address.sun_path, sock_path);
+    strcpy(sock_address.sun_path, socket_path);
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
