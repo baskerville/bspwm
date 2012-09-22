@@ -37,6 +37,18 @@ void register_events(void)
         xcb_disconnect(dpy);
         die("another WM is already running\n");
     }
+
+    xcb_grab_button(dpy, 0, screen->root, XCB_EVENT_MASK_BUTTON_PRESS | 
+                XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, 
+                XCB_GRAB_MODE_ASYNC, screen->root, XCB_NONE, XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4);
+
+    xcb_grab_button(dpy, 0, screen->root, XCB_EVENT_MASK_BUTTON_PRESS | 
+                XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, 
+                XCB_GRAB_MODE_ASYNC, screen->root, XCB_NONE, XCB_BUTTON_INDEX_2, XCB_MOD_MASK_4);
+
+    xcb_grab_button(dpy, 0, screen->root, XCB_EVENT_MASK_BUTTON_PRESS | 
+                XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, 
+                XCB_GRAB_MODE_ASYNC, screen->root, XCB_NONE, XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4);
 }
 
 void setup(void)

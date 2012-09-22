@@ -36,7 +36,10 @@ void handle_event(xcb_generic_event_t *evt)
             property_notify(evt);
             break;
         case XCB_BUTTON_PRESS:
-            PUTS("button press");
+            button_press(evt);
+            break;
+        case XCB_BUTTON_RELEASE:
+            PUTS("button release");
             break;
         default:
             /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
@@ -80,6 +83,10 @@ void map_request(xcb_generic_event_t *evt)
 
     node_t *birth = make_node();
     birth->client = c;
+
+    if (floating)
+        split_mode = MODE_MANUAL;
+
     insert_node(desk, birth);
 
     if (floating)
@@ -103,7 +110,7 @@ void map_request(xcb_generic_event_t *evt)
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
-    uint32_t values[] = {XCB_EVENT_MASK_PROPERTY_CHANGE};
+    uint32_t values[] = {CLIENT_EVENT_MASK};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
@@ -249,6 +256,30 @@ void client_message(xcb_generic_event_t *evt)
         focus_node(loc.desktop, loc.node, true);
     }
 }
+
+void button_press(xcb_generic_event_t *evt)
+{
+    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
+    xcb_window_t win = e->child;
+
+    PRINTF("button press %X %u %u\n", win, e->detail, e->state);
+
+    window_location_t loc;
+    if (locate_window(win, &loc)) {
+        switch (e->detail)  {
+            case XCB_BUTTON_INDEX_2:
+                focus_node(loc.desktop, loc.node, true);
+                break;
+            case XCB_BUTTON_INDEX_1:
+            case XCB_BUTTON_INDEX_3:
+                PUTS("button 1 or 3");
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 
 void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
 {

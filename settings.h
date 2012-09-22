@@ -13,11 +13,11 @@
 #define AUTOSTART_FILE      "autostart"
 
 #define OUTER_BORDER_WIDTH  3
-#define MAIN_BORDER_WIDTH   2
+#define MAIN_BORDER_WIDTH   1
 #define INNER_BORDER_WIDTH  3
 #define SPLIT_RATIO         0.5
 
-#define WINDOW_GAP          8
+#define WINDOW_GAP          6
 #define TOP_PADDING         0
 #define BOTTOM_PADDING      0
 #define LEFT_PADDING        0
