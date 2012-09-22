@@ -164,6 +164,7 @@ The following messages are handled:
         Reload the autostart and the settings file.
 
 Where
+
     DIR = left|right|up|down
     CYC = next|prev
     ROT = clockwise|counter_clockwise|full_cycle
