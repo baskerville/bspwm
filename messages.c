@@ -77,6 +77,10 @@ void process_message(char *msg, char *rsp)
         char *value = strtok(NULL, TOKEN_SEP);
         if (value != NULL && desk->focus != NULL)
             sscanf(value, "%lf", &desk->focus->split_ratio);
+    } else if (strcmp(cmd, "cancel") == 0) {
+        split_mode = MODE_AUTOMATIC;
+        window_draw_border(desk->focus, true);
+        return;
     } else if (strcmp(cmd, "presel") == 0) {
         if (desk->focus == NULL || !is_tiled(desk->focus->client) || desk->layout != LAYOUT_TILED)
             return;
@@ -86,7 +90,7 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 split_mode = MODE_MANUAL;
                 split_dir = d;
-                window_draw_border(desk->focus, active_border_color_pxl);
+                window_draw_border(desk->focus, true);
             }
         }
         return;

@@ -38,8 +38,11 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_BUTTON_PRESS:
             button_press(evt);
             break;
+        case XCB_MOTION_NOTIFY:
+            motion_notify(evt);
+            break;
         case XCB_BUTTON_RELEASE:
-            PUTS("button release");
+            button_release(evt);
             break;
         default:
             /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
@@ -64,15 +67,7 @@ void map_request(xcb_generic_event_t *evt)
     free(wa);
 
     client_t *c = make_client(win);
-
-    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
-
-    if (geom) {
-        c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
-        free(geom);
-    } else {
-        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
-    }
+    update_floating_rectangle(c);
 
     bool floating = false, transient = false, fullscreen = false, takes_focus = true;
 
@@ -272,14 +267,53 @@ void button_press(xcb_generic_event_t *evt)
                 break;
             case XCB_BUTTON_INDEX_1:
             case XCB_BUTTON_INDEX_3:
-                PUTS("button 1 or 3");
-                break;
-            default:
+                if (!is_floating(loc.node->client))
+                    return;
+                PUTS("grab pointer from button press");
+                frozen_pointer->window = loc.node->client->window;
+                frozen_pointer->rectangle = loc.node->client->floating_rectangle;
+                frozen_pointer->position = (xcb_point_t) {e->root_x, e->root_y};
+                frozen_pointer->button = e->detail;
+                xcb_grab_pointer(dpy, false, screen->root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
                 break;
         }
     }
 }
 
+void motion_notify(xcb_generic_event_t *evt)
+{
+    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
+    xcb_window_t win = e->child;
+
+    PRINTF("motion notify %X %u %u\n", win, e->detail, e->state);
+
+    int16_t delta_x, delta_y, x, y;
+
+    switch (frozen_pointer->button) {
+        case XCB_BUTTON_INDEX_1:
+            delta_x = e->root_x - frozen_pointer->position.x;
+            delta_y = e->root_y - frozen_pointer->position.y;
+            x = frozen_pointer->rectangle.x + delta_x;
+            y = frozen_pointer->rectangle.y + delta_y;
+            window_move(frozen_pointer->window, x, y);
+            break;
+    }
+}
+
+void button_release(xcb_generic_event_t *evt)
+{
+    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
+    xcb_window_t win = e->child;
+
+    PRINTF("button release %X %u %u\n", win, e->detail, e->state);
+
+    xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
+
+    window_location_t loc;
+    if (locate_window(win, &loc)) {
+        update_floating_rectangle(loc.node->client);
+    }
+}
 
 void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
 {

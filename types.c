@@ -40,3 +40,9 @@ rule_t *make_rule(void)
     r->next = NULL;
     return r;
 }
+
+pointer_state_t *make_pointer_state(void)
+{
+    pointer_state_t *p = malloc(sizeof(pointer_state_t));
+    return p;
+}

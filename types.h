@@ -109,6 +109,13 @@ struct rule_t {
 };
 
 typedef struct {
+    xcb_button_t button;
+    xcb_point_t position;
+    xcb_rectangle_t rectangle;
+    xcb_window_t window;
+} pointer_state_t;
+
+typedef struct {
     node_t *node;
     desktop_t *desktop;
 } window_location_t;
@@ -117,5 +124,6 @@ node_t *make_node(void);
 desktop_t *make_desktop(const char *);
 client_t *make_client(xcb_window_t);
 rule_t *make_rule(void);
+pointer_state_t *make_pointer_state(void);
 
 #endif

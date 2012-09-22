@@ -261,10 +261,28 @@ uint32_t get_main_border_color(client_t *c, bool focused)
     }
 }
 
+void update_floating_rectangle(client_t *c)
+{
+    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
+
+    if (geom) {
+        c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
+        free(geom);
+    } else {
+        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
+    }
+}
+
 void window_border_width(xcb_window_t win, uint32_t bw)
 {
     uint32_t values[] = {bw};
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
+}
+
+void window_move(xcb_window_t win, int16_t x, int16_t y)
+{
+    uint32_t values[] = {x, y};
+    xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_X_Y, values);
 }
 
 void window_move_resize(xcb_window_t win, int16_t x, int16_t y, uint16_t w, uint16_t h)
