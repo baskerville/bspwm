@@ -45,7 +45,6 @@ void handle_event(xcb_generic_event_t *evt)
             button_release(evt);
             break;
         default:
-            /* PRINTF("received event %i\n", XCB_EVENT_RESPONSE_TYPE(evt)); */
             break;
     }
 }

@@ -94,15 +94,6 @@ void process_message(char *msg, char *rsp)
             }
         }
         return;
-    } else if (strcmp(cmd, "locate") == 0) {
-        char *wid = strtok(NULL, TOKEN_SEP);
-        if (wid != NULL) {
-            window_location_t loc;
-            xcb_window_t win = atoi(wid);
-            if (locate_window(win, &loc))
-                sprintf(rsp, "%s", loc.desktop->name);
-
-        }
     } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
@@ -117,6 +108,18 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_t *d = find_desktop(name);
             transfer_node(desk, d, desk->focus);
+        }
+    } else if (strcmp(cmd, "rename") == 0) {
+        char *cur_name = strtok(NULL, TOKEN_SEP);
+        if (cur_name != NULL) {
+            desktop_t *d = find_desktop(cur_name);
+            if (d != NULL) {
+                char *new_name = strtok(NULL, TOKEN_SEP);
+                if (new_name != NULL) {
+                    strcpy(d->name, new_name);
+                    ewmh_update_desktop_names();
+                }
+            }
         }
     } else if (strcmp(cmd, "use") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);

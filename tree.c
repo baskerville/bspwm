@@ -178,11 +178,8 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
         strcat(rsp, "  ");
 
     if (is_leaf(n))
-        /* sprintf(line, "0x%X [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */ 
-        /* sprintf(line, "C %X [%i %i %u %u] (%s%s) [%i %i %u %u]", n->client->window, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), n->client->floating_rectangle.x, n->client->floating_rectangle.y, n->client->floating_rectangle.width, n->client->floating_rectangle.height); */ 
         sprintf(line, "C %X %s%s%s%s%s", n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-")); 
     else
-        /* sprintf(line, "%s %.2f [%i %i %u %u]", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio, n->rectangle.x, n->rectangle.y, n->rectangle.width, n->rectangle.height); */
         sprintf(line, "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
 
     strcat(rsp, line);
@@ -545,7 +542,6 @@ void select_desktop(desktop_t *d)
     node_t *n = first_extrema(d->root);
 
     while (n != NULL) {
-        /* xcb_map_window(dpy, n->client->window); */
         window_show(n->client->window);
         n = next_leaf(n);
     }

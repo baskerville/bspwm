@@ -80,12 +80,12 @@ struct node_t {
     split_type_t split_type;
     double split_ratio;
     xcb_rectangle_t rectangle;
-    bool vacant; /* vacant nodes only hold floating clients */
-    split_mode_t born_as; /* container node property used to when removing leaves */
+    bool vacant;          /* vacant nodes only hold floating clients */
+    split_mode_t born_as;
     node_t *first_child;
     node_t *second_child;
     node_t *parent;
-    client_t *client; /* NULL except for leaves */
+    client_t *client;     /* NULL except for leaves */
 };
 
 typedef struct desktop_t desktop_t;

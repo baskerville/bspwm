@@ -1,4 +1,4 @@
-VERSION = 0.01
+VERSION = 0.1
 
 CC      = gcc
 LIBS    = `pkg-config --libs xcb xcb-ewmh xcb-icccm lua`
@@ -17,35 +17,35 @@ CL_OBJ = $(CL_SRC:.c=.o)
 all: options clean bspwm bspc
 
 options:
-#	@echo "bspwm build options:"
-#	@echo "CC      = $(CC)"
-#	@echo "CFLAGS  = $(CFLAGS)"
-#	@echo "LDFLAGS = $(LDFLAGS)"
-#	@echo "PREFIX  = $(PREFIX)"
+	@echo "bspwm build options:"
+	@echo "CC      = $(CC)"
+	@echo "CFLAGS  = $(CFLAGS)"
+	@echo "LDFLAGS = $(LDFLAGS)"
+	@echo "PREFIX  = $(PREFIX)"
 
 .c.o:
-#	@echo "CC $<"
+	@echo "CC $<"
 	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -c -o $@ $<
 
 bspwm:  $(WM_OBJ)
-#	@echo CC -o $@
+	@echo CC -o $@
 	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS)
 
 bspc:   $(CL_OBJ)
-#	@echo CC -o $@
+	@echo CC -o $@
 	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS)
 
 clean:
-#	@echo "cleaning"
+	@echo "cleaning"
 	@rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}
 
-install: all
-#	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
+install:
+	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
 	@install -D -m 755 bspwm $(DESTDIR)$(BINPREFIX)/bspwm
 	@install -D -m 755 bspc $(DESTDIR)$(BINPREFIX)/bspc
 
 uninstall:
-#	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
+	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
 	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c}
 
 .PHONY: all options clean install uninstall

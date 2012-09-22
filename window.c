@@ -47,16 +47,6 @@ void window_draw_border(node_t *n, bool focused)
         return;
 
     xcb_window_t win = n->client->window;
-    /* xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL); */
-
-    /* if (geom == NULL) */
-    /*     return; */
-
-    /* uint16_t width = geom->width; */
-    /* uint16_t height = geom->height; */
-    /* uint8_t depth = geom->depth; */
-
-    /* free(geom); */
 
     xcb_rectangle_t actual_rectangle = (is_tiled(n->client) ? n->client->tiled_rectangle : n->client->floating_rectangle);
 
