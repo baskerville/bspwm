@@ -448,7 +448,9 @@ void unlink_node(desktop_t *d, node_t *n)
         n->parent = NULL;
         free(p);
 
-        if (n == d->focus) {
+        if (n == d->last_focus) {
+            d->last_focus = NULL;
+        } else if (n == d->focus) {
             if (d->last_focus != NULL && d->last_focus != n)
                 d->focus = d->last_focus;
             else

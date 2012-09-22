@@ -302,8 +302,8 @@ void motion_notify(xcb_generic_event_t *evt)
 {
     xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
 
-    int16_t delta_x, delta_y, x, y;
-    uint16_t w, h;
+    int16_t delta_x, delta_y, x, y, w, h;
+    uint16_t width, height;
 
     desktop_t *d = frozen_pointer->desktop;
     node_t *n = frozen_pointer->node;
@@ -349,9 +349,10 @@ void motion_notify(xcb_generic_event_t *evt)
                     h = rect.height + delta_y;
                     break;
             }
-
-            window_move_resize(win, x, y, w, h);
-            c->floating_rectangle = (xcb_rectangle_t) {x, y, w, h};
+            width = MAX(1, w);
+            height = MAX(1, h);
+            window_move_resize(win, x, y, width, height);
+            c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, (d->focus == n));
     }
 }
