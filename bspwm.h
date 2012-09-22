@@ -5,7 +5,7 @@
 
 #define ROOT_EVENT_MASK    (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY)
 #define CLIENT_EVENT_MASK  (XCB_EVENT_MASK_PROPERTY_CHANGE)
-#define MOUSE_MODIFIER     XCB_MOD_MASK_4
+#define BUTTON_MODIFIER     XCB_MOD_MASK_4
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;

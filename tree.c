@@ -564,9 +564,9 @@ void select_desktop(desktop_t *d)
 
 void cycle_desktop(cycle_dir_t dir)
 {
-    if (dir == DIR_NEXT)
+    if (dir == CYCLE_NEXT)
         select_desktop((desk->next == NULL ? desk_head : desk->next));
-    else if (dir == DIR_PREV)
+    else if (dir == CYCLE_PREV)
         select_desktop((desk->prev == NULL ? desk_tail : desk->prev));
 }
 
@@ -577,9 +577,9 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
 
     PUTS("cycle leaf");
 
-    node_t *f = (dir == DIR_PREV ? prev_leaf(n) : next_leaf(n));
+    node_t *f = (dir == CYCLE_PREV ? prev_leaf(n) : next_leaf(n));
     if (f == NULL)
-        f = (dir == DIR_PREV ? second_extrema(d->root) : first_extrema(d->root));
+        f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
 
     while (f != n) {
         bool tiled = is_tiled(f->client);
@@ -587,9 +587,9 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
             focus_node(d, f, true);
             return;
         }
-        f = (dir == DIR_PREV ? prev_leaf(f) : next_leaf(f));
+        f = (dir == CYCLE_PREV ? prev_leaf(f) : next_leaf(f));
         if (f == NULL)
-            f = (dir == DIR_PREV ? second_extrema(d->root) : first_extrema(d->root));
+            f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
     }
 }
 

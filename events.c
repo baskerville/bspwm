@@ -261,6 +261,7 @@ void button_press(xcb_generic_event_t *evt)
 
     window_location_t loc;
     if (locate_window(win, &loc)) {
+        client_t *c = loc.node->client;
         switch (e->detail)  {
             case XCB_BUTTON_INDEX_2:
                 focus_node(loc.desktop, loc.node, true);
@@ -270,10 +271,27 @@ void button_press(xcb_generic_event_t *evt)
                 if (!is_floating(loc.node->client))
                     return;
                 PUTS("grab pointer from button press");
-                frozen_pointer->window = loc.node->client->window;
-                frozen_pointer->rectangle = loc.node->client->floating_rectangle;
+                frozen_pointer->desktop = loc.desktop;
+                frozen_pointer->node = loc.node;
+                frozen_pointer->rectangle = c->floating_rectangle;
                 frozen_pointer->position = (xcb_point_t) {e->root_x, e->root_y};
                 frozen_pointer->button = e->detail;
+                if (e->detail == XCB_BUTTON_INDEX_3) {
+                    int16_t mid_x, mid_y;
+                    mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
+                    mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
+                    if (e->root_x > mid_x) {
+                        if (e->root_y > mid_y)
+                            frozen_pointer->corner = BOTTOM_RIGHT;
+                        else
+                            frozen_pointer->corner = TOP_RIGHT;
+                    } else {
+                        if (e->root_y > mid_y)
+                            frozen_pointer->corner = BOTTOM_LEFT;
+                        else
+                            frozen_pointer->corner = TOP_LEFT;
+                    }
+                }
                 xcb_grab_pointer(dpy, false, screen->root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
                 break;
         }
@@ -283,20 +301,58 @@ void button_press(xcb_generic_event_t *evt)
 void motion_notify(xcb_generic_event_t *evt)
 {
     xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-    xcb_window_t win = e->child;
-
-    PRINTF("motion notify %X %u %u\n", win, e->detail, e->state);
 
     int16_t delta_x, delta_y, x, y;
+    uint16_t w, h;
+
+    desktop_t *d = frozen_pointer->desktop;
+    node_t *n = frozen_pointer->node;
+    client_t *c = n->client;
+    xcb_rectangle_t rect = frozen_pointer->rectangle;
+    xcb_window_t win = c->window;
+
+    PRINTF("motion notify %X %u\n", win, frozen_pointer->button);
+
+    delta_x = e->root_x - frozen_pointer->position.x;
+    delta_y = e->root_y - frozen_pointer->position.y;
 
     switch (frozen_pointer->button) {
         case XCB_BUTTON_INDEX_1:
-            delta_x = e->root_x - frozen_pointer->position.x;
-            delta_y = e->root_y - frozen_pointer->position.y;
-            x = frozen_pointer->rectangle.x + delta_x;
-            y = frozen_pointer->rectangle.y + delta_y;
-            window_move(frozen_pointer->window, x, y);
+            x = rect.x + delta_x;
+            y = rect.y + delta_y;
+            window_move(win, x, y);
             break;
+        case XCB_BUTTON_INDEX_3:
+            switch (frozen_pointer->corner) {
+                case TOP_LEFT:
+                    x = rect.x + delta_x;
+                    y = rect.y + delta_y;
+                    w = rect.width - delta_x;
+                    h = rect.height - delta_y;
+                    break;
+                case TOP_RIGHT:
+                    x = rect.x;
+                    y = rect.y + delta_y;
+                    w = rect.width + delta_x;
+                    h = rect.height - delta_y;
+                    break;
+                case BOTTOM_LEFT:
+                    x = rect.x + delta_x;
+                    y = rect.y;
+                    w = rect.width - delta_x;
+                    h = rect.height + delta_y;
+                    break;
+                case BOTTOM_RIGHT:
+                    x = rect.x;
+                    y = rect.y;
+                    w = rect.width + delta_x;
+                    h = rect.height + delta_y;
+                    break;
+            }
+
+            window_move_resize(win, x, y, w, h);
+            c->floating_rectangle = (xcb_rectangle_t) {x, y, w, h};
+            window_draw_border(n, (d->focus == n));
     }
 }
 

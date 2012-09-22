@@ -40,8 +40,8 @@ typedef enum {
 } skip_client_t;
 
 typedef enum {
-    DIR_NEXT,
-    DIR_PREV
+    CYCLE_NEXT,
+    CYCLE_PREV
 } cycle_dir_t;
 
 typedef enum {
@@ -56,6 +56,13 @@ typedef enum {
     DIR_UP,
     DIR_DOWN
 } direction_t;
+
+typedef enum {
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+} corner_t;
 
 typedef struct {
     xcb_window_t window;
@@ -109,16 +116,18 @@ struct rule_t {
 };
 
 typedef struct {
-    xcb_button_t button;
-    xcb_point_t position;
-    xcb_rectangle_t rectangle;
-    xcb_window_t window;
-} pointer_state_t;
-
-typedef struct {
     node_t *node;
     desktop_t *desktop;
 } window_location_t;
+
+typedef struct {
+    xcb_point_t position;
+    xcb_button_t button;
+    xcb_rectangle_t rectangle;
+    desktop_t *desktop;
+    node_t *node;
+    corner_t corner;
+} pointer_state_t;
 
 node_t *make_node(void);
 desktop_t *make_desktop(const char *);

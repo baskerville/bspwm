@@ -359,10 +359,10 @@ bool parse_direction(char *s, direction_t *d)
 bool parse_cycle_direction(char *s, cycle_dir_t *d)
 {
     if (strcmp(s, "prev") == 0) {
-        *d = DIR_PREV;
+        *d = CYCLE_PREV;
         return true;
     } else if (strcmp(s, "next") == 0) {
-        *d = DIR_NEXT;
+        *d = CYCLE_NEXT;
         return true;
     }
     return false;
