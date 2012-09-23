@@ -228,7 +228,12 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 Where *M4* is the fourth modifier mask (generally bound to *Super*).
 
-## Requirements
+## Required Libraries:
 
-- XCB.
-- Lua.
+libxcb, xcb-util-wm, lua.
+
+## Installation
+
+    make
+    make install
+
