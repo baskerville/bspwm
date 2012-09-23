@@ -172,7 +172,7 @@ Where
 
 ## Settings
 
-Colors are either X color names or '#RRGGBB'.
+Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or '#RRGGBB'.
 
     active_border_color
         Color of the main border of a focused window.
