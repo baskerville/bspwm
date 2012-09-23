@@ -12,7 +12,7 @@ The windows are represented as the leaves of a binary tree.
 
 Those messages are sent through the `bspc` program.
 
-Therefore, the `BSPWM_SOCKET` environment variable must be defined and indicate the path to where the socket will be created.
+Therefore, the `BSPWM_SOCKET` environment variable **must** be defined and indicate the path to where the socket will be created.
 
 The recommended way of defining keyboard shortcuts, is to use `xbindkeys`.
 
