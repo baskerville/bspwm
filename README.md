@@ -215,6 +215,18 @@ Colors are either X color names or '#RRGGBB'.
     wm_name
         The value that shall be used for the _NET_WM_NAME property of the root window.
 
+## Mouse Bindings
+
+    M4 + Left Button
+        Move the window under the pointer.
+
+    M4 + Middle Button
+        Focus the window under the pointer.
+
+    M4 + Middle Button
+        Resize the window under the pointer (by moving one of its four corners).
+
+Where *M4* is the fourth modifier mask (generally bound to *Super*).
 
 ## Requirements
 
