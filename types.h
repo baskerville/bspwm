@@ -7,6 +7,7 @@
 
 #define SPLIT_RATIO  0.5
 #define DEFAULT_DESK_NAME    "One"
+#define MISSING_VALUE        "N/A"
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -36,7 +37,9 @@ typedef enum {
 typedef enum {
     SKIP_NONE,
     SKIP_FLOATING,
-    SKIP_TILED
+    SKIP_TILED,
+    SKIP_CLASS_EQUAL,
+    SKIP_CLASS_DIFFER
 } skip_client_t;
 
 typedef enum {
@@ -66,6 +69,7 @@ typedef enum {
 
 typedef struct {
     xcb_window_t window;
+    char class_name[MAXLEN];
     bool floating;
     bool transient;  /* transient window are always floating */
     bool fullscreen;

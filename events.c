@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_event.h>
@@ -71,6 +72,12 @@ void map_request(xcb_generic_event_t *evt)
     bool floating = false, transient = false, fullscreen = false, takes_focus = true;
 
     handle_rules(win, &floating, &transient, &fullscreen, &takes_focus);
+
+    xcb_icccm_get_wm_class_reply_t reply; 
+    if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
+        strcpy(c->class_name, reply.class_name);
+        xcb_icccm_get_wm_class_reply_wipe(&reply);
+    }
 
     if (c->transient)
         floating = true;

@@ -382,6 +382,12 @@ bool parse_skip_client(char *s, skip_client_t *k)
     } else if (strcmp(s, "--skip-tiled") == 0) {
         *k = SKIP_TILED;
         return true;
+    } else if (strcmp(s, "--skip-class-equal") == 0) {
+        *k = SKIP_CLASS_EQUAL;
+        return true;
+    } else if (strcmp(s, "--skip-class-differ") == 0) {
+        *k = SKIP_CLASS_DIFFER;
+        return true;
     }
     return false;
 }

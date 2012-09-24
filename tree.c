@@ -178,7 +178,7 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
         strcat(rsp, "  ");
 
     if (is_leaf(n))
-        sprintf(line, "C %X %s%s%s%s%s", n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-")); 
+        sprintf(line, "%s %X %s%s%s%s%s", n->client->class_name, n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-")); 
     else
         sprintf(line, "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
 
@@ -582,7 +582,9 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
 
     while (f != n) {
         bool tiled = is_tiled(f->client);
-        if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)) {
+        if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)
+                || (skip == SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
+                || (skip == SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0)) {
             focus_node(d, f, true);
             return;
         }
