@@ -300,7 +300,10 @@ void insert_node(desktop_t *d, node_t *n)
                 if (fopar == NULL) {
                     dad->first_child = n;
                     dad->second_child = focus;
-                    dad->split_type = TYPE_VERTICAL;
+                    if (focus->rectangle.width > focus->rectangle.height)
+                        dad->split_type = TYPE_VERTICAL;
+                    else
+                        dad->split_type = TYPE_HORIZONTAL;
                     focus->parent = dad;
                     d->root = dad;
                 } else {
