@@ -423,7 +423,8 @@ void unlink_node(desktop_t *d, node_t *n)
     } else {
         node_t *b;
         node_t *g = p->parent;
-        if (is_first_child(n)) {
+        bool n_first_child = is_first_child(n);
+        if (n_first_child) {
             b = p->second_child;
             if (n->born_as == MODE_AUTOMATIC)
                 rotate_tree(b, ROTATE_COUNTER_CLOCKWISE);
@@ -451,7 +452,7 @@ void unlink_node(desktop_t *d, node_t *n)
             if (d->last_focus != NULL)
                 d->focus = d->last_focus;
             else
-                d->focus = (is_first_child(b) ? second_extrema(b) : first_extrema(b));
+                d->focus = (n_first_child ? first_extrema(b) : second_extrema(b));
             d->last_focus = NULL;
         }
     }
