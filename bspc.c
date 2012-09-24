@@ -10,17 +10,16 @@ int main(int argc, char *argv[])
 {
     int sock_fd, nbr, i;
     struct sockaddr_un sock_address;
-    char *socket_path;
+    char socket_path[BUFSIZ];
     char msg[BUFSIZ];
     char rsp[BUFSIZ];
 
     if (argc < 2)
         return -1;
 
-    socket_path = getenv(SOCKET_ENV_VAR);
+    char *sp = getenv(SOCKET_ENV_VAR);
 
-    if (socket_path == NULL)
-        return -1;
+    strcpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
 
     msg[0] = '\0';
 

@@ -12,13 +12,11 @@ The windows are represented as the leaves of a binary tree.
 
 Those messages are sent through the `bspc` program.
 
-Therefore, the `BSPWM_SOCKET` environment variable **must** be defined and indicate the path to where the socket will be created.
+If the `BSPWM_SOCKET` environment variable is defined it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
 The recommended way of defining keyboard shortcuts, is to use `xbindkeys`.
 
-Configuration files must be placed in `$XDG_CONFIG_HOME/bspwm/`.
-
-In that directory, `bspwmrc` (written in Lua) will be sourced and `autostart` executed.
+Configuration files (`bspwmrc` and `autostart`) must be placed in `$XDG_CONFIG_HOME/bspwm/`.
 
 Example configurations: [bspwmrc](https://github.com/baskerville/dotfiles/blob/master/bspwmrc), [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc)
 

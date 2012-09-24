@@ -74,7 +74,7 @@ void setup(void)
 int main(void)
 {
     fd_set descriptors;
-    char *socket_path;
+    char socket_path[BUFSIZ];
     int sock_fd, ret_fd, dpy_fd, sel, nbr;
     struct sockaddr_un sock_address;
     char msg[BUFSIZ], rsp[BUFSIZ];
@@ -93,12 +93,9 @@ int main(void)
 
     dpy_fd = xcb_get_file_descriptor(dpy);
 
-    socket_path = getenv(SOCKET_ENV_VAR);
+    char *sp = getenv(SOCKET_ENV_VAR);
 
-    if (socket_path == NULL) {
-        xcb_disconnect(dpy);
-        die("the socket path environment variable is not defined\n");
-    }
+    strcpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
 
     sock_address.sun_family = AF_UNIX;
     strcpy(sock_address.sun_path, socket_path);
