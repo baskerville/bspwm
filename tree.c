@@ -448,7 +448,7 @@ void unlink_node(desktop_t *d, node_t *n)
         if (n == d->last_focus) {
             d->last_focus = NULL;
         } else if (n == d->focus) {
-            if (d->last_focus != NULL && d->last_focus != n)
+            if (d->last_focus != NULL)
                 d->focus = d->last_focus;
             else
                 d->focus = (is_first_child(b) ? second_extrema(b) : first_extrema(b));
