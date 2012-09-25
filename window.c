@@ -182,11 +182,6 @@ void toggle_fullscreen(client_t *c)
         window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
     } else {
         c->fullscreen = true;
-        xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
-        if (geom != NULL) {
-            c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
-            free(geom);
-        }
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         window_raise(c->window);
