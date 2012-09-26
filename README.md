@@ -119,6 +119,9 @@ The following messages are handled:
     rotate ROT
         Rotate the tree of the current desktop.
 
+    magnetise COR
+        Move all the fences toward the given corner.
+
     send_to DESKTOP_NAME
         Send the focused window to the given desktop.
 
@@ -166,6 +169,7 @@ Where
     DIR = left|right|up|down
     CYC = next|prev
     ROT = clockwise|counter_clockwise|full_cycle
+    COR = top_left|top_right|bottom_left|bottom_right
     LYT = monocle|tiled
 
 ## Settings

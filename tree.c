@@ -167,6 +167,34 @@ void rotate_tree(node_t *n, rotate_t rot)
     rotate_tree(n->second_child, rot);
 }
 
+void magnetise_tree(node_t *n, corner_t corner)
+{
+    if (n == NULL || is_leaf(n)) 
+        return;
+
+    PUTS("magnetise tree");
+
+    switch (n->split_type) {
+        case TYPE_HORIZONTAL:
+            if (corner == TOP_LEFT || corner == TOP_RIGHT)
+                change_split_ratio(n, CHANGE_DECREASE);
+            else
+                change_split_ratio(n, CHANGE_INCREASE);
+            break;
+        case TYPE_VERTICAL:
+            if (corner == TOP_LEFT || corner == BOTTOM_LEFT)
+                change_split_ratio(n, CHANGE_DECREASE);
+            else
+                change_split_ratio(n, CHANGE_INCREASE);
+            break;
+        default:
+            break;
+    }
+
+    magnetise_tree(n->first_child, corner);
+    magnetise_tree(n->second_child, corner);
+}
+
 void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 {
     if (n == NULL)

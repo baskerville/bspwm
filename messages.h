@@ -14,7 +14,8 @@ bool parse_layout(char *, layout_t *);
 bool parse_direction(char *, direction_t *);
 bool parse_cycle_direction(char *, cycle_dir_t *);
 bool parse_skip_client(char *, skip_client_t *);
-bool parse_rotate(char *s, rotate_t *);
+bool parse_corner(char *, corner_t *);
+bool parse_rotate(char *, rotate_t *);
 bool parse_fence_move(char *, fence_move_t *);
 
 #endif
