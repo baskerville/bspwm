@@ -113,7 +113,7 @@ The following messages are handled:
     pull DIR
         Pull the fence located in the given direction.
 
-    cycle CYC [--skip-floating|--skip-tiled]
+    cycle CYC [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
         Focus the next or previous window in the list of leaves.
 
     rotate ROT
