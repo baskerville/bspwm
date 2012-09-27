@@ -26,8 +26,8 @@ There is only two splitting modes: *automatic* and *manual*.
 
 The default mode is *automatic*. The *manual* mode is entered by sending a *presel* message.
 
-        Example: insertion of a new node (number 4) into the given tree in
-        *automatic* mode:
+Example: insertion of a new node (number 4) into the given tree in
+*automatic* mode:
 
                      b                                   c
                     / \                                 / \
@@ -46,8 +46,8 @@ The default mode is *automatic*. The *manual* mode is entered by sending a *pres
         |            |            |         |            |     |      |
         +-------------------------+         +-------------------------+
 
-        Same departure, but the mode is *manual*, a `presel up` message
-        was sent beforehand:
+Same departure, but the mode is *manual*, a `presel up` message
+was sent beforehand:
 
                      b                                   b
                     / \                                 / \
