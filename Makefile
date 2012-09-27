@@ -1,14 +1,14 @@
 VERSION = 0.1
 
 CC      = gcc
-LIBS    = `pkg-config --libs xcb xcb-ewmh xcb-icccm lua`
+LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh
 CFLAGS  = -g -std=c99 -pedantic -Wall -Wextra
 LDFLAGS = $(LIBS)
 
 PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 
-WM_SRC = bspwm.c events.c luautils.c messages.c ewmh.c settings.c utils.c tree.c types.c rules.c window.c
+WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c misc.c tree.c types.c rules.c window.c
 CL_SRC = bspc.c
 
 WM_OBJ = $(WM_SRC:.c=.o)

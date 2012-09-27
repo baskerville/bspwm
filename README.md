@@ -16,9 +16,9 @@ If the `BSPWM_SOCKET` environment variable is defined it will be used as the soc
 
 The recommended way of defining keyboard shortcuts, is to use `xbindkeys`.
 
-Configuration files (`bspwmrc` and `autostart`) must be placed in `$XDG_CONFIG_HOME/bspwm/`.
+The only way to configure `bspwm` is by sending *set* messages through the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
 
-Example configurations: [bspwmrc](https://github.com/baskerville/dotfiles/blob/master/bspwmrc), [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc)
+Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc).
 
 ## Splitting Modes
 
@@ -159,10 +159,10 @@ The following messages are handled:
         Reload the autostart file.
 
     reload_settings
-        Reload the settings file.
+        Reload the default settings.
 
     reload
-        Reload the autostart and the settings file.
+        Reload the autostart file and the default settings.
 
 Where
 
@@ -232,7 +232,7 @@ Where *M4* is the fourth modifier mask (generally bound to *Super*).
 
 ## Required Libraries:
 
-libxcb, xcb-util-wm, lua.
+libxcb, xcb-util-wm.
 
 ## Installation
 

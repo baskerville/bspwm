@@ -8,6 +8,5 @@
 
 void die(const char *, ...);
 uint32_t get_color(char *);
-void transfer_rectangle(xcb_rectangle_t, uint32_t *);
 
 #endif

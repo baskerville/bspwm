@@ -1,9 +1,6 @@
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
@@ -71,6 +68,5 @@ char wm_name[MAXLEN];
 
 void load_settings(void);
 void run_autostart(void);
-void apply_settings(lua_State *);
 
 #endif

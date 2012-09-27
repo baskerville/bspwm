@@ -19,7 +19,7 @@
 #include "rules.h"
 #include "events.h"
 #include "common.h"
-#include "utils.h"
+#include "misc.h"
 #include "bspwm.h"
 #include "tree.h"
 #include "ewmh.h"

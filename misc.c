@@ -5,7 +5,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
-#include "utils.h"
+#include "misc.h"
 
 void die(const char *errstr, ...) {
     va_list ap;
@@ -42,12 +42,4 @@ uint32_t get_color(char *col)
     }
 
     return pxl;
-}
-
-void transfer_rectangle(xcb_rectangle_t rect, uint32_t *a)
-{
-    a[0] = rect.x;
-    a[1] = rect.y;
-    a[2] = rect.width;
-    a[3] = rect.height;
 }

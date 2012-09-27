@@ -1,9 +1,6 @@
 #ifndef _MESSAGES_H
 #define _MESSAGES_H
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
 #include "types.h"
 
 void process_message(char*, char*);

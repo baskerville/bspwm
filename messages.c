@@ -1,14 +1,14 @@
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "helpers.h"
-#include "luautils.h"
 #include "settings.h"
 #include "messages.h"
 #include "common.h"
 #include "types.h"
 #include "bspwm.h"
 #include "ewmh.h"
-#include "utils.h"
+#include "misc.h"
 #include "window.h"
 #include "tree.h"
 
