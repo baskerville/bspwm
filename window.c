@@ -43,7 +43,7 @@ void window_draw_border(node_t *n, bool focused)
     if (n == NULL)
         return;
 
-    if (border_width < 1)
+    if (border_width < 1 || n->client->border_width < 1)
         return;
 
     xcb_window_t win = n->client->window;
@@ -188,7 +188,7 @@ void toggle_fullscreen(client_t *c)
             rect = c->floating_rectangle;
         else
             rect = c->tiled_rectangle;
-        window_border_width(c->window, border_width);
+        window_border_width(c->window, c->border_width);
         window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
     } else {
         c->fullscreen = true;

@@ -20,8 +20,6 @@
 #define LEFT_PADDING        0
 #define RIGHT_PADDING       0
 
-#define ADAPTIVE_WINDOW_BORDER  true
-
 #define ACTIVE_BORDER_COLOR         "#7D7F8A"
 #define NORMAL_BORDER_COLOR         "#3F3E3B"
 #define INNER_BORDER_COLOR          "#32312E"
@@ -61,8 +59,6 @@ int top_padding;
 int bottom_padding;
 int left_padding;
 int right_padding;
-
-bool adaptive_window_border;
 
 char wm_name[MAXLEN];
 

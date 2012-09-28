@@ -51,7 +51,6 @@ void load_settings(void)
     urgent_border_color_pxl = get_color(urgent_border_color);
 
     strcpy(wm_name, WM_NAME);
-    adaptive_window_border = ADAPTIVE_WINDOW_BORDER;
 
     inner_border_width = INNER_BORDER_WIDTH;
     main_border_width = MAIN_BORDER_WIDTH;

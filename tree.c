@@ -261,13 +261,19 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
     if (is_leaf(n)) {
         if (n->client->fullscreen)
             return;
+
+        if (n == d->root || (d->layout == LAYOUT_MONOCLE && !is_floating(n->client)))
+            n->client->border_width = 0;
+        else
+            n->client->border_width = border_width;
+
         xcb_rectangle_t r;
         if (is_tiled(n->client)) {
             if (d->layout == LAYOUT_TILED)
                 r = rect;
             else if (d->layout == LAYOUT_MONOCLE)
                 r = root_rect;
-            int bleed = window_gap + 2 * border_width;
+            int bleed = window_gap + 2 * n->client->border_width;
             r.width = (bleed < r.width ? r.width - bleed : 1);
             r.height = (bleed < r.height ? r.height - bleed : 1);
             n->client->tiled_rectangle = r;
@@ -276,7 +282,7 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
         }
 
         window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
-        window_border_width(n->client->window, border_width);
+        window_border_width(n->client->window, n->client->border_width);
         window_draw_border(n, n == d->focus);
 
         if (d->layout == LAYOUT_MONOCLE && n == d->focus)

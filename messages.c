@@ -268,10 +268,6 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "urgent_border_color") == 0) {
         strcpy(urgent_border_color, value);
         urgent_border_color_pxl = get_color(urgent_border_color);
-    } else if (strcmp(name, "adaptive_window_border") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            adaptive_window_border = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strcpy(wm_name, value);
         ewmh_update_wm_name();
@@ -322,8 +318,6 @@ void get_setting(char *name, char* rsp)
         sprintf(rsp, "%s (%06X)\n", urgent_border_color, urgent_border_color_pxl);
     else if (strcmp(name, "wm_name") == 0)
         sprintf(rsp, "%s\n", wm_name);
-    else if (strcmp(name, "adaptive_window_border") == 0)
-        sprintf(rsp, "%s\n", BOOLSTR(adaptive_window_border));
 }
 
 

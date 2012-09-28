@@ -2,6 +2,7 @@
 #include <string.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include "settings.h"
 #include "types.h"
 
 node_t *make_node(void)
@@ -29,6 +30,7 @@ client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
     strcpy(c->class_name, MISSING_VALUE);
+    c->border_width = border_width;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;
     return c;

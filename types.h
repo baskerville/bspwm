@@ -70,6 +70,7 @@ typedef enum {
 typedef struct {
     xcb_window_t window;
     char class_name[MAXLEN];
+    unsigned int border_width;
     bool floating;
     bool transient;  /* transient window are always floating */
     bool fullscreen;
