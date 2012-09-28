@@ -54,7 +54,18 @@ void setup(void)
     screen_height = screen->height_in_pixels;
     root_depth = screen->root_depth;
 
-    xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED, ewmh->_NET_WM_STATE_FULLSCREEN, ewmh->_NET_WM_STATE, ewmh->_NET_ACTIVE_WINDOW};
+    xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED, 
+                              ewmh->_NET_DESKTOP_NAMES,
+                              ewmh->_NET_NUMBER_OF_DESKTOPS,
+                              ewmh->_NET_CURRENT_DESKTOP,
+                              ewmh->_NET_CLIENT_LIST,
+                              ewmh->_NET_ACTIVE_WINDOW,
+                              ewmh->_NET_WM_STATE,
+                              ewmh->_NET_WM_STATE_FULLSCREEN,
+                              ewmh->_NET_WM_WINDOW_TYPE,
+                              ewmh->_NET_WM_WINDOW_TYPE_DIALOG,
+                              ewmh->_NET_WM_WINDOW_TYPE_UTILITY,
+                              ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR};
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 
