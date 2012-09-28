@@ -262,7 +262,7 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
         if (n->client->fullscreen)
             return;
 
-        if (n == d->root || (d->layout == LAYOUT_MONOCLE && !is_floating(n->client)))
+        if (is_tiled(n->client) && (d->layout == LAYOUT_MONOCLE || is_leaf(d->root)))
             n->client->border_width = 0;
         else
             n->client->border_width = border_width;
