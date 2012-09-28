@@ -92,6 +92,9 @@ The following messages are handled:
     close
         Close the focused window.
 
+    kill
+        Kill the focused window.
+
     presel DIR
         Switch to manual mode and select the splitting direction.
 

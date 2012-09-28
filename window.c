@@ -135,7 +135,7 @@ void window_draw_border(node_t *n, bool focused)
     xcb_free_pixmap(dpy, pix);
 }
 
-void close_window(node_t *n)
+void window_close(node_t *n)
 {
     if (n == NULL || n->client->locked)
         return;
@@ -164,6 +164,17 @@ void close_window(node_t *n)
     e.data.data32[1] = XCB_CURRENT_TIME;
 
     xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
+}
+
+void window_kill(desktop_t *d, node_t *n)
+{
+    if (n == NULL)
+        return;
+
+    PRINTF("kill window %X\n", n->client->window);
+
+    xcb_kill_client(dpy, n->client->window);
+    remove_node(d, n);
 }
 
 void toggle_fullscreen(client_t *c)

@@ -38,7 +38,9 @@ void process_message(char *msg, char *rsp)
         list_windows(rsp);
         return;
     } else if (strcmp(cmd, "close") == 0) {
-        close_window(desk->focus);
+        window_close(desk->focus);
+    } else if (strcmp(cmd, "kill") == 0) {
+        window_kill(desk, desk->focus);
     } else if (strcmp(cmd, "magnetise") == 0) {
         char *cor = strtok(NULL, TOKEN_SEP);
         if (cor != NULL) {
