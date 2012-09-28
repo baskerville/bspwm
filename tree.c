@@ -212,6 +212,9 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     strcat(rsp, line);
 
+    if (n->vacant)
+        strcat(rsp, " \\");
+
     if (n == d->focus)
         strcat(rsp, " *\n");
     else
@@ -396,6 +399,8 @@ void insert_node(desktop_t *d, node_t *n)
                 split_mode = MODE_AUTOMATIC;
                 break;
         }
+        if (focus->vacant)
+            update_vacant_state(fopar);
     }
 }
 
