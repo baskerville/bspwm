@@ -212,9 +212,6 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 
     strcat(rsp, line);
 
-    if (n->vacant)
-        strcat(rsp, " \\");
-
     if (n == d->focus)
         strcat(rsp, " *\n");
     else
