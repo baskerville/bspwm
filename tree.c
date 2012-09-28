@@ -488,6 +488,8 @@ void unlink_node(desktop_t *d, node_t *n)
                 d->focus = (n_first_child ? first_extrema(b) : second_extrema(b));
             d->last_focus = NULL;
         }
+
+        update_vacant_state(b->parent);
     }
 }
 
