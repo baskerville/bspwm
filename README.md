@@ -238,7 +238,7 @@ Where *M4* is the fourth modifier mask (generally bound to *Super*).
 
 ## Panel
 
-`dzen2` fed with the output of `ewmhstatus`. Example: [url=https://github.com/baskerville/bin/blob/master/launchpanel]launchpanel[/url].
+`dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
 
 ## Required Libraries:
 
