@@ -106,10 +106,10 @@ int main(void)
 
     char *sp = getenv(SOCKET_ENV_VAR);
 
-    strcpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
+    strncpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp), sizeof(socket_path));
 
     sock_address.sun_family = AF_UNIX;
-    strcpy(sock_address.sun_path, socket_path);
+    strncpy(sock_address.sun_path, socket_path, sizeof(sock_address.sun_path));
     unlink(socket_path);
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -141,7 +141,7 @@ int main(void)
                 ret_fd = accept(sock_fd, NULL, 0);
                 if (ret_fd > 0 && (nbr = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
                     msg[nbr] = '\0';
-                    strcpy(rsp, EMPTY_RESPONSE);
+                    strncpy(rsp, EMPTY_RESPONSE, sizeof(rsp));
                     process_message(msg, rsp);
                     send(ret_fd, rsp, strlen(rsp), 0);
                     close(ret_fd);

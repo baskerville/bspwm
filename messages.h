@@ -5,7 +5,7 @@
 
 void process_message(char*, char*);
 void get_setting(char*, char*);
-void set_setting(char*, char*);
+void set_setting(char*, char*, char*);
 bool parse_bool(char *, bool *);
 bool parse_layout(char *, layout_t *);
 bool parse_direction(char *, direction_t *);

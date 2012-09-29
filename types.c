@@ -19,7 +19,7 @@ node_t *make_node(void)
 desktop_t *make_desktop(const char *name)
 {
     desktop_t *d = malloc(sizeof(desktop_t));
-    strcpy(d->name, name);
+    strncpy(d->name, name, sizeof(d->name));
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
     d->root = d->focus = d->last_focus = NULL;
@@ -29,7 +29,7 @@ desktop_t *make_desktop(const char *name)
 client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
-    strcpy(c->class_name, MISSING_VALUE);
+    strncpy(c->class_name, MISSING_VALUE, sizeof(c->class_name));
     c->border_width = border_width;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;

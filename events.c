@@ -75,7 +75,7 @@ void map_request(xcb_generic_event_t *evt)
 
     xcb_icccm_get_wm_class_reply_t reply; 
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
-        strcpy(c->class_name, reply.class_name);
+        strncpy(c->class_name, reply.class_name, sizeof(c->class_name));
         xcb_icccm_get_wm_class_reply_wipe(&reply);
     }
 

@@ -32,14 +32,14 @@ void run_autostart(void)
 
 void load_settings(void)
 {
-    strcpy(normal_border_color, NORMAL_BORDER_COLOR);
-    strcpy(active_border_color, ACTIVE_BORDER_COLOR);
-    strcpy(inner_border_color, INNER_BORDER_COLOR);
-    strcpy(outer_border_color, OUTER_BORDER_COLOR);
-    strcpy(presel_border_color, PRESEL_BORDER_COLOR);
-    strcpy(active_locked_border_color, ACTIVE_LOCKED_BORDER_COLOR);
-    strcpy(normal_locked_border_color, NORMAL_LOCKED_BORDER_COLOR);
-    strcpy(urgent_border_color, URGENT_BORDER_COLOR);
+    strncpy(normal_border_color, NORMAL_BORDER_COLOR, sizeof(normal_border_color));
+    strncpy(active_border_color, ACTIVE_BORDER_COLOR, sizeof(active_border_color));
+    strncpy(inner_border_color, INNER_BORDER_COLOR, sizeof(inner_border_color));
+    strncpy(outer_border_color, OUTER_BORDER_COLOR, sizeof(outer_border_color));
+    strncpy(presel_border_color, PRESEL_BORDER_COLOR, sizeof(presel_border_color));
+    strncpy(active_locked_border_color, ACTIVE_LOCKED_BORDER_COLOR, sizeof(active_locked_border_color));
+    strncpy(normal_locked_border_color, NORMAL_LOCKED_BORDER_COLOR, sizeof(normal_locked_border_color));
+    strncpy(urgent_border_color, URGENT_BORDER_COLOR, sizeof(urgent_border_color));
 
     normal_border_color_pxl = get_color(normal_border_color);
     active_border_color_pxl = get_color(active_border_color);
@@ -50,7 +50,7 @@ void load_settings(void)
     normal_locked_border_color_pxl = get_color(normal_locked_border_color);
     urgent_border_color_pxl = get_color(urgent_border_color);
 
-    strcpy(wm_name, WM_NAME);
+    strncpy(wm_name, WM_NAME, sizeof(wm_name));
 
     inner_border_width = INNER_BORDER_WIDTH;
     main_border_width = MAIN_BORDER_WIDTH;

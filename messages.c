@@ -26,7 +26,7 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "set") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         char *value = strtok(NULL, TOKEN_SEP);
-        set_setting(name, value);
+        set_setting(name, value, rsp);
         return;
     } else if (strcmp(cmd, "dump") == 0) {
         dump_tree(desk, desk->root, rsp, 0);
@@ -126,7 +126,7 @@ void process_message(char *msg, char *rsp)
             if (d != NULL) {
                 char *new_name = strtok(NULL, TOKEN_SEP);
                 if (new_name != NULL) {
-                    strcpy(d->name, new_name);
+                    strncpy(d->name, new_name, sizeof(d->name));
                     ewmh_update_desktop_names();
                 }
             }
@@ -163,13 +163,13 @@ void process_message(char *msg, char *rsp)
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
             rule_t *rule = make_rule();
-            strcpy(rule->cause.name, name);
+            strncpy(rule->cause.name, name, sizeof(rule->cause.name));
             char *arg = strtok(NULL, TOKEN_SEP);
             while (arg != NULL) {
                 if (strcmp(arg, "floating") == 0) {
                     rule->effect.floating = true;
                 } else {
-                    strcpy(rule->effect.desk_name, arg);
+                    strncpy(rule->effect.desk_name, arg, sizeof(rule->effect.desk_name));
                 }
                 arg = strtok(NULL, TOKEN_SEP);
             }
@@ -208,14 +208,14 @@ void process_message(char *msg, char *rsp)
         quit();
         return;
     } else {
-        sprintf(rsp, "unknown command: %s\n", cmd);
+        snprintf(rsp, BUFSIZ, "unknown command: %s\n", cmd);
         return;
     }
 
     apply_layout(desk, desk->root, root_rect);
 }
 
-void set_setting(char *name, char *value)
+void set_setting(char *name, char *value, char *rsp)
 {
     if (name == NULL || value == NULL)
         return;
@@ -245,36 +245,39 @@ void set_setting(char *name, char *value)
         sscanf(value, "%i", &bottom_padding);
         update_root_dimensions();
     } else if (strcmp(name, "active_border_color") == 0) {
-        strcpy(active_border_color, value);
+        strncpy(active_border_color, value, sizeof(active_border_color));
         active_border_color_pxl = get_color(active_border_color);
     } else if (strcmp(name, "normal_border_color") == 0) {
-        strcpy(normal_border_color, value);
+        strncpy(normal_border_color, value, sizeof(normal_border_color));
         normal_border_color_pxl = get_color(normal_border_color);
     } else if (strcmp(name, "inner_border_color") == 0) {
-        strcpy(inner_border_color, value);
+        strncpy(inner_border_color, value, sizeof(inner_border_color));
         inner_border_color_pxl = get_color(inner_border_color);
     } else if (strcmp(name, "outer_border_color") == 0) {
-        strcpy(outer_border_color, value);
+        strncpy(outer_border_color, value, sizeof(outer_border_color));
         outer_border_color_pxl = get_color(outer_border_color);
     } else if (strcmp(name, "presel_border_color") == 0) {
-        strcpy(presel_border_color, value);
+        strncpy(presel_border_color, value, sizeof(presel_border_color));
         presel_border_color_pxl = get_color(presel_border_color);
     } else if (strcmp(name, "active_locked_border_color") == 0) {
-        strcpy(active_locked_border_color, value);
+        strncpy(active_locked_border_color, value, sizeof(active_locked_border_color));
         active_locked_border_color_pxl = get_color(active_locked_border_color);
     } else if (strcmp(name, "normal_locked_border_color") == 0) {
-        strcpy(normal_locked_border_color, value);
+        strncpy(normal_locked_border_color, value, sizeof(normal_locked_border_color));
         normal_locked_border_color_pxl = get_color(normal_locked_border_color);
     } else if (strcmp(name, "urgent_border_color") == 0) {
-        strcpy(urgent_border_color, value);
+        strncpy(urgent_border_color, value, sizeof(urgent_border_color));
         urgent_border_color_pxl = get_color(urgent_border_color);
     } else if (strcmp(name, "borderless_monocle") == 0) {
         bool b;
         if (parse_bool(value, &b))
             borderless_monocle = b;
     } else if (strcmp(name, "wm_name") == 0) {
-        strcpy(wm_name, value);
+        strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
+        return;
+    } else {
+        snprintf(rsp, BUFSIZ, "unknown setting: %s\n", name);
         return;
     }
 
@@ -324,6 +327,8 @@ void get_setting(char *name, char* rsp)
         sprintf(rsp, "%s\n", BOOLSTR(borderless_monocle));
     else if (strcmp(name, "wm_name") == 0)
         sprintf(rsp, "%s\n", wm_name);
+    else
+        snprintf(rsp, BUFSIZ, "unknown setting: %s\n", name);
 }
 
 

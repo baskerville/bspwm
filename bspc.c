@@ -19,18 +19,22 @@ int main(int argc, char *argv[])
 
     char *sp = getenv(SOCKET_ENV_VAR);
 
-    strcpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
+    strncpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp), sizeof(socket_path));
 
     msg[0] = '\0';
 
-    for (i = 1; i < argc; i++) {
-        strcat(msg, argv[i]);
-        if (i < (argc - 1))
-            strcat(msg, TOKEN_SEP);
+    int max = sizeof(msg);
+    for (i = 1; max > 0 && i < argc; i++) {
+        strncat(msg, argv[i], max);
+        max -= strlen(argv[i]);
+        if (i < (argc - 1)) {
+            strncat(msg, TOKEN_SEP, max);
+            max -= strlen(TOKEN_SEP);
+        }
     }
 
     sock_address.sun_family = AF_UNIX;
-    strcpy(sock_address.sun_path, socket_path);
+    strncpy(sock_address.sun_path, socket_path, sizeof(sock_address.sun_path));
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
