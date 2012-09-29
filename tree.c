@@ -546,6 +546,11 @@ void swap_nodes(node_t *n1, node_t *n2)
 
     n1->parent = pn2;
     n2->parent = pn1;
+
+    if (n1->vacant != n2->vacant) {
+        update_vacant_state(n1->parent);
+        update_vacant_state(n2->parent);
+    }
 }
 
 void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
