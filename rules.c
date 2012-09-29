@@ -46,6 +46,7 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
                 *floating = true;
             }
         }
+        xcb_ewmh_get_atoms_reply_wipe(&win_type);
     }
 
     xcb_ewmh_get_atoms_reply_t win_state;
@@ -57,9 +58,8 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
                 *fullscreen = true;
             }
         }
+        xcb_ewmh_get_atoms_reply_wipe(&win_state);
     }
-
-    /* xcb_ewmh_get_atoms_reply_wipe(&win_type); */
 
     xcb_window_t transient_for = XCB_NONE;
     xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
