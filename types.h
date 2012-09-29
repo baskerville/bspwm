@@ -110,7 +110,6 @@ typedef struct {
 
 typedef struct {
     bool floating;
-    desktop_t *send_to;
 } rule_effect_t;
 
 typedef struct rule_t rule_t;

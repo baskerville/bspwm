@@ -2,6 +2,6 @@
 #define _RULES_H
 
 bool is_match(rule_t *, xcb_window_t);
-void handle_rules(xcb_window_t, bool *, bool *, bool *, bool *, desktop_t **);
+void handle_rules(xcb_window_t, bool *, bool *, bool *, bool *);
 
 #endif

@@ -155,8 +155,8 @@ The following messages are handled:
     toggle_locked
         Toggle the locked state of the current window (locked windows will not respond to the 'close' command).
 
-    rule PATTERN [DESKTOP_NAME] [floating] 
-        Make a new rule that will apply the given states to the windows whose class name or instance name equals PATTERN (switch to the given desktop). 
+    rule PATTERN floating 
+        Make a new rule that will float the windows whose class name or instance name equals PATTERN. 
 
     reload_autostart
         Reload the autostart file.

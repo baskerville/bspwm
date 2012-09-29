@@ -168,8 +168,6 @@ void process_message(char *msg, char *rsp)
             while (arg != NULL) {
                 if (strcmp(arg, "floating") == 0)
                     rule->effect.floating = true;
-                else
-                    rule->effect.send_to = find_desktop(arg);
                 arg = strtok(NULL, TOKEN_SEP);
             }
             rule->next = rule_head;
