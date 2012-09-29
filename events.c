@@ -271,7 +271,7 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
-        if (desk->focus != NULL && desk->focus->client->fullscreen)
+        if (loc.desktop == desk && desk->focus != NULL && desk->focus->client->fullscreen)
             return;
         apply_layout(loc.desktop, loc.desktop->root, root_rect);
         if (desk != loc.desktop)
