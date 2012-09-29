@@ -12,11 +12,11 @@ The windows are represented as the leaves of a binary tree.
 
 Those messages are sent through the `bspc` program.
 
-If the `BSPWM_SOCKET` environment variable is defined it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
+If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
-The recommended way of defining keyboard shortcuts, is to use `xbindkeys`.
+The recommended way of defining keyboard shortcuts is to use `xbindkeys`.
 
-The only way to configure `bspwm` is by sending *set* messages through the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
+The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
 
 Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc).
 
@@ -235,6 +235,10 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
         Resize the window under the pointer (by moving one of its four corners).
 
 Where *M4* is the fourth modifier mask (generally bound to *Super*).
+
+## Panel
+
+`dzen2` fed with the output of `ewmhstatus`.
 
 ## Required Libraries:
 
