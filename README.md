@@ -177,7 +177,7 @@ Where
 
 ## Settings
 
-Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or '#RRGGBB'.
+Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or '#RRGGBB', booleans are 'true' or 'false'.
 
     active_border_color
         Color of the main border of a focused window.
@@ -219,6 +219,9 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
     wm_name
         The value that shall be used for the _NET_WM_NAME property of the root window.
+
+    borderless_monocle 
+        Whether to remove borders for tiled windows in monocle mode.
 
 ## Mouse Bindings
 

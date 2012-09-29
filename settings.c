@@ -63,4 +63,6 @@ void load_settings(void)
     right_padding = RIGHT_PADDING;
     top_padding = TOP_PADDING;
     bottom_padding = BOTTOM_PADDING;
+
+    borderless_monocle = BORDERLESS_MONOCLE;
 }

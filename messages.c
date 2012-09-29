@@ -268,6 +268,10 @@ void set_setting(char *name, char *value)
     } else if (strcmp(name, "urgent_border_color") == 0) {
         strcpy(urgent_border_color, value);
         urgent_border_color_pxl = get_color(urgent_border_color);
+    } else if (strcmp(name, "borderless_monocle") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            borderless_monocle = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strcpy(wm_name, value);
         ewmh_update_wm_name();
@@ -316,6 +320,8 @@ void get_setting(char *name, char* rsp)
         sprintf(rsp, "%s (%06X)\n", normal_locked_border_color, normal_locked_border_color_pxl);
     else if (strcmp(name, "urgent_border_color") == 0)
         sprintf(rsp, "%s (%06X)\n", urgent_border_color, urgent_border_color_pxl);
+    else if (strcmp(name, "borderless_monocle") == 0)
+        sprintf(rsp, "%s\n", BOOLSTR(borderless_monocle));
     else if (strcmp(name, "wm_name") == 0)
         sprintf(rsp, "%s\n", wm_name);
 }
