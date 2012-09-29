@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_ewmh.h>
@@ -5,20 +6,6 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "rules.h"
-
-rule_t *next_match(rule_t *rule, xcb_window_t win)
-{
-    if (rule == NULL)
-        return NULL;
-    rule_t *r = rule;
-    rule_t *found = NULL;
-    while (r != NULL && found == NULL) {
-        if (is_match(r, win))
-            found = r;
-        r = r->next;
-    }
-    return found;
-}
 
 bool is_match(rule_t *r, xcb_window_t win)
 {
@@ -32,7 +19,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus)
+void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, desktop_t **send_to)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -71,8 +58,11 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
 
     while (rule != NULL) {
         if (is_match(rule, win)) {
-            if (rule->effect.floating) {
+            if (rule->effect.floating)
                 *floating = true;
+            if (rule->effect.send_to != NULL) {
+                *send_to = rule->effect.send_to;
+                rule->effect.send_to = NULL;      /* serve only once */
             }
         }
         rule = rule->next;

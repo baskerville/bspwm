@@ -70,8 +70,12 @@ void map_request(xcb_generic_event_t *evt)
     update_floating_rectangle(c);
 
     bool floating = false, transient = false, fullscreen = false, takes_focus = true;
+    desktop_t *send_to = desk;
 
-    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus);
+    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus, &send_to);
+
+    if (send_to != desk)
+        select_desktop(send_to);
 
     xcb_icccm_get_wm_class_reply_t reply; 
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
@@ -88,13 +92,13 @@ void map_request(xcb_generic_event_t *evt)
     if (floating)
         split_mode = MODE_MANUAL;
 
-    insert_node(desk, birth);
+    insert_node(send_to, birth);
 
     if (floating)
         toggle_floating(birth);
 
-    if (desk->focus != NULL && desk->focus->client->fullscreen)
-        toggle_fullscreen(desk->focus->client);
+    if (send_to->focus != NULL && send_to->focus->client->fullscreen)
+        toggle_fullscreen(send_to->focus->client);
 
     if (fullscreen)
         toggle_fullscreen(birth->client);
@@ -102,9 +106,9 @@ void map_request(xcb_generic_event_t *evt)
     c->transient = transient;
 
     if (takes_focus)
-        focus_node(desk, birth, false);
+        focus_node(send_to, birth, false);
 
-    apply_layout(desk, desk->root, root_rect);
+    apply_layout(send_to, send_to->root, root_rect);
 
     window_show(c->window);
 

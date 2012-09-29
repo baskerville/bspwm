@@ -40,6 +40,7 @@ rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
     r->effect.floating = false;
+    r->effect.send_to = NULL;
     r->next = NULL;
     return r;
 }

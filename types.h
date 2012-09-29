@@ -110,7 +110,7 @@ typedef struct {
 
 typedef struct {
     bool floating;
-    char desk_name[MAXLEN];
+    desktop_t *send_to;
 } rule_effect_t;
 
 typedef struct rule_t rule_t;
