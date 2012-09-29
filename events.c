@@ -226,9 +226,6 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     PRINTF("unmap notify %X %u\n", e->window, XCB_EVENT_SENT(e));
 
-    if (!XCB_EVENT_SENT(e))
-        return;
-
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
         PRINTF("remove node in unmap notify %X\n", e->window);
@@ -342,7 +339,7 @@ void motion_notify(xcb_generic_event_t *evt)
     xcb_rectangle_t rect = frozen_pointer->rectangle;
     xcb_window_t win = c->window;
 
-    PRINTF("motion notify %X %u\n", win, frozen_pointer->button);
+    /* PRINTF("motion notify %X %u\n", win, frozen_pointer->button); */
 
     delta_x = e->root_x - frozen_pointer->position.x;
     delta_y = e->root_y - frozen_pointer->position.y;
