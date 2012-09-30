@@ -5,7 +5,6 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "settings.h"
-#include "helpers.h"
 #include "misc.h"
 #include "window.h"
 #include "types.h"
@@ -133,7 +132,7 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
     if (fence == NULL)
         return;
 
-    if ((mov == MOVE_PUSH && (dir == DIR_RIGHT || dir == DIR_DOWN)) 
+    if ((mov == MOVE_PUSH && (dir == DIR_RIGHT || dir == DIR_DOWN))
             || (mov == MOVE_PULL && (dir == DIR_LEFT || dir == DIR_UP)))
         change_split_ratio(fence, CHANGE_INCREASE);
     else
@@ -169,7 +168,7 @@ void rotate_tree(node_t *n, rotate_t rot)
 
 void magnetise_tree(node_t *n, corner_t corner)
 {
-    if (n == NULL || is_leaf(n)) 
+    if (n == NULL || is_leaf(n))
         return;
 
     PUTS("magnetise tree");
@@ -206,7 +205,7 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
         strcat(rsp, "  ");
 
     if (is_leaf(n))
-        sprintf(line, "%s %X %s%s%s%s%s", n->client->class_name, n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-")); 
+        sprintf(line, "%s %X %s%s%s%s%s", n->client->class_name, n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-"));
     else
         sprintf(line, "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
 

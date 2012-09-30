@@ -12,7 +12,6 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>
-#include "helpers.h"
 #include "types.h"
 #include "settings.h"
 #include "messages.h"
