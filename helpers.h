@@ -18,9 +18,4 @@
 #  define PRINTF(x)          ;
 #endif
 
-typedef enum {
-    false,
-    true
-} bool;
-
 #endif

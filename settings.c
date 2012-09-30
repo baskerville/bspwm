@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
-#include "helpers.h"
-#include "types.h"
 #include "bspwm.h"
 #include "misc.h"
 #include "common.h"
@@ -25,7 +23,7 @@ void run_autostart(void)
 
     setsid();
     execl(path, path, NULL);
-        
+
     PUTS("error: could not load autostart file");
     exit(EXIT_SUCCESS);
 }

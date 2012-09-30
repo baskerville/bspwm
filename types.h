@@ -1,6 +1,7 @@
 #ifndef _TYPES_H
 #define _TYPES_H
 
+#include <stdbool.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
