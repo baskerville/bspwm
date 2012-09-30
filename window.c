@@ -4,7 +4,6 @@
 #include <string.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
-#include "helpers.h"
 #include "types.h"
 #include "tree.h"
 #include "bspwm.h"
