@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     int sock_fd;
     struct sockaddr_un sock_address;
     size_t msglen = 0;
-    char msg[BUFSIZ] = {0};
-    char rsp[BUFSIZ] = {0};
+    char msg[BUFSIZ];
+    char rsp[BUFSIZ];
 
     if (argc < 2)
         err("invalid number of arguments: %d\n", argc);
