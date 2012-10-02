@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     strncpy(sock_address.sun_path, (sock_path == NULL ? DEFAULT_SOCKET_PATH: sock_path), sizeof(sock_address.sun_path));
     sock_address.sun_path[sizeof(sock_address.sun_path) - 1] = 0;
 
-    for (int offset = 0, len = BUFSIZ, n = 0; --argc && ++argv && len > 0; offset += n, len -= offset)
+    for (int offset = 0, len = BUFSIZ, n = 0; --argc && ++argv && len > 0; offset += n, len -= n)
         n = snprintf(msg + offset, len, "%s ", *argv);
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
