@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     char rsp[BUFSIZ];
 
     if (argc < 2)
-        err("invalid number of arguments: %d\n", argc);
+        err("no arguments given\n");
 
     char *sock_path = getenv(SOCKET_ENV_VAR);
     if (sock_path == NULL || strlen(sock_path) == 0)
