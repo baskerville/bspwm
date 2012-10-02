@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 {
     int sock_fd;
     struct sockaddr_un sock_address;
+    size_t msglen = 0;
     char msg[BUFSIZ] = {0};
     char rsp[BUFSIZ] = {0};
 
@@ -50,6 +51,8 @@ int main(int argc, char *argv[])
     for (int offset = 0, len = BUFSIZ, n = 0; --argc && ++argv && len > 0; offset += n, len -= n)
         n = snprintf(msg + offset, len, "%s ", *argv);
 
+    msglen = strlen(msg);
+
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock_fd == -1)
         err("failed to create socket\n");
@@ -57,7 +60,7 @@ int main(int argc, char *argv[])
     if (connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
         err("failed to connect to socket\n");
 
-    if (send(sock_fd, msg, strlen(msg), 0) == -1)
+    if (send(sock_fd, msg, msglen, 0) == -1)
         err("failed to send data\n");
 
     int n = recv(sock_fd, rsp, sizeof(rsp), 0);
