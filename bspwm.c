@@ -18,7 +18,7 @@
 #include "rules.h"
 #include "events.h"
 #include "common.h"
-#include "misc.h"
+#include "helpers.h"
 #include "bspwm.h"
 #include "tree.h"
 #include "ewmh.h"

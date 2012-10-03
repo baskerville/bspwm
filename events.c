@@ -7,7 +7,7 @@
 #include "types.h"
 #include "bspwm.h"
 #include "settings.h"
-#include "misc.h"
+#include "helpers.h"
 #include "window.h"
 #include "events.h"
 #include "tree.h"

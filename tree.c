@@ -5,7 +5,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "settings.h"
-#include "misc.h"
+#include "helpers.h"
 #include "window.h"
 #include "types.h"
 #include "bspwm.h"
