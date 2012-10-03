@@ -8,8 +8,8 @@ LDFLAGS = $(LIBS)
 PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 
-WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c misc.c tree.c types.c rules.c window.c
-CL_SRC = bspc.c
+WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
+CL_SRC = bspc.c helpers.c
 
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_OBJ = $(CL_SRC:.c=.o)
