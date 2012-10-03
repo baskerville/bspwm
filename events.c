@@ -370,6 +370,7 @@ void motion_notify(xcb_generic_event_t *evt)
                     h = rect.height + delta_y;
                     break;
                 case BOTTOM_RIGHT:
+                default:
                     x = rect.x;
                     y = rect.y;
                     w = rect.width + delta_x;
