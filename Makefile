@@ -2,7 +2,7 @@ VERSION = 0.1
 
 CC      = gcc
 LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh
-CFLAGS  = -g -std=c99 -pedantic -Wall -Wextra -DDEBUG
+CFLAGS  = -std=c99 -pedantic -Wall -Wextra
 LDFLAGS = $(LIBS)
 
 PREFIX    ?= /usr/local
@@ -14,7 +14,12 @@ CL_SRC = bspc.c helpers.c
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_OBJ = $(CL_SRC:.c=.o)
 
-all: options clean bspwm bspc
+debug: CFLAGS += -O0 -g -DDEBUG
+debug: options bspwm bspc
+
+all: CFLAGS += -Os
+all: LDFLAGS += -s
+all: options bspwm bspc
 
 options:
 	@echo "bspwm build options:"
@@ -27,11 +32,11 @@ options:
 	@echo "CC $<"
 	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -c -o $@ $<
 
-bspwm:  $(WM_OBJ)
+bspwm: $(WM_OBJ)
 	@echo CC -o $@
 	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS)
 
-bspc:   $(CL_OBJ)
+bspc: $(CL_OBJ)
 	@echo CC -o $@
 	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS)
 
