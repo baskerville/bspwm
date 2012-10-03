@@ -14,12 +14,12 @@ CL_SRC = bspc.c helpers.c
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_OBJ = $(CL_SRC:.c=.o)
 
-debug: CFLAGS += -O0 -g -DDEBUG
-debug: options bspwm bspc
-
 all: CFLAGS += -Os
 all: LDFLAGS += -s
 all: options bspwm bspc
+
+debug: CFLAGS += -O0 -g -DDEBUG
+debug: options bspwm bspc
 
 options:
 	@echo "bspwm build options:"
