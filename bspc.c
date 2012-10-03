@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
         die("value too long for environmental variable '%s'\n", SOCKET_ENV_VAR);
 
     sock_address.sun_family = AF_UNIX;
-    strncpy(sock_address.sun_path, (sock_path == NULL ? DEFAULT_SOCKET_PATH: sock_path), sizeof(sock_address.sun_path));
+    strncpy(sock_address.sun_path, (sock_path == NULL ? DEFAULT_SOCKET_PATH : sock_path), sizeof(sock_address.sun_path));
     sock_address.sun_path[sizeof(sock_address.sun_path) - 1] = 0;
 
     for (int offset = 0, len = BUFSIZ, n = 0; --argc && ++argv && len > 0; offset += n, len -= n)
@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
         die("failed to send data\n");
 
     int n = recv(sock_fd, rsp, sizeof(rsp), 0);
-    if (n == -1)
+    if (n == -1) {
         die("failed to get response\n");
-    else if (n > 0) {
+    } else if (n > 0) {
         rsp[n] = '\0';
         printf("%s\n", rsp);
     }
