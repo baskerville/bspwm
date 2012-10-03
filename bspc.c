@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
         n = snprintf(msg + offset, len, "%s ", *argv);
 
     msglen = strlen(msg);
-    if (msg[msglen - 1] ==  ' ')
+    if (msg[msglen - 1] == ' ')
         msg[--msglen] = '\0';
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);

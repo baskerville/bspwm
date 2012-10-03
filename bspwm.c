@@ -87,6 +87,7 @@ int main(void)
     char socket_path[BUFSIZ];
     int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
+    size_t rsplen = 0;
     char msg[BUFSIZ] = {0};
     char rsp[BUFSIZ] = {0};
 
@@ -142,7 +143,10 @@ int main(void)
                 if (ret_fd > 0 && (n = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
                     msg[n] = '\0';
                     process_message(msg, rsp);
-                    send(ret_fd, rsp, strlen(rsp), 0);
+                    rsplen = strlen(rsp);
+                    if (rsp[rsplen - 1] == '\n')
+                        rsp[--rsplen] = '\0';
+                    send(ret_fd, rsp, rsplen, 0);
                     close(ret_fd);
                 }
             }
