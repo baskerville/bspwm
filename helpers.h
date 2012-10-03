@@ -14,12 +14,12 @@
 #define XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT
 #define XCB_CONFIG_WINDOW_X_Y XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y
 
-#if 1
-#  define PUTS(x)            puts(x);
-#  define PRINTF(x,...)      printf(x, ##__VA_ARGS__);
+#ifdef DEBUG
+#  define PUTS(x)         puts(x)
+#  define PRINTF(x,...)   printf(x, ##__VA_ARGS__)
 #else
-#  define PUTS(x)            ;
-#  define PRINTF(x)          ;
+#  define PUTS(x)         ((void)0)
+#  define PRINTF(x,...)   ((void)0)
 #endif
 
 void logmsg(FILE *, char *, va_list);
