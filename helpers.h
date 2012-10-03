@@ -1,6 +1,10 @@
 #ifndef _HELPERS_H
 #define _HELPERS_H
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdint.h>
+
 #define LENGTH(x)         (sizeof(x) / sizeof(*x))
 #define MAX(A, B)         ((A) > (B) ? (A) : (B))
 #define MIN(A, B)         ((A) < (B) ? (A) : (B))
@@ -17,5 +21,11 @@
 #  define PUTS(x)            ;
 #  define PRINTF(x)          ;
 #endif
+
+void logmsg(FILE *, char *, va_list);
+void warn(char *, ...);
+__attribute__((noreturn))
+void die(char *, ...);
+uint32_t get_color(char *);
 
 #endif
