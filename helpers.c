@@ -1,16 +1,26 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
-#include "misc.h"
+#include "helpers.h"
 
-void die(const char *errstr, ...) {
+void logmsg(FILE *stream, char *fmt, va_list ap) {
+    vfprintf(stream, fmt, ap);
+}
+
+void warn(char *fmt, ...) {
     va_list ap;
-    va_start(ap, errstr);
-    vfprintf(stderr, errstr, ap);
+    va_start(ap, fmt);
+    logmsg(stderr, fmt, ap);
+    va_end(ap);
+}
+
+__attribute__((noreturn))
+void die(char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    logmsg(stderr, fmt, ap);
     va_end(ap);
     exit(EXIT_FAILURE);
 }

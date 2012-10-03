@@ -18,7 +18,7 @@
 #include "rules.h"
 #include "events.h"
 #include "common.h"
-#include "misc.h"
+#include "helpers.h"
 #include "bspwm.h"
 #include "tree.h"
 #include "ewmh.h"
@@ -53,7 +53,7 @@ void setup(void)
     screen_height = screen->height_in_pixels;
     root_depth = screen->root_depth;
 
-    xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED, 
+    xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
                               ewmh->_NET_DESKTOP_NAMES,
                               ewmh->_NET_NUMBER_OF_DESKTOPS,
                               ewmh->_NET_CURRENT_DESKTOP,
@@ -85,9 +85,10 @@ int main(void)
 {
     fd_set descriptors;
     char socket_path[BUFSIZ];
-    int sock_fd, ret_fd, dpy_fd, sel, nbr;
+    int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
-    char msg[BUFSIZ], rsp[BUFSIZ];
+    char msg[BUFSIZ] = {0};
+    char rsp[BUFSIZ] = {0};
 
     xcb_generic_event_t *event;
 
@@ -113,7 +114,7 @@ int main(void)
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
-    if (sock_fd == -1) 
+    if (sock_fd == -1)
         die("error: could not create socket\n");
 
     bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
@@ -138,9 +139,8 @@ int main(void)
 
             if (FD_ISSET(sock_fd, &descriptors)) {
                 ret_fd = accept(sock_fd, NULL, 0);
-                if (ret_fd > 0 && (nbr = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
-                    msg[nbr] = '\0';
-                    strncpy(rsp, EMPTY_RESPONSE, sizeof(rsp));
+                if (ret_fd > 0 && (n = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
+                    msg[n] = '\0';
                     process_message(msg, rsp);
                     send(ret_fd, rsp, strlen(rsp), 0);
                     close(ret_fd);
