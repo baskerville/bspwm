@@ -18,11 +18,11 @@ void process_message(char *msg, char *rsp)
     if (cmd == NULL)
         return;
 
-    if (strncmp(cmd, "get", 4) == 0) {
+    if (strcmp(cmd, "get") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         get_setting(name, rsp);
         return;
-    } else if (strncmp(cmd, "set", 4) == 0) {
+    } else if (strcmp(cmd, "set") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         char *value = strtok(NULL, TOKEN_SEP);
         set_setting(name, value, rsp);
