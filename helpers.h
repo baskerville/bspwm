@@ -16,7 +16,7 @@
 
 #ifdef DEBUG
 #  define PUTS(x)         puts(x)
-#  define PRINTF(x,...)   printf(x, ##__VA_ARGS__)
+#  define PRINTF(x,...)   printf(x, __VA_ARGS__)
 #else
 #  define PUTS(x)         ((void)0)
 #  define PRINTF(x,...)   ((void)0)
