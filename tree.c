@@ -199,7 +199,7 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
     if (n == NULL)
         return;
 
-    char line[MAXLEN];
+    char line[BUFSIZ];
 
     for (int i = 0; i < depth; i++)
         strcat(rsp, "  ");

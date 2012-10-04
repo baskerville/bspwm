@@ -11,7 +11,7 @@
 
 void run_autostart(void)
 {
-    char path[MAXLEN];
+    char path[BUFSIZ];
 
     snprintf(path, sizeof(path), "%s/%s/%s", getenv("XDG_CONFIG_HOME"), WM_NAME, AUTOSTART_FILE);
 

@@ -224,7 +224,7 @@ void toggle_locked(client_t *c)
 
 void list_windows(char *rsp)
 {
-    char line[MAXLEN];
+    char line[BUFSIZ];
 
     desktop_t *d = desk_head;
 

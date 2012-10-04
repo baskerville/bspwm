@@ -49,7 +49,7 @@ void ewmh_update_current_desktop(void)
 
 void ewmh_update_desktop_names(void)
 {
-   char names[MAXLEN];
+   char names[BUFSIZ];
    desktop_t *d = desk_head;
    unsigned int pos, i;
 

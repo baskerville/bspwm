@@ -31,14 +31,14 @@
 
 #define BORDERLESS_MONOCLE  false
 
-char active_border_color[MAXLEN];
-char normal_border_color[MAXLEN];
-char inner_border_color[MAXLEN];
-char outer_border_color[MAXLEN];
-char presel_border_color[MAXLEN];
-char active_locked_border_color[MAXLEN];
-char normal_locked_border_color[MAXLEN];
-char urgent_border_color[MAXLEN];
+char active_border_color[BUFSIZ];
+char normal_border_color[BUFSIZ];
+char inner_border_color[BUFSIZ];
+char outer_border_color[BUFSIZ];
+char presel_border_color[BUFSIZ];
+char active_locked_border_color[BUFSIZ];
+char normal_locked_border_color[BUFSIZ];
+char urgent_border_color[BUFSIZ];
 
 uint32_t active_border_color_pxl;
 uint32_t normal_border_color_pxl;
@@ -62,7 +62,7 @@ int right_padding;
 
 bool borderless_monocle;
 
-char wm_name[MAXLEN];
+char wm_name[BUFSIZ];
 
 void load_settings(void);
 void run_autostart(void);
