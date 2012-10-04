@@ -53,4 +53,4 @@ uninstall:
 	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
 	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c}
 
-.PHONY: all options clean install uninstall
+.PHONY: all debug options clean install uninstall
