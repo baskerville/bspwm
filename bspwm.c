@@ -148,6 +148,7 @@ int main(void)
                         rsp[--rsplen] = '\0';
                     send(ret_fd, rsp, rsplen, 0);
                     close(ret_fd);
+                    rsp[0] = '\0';
                 }
             }
 
