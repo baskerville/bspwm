@@ -286,43 +286,43 @@ void get_setting(char *name, char* rsp)
         return;
 
     if (strcmp(name, "inner_border_width") == 0)
-        sprintf(rsp, "%u", inner_border_width);
+        snprintf(rsp, BUFSIZ, "%u", inner_border_width);
     else if (strcmp(name, "main_border_width") == 0)
-        sprintf(rsp, "%u", main_border_width);
+        snprintf(rsp, BUFSIZ, "%u", main_border_width);
     else if (strcmp(name, "outer_border_width") == 0)
-        sprintf(rsp, "%u", outer_border_width);
+        snprintf(rsp, BUFSIZ, "%u", outer_border_width);
     else if (strcmp(name, "border_width") == 0)
-        sprintf(rsp, "%u", border_width);
+        snprintf(rsp, BUFSIZ, "%u", border_width);
     else if (strcmp(name, "window_gap") == 0)
-        sprintf(rsp, "%i", window_gap);
+        snprintf(rsp, BUFSIZ, "%i", window_gap);
     else if (strcmp(name, "left_padding") == 0)
-        sprintf(rsp, "%i", left_padding);
+        snprintf(rsp, BUFSIZ, "%i", left_padding);
     else if (strcmp(name, "right_padding") == 0)
-        sprintf(rsp, "%i", right_padding);
+        snprintf(rsp, BUFSIZ, "%i", right_padding);
     else if (strcmp(name, "top_padding") == 0)
-        sprintf(rsp, "%i", top_padding);
+        snprintf(rsp, BUFSIZ, "%i", top_padding);
     else if (strcmp(name, "bottom_padding") == 0)
-        sprintf(rsp, "%i", bottom_padding);
+        snprintf(rsp, BUFSIZ, "%i", bottom_padding);
     else if (strcmp(name, "active_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", active_border_color, active_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", active_border_color, active_border_color_pxl);
     else if (strcmp(name, "normal_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", normal_border_color, normal_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", normal_border_color, normal_border_color_pxl);
     else if (strcmp(name, "inner_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", inner_border_color, inner_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", inner_border_color, inner_border_color_pxl);
     else if (strcmp(name, "outer_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", outer_border_color, outer_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", outer_border_color, outer_border_color_pxl);
     else if (strcmp(name, "presel_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", presel_border_color, presel_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", presel_border_color, presel_border_color_pxl);
     else if (strcmp(name, "active_locked_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", active_locked_border_color, active_locked_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", active_locked_border_color, active_locked_border_color_pxl);
     else if (strcmp(name, "normal_locked_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", normal_locked_border_color, normal_locked_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", normal_locked_border_color, normal_locked_border_color_pxl);
     else if (strcmp(name, "urgent_border_color") == 0)
-        sprintf(rsp, "%s (%06X)", urgent_border_color, urgent_border_color_pxl);
+        snprintf(rsp, BUFSIZ, "%s (%06X)", urgent_border_color, urgent_border_color_pxl);
     else if (strcmp(name, "borderless_monocle") == 0)
-        sprintf(rsp, "%s", BOOLSTR(borderless_monocle));
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(borderless_monocle));
     else if (strcmp(name, "wm_name") == 0)
-        sprintf(rsp, "%s", wm_name);
+        snprintf(rsp, BUFSIZ, "%s", wm_name);
     else
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
 }

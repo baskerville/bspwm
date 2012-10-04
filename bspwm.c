@@ -84,7 +84,7 @@ void setup(void)
 int main(void)
 {
     fd_set descriptors;
-    char socket_path[BUFSIZ];
+    char socket_path[MAXLEN];
     int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
     size_t rsplen = 0;

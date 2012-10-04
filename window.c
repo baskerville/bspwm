@@ -224,15 +224,15 @@ void toggle_locked(client_t *c)
 
 void list_windows(char *rsp)
 {
-    char line[BUFSIZ];
+    char line[MAXLEN];
 
     desktop_t *d = desk_head;
 
     while (d != NULL) {
         node_t *n = first_extrema(d->root);
         while (n != NULL) {
-            sprintf(line, "0x%X\n", n->client->window);
-            strcat(rsp, line);
+            snprintf(line, sizeof(line), "0x%X\n", n->client->window);
+            strncat(rsp, line, REMLEN(rsp));
             n = next_leaf(n);
         }
         d = d->next;

@@ -199,22 +199,22 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
     if (n == NULL)
         return;
 
-    char line[BUFSIZ];
+    char line[MAXLEN];
 
     for (int i = 0; i < depth; i++)
-        strcat(rsp, "  ");
+        strncat(rsp, "  ", REMLEN(rsp));
 
     if (is_leaf(n))
-        sprintf(line, "%s %X %s%s%s%s%s", n->client->class_name, n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-"));
+        snprintf(line, sizeof(line), "%s %X %s%s%s%s%s", n->client->class_name, n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-"));
     else
-        sprintf(line, "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
+        snprintf(line, sizeof(line), "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
 
-    strcat(rsp, line);
+    strncat(rsp, line, REMLEN(rsp));
 
     if (n == d->focus)
-        strcat(rsp, " *\n");
+        strncat(rsp, " *\n", REMLEN(rsp));
     else
-        strcat(rsp, "\n");
+        strncat(rsp, "\n", REMLEN(rsp));
 
     dump_tree(d, n->first_child, rsp, depth + 1);
     dump_tree(d, n->second_child, rsp, depth + 1);
@@ -232,11 +232,11 @@ void list_desktops(char *rsp)
     desktop_t *d = desk_head;
 
     while (d != NULL) {
-        strcat(rsp, d->name);
+        strncat(rsp, d->name, REMLEN(rsp));
         if (desk == d)
-            strcat(rsp, " @\n");
+            strncat(rsp, " @\n", REMLEN(rsp));
         else
-            strcat(rsp, "\n");
+            strncat(rsp, "\n", REMLEN(rsp));
         dump_tree(d, d->root, rsp, 1);
         d = d->next;
     }

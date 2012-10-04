@@ -70,7 +70,7 @@ typedef enum {
 
 typedef struct {
     xcb_window_t window;
-    char class_name[BUFSIZ];
+    char class_name[MAXLEN];
     unsigned int border_width;
     bool floating;
     bool transient;  /* transient window are always floating */
@@ -96,7 +96,7 @@ struct node_t {
 
 typedef struct desktop_t desktop_t;
 struct desktop_t {
-    char name[BUFSIZ];
+    char name[MAXLEN];
     layout_t layout;
     node_t *root;
     node_t *focus;
@@ -106,7 +106,7 @@ struct desktop_t {
 };
 
 typedef struct {
-    char name[BUFSIZ];
+    char name[MAXLEN];
 } rule_cause_t;
 
 typedef struct {
