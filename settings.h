@@ -1,12 +1,9 @@
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
 
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
 #include "types.h"
 
 #define WM_NAME             "bspwm"
-#define CONFIG_FILE         "bspwmrc"
 #define AUTOSTART_FILE      "autostart"
 
 #define ACTIVE_BORDER_COLOR         "#7D7F8A"
