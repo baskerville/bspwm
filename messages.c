@@ -75,7 +75,6 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
         if (desk->focus != NULL)
             toggle_fullscreen(desk->focus->client);
-        return;
     } else if (strcmp(cmd, "toggle_floating") == 0) {
         split_mode = MODE_AUTOMATIC;
         toggle_floating(desk->focus);

@@ -182,13 +182,6 @@ void toggle_fullscreen(client_t *c)
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        xcb_rectangle_t rect;
-        if (is_floating(c))
-            rect = c->floating_rectangle;
-        else
-            rect = c->tiled_rectangle;
-        window_border_width(c->window, c->border_width);
-        window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
     } else {
         c->fullscreen = true;
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
@@ -214,7 +207,6 @@ void toggle_floating(node_t *n)
         window_raise(c->window);
     else if (is_tiled(c))
         window_lower(c->window);
-
 }
 
 void toggle_locked(client_t *c)
