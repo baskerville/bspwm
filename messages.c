@@ -65,6 +65,11 @@ void process_message(char *msg, char *rsp)
                 desk->layout = l;
             }
         }
+    } else if (strcmp(cmd, "cycle_layout") == 0) {
+        if (desk->layout == LAYOUT_MONOCLE)
+            desk->layout = LAYOUT_TILED;
+        else
+            desk->layout = LAYOUT_MONOCLE;
     } else if (strcmp(cmd, "shift") == 0) {
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {

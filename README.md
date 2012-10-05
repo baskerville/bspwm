@@ -146,6 +146,9 @@ The following messages are handled:
     layout LYT
         Set the layout of the current desktop to LYT.
 
+    cycle_layout
+        Cycle the layout of the current desktop.
+
     toggle_fullscreen
         Toggle the fullscreen state of the current window.
 
