@@ -406,7 +406,9 @@ void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
         bool fs = n->client->fullscreen;
         if (action == XCB_EWMH_WM_STATE_TOGGLE
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD))
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
             toggle_fullscreen(n->client);
+            apply_layout(desk, desk->root, root_rect);
+        }
     }
 }
