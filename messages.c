@@ -38,6 +38,7 @@ void process_message(char *msg, char *rsp)
         return;
     } else if (strcmp(cmd, "close") == 0) {
         window_close(desk->focus);
+        return;
     } else if (strcmp(cmd, "kill") == 0) {
         window_kill(desk, desk->focus);
     } else if (strcmp(cmd, "magnetise") == 0) {

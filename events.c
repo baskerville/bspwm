@@ -227,7 +227,6 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
-        PRINTF("remove node in unmap notify %X\n", e->window);
         remove_node(loc.desktop, loc.node);
         apply_layout(loc.desktop, loc.desktop->root, root_rect);
     }
@@ -272,9 +271,10 @@ void client_message(xcb_generic_event_t *evt)
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
         if (loc.desktop == desk && desk->focus != NULL && desk->focus->client->fullscreen)
             return;
-        apply_layout(loc.desktop, loc.desktop->root, root_rect);
-        if (desk != loc.desktop)
+        if (desk != loc.desktop) {
+            apply_layout(loc.desktop, loc.desktop->root, root_rect);
             select_desktop(loc.desktop);
+        }
         focus_node(loc.desktop, loc.node, true);
     }
 }
