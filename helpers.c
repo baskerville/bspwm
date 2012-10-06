@@ -5,25 +5,20 @@
 #include "bspwm.h"
 #include "helpers.h"
 
-void logmsg(FILE *stream, char *fmt, va_list ap)
-{
-    vfprintf(stream, fmt, ap);
-}
-
 void warn(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    logmsg(stderr, fmt, ap);
+    vfprintf(stderr, fmt, ap);
     va_end(ap);
 }
 
 __attribute__((noreturn))
-void die(char *fmt, ...)
+void err(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    logmsg(stderr, fmt, ap);
+    vfprintf(stderr, fmt, ap);
     va_end(ap);
     exit(EXIT_FAILURE);
 }

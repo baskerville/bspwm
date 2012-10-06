@@ -15,13 +15,13 @@ int main(int argc, char *argv[])
     char rsp[BUFSIZ];
 
     if (argc < 2)
-        die("no arguments given\n");
+        err("no arguments given\n");
 
     char *sock_path = getenv(SOCKET_ENV_VAR);
     if (sock_path == NULL || strlen(sock_path) == 0)
         warn("environmental variable '%s' is not set or empty - using default value: %s\n", SOCKET_ENV_VAR, DEFAULT_SOCKET_PATH);
     else if (sizeof(sock_address.sun_path) <= strlen(sock_path))
-        die("value too long for environmental variable '%s'\n", SOCKET_ENV_VAR);
+        err("value too long for environmental variable '%s'\n", SOCKET_ENV_VAR);
 
     sock_address.sun_family = AF_UNIX;
     strncpy(sock_address.sun_path, (sock_path == NULL ? DEFAULT_SOCKET_PATH : sock_path), sizeof(sock_address.sun_path));
@@ -36,17 +36,17 @@ int main(int argc, char *argv[])
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock_fd == -1)
-        die("failed to create socket\n");
+        err("failed to create socket\n");
 
     if (connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
-        die("failed to connect to socket\n");
+        err("failed to connect to socket\n");
 
     if (send(sock_fd, msg, msglen, 0) == -1)
-        die("failed to send data\n");
+        err("failed to send data\n");
 
     int n = recv(sock_fd, rsp, sizeof(rsp), 0);
     if (n == -1) {
-        die("failed to get response\n");
+        err("failed to get response\n");
     } else if (n > 0) {
         rsp[n] = '\0';
         printf("%s\n", rsp);

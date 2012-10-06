@@ -297,7 +297,6 @@ void button_press(xcb_generic_event_t *evt)
             case XCB_BUTTON_INDEX_3:
                 if (!is_floating(loc.node->client))
                     return;
-                PUTS("grab pointer from button press");
                 frozen_pointer->desktop = loc.desktop;
                 frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;

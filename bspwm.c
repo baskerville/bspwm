@@ -31,10 +31,10 @@ void quit(void)
 void register_events(void)
 {
     uint32_t values[] = {ROOT_EVENT_MASK};
-    xcb_generic_error_t *err = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
-    if (err != NULL) {
+    xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
+    if (e != NULL) {
         xcb_disconnect(dpy);
-        die("another WM is already running\n");
+        err("another WM is already running\n");
     }
 
     xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_1, BUTTON_MODIFIER);
@@ -47,7 +47,7 @@ void setup(void)
     ewmh_init();
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (!screen)
-        die("error: cannot aquire screen\n");
+        err("error: cannot aquire screen\n");
 
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
@@ -98,7 +98,7 @@ int main(void)
     dpy = xcb_connect(NULL, &default_screen);
 
     if (xcb_connection_has_error(dpy))
-        die("error: cannot open display\n");
+        err("error: cannot open display\n");
 
     setup();
     register_events();
@@ -116,7 +116,7 @@ int main(void)
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (sock_fd == -1)
-        die("error: could not create socket\n");
+        err("error: could not create socket\n");
 
     bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
     listen(sock_fd, SOMAXCONN);
@@ -162,7 +162,7 @@ int main(void)
         }
 
         if (xcb_connection_has_error(dpy)) {
-            die("connection has errors\n");
+            err("connection has errors\n");
         }
     }
 

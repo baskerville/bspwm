@@ -24,10 +24,9 @@
 #  define PRINTF(x,...)   ((void)0)
 #endif
 
-void logmsg(FILE *, char *, va_list);
 void warn(char *, ...);
 __attribute__((noreturn))
-void die(char *, ...);
+void err(char *, ...);
 uint32_t get_color(char *);
 
 #endif
