@@ -199,7 +199,7 @@ void toggle_floating(node_t *n)
     if (n == NULL || n->client->transient)
         return;
 
-    PRINTF("toggle floating %X\n", c->window);
+    PRINTF("toggle floating %X\n", n->client->window);
 
     client_t *c = n->client;
     c->floating = !c->floating;
