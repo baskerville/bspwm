@@ -42,7 +42,7 @@ void handle_event(xcb_generic_event_t *evt)
             motion_notify(evt);
             break;
         case XCB_BUTTON_RELEASE:
-            button_release(evt);
+            button_release();
             break;
         default:
             break;
@@ -223,7 +223,7 @@ void unmap_notify(xcb_generic_event_t *evt)
 {
     xcb_unmap_notify_event_t *e = (xcb_unmap_notify_event_t *) evt;
 
-    PRINTF("unmap notify %X %u\n", e->window);
+    PRINTF("unmap notify %X\n", e->window);
 
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
@@ -385,19 +385,12 @@ void motion_notify(xcb_generic_event_t *evt)
     }
 }
 
-void button_release(xcb_generic_event_t *evt)
+void button_release(void)
 {
-    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
-    xcb_window_t win = e->child;
-
-    PRINTF("button release %X\n", win);
+    PUTS("button release");
 
     xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
-
-    window_location_t loc;
-    if (locate_window(win, &loc)) {
-        update_floating_rectangle(loc.node->client);
-    }
+    update_floating_rectangle(frozen_pointer->node->client);
 }
 
 void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
