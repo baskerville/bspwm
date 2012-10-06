@@ -150,7 +150,7 @@ void window_close(node_t *n)
         WM_DELETE_WINDOW = reply->atom;
         free(reply);
     } else {
-        PUTS("could not acquire WM_DELETE_WINDOW atom");
+        warn("close_window %X: could not acquire WM_DELETE_WINDOW atom\n", win);
         return;
     }
 
@@ -178,6 +178,8 @@ void window_kill(desktop_t *d, node_t *n)
 
 void toggle_fullscreen(client_t *c)
 {
+    PRINTF("toggle fullscreen %X\n", c->window);
+
     if (c->fullscreen) {
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
@@ -197,7 +199,7 @@ void toggle_floating(node_t *n)
     if (n == NULL || n->client->transient)
         return;
 
-    PUTS("toggle floating");
+    PRINTF("toggle floating %X\n", c->window);
 
     client_t *c = n->client;
     c->floating = !c->floating;
@@ -211,6 +213,8 @@ void toggle_floating(node_t *n)
 
 void toggle_locked(client_t *c)
 {
+    PRINTF("toggle locked %X\n", c->window);
+
     c->locked = !c->locked;
 }
 
@@ -259,7 +263,7 @@ void update_floating_rectangle(client_t *c)
         c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
         free(geom);
     } else {
-        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
+        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 1, 1};
     }
 }
 
