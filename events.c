@@ -223,7 +223,7 @@ void unmap_notify(xcb_generic_event_t *evt)
 {
     xcb_unmap_notify_event_t *e = (xcb_unmap_notify_event_t *) evt;
 
-    PRINTF("unmap notify %X %u\n", e->window, XCB_EVENT_SENT(e));
+    PRINTF("unmap notify %X %u\n", e->window);
 
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
@@ -284,7 +284,7 @@ void button_press(xcb_generic_event_t *evt)
     xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
     xcb_window_t win = e->child;
 
-    PRINTF("button press %X %u %u\n", win, e->detail, e->state);
+    PRINTF("button press %u %X\n", e->detail, win);
 
     window_location_t loc;
     if (locate_window(win, &loc)) {
@@ -338,7 +338,7 @@ void motion_notify(xcb_generic_event_t *evt)
     xcb_rectangle_t rect = frozen_pointer->rectangle;
     xcb_window_t win = c->window;
 
-    /* PRINTF("motion notify %X %u\n", win, frozen_pointer->button); */
+    /* PRINTF("motion notify %X\n", win); */
 
     delta_x = e->root_x - frozen_pointer->position.x;
     delta_y = e->root_y - frozen_pointer->position.y;
@@ -390,7 +390,7 @@ void button_release(xcb_generic_event_t *evt)
     xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
     xcb_window_t win = e->child;
 
-    PRINTF("button release %X %u %u\n", win, e->detail, e->state);
+    PRINTF("button release %X\n", win);
 
     xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
 
