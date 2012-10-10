@@ -19,7 +19,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus)
+void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -31,6 +31,8 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
                 *takes_focus = false;
             } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
                 *floating = true;
+            } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK || a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {
+                *manage = false;
             }
         }
         xcb_ewmh_get_atoms_reply_wipe(&win_type);

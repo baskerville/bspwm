@@ -63,6 +63,8 @@ void setup(void)
                               ewmh->_NET_WM_STATE,
                               ewmh->_NET_WM_STATE_FULLSCREEN,
                               ewmh->_NET_WM_WINDOW_TYPE,
+                              ewmh->_NET_WM_WINDOW_TYPE_DOCK,
+                              ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION,
                               ewmh->_NET_WM_WINDOW_TYPE_DIALOG,
                               ewmh->_NET_WM_WINDOW_TYPE_UTILITY,
                               ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR};

@@ -55,22 +55,30 @@ void map_request(xcb_generic_event_t *evt)
 
     PRINTF("map request %X\n", e->window);
 
-    xcb_get_window_attributes_reply_t  *wa;
     xcb_window_t win = e->window;
     window_location_t loc;
-    wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
+    xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
+    uint8_t override_redirect = 0;
 
-    if ((wa != NULL && wa->override_redirect) || locate_window(win, &loc))
+    if (wa != NULL) {
+        override_redirect = wa->override_redirect;
+        free(wa);
+    }
+
+    if (override_redirect || locate_window(win, &loc))
         return;
 
-    free(wa);
+    bool floating = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
+
+    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus, &manage);
+
+    if (!manage) {
+        window_show(win);
+        return;
+    }
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
-
-    bool floating = false, transient = false, fullscreen = false, takes_focus = true;
-
-    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus);
 
     xcb_icccm_get_wm_class_reply_t reply;
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
