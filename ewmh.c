@@ -32,19 +32,29 @@ void ewmh_update_number_of_desktops(void)
     xcb_ewmh_set_number_of_desktops(ewmh, default_screen, num_desktops);
 }
 
-void ewmh_update_current_desktop(void)
+uint32_t ewmh_get_desktop_index(desktop_t *d)
 {
-   desktop_t *d = desk_head;
-   unsigned int i = 0, cd = 0;
+   desktop_t *cd = desk_head;
+   uint32_t i;
 
-   while (d != NULL && i < num_desktops) {
-       if (desk == d)
-           cd = i;
-       i++;
-       d = d->next;
+   for (i = 0; cd != NULL && i < num_desktops; i++, cd = cd->next) {
+       if (d == cd)
+           break;
    }
 
-   xcb_ewmh_set_current_desktop(ewmh, default_screen, cd);
+   return i;
+}
+
+void ewmh_update_current_desktop(void)
+{
+   uint32_t i = ewmh_get_desktop_index(desk);
+   xcb_ewmh_set_current_desktop(ewmh, default_screen, i);
+}
+
+void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
+{
+    uint32_t i = ewmh_get_desktop_index(d);
+    xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
 }
 
 void ewmh_update_desktop_names(void)

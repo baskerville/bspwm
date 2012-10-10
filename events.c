@@ -114,6 +114,7 @@ void map_request(xcb_generic_event_t *evt)
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
+    ewmh_set_wm_desktop(birth, desk);
     ewmh_update_client_list();
 }
 

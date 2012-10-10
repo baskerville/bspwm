@@ -440,7 +440,8 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
         d->focus = n;
     }
 
-    ewmh_update_active_window();
+    if (d == desk)
+        ewmh_update_active_window();
 }
 
 void update_current(void)
@@ -566,12 +567,12 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     PRINTF("transfer node %X\n", n->client->window);
 
     unlink_node(ds, n);
+    insert_node(dd, n);
+    ewmh_set_wm_desktop(n, dd);
 
     if (ds == desk) {
         window_hide(n->client->window);
     }
-
-    insert_node(dd, n);
 
     if (dd == desk) {
         window_show(n->client->window);
