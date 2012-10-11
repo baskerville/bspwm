@@ -278,8 +278,8 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
-        if (loc.desktop == desk && desk->focus != NULL && desk->focus->client->fullscreen)
-            return;
+        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
+            toggle_fullscreen(loc.desktop->focus->client);
         if (desk != loc.desktop) {
             apply_layout(loc.desktop, loc.desktop->root, root_rect);
             select_desktop(loc.desktop);
