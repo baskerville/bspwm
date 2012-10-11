@@ -245,7 +245,7 @@ Where *M4* is the fourth modifier mask (generally bound to *Super*).
 
 ## Required Libraries:
 
-libxcb, xcb-util-wm.
+libxcb, xcb-util, xcb-util-wm.
 
 ## Installation
 
