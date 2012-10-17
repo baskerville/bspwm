@@ -15,29 +15,46 @@
 
 bool locate_window(xcb_window_t win, window_location_t *loc)
 {
-    node_t *n;
-    desktop_t *d = desk_head;
-
-    if (d == NULL)
-        return false;
-
-    while (d != NULL) {
-        n = first_extrema(d->root);
-        while (n != NULL) {
-            if (n->client->window == win) {
-                loc->desktop = d;
-                loc->node = n;
-                return true;
+    monitor_t *m = mon_head;
+    while (m != NULL) {
+        desktop_t *d = m->desk_head;
+        while (d != NULL) {
+            node_t *n = first_extrema(d->root);
+            while (n != NULL) {
+                if (n->client->window == win) {
+                    loc->monitor = m;
+                    loc->desktop = d;
+                    loc->node = n;
+                    return true;
+                }
+                n = next_leaf(n);
             }
-            n = next_leaf(n);
+            d = d->next;
         }
-        d = d->next;
+        m = m->next;
     }
-
     return false;
 }
 
-void window_draw_border(node_t *n, bool focused)
+bool locate_desktop(char *name, desktop_location_t *loc)
+{
+    monitor_t *m = mon_head;
+    while (m != NULL) {
+        desktop_t *d = m->desk_head;
+        while (d != NULL) {
+            if (strcmp(d->name, name) == 0) {
+                loc->monitor = m;
+                loc->desktop = d;
+                return true;
+            }
+            d = d->next;
+        }
+        m = m->next;
+    }
+    return false;
+}
+
+void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 {
     if (n == NULL)
         return;
@@ -81,7 +98,7 @@ void window_draw_border(node_t *n, bool focused)
     xcb_gcontext_t gc = xcb_generate_id(dpy);
     xcb_create_gc(dpy, gc, pix, 0, NULL);
 
-    uint32_t main_border_color_pxl = get_main_border_color(n->client, focused);
+    uint32_t main_border_color_pxl = get_main_border_color(n->client, focused_window, focused_monitor);
 
     /* inner border */
     if (inner_border_width > 0) {
@@ -101,7 +118,7 @@ void window_draw_border(node_t *n, bool focused)
         xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(outer_rectangles), outer_rectangles);
     }
 
-    if (split_mode == MODE_MANUAL && focused) {
+    if (split_mode == MODE_MANUAL && focused_monitor && focused_window) {
         uint16_t fence = (int16_t) (n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width));
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
         switch (split_dir) {
@@ -222,25 +239,25 @@ void list_windows(char *rsp)
 {
     char line[MAXLEN];
 
-    desktop_t *d = desk_head;
-
-    while (d != NULL) {
-        node_t *n = first_extrema(d->root);
-        while (n != NULL) {
-            snprintf(line, sizeof(line), "0x%X\n", n->client->window);
-            strncat(rsp, line, REMLEN(rsp));
-            n = next_leaf(n);
-        }
-        d = d->next;
-    }
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n)) {
+                snprintf(line, sizeof(line), "0x%X\n", n->client->window);
+                strncat(rsp, line, REMLEN(rsp));
+            }
 }
 
-uint32_t get_main_border_color(client_t *c, bool focused)
+uint32_t get_main_border_color(client_t *c, bool focused_window, bool focused_monitor)
 {
     if (c == NULL)
         return 0;
 
-    if (focused) {
+    if (focused_monitor && focused_window) {
+        if (c->locked)
+            return focused_locked_border_color_pxl;
+        else
+            return focused_border_color_pxl;
+    } else if (focused_window) {
         if (c->locked)
             return active_locked_border_color_pxl;
         else
@@ -263,7 +280,7 @@ void update_floating_rectangle(client_t *c)
         c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
         free(geom);
     } else {
-        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 1, 1};
+        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 32, 24};
     }
 }
 

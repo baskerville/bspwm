@@ -23,7 +23,7 @@ void ewmh_update_wm_name(void)
 
 void ewmh_update_active_window(void)
 {
-    xcb_window_t win = (desk->focus == NULL ? XCB_NONE : desk->focus->client->window);
+    xcb_window_t win = (mon->desk->focus == NULL ? XCB_NONE : mon->desk->focus->client->window);
     xcb_ewmh_set_active_window(ewmh, default_screen, win);
 }
 
@@ -34,21 +34,19 @@ void ewmh_update_number_of_desktops(void)
 
 uint32_t ewmh_get_desktop_index(desktop_t *d)
 {
-   desktop_t *cd = desk_head;
-   uint32_t i;
+    uint32_t i = 0;
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next, i++)
+            if (d == cd)
+                return i;
 
-   for (i = 0; cd != NULL && i < num_desktops; i++, cd = cd->next) {
-       if (d == cd)
-           break;
-   }
-
-   return i;
+    return 0;
 }
 
 void ewmh_update_current_desktop(void)
 {
-   uint32_t i = ewmh_get_desktop_index(desk);
-   xcb_ewmh_set_current_desktop(ewmh, default_screen, i);
+    uint32_t i = ewmh_get_desktop_index(mon->desk);
+    xcb_ewmh_set_current_desktop(ewmh, default_screen, i);
 }
 
 void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
@@ -59,28 +57,33 @@ void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
 
 void ewmh_update_desktop_names(void)
 {
-   char names[MAXLEN];
-   desktop_t *d = desk_head;
-   unsigned int pos, i;
+    char names[MAXLEN];
+    monitor_t *m = mon_head;
+    unsigned int pos, i;
+    pos = i = 0;
 
-   pos = i = 0;
+    while (m != NULL) {
+        desktop_t *d = m->desk_head;
 
-   while (d != NULL && i < num_desktops) {
-       for (unsigned int j = 0; j < strlen(d->name); j++)
-           names[pos + j] = d->name[j];
-       pos += strlen(d->name);
-       names[pos] = '\0';
-       pos++;
-       d = d->next;
-       i++;
-   }
+        while (d != NULL && i < num_desktops) {
+            for (unsigned int j = 0; j < strlen(d->name); j++)
+                names[pos + j] = d->name[j];
+            pos += strlen(d->name);
+            names[pos] = '\0';
+            pos++;
+            d = d->next;
+            i++;
+        }
 
-   if (i != num_desktops)
-       return;
+        m = m->next;
+    }
 
-   pos--;
+    if (i != num_desktops)
+        return;
 
-   xcb_ewmh_set_desktop_names(ewmh, default_screen, pos, names);
+    pos--;
+
+    xcb_ewmh_set_desktop_names(ewmh, default_screen, pos, names);
 }
 
 void ewmh_update_client_list(void)
@@ -91,17 +94,12 @@ void ewmh_update_client_list(void)
     }
 
     xcb_window_t wins[num_clients];
-    desktop_t *d = desk_head;
     unsigned int i = 0;
 
-    while (d != NULL && i < num_clients) {
-        node_t *n = first_extrema(d->root);
-        while (n != NULL) {
-            wins[i++] = n->client->window;
-            n = next_leaf(n);
-        }
-        d = d->next;
-    }
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+                wins[i++] = n->client->window;
 
     if (i != num_clients)
         return;

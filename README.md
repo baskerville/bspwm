@@ -83,8 +83,11 @@ The following messages are handled:
     dump
         Output the internal representation of the window tree.
 
-    list
-        Perform a dump of each desktop.
+    list_monitors [--quiet]
+        Perform a dump of each monitor.
+
+    list [--quiet]
+        Perform a dump of each desktop for the current monitor.
 
     windows
         Return the list of managed windows (i.e. their identifiers).
@@ -128,17 +131,29 @@ The following messages are handled:
     send_to DESKTOP_NAME
         Send the focused window to the given desktop.
 
+    use_monitor MONITOR_NAME
+        Select the given monitor.
+
     use DESKTOP_NAME
         Select the given desktop.
     
+    alternate_monitor
+        Alternate between the current and the last focused monitor.
+
     alternate
         Alternate between the current and the last focused desktop.
 
     add DESKTOP_NAME
         Make a new desktop with the given name.
 
+    rename_monitor CURRENT_NAME NEW_NAME
+        Rename the monitor named CURRENT_NAME to NEW_NAME.
+
     rename CURRENT_NAME NEW_NAME
         Rename the desktop named CURRENT_NAME to NEW_NAME.
+
+    cycle_monitor CYC
+        Select the next or previous monitor.
 
     cycle_desktop CYC
         Select the next or previous desktop.
@@ -182,8 +197,11 @@ Where
 
 Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or '#RRGGBB', booleans are 'true' or 'false'.
 
+    focused_border_color
+        Color of the main border of a focused window of a focused monitor.
+
     active_border_color
-        Color of the main border of a focused window.
+        Color of the main border of a focused window of an unfocused monitor.
 
     normal_border_color
         Color of the main border of an unfocused window.
@@ -197,8 +215,11 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     presel_border_color
         Color of the *presel* message feedback.
 
+    focused_locked_border_color
+        Color of the main border of a focused locked window of a focused monitor.
+
     active_locked_border_color
-        Color of the main border of a focused locked window.
+        Color of the main border of a focused locked window of an unfocused monitor.
 
     normal_locked_border_color
         Color of the main border of an unfocused locked window.

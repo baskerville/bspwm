@@ -7,7 +7,8 @@
 #include "helpers.h"
 
 #define SPLIT_RATIO  0.5
-#define DEFAULT_DESK_NAME    "One"
+#define DEFAULT_DESK_NAME    "Desktop"
+#define DEFAULT_MON_NAME     "Monitor"
 #define MISSING_VALUE        "N/A"
 
 typedef enum {
@@ -34,6 +35,11 @@ typedef enum {
     CHANGE_INCREASE,
     CHANGE_DECREASE
 } value_change_t;
+
+typedef enum {
+    LIST_OPTION_VERBOSE,
+    LIST_OPTION_QUIET
+} list_option_t;
 
 typedef enum {
     SKIP_NONE,
@@ -105,6 +111,18 @@ struct desktop_t {
     desktop_t *next;
 };
 
+typedef struct monitor_t monitor_t;
+struct monitor_t {
+    char name[MAXLEN];
+    xcb_rectangle_t rectangle;
+    desktop_t *desk;
+    desktop_t *last_desk;
+    desktop_t *desk_head;
+    desktop_t *desk_tail;
+    monitor_t *prev;
+    monitor_t *next;
+};
+
 typedef struct {
     char name[MAXLEN];
 } rule_cause_t;
@@ -123,18 +141,26 @@ struct rule_t {
 typedef struct {
     node_t *node;
     desktop_t *desktop;
+    monitor_t *monitor;
 } window_location_t;
+
+typedef struct {
+    desktop_t *desktop;
+    monitor_t *monitor;
+} desktop_location_t;
 
 typedef struct {
     xcb_point_t position;
     xcb_button_t button;
     xcb_rectangle_t rectangle;
+    monitor_t *monitor;
     desktop_t *desktop;
     node_t *node;
     corner_t corner;
 } pointer_state_t;
 
 node_t *make_node(void);
+monitor_t *make_monitor(xcb_rectangle_t *);
 desktop_t *make_desktop(const char *);
 client_t *make_client(xcb_window_t);
 rule_t *make_rule(void);

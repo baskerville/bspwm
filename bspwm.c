@@ -12,6 +12,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>
+#include <xcb/xinerama.h>
 #include "types.h"
 #include "settings.h"
 #include "messages.h"
@@ -71,11 +72,38 @@ void setup(void)
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 
-    desk = make_desktop(DEFAULT_DESK_NAME);
-    last_desk = NULL;
-    desk_head = desk;
-    desk_tail = desk;
-    num_desktops++;
+    monitor_uid = desktop_uid = 0;
+    mon = last_mon = mon_head = mon_tail = NULL;
+
+    bool xinerama_is_active = false;
+
+    if (xcb_get_extension_data(dpy, &xcb_xinerama_id)->present) {
+        xcb_xinerama_is_active_reply_t *xia = xcb_xinerama_is_active_reply(dpy, xcb_xinerama_is_active(dpy), NULL);
+        if (xia != NULL) {
+            xinerama_is_active = xia->state;
+            free(xia);
+        }
+    }
+
+    if (xinerama_is_active) {
+        xcb_xinerama_query_screens_reply_t *xsq = xcb_xinerama_query_screens_reply(dpy, xcb_xinerama_query_screens(dpy), NULL);
+        xcb_xinerama_screen_info_t *xsi = xcb_xinerama_query_screens_screen_info(xsq);
+        int n = xcb_xinerama_query_screens_screen_info_length(xsq);
+        PRINTF("number of monitors: %d\n", n);
+        for (int i = 0; i < n; i++) {
+            xcb_xinerama_screen_info_t info = xsi[i];
+            xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
+            add_monitor(&rect);
+        }
+        free(xsq);
+    } else {
+        warn("Xinerama is inactive");
+        xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
+        add_monitor(&rect);
+    }
+
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        add_desktop(m, NULL);
 
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();

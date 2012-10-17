@@ -77,6 +77,7 @@ void map_request(xcb_generic_event_t *evt)
         return;
     }
 
+    desktop_t *desk = mon->desk;
     client_t *c = make_client(win);
     update_floating_rectangle(c);
 
@@ -109,10 +110,10 @@ void map_request(xcb_generic_event_t *evt)
     c->transient = transient;
 
     if (takes_focus)
-        focus_node(desk, birth, false);
+        focus_node(mon, desk, birth, false);
 
-    apply_layout(desk, desk->root, root_rect);
-
+    fit_monitor(mon, birth->client);
+    arrange(mon, desk);
     window_show(c->window);
 
     if (takes_focus)
@@ -185,7 +186,7 @@ void configure_request(xcb_generic_event_t *evt)
 
         xcb_configure_window(dpy, e->window, mask, values);
         if (is_managed)
-            window_draw_border(loc.node, (loc.node == loc.desktop->focus));
+            window_draw_border(loc.node, loc.node == loc.desktop->focus, loc.monitor == mon);
     } else {
         xcb_configure_notify_event_t evt;
         xcb_rectangle_t rect;
@@ -224,7 +225,7 @@ void destroy_notify(xcb_generic_event_t *evt)
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
-        apply_layout(loc.desktop, loc.desktop->root, root_rect);
+        arrange(loc.monitor, loc.desktop);
     }
 }
 
@@ -237,7 +238,7 @@ void unmap_notify(xcb_generic_event_t *evt)
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
-        apply_layout(loc.desktop, loc.desktop->root, root_rect);
+        arrange(loc.monitor, loc.desktop);
     }
 }
 
@@ -257,8 +258,8 @@ void property_notify(xcb_generic_event_t *evt)
             return;
         if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1) {
             loc.node->client->urgent = (hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY);
-            if (desk == loc.desktop)
-                apply_layout(loc.desktop, loc.desktop->root, root_rect);
+            if (loc.monitor->desk == loc.desktop)
+                arrange(loc.monitor, loc.desktop);
         }
     }
 }
@@ -280,11 +281,11 @@ void client_message(xcb_generic_event_t *evt)
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
             toggle_fullscreen(loc.desktop->focus->client);
-        if (desk != loc.desktop) {
-            apply_layout(loc.desktop, loc.desktop->root, root_rect);
+        if (loc.monitor->desk != loc.desktop) {
+            arrange(loc.monitor, loc.desktop);
             select_desktop(loc.desktop);
         }
-        focus_node(loc.desktop, loc.node, true);
+        focus_node(loc.monitor, loc.desktop, loc.node, true);
     }
 }
 
@@ -300,7 +301,7 @@ void button_press(xcb_generic_event_t *evt)
         client_t *c = loc.node->client;
         switch (e->detail)  {
             case XCB_BUTTON_INDEX_2:
-                focus_node(loc.desktop, loc.node, true);
+                focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
             case XCB_BUTTON_INDEX_1:
             case XCB_BUTTON_INDEX_3:
@@ -340,6 +341,7 @@ void motion_notify(xcb_generic_event_t *evt)
     int16_t delta_x, delta_y, x, y, w, h;
     uint16_t width, height;
 
+    monitor_t *m = frozen_pointer->monitor;
     desktop_t *d = frozen_pointer->desktop;
     node_t *n = frozen_pointer->node;
     client_t *c = n->client;
@@ -389,7 +391,7 @@ void motion_notify(xcb_generic_event_t *evt)
             height = MAX(1, h);
             window_move_resize(win, x, y, width, height);
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
-            window_draw_border(n, (d->focus == n));
+            window_draw_border(n, d->focus == n, mon == m);
     }
 }
 
@@ -409,7 +411,7 @@ void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
                 || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
             toggle_fullscreen(n->client);
-            apply_layout(desk, desk->root, root_rect);
+            arrange(mon, mon->desk);
         }
     }
 }

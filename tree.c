@@ -194,14 +194,14 @@ void magnetise_tree(node_t *n, corner_t corner)
     magnetise_tree(n->second_child, corner);
 }
 
-void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
+void dump_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 {
     if (n == NULL)
         return;
 
     char line[MAXLEN];
 
-    for (int i = 0; i < depth; i++)
+    for (unsigned int i = 0; i < depth; i++)
         strncat(rsp, "  ", REMLEN(rsp));
 
     if (is_leaf(n))
@@ -221,23 +221,42 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, int depth)
 }
 
 void refresh_current(void) {
-    if (desk->focus == NULL)
+    if (mon->desk->focus == NULL)
         ewmh_update_active_window();
     else
-        focus_node(desk, desk->focus, true);
+        focus_node(mon, mon->desk, mon->desk->focus, true);
 }
 
-void list_desktops(char *rsp)
+void list_monitors(list_option_t opt, char *rsp)
 {
-    desktop_t *d = desk_head;
+    monitor_t *m = mon_head;
+
+    while (m != NULL) {
+        strncat(rsp, m->name, REMLEN(rsp));
+        if (mon == m)
+            strncat(rsp, " #\n", REMLEN(rsp));
+        else
+            strncat(rsp, "\n", REMLEN(rsp));
+        if (opt == LIST_OPTION_VERBOSE)
+            list_desktops(m, opt, 1, rsp);
+        m = m->next;
+    }
+}
+
+void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rsp)
+{
+    desktop_t *d = m->desk_head;
 
     while (d != NULL) {
+        for (unsigned int i = 0; i < depth; i++)
+            strncat(rsp, "  ", REMLEN(rsp));
         strncat(rsp, d->name, REMLEN(rsp));
-        if (desk == d)
+        if (m->desk == d)
             strncat(rsp, " @\n", REMLEN(rsp));
         else
             strncat(rsp, "\n", REMLEN(rsp));
-        dump_tree(d, d->root, rsp, 1);
+        if (opt == LIST_OPTION_VERBOSE)
+            dump_tree(d, d->root, rsp, depth + 1);
         d = d->next;
     }
 }
@@ -250,9 +269,19 @@ void update_root_dimensions(void)
     root_rect.height = screen_height - (top_padding + bottom_padding + window_gap);
 }
 
-void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
+void arrange(monitor_t *m, desktop_t *d)
 {
-    if (d == NULL || n == NULL)
+    xcb_rectangle_t rect = m->rectangle;
+    rect.x += left_padding + window_gap;
+    rect.y += top_padding + window_gap;
+    rect.width -= left_padding + right_padding + window_gap;
+    rect.height -= top_padding + bottom_padding + window_gap;
+    apply_layout(m, d, d->root, rect);
+}
+
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect)
+{
+    if (n == NULL)
         return;
 
     n->rectangle = rect;
@@ -288,7 +317,7 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
 
         window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
         window_border_width(n->client->window, n->client->border_width);
-        window_draw_border(n, n == d->focus);
+        window_draw_border(n, n == d->focus, m == mon);
 
         if (d->layout == LAYOUT_MONOCLE && n == d->focus)
             window_raise(n->client->window);
@@ -313,8 +342,8 @@ void apply_layout(desktop_t *d, node_t *n, xcb_rectangle_t rect)
             }
         }
 
-        apply_layout(d, n->first_child, first_rect);
-        apply_layout(d, n->second_child, second_rect);
+        apply_layout(m, d, n->first_child, first_rect);
+        apply_layout(m, d, n->second_child, second_rect);
     }
 }
 
@@ -412,7 +441,7 @@ void insert_node(desktop_t *d, node_t *n)
     }
 }
 
-void focus_node(desktop_t *d, node_t *n, bool is_mapped)
+void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
 {
     if (n == NULL)
         return;
@@ -423,9 +452,9 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
     n->client->urgent = false;
 
     if (is_mapped) {
-        if (d->focus != n) {
-            window_draw_border(d->focus, false);
-            window_draw_border(n, true);
+        if (mon != m || d->focus != n) {
+            window_draw_border(d->focus, m != mon, m == mon);
+            window_draw_border(n, true, true);
         }
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
@@ -440,16 +469,15 @@ void focus_node(desktop_t *d, node_t *n, bool is_mapped)
         d->focus = n;
     }
 
-    if (d == desk)
-        ewmh_update_active_window();
+    ewmh_update_active_window();
 }
 
 void update_current(void)
 {
-    if (desk->focus == NULL)
+    if (mon->desk->focus == NULL)
         ewmh_update_active_window();
     else
-        focus_node(desk, desk->focus, true);
+        focus_node(mon, mon->desk, mon->desk->focus, true);
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -519,7 +547,7 @@ void remove_node(desktop_t *d, node_t *n)
     num_clients--;
     ewmh_update_client_list();
 
-    if (desk == d)
+    if (mon->desk == d)
         update_current();
 }
 
@@ -559,9 +587,30 @@ void swap_nodes(node_t *n1, node_t *n2)
     }
 }
 
-void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
+void fit_monitor(monitor_t *m, client_t *c)
 {
-    if (n == NULL || ds == NULL || dd == NULL || dd == ds)
+    xcb_rectangle_t cr = c->floating_rectangle;
+    xcb_rectangle_t mr = m->rectangle;
+    if (cr.x < mr.x)
+        cr.x += mr.x;
+    if (cr.y < mr.y)
+        cr.y += mr.y;
+}
+
+void translate_coordinates(monitor_t *ms, monitor_t *md, client_t *c)
+{
+    if (ms == md)
+        return;
+
+    uint32_t vx = md->rectangle.x - ms->rectangle.x;
+    uint32_t vy = md->rectangle.y - ms->rectangle.y;
+    c->floating_rectangle.x += vx;
+    c->floating_rectangle.y += vy;
+}
+
+void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
+{
+    if (n == NULL || ds == NULL || dd == NULL || ms == NULL || md == NULL || (ms == md && dd == ds))
         return;
 
     PRINTF("transfer node %X\n", n->client->window);
@@ -570,24 +619,43 @@ void transfer_node(desktop_t *ds, desktop_t *dd, node_t *n)
     insert_node(dd, n);
     ewmh_set_wm_desktop(n, dd);
 
-    if (ds == desk) {
+    if (ds == ms->desk && dd != md->desk) {
         window_hide(n->client->window);
     }
 
-    if (dd == desk) {
+    translate_coordinates(ms, md, n->client);
+    if (n->client->fullscreen)
+        window_move_resize(n->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
+
+    if (ds != ms->desk && dd == md->desk) {
         window_show(n->client->window);
-        focus_node(dd, n, true);
+        focus_node(md, dd, n, true);
     } else {
-        focus_node(dd, n, false);
+        focus_node(md, dd, n, false);
     }
 
-    if (ds == desk || dd == desk)
+    if (ds == ms->desk || dd == md->desk)
         update_current();
+}
+
+void select_monitor(monitor_t *m)
+{
+    if (m == NULL || mon == m)
+        return;
+
+    PRINTF("select monitor %s\n", m->name);
+
+    focus_node(m, m->desk, m->desk->focus, true);
+
+    last_mon = mon;
+    mon = m;
+
+    ewmh_update_current_desktop();
 }
 
 void select_desktop(desktop_t *d)
 {
-    if (d == NULL || d == desk)
+    if (d == NULL || d == mon->desk)
         return;
 
     PRINTF("select desktop %s\n", d->name);
@@ -599,30 +667,41 @@ void select_desktop(desktop_t *d)
         n = next_leaf(n);
     }
 
-    n = first_extrema(desk->root);
+    n = first_extrema(mon->desk->root);
 
     while (n != NULL) {
         window_hide(n->client->window);
         n = next_leaf(n);
     }
 
-    last_desk = desk;
-    desk = d;
+    mon->last_desk = mon->desk;
+    mon->desk = d;
 
     update_current();
     ewmh_update_current_desktop();
 }
 
+void cycle_monitor(cycle_dir_t dir)
+{
+    if (dir == CYCLE_NEXT)
+        select_monitor((mon->next == NULL ? mon_head : mon->next));
+    else if (dir == CYCLE_PREV)
+        select_monitor((mon->prev == NULL ? mon_tail : mon->prev));
+}
+
 void cycle_desktop(cycle_dir_t dir)
 {
     if (dir == CYCLE_NEXT)
-        select_desktop((desk->next == NULL ? desk_head : desk->next));
+        select_desktop((mon->desk->next == NULL ? mon->desk_head : mon->desk->next));
     else if (dir == CYCLE_PREV)
-        select_desktop((desk->prev == NULL ? desk_tail : desk->prev));
+        select_desktop((mon->desk->prev == NULL ? mon->desk_tail : mon->desk->prev));
 }
 
-void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
+void cycle_leaf(cycle_dir_t dir, skip_client_t skip)
 {
+    desktop_t *d = mon->desk;
+    node_t *n = mon->desk->focus;
+
     if (n == NULL)
         return;
 
@@ -637,7 +716,7 @@ void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
         if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)
                 || (skip == SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
                 || (skip == SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0)) {
-            focus_node(d, f, true);
+            focus_node(mon, d, f, true);
             return;
         }
         f = (dir == CYCLE_PREV ? prev_leaf(f) : next_leaf(f));
@@ -662,24 +741,42 @@ void update_vacant_state(node_t *n)
     }
 }
 
-desktop_t *find_desktop(char *name)
+monitor_t *find_monitor(char *name)
 {
-    desktop_t *d = desk_head;
-    while (d != NULL) {
-        if (strcmp(d->name, name) == 0)
-            return d;
-        d = d->next;
-    }
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (strcmp(m->name, name) == 0)
+            return m;
     return NULL;
 }
 
-void add_desktop(char *name)
+void add_desktop(monitor_t *m, char *name)
 {
     desktop_t *d = make_desktop(name);
-    desk_tail->next = d;
-    d->prev = desk_tail;
-    desk_tail = d;
+    if (m->desk == NULL) {
+        m->desk = d;
+        m->desk_head = d;
+        m->desk_tail = d;
+    } else {
+        m->desk_tail->next = d;
+        d->prev = m->desk_tail;
+        m->desk_tail = d;
+    }
     num_desktops++;
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
+}
+
+void add_monitor(xcb_rectangle_t *rect)
+{
+    monitor_t *m = make_monitor(rect);
+    if (mon == NULL) {
+        mon = m;
+        mon_head = m;
+        mon_tail = m;
+    } else {
+        mon_tail->next = m;
+        m->prev = mon_tail;
+        mon_tail = m;
+    }
+    num_monitors++;
 }

@@ -1,7 +1,7 @@
 VERSION = 0.1
 
 CC      = gcc
-LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh
+LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
 CFLAGS  = -std=c99 -pedantic -Wall -Wextra
 LDFLAGS = $(LIBS)
 
