@@ -128,6 +128,9 @@ The following messages are handled:
     magnetise COR
         Move all the fences toward the given corner.
 
+    send_to_monitor MONITOR_NAME
+        Send the focused window to the given monitor.
+
     send_to DESKTOP_NAME
         Send the focused window to the given desktop.
 

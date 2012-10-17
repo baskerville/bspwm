@@ -129,11 +129,10 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "send_to_monitor") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
-            desktop_location_t loc;
-            if (locate_desktop(name, &loc)) {
-                transfer_node(mon, mon->desk, loc.monitor, loc.desktop, mon->desk->focus);
-                if (mon != loc.monitor && loc.monitor->desk == loc.desktop)
-                    arrange(loc.monitor, loc.desktop);
+            monitor_t *m = find_monitor(name);
+            if (m != NULL && m != mon) {
+                transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
+                arrange(m, m->desk);
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
