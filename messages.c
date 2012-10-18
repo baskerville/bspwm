@@ -89,7 +89,7 @@ void process_message(char *msg, char *rsp)
         }
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
         if (mon->desk->focus != NULL)
-            toggle_fullscreen(mon->desk->focus->client);
+            toggle_fullscreen(mon, mon->desk->focus->client);
     } else if (strcmp(cmd, "toggle_floating") == 0) {
         split_mode = MODE_AUTOMATIC;
         toggle_floating(mon->desk->focus);

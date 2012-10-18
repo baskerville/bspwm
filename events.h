@@ -14,6 +14,6 @@ void property_notify(xcb_generic_event_t *);
 void button_press(xcb_generic_event_t *);
 void motion_notify(xcb_generic_event_t *);
 void button_release(void);
-void handle_state(node_t *, xcb_atom_t, unsigned int);
+void handle_state(monitor_t *, desktop_t *, node_t *, xcb_atom_t, unsigned int);
 
 #endif

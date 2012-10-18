@@ -193,7 +193,7 @@ void window_kill(desktop_t *d, node_t *n)
     remove_node(d, n);
 }
 
-void toggle_fullscreen(client_t *c)
+void toggle_fullscreen(monitor_t *m, client_t *c)
 {
     PRINTF("toggle fullscreen %X\n", c->window);
 
@@ -207,7 +207,8 @@ void toggle_fullscreen(client_t *c)
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         window_raise(c->window);
         window_border_width(c->window, 0);
-        window_move_resize(c->window, 0, 0, screen_width, screen_height);
+        xcb_rectangle_t r = m->rectangle;
+        window_move_resize(c->window, r.x, r.y, r.width, r.height);
     }
 }
 

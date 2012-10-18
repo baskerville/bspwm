@@ -11,7 +11,7 @@ bool locate_desktop(char *, desktop_location_t *);
 void window_draw_border(node_t *, bool, bool);
 void window_close(node_t *);
 void window_kill(desktop_t *, node_t *);
-void toggle_fullscreen(client_t *);
+void toggle_fullscreen(monitor_t *, client_t *);
 void toggle_floating(node_t *);
 void toggle_locked(client_t *);
 void window_border_width(xcb_window_t, uint32_t);

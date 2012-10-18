@@ -102,10 +102,10 @@ void map_request(xcb_generic_event_t *evt)
         toggle_floating(birth);
 
     if (desk->focus != NULL && desk->focus->client->fullscreen)
-        toggle_fullscreen(desk->focus->client);
+        toggle_fullscreen(mon, desk->focus->client);
 
     if (fullscreen)
-        toggle_fullscreen(birth->client);
+        toggle_fullscreen(mon, birth->client);
 
     c->transient = transient;
 
@@ -276,11 +276,11 @@ void client_message(xcb_generic_event_t *evt)
         return;
 
     if (e->type == ewmh->_NET_WM_STATE) {
-        handle_state(loc.node, e->data.data32[1], e->data.data32[0]);
-        handle_state(loc.node, e->data.data32[2], e->data.data32[0]);
+        handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
+        handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
-            toggle_fullscreen(loc.desktop->focus->client);
+            toggle_fullscreen(loc.monitor, loc.desktop->focus->client);
         if (loc.monitor->desk != loc.desktop) {
             arrange(loc.monitor, loc.desktop);
             select_desktop(loc.desktop);
@@ -403,15 +403,15 @@ void button_release(void)
     update_floating_rectangle(frozen_pointer->node->client);
 }
 
-void handle_state(node_t *n, xcb_atom_t state, unsigned int action)
+void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
 {
     if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
         bool fs = n->client->fullscreen;
         if (action == XCB_EWMH_WM_STATE_TOGGLE
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
                 || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
-            toggle_fullscreen(n->client);
-            arrange(mon, mon->desk);
+            toggle_fullscreen(m, n->client);
+            arrange(m, d);
         }
     }
 }
