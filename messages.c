@@ -231,11 +231,18 @@ void process_message(char *msg, char *rsp)
         select_monitor(last_mon);
     } else if (strcmp(cmd, "alternate") == 0) {
         select_desktop(mon->last_desk);
-    } else if (strcmp(cmd, "add") == 0) {
+    } else if (strcmp(cmd, "add_in") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
-            add_desktop(mon, name);
+            monitor_t *m = find_monitor(name);
+            if (m != NULL)
+                for (name = strtok(NULL, TOKEN_SEP); name != NULL; name = strtok(NULL, TOKEN_SEP))
+                    add_desktop(m, name);
         }
+        return;
+    } else if (strcmp(cmd, "add") == 0) {
+        for (char *name = strtok(NULL, TOKEN_SEP); name != NULL; name = strtok(NULL, TOKEN_SEP))
+            add_desktop(mon, name);
         return;
     } else if (strcmp(cmd, "focus") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)

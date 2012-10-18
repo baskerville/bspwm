@@ -146,8 +146,11 @@ The following messages are handled:
     alternate
         Alternate between the current and the last focused desktop.
 
-    add DESKTOP_NAME
-        Make a new desktop with the given name.
+    add_in MONITOR_NAME DESKTOP_NAME ...
+        Make new desktops with the given names in the given monitor.
+
+    add DESKTOP_NAME ...
+        Make new desktops with the given names.
 
     rename_monitor CURRENT_NAME NEW_NAME
         Rename the monitor named CURRENT_NAME to NEW_NAME.
