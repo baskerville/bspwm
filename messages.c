@@ -283,19 +283,14 @@ void set_setting(char *name, char *value, char *rsp)
         border_width = inner_border_width + main_border_width + outer_border_width;
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
-        update_root_dimensions();
     } else if (strcmp(name, "left_padding") == 0) {
         sscanf(value, "%i", &left_padding);
-        update_root_dimensions();
     } else if (strcmp(name, "right_padding") == 0) {
         sscanf(value, "%i", &right_padding);
-        update_root_dimensions();
     } else if (strcmp(name, "top_padding") == 0) {
         sscanf(value, "%i", &top_padding);
-        update_root_dimensions();
     } else if (strcmp(name, "bottom_padding") == 0) {
         sscanf(value, "%i", &bottom_padding);
-        update_root_dimensions();
     } else if (strcmp(name, "focused_border_color") == 0) {
         strncpy(focused_border_color, value, sizeof(focused_border_color));
         focused_border_color_pxl = get_color(focused_border_color);

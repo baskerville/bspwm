@@ -157,7 +157,6 @@ int main(void)
     load_settings();
     run_autostart();
     ewmh_update_wm_name();
-    update_root_dimensions();
 
     while (running) {
 

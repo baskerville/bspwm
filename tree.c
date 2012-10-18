@@ -261,14 +261,6 @@ void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rs
     }
 }
 
-void update_root_dimensions(void)
-{
-    root_rect.x = left_padding + window_gap;
-    root_rect.y = top_padding + window_gap;
-    root_rect.width = screen_width - (left_padding + right_padding + window_gap);
-    root_rect.height = screen_height - (top_padding + bottom_padding + window_gap);
-}
-
 void arrange(monitor_t *m, desktop_t *d)
 {
     xcb_rectangle_t rect = m->rectangle;
@@ -276,10 +268,10 @@ void arrange(monitor_t *m, desktop_t *d)
     rect.y += top_padding + window_gap;
     rect.width -= left_padding + right_padding + window_gap;
     rect.height -= top_padding + bottom_padding + window_gap;
-    apply_layout(m, d, d->root, rect);
+    apply_layout(m, d, d->root, rect, rect);
 }
 
-void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect)
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
 {
     if (n == NULL)
         return;
@@ -342,8 +334,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect)
             }
         }
 
-        apply_layout(m, d, n->first_child, first_rect);
-        apply_layout(m, d, n->second_child, second_rect);
+        apply_layout(m, d, n->first_child, first_rect, root_rect);
+        apply_layout(m, d, n->second_child, second_rect, root_rect);
     }
 }
 

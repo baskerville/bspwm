@@ -15,7 +15,6 @@ unsigned int num_monitors;
 unsigned int monitor_uid;
 unsigned int desktop_uid;
 xcb_screen_t *screen;
-xcb_rectangle_t root_rect;
 uint8_t root_depth;
 
 split_mode_t split_mode;
