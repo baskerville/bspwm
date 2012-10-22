@@ -272,7 +272,7 @@ void enter_notify(xcb_generic_event_t *evt)
 
     PRINTF("enter notify %X\n", e->event);
 
-    if (!focus_follow_mouse)
+    if (!focus_follows_mouse)
         return;
 
     window_location_t loc;

@@ -232,7 +232,7 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     borderless_monocle 
         Whether to remove borders for tiled windows in monocle mode.
 
-    focus_follow_mouse
+    focus_follows_mouse
         Wether to focus the window under the mouse pointer.
 
 ## Mouse Bindings
