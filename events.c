@@ -35,6 +35,9 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_PROPERTY_NOTIFY:
             property_notify(evt);
             break;
+        case XCB_ENTER_NOTIFY:
+            enter_notify(evt);
+            break;
         case XCB_BUTTON_PRESS:
             button_press(evt);
             break;
@@ -261,6 +264,20 @@ void property_notify(xcb_generic_event_t *evt)
                 apply_layout(loc.desktop, loc.desktop->root, root_rect);
         }
     }
+}
+
+void enter_notify(xcb_generic_event_t *evt)
+{
+    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
+
+    PRINTF("enter notify %X\n", e->event);
+
+    if (!focus_follow_mouse)
+        return;
+
+    window_location_t loc;
+    if (locate_window(e->event, &loc))
+        focus_node(loc.desktop, loc.node, true);
 }
 
 void client_message(xcb_generic_event_t *evt)

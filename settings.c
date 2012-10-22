@@ -63,4 +63,5 @@ void load_settings(void)
     bottom_padding = BOTTOM_PADDING;
 
     borderless_monocle = BORDERLESS_MONOCLE;
+    focus_follow_mouse = FOCUS_FOLLOW_MOUSE;
 }
