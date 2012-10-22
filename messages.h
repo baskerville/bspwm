@@ -9,6 +9,7 @@ void set_setting(char*, char*, char*);
 bool parse_bool(char *, bool *);
 bool parse_layout(char *, layout_t *);
 bool parse_direction(char *, direction_t *);
+bool parse_nearest_argument(char *, nearest_arg_t *);
 bool parse_cycle_direction(char *, cycle_dir_t *);
 bool parse_skip_client(char *, skip_client_t *);
 bool parse_corner(char *, corner_t *);

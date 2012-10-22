@@ -116,6 +116,9 @@ The following messages are handled:
     pull DIR
         Pull the fence located in the given direction.
 
+    nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
+        Focus the nearest leaf matching the given constraints.
+
     cycle CYC [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
         Focus the next or previous window in the list of leaves.
 
@@ -131,6 +134,9 @@ The following messages are handled:
     use DESKTOP_NAME
         Select the given desktop.
     
+    alternate_focus
+        Alternate between the current and the last focused window.
+
     alternate
         Alternate between the current and the last focused desktop.
 

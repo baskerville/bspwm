@@ -149,6 +149,20 @@ void process_message(char *msg, char *rsp)
                 cycle_desktop(d);
             }
         }
+    } else if (strcmp(cmd, "nearest") == 0) {
+        if (desk->focus != NULL && desk->focus->client->fullscreen)
+            return;
+        char *arg = strtok(NULL, TOKEN_SEP);
+        if (arg != NULL) {
+            nearest_arg_t a;
+            if (parse_nearest_argument(arg, &a)) {
+                skip_client_t k;
+                char *skip = strtok(NULL, TOKEN_SEP);
+                if (parse_skip_client(skip, &k))
+                    nearest_leaf(desk, desk->focus, a, k);
+            }
+        }
+        return;
     } else if (strcmp(cmd, "cycle") == 0) {
         if (desk->focus != NULL && desk->focus->client->fullscreen)
             return;
@@ -178,6 +192,8 @@ void process_message(char *msg, char *rsp)
             rule_head = rule;
         }
         return;
+    } else if (strcmp(cmd, "alternate_focus") == 0) {
+        focus_node(desk, desk->last_focus, true);
     } else if (strcmp(cmd, "alternate") == 0) {
         select_desktop(last_desk);
     } else if (strcmp(cmd, "add") == 0) {
@@ -370,6 +386,18 @@ bool parse_direction(char *s, direction_t *d)
         return true;
     } else if (strcmp(s, "right") == 0) {
         *d = DIR_RIGHT;
+        return true;
+    }
+    return false;
+}
+
+bool parse_nearest_argument(char *s, nearest_arg_t *a)
+{
+    if (strcmp(s, "older") == 0) {
+        *a = NEAREST_OLDER;
+        return true;
+    } else if (strcmp(s, "newer") == 0) {
+        *a = NEAREST_NEWER;
         return true;
     }
     return false;

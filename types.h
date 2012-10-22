@@ -49,6 +49,11 @@ typedef enum {
 } cycle_dir_t;
 
 typedef enum {
+    NEAREST_OLDER,
+    NEAREST_NEWER
+} nearest_arg_t;
+
+typedef enum {
     ROTATE_CLOCKWISE,
     ROTATE_COUNTER_CLOCKWISE,
     ROTATE_FULL_CYCLE

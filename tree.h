@@ -32,6 +32,7 @@ void swap_nodes(node_t *, node_t *);
 void transfer_node(desktop_t *, desktop_t *, node_t *);
 void select_desktop(desktop_t *);
 void cycle_desktop(cycle_dir_t);
+void nearest_leaf(desktop_t *, node_t *, nearest_arg_t, skip_client_t);
 void cycle_leaf(desktop_t *, node_t *, cycle_dir_t, skip_client_t);
 void update_vacant_state(node_t *);
 desktop_t *find_desktop(char *);

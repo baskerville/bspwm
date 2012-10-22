@@ -621,6 +621,30 @@ void cycle_desktop(cycle_dir_t dir)
         select_desktop((desk->prev == NULL ? desk_tail : desk->prev));
 }
 
+void nearest_leaf(desktop_t *d, node_t *n, nearest_arg_t dir, skip_client_t skip)
+{
+    if (n == NULL)
+        return;
+
+    PUTS("nearest leaf");
+
+    node_t *x = NULL;
+
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f))
+        if (skip == SKIP_NONE || (skip == SKIP_TILED && !is_tiled(f->client)) || (skip == SKIP_FLOATING && is_tiled(f->client))
+                || (skip == SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
+                || (skip == SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0))
+            if ((dir == NEAREST_OLDER
+                        && (f->client->window < n->client->window)
+                        && (x == NULL || f->client->window > x->client->window))
+                    || (dir == NEAREST_NEWER
+                        && (f->client->window > n->client->window)
+                        && (x == NULL || f->client->window < x->client->window)))
+                x = f;
+
+    focus_node(d, x, true);
+}
+
 void cycle_leaf(desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
 {
     if (n == NULL)
