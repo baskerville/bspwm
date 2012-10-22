@@ -270,9 +270,9 @@ void enter_notify(xcb_generic_event_t *evt)
 {
     xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
 
-    PRINTF("enter notify %X\n", e->event);
+    PRINTF("enter notify %X %d %d\n", e->event, e->mode, e->detail);
 
-    if (!focus_follows_mouse)
+    if (!focus_follows_mouse || e->mode != XCB_NOTIFY_MODE_NORMAL || e->detail != XCB_NOTIFY_DETAIL_ANCESTOR)
         return;
 
     window_location_t loc;
