@@ -274,9 +274,15 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 ## Required Libraries:
 
-libxcb, xcb-util, xcb-util-wm.
+- libxcb
+- xcb-util
+- xcb-util-wm
 
 ## Installation
 
     make
     make install
+
+## Contributors
+
+- [Ivan Kanakarakis](https://github.com/c00kiemon5ter)
