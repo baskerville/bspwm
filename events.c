@@ -14,6 +14,10 @@
 #include "rules.h"
 #include "ewmh.h"
 
+static bool motion_notify_dragging = false;
+static xcb_timestamp_t motion_notify_time = 0;
+static xcb_window_t enter_notify_window = 0;
+
 void handle_event(xcb_generic_event_t *evt)
 {
     switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
@@ -34,6 +38,9 @@ void handle_event(xcb_generic_event_t *evt)
             break;
         case XCB_PROPERTY_NOTIFY:
             property_notify(evt);
+            break;
+        case XCB_ENTER_NOTIFY:
+            enter_notify(evt);
             break;
         case XCB_BUTTON_PRESS:
             button_press(evt);
@@ -263,6 +270,29 @@ void property_notify(xcb_generic_event_t *evt)
     }
 }
 
+void enter_notify(xcb_generic_event_t *evt)
+{
+    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
+
+    PRINTF("enter notify %X\n", e->event);
+
+    /*
+     * We KNOW that the user moved the mouse pointer into this window if the
+     * time between the last mouse motion event and this event is less than
+     * 100 milliseconds.  However, this assumption fails if the mouse pointer
+     * was last moving inside a window that CONSUMES mouse motion events.  See
+     * the related code inside motion_notify() that corrects this assumption.
+     */
+    if (!focus_follows_mouse || e->time - motion_notify_time > 100)
+        return;
+
+    enter_notify_window = e->event;
+
+    window_location_t loc;
+    if (locate_window(e->event, &loc))
+        focus_node(loc.desktop, loc.node, true);
+}
+
 void client_message(xcb_generic_event_t *evt)
 {
     xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
@@ -327,6 +357,7 @@ void button_press(xcb_generic_event_t *evt)
                             frozen_pointer->corner = TOP_LEFT;
                     }
                 }
+                motion_notify_dragging = true;
                 xcb_grab_pointer(dpy, false, screen->root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
                 break;
         }
@@ -339,6 +370,24 @@ void motion_notify(xcb_generic_event_t *evt)
 
     int16_t delta_x, delta_y, x, y, w, h;
     uint16_t width, height;
+
+    motion_notify_time = e->time;
+
+    /*
+     * The mouse pointer traveled here from a window that CONSUMES motion
+     * events (bspwm does not receive them) and has then continued to move
+     * inside this window.  However, this window did not receive focus in
+     * enter_notify() because it took too long for XCB to resume its duties
+     * (after it was busy serving the window that CONSUMED motion events).
+     *
+     * So we must re-trigger the enter_notify() event to focus this window,
+     * because the user has been explicitly moving their mouse pointer here.
+     */
+    if (e->event != enter_notify_window)
+      enter_notify(evt);
+
+    if (!motion_notify_dragging)
+        return;
 
     desktop_t *d = frozen_pointer->desktop;
     node_t *n = frozen_pointer->node;
@@ -397,6 +446,7 @@ void button_release(void)
 {
     PUTS("button release");
 
+    motion_notify_dragging = false;
     xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
     update_floating_rectangle(frozen_pointer->node->client);
 }
