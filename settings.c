@@ -24,7 +24,7 @@ void run_autostart(void)
     setsid();
     execl(path, path, NULL);
 
-    err("could not load autostart file");
+    err("could not run autostart file\n");
 }
 
 void load_settings(void)

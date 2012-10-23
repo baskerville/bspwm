@@ -11,8 +11,6 @@
 #include "ewmh.h"
 #include "window.h"
 
-#define p_clear(p, count)       ((void)memset((p), 0, sizeof(*(p)) * (count)))
-
 bool locate_window(xcb_window_t win, window_location_t *loc)
 {
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
