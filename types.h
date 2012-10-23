@@ -81,6 +81,7 @@ typedef enum {
 
 typedef struct {
     xcb_window_t window;
+    unsigned int uid;
     char class_name[MAXLEN];
     unsigned int border_width;
     bool floating;

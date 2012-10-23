@@ -703,11 +703,11 @@ void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip
                 || (skip == SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
                 || (skip == SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0))
             if ((dir == NEAREST_OLDER
-                        && (f->client->window < n->client->window)
-                        && (x == NULL || f->client->window > x->client->window))
+                        && (f->client->uid < n->client->uid)
+                        && (x == NULL || f->client->uid > x->client->uid))
                     || (dir == NEAREST_NEWER
-                        && (f->client->window > n->client->window)
-                        && (x == NULL || f->client->window < x->client->window)))
+                        && (f->client->uid > n->client->uid)
+                        && (x == NULL || f->client->uid < x->client->uid)))
                 x = f;
 
     focus_node(m, d, x, true);

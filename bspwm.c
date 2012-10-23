@@ -76,7 +76,7 @@ void setup(void)
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 
-    monitor_uid = desktop_uid = 0;
+    monitor_uid = desktop_uid = client_uid = 0;
     mon = last_mon = mon_head = mon_tail = NULL;
 
     bool xinerama_is_active = false;

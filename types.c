@@ -47,6 +47,7 @@ client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
     strncpy(c->class_name, MISSING_VALUE, sizeof(c->class_name));
+    c->uid = ++client_uid;
     c->border_width = border_width;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;
