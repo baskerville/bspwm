@@ -42,12 +42,18 @@ typedef enum {
 } list_option_t;
 
 typedef enum {
-    SKIP_NONE,
-    SKIP_FLOATING,
-    SKIP_TILED,
-    SKIP_CLASS_EQUAL,
-    SKIP_CLASS_DIFFER
+    CLIENT_SKIP_NONE,
+    CLIENT_SKIP_FLOATING,
+    CLIENT_SKIP_TILED,
+    CLIENT_SKIP_CLASS_EQUAL,
+    CLIENT_SKIP_CLASS_DIFFER
 } skip_client_t;
+
+typedef enum {
+    DESKTOP_SKIP_NONE,
+    DESKTOP_SKIP_FREE,
+    DESKTOP_SKIP_OCCUPIED
+} skip_desktop_t;
 
 typedef enum {
     CYCLE_NEXT,

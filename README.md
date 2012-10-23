@@ -167,7 +167,7 @@ The following messages are handled:
     cycle_monitor CYC
         Select the next or previous monitor.
 
-    cycle_desktop CYC
+    cycle_desktop CYC [--skip-free|--skip-occupied]
         Select the next or previous desktop.
         
     layout LYT

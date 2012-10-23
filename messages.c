@@ -195,23 +195,13 @@ void process_message(char *msg, char *rsp)
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
             cycle_dir_t d;
-            if (parse_cycle_direction(dir, &d))
-                cycle_desktop(d);
-        }
-    } else if (strcmp(cmd, "nearest") == 0) {
-        if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
-            return;
-        char *arg = strtok(NULL, TOKEN_SEP);
-        if (arg != NULL) {
-            nearest_arg_t a;
-            if (parse_nearest_argument(arg, &a)) {
-                skip_client_t k;
+            if (parse_cycle_direction(dir, &d)) {
+                skip_desktop_t k;
                 char *skip = strtok(NULL, TOKEN_SEP);
-                if (parse_skip_client(skip, &k))
-                    nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
+                if (parse_skip_desktop(skip, &k))
+                    cycle_desktop(mon, mon->desk, d, k);
             }
         }
-        return;
     } else if (strcmp(cmd, "cycle") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
@@ -223,6 +213,20 @@ void process_message(char *msg, char *rsp)
                 char *skip = strtok(NULL, TOKEN_SEP);
                 if (parse_skip_client(skip, &k))
                     cycle_leaf(mon, mon->desk, mon->desk->focus, d, k);
+            }
+        }
+        return;
+    } else if (strcmp(cmd, "nearest") == 0) {
+        if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
+            return;
+        char *arg = strtok(NULL, TOKEN_SEP);
+        if (arg != NULL) {
+            nearest_arg_t a;
+            if (parse_nearest_argument(arg, &a)) {
+                skip_client_t k;
+                char *skip = strtok(NULL, TOKEN_SEP);
+                if (parse_skip_client(skip, &k))
+                    nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
             }
         }
         return;
@@ -490,20 +494,35 @@ bool parse_cycle_direction(char *s, cycle_dir_t *d)
 
 bool parse_skip_client(char *s, skip_client_t *k)
 {
-    if (s == NULL || strcmp(s, "--skip-none") == 0) {
-        *k = SKIP_NONE;
+    if (s == NULL) {
+        *k = CLIENT_SKIP_NONE;
         return true;
     } else if (strcmp(s, "--skip-floating") == 0) {
-        *k = SKIP_FLOATING;
+        *k = CLIENT_SKIP_FLOATING;
         return true;
     } else if (strcmp(s, "--skip-tiled") == 0) {
-        *k = SKIP_TILED;
+        *k = CLIENT_SKIP_TILED;
         return true;
     } else if (strcmp(s, "--skip-class-equal") == 0) {
-        *k = SKIP_CLASS_EQUAL;
+        *k = CLIENT_SKIP_CLASS_EQUAL;
         return true;
     } else if (strcmp(s, "--skip-class-differ") == 0) {
-        *k = SKIP_CLASS_DIFFER;
+        *k = CLIENT_SKIP_CLASS_DIFFER;
+        return true;
+    }
+    return false;
+}
+
+bool parse_skip_desktop(char *s, skip_desktop_t *k)
+{
+    if (s == NULL) {
+        *k = DESKTOP_SKIP_NONE;
+        return true;
+    } else if (strcmp(s, "--skip-free") == 0) {
+        *k = DESKTOP_SKIP_FREE;
+        return true;
+    } else if (strcmp(s, "--skip-occupied") == 0) {
+        *k = DESKTOP_SKIP_OCCUPIED;
         return true;
     }
     return false;

@@ -681,36 +681,23 @@ void cycle_monitor(cycle_dir_t dir)
         select_monitor((mon->prev == NULL ? mon_tail : mon->prev));
 }
 
-void cycle_desktop(cycle_dir_t dir)
+void cycle_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, skip_desktop_t skip)
 {
-    if (dir == CYCLE_NEXT)
-        select_desktop((mon->desk->next == NULL ? mon->desk_head : mon->desk->next));
-    else if (dir == CYCLE_PREV)
-        select_desktop((mon->desk->prev == NULL ? mon->desk_tail : mon->desk->prev));
-}
+    desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
+    if (f == NULL)
+        f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 
-void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip_client_t skip)
-{
-    if (n == NULL)
-        return;
-
-    PUTS("nearest leaf");
-
-    node_t *x = NULL;
-
-    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f))
-        if (skip == SKIP_NONE || (skip == SKIP_TILED && !is_tiled(f->client)) || (skip == SKIP_FLOATING && is_tiled(f->client))
-                || (skip == SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
-                || (skip == SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0))
-            if ((dir == NEAREST_OLDER
-                        && (f->client->uid < n->client->uid)
-                        && (x == NULL || f->client->uid > x->client->uid))
-                    || (dir == NEAREST_NEWER
-                        && (f->client->uid > n->client->uid)
-                        && (x == NULL || f->client->uid < x->client->uid)))
-                x = f;
-
-    focus_node(m, d, x, true);
+    while (f != d) {
+        if (skip == DESKTOP_SKIP_NONE 
+                || (skip == DESKTOP_SKIP_FREE && f->root != NULL)
+                || (skip == DESKTOP_SKIP_OCCUPIED && f->root == NULL)) {
+            select_desktop(f);
+            return;
+        }
+        f = (dir == CYCLE_PREV ? f->prev : f->next);
+        if (f == NULL)
+            f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
+    }
 }
 
 void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
@@ -726,9 +713,9 @@ void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_cli
 
     while (f != n) {
         bool tiled = is_tiled(f->client);
-        if (skip == SKIP_NONE || (skip == SKIP_TILED && !tiled) || (skip == SKIP_FLOATING && tiled)
-                || (skip == SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
-                || (skip == SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0)) {
+        if (skip == CLIENT_SKIP_NONE || (skip == CLIENT_SKIP_TILED && !tiled) || (skip == CLIENT_SKIP_FLOATING && tiled)
+                || (skip == CLIENT_SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
+                || (skip == CLIENT_SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0)) {
             focus_node(m, d, f, true);
             return;
         }
@@ -736,6 +723,30 @@ void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_cli
         if (f == NULL)
             f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
     }
+}
+
+void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip_client_t skip)
+{
+    if (n == NULL)
+        return;
+
+    PUTS("nearest leaf");
+
+    node_t *x = NULL;
+
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f))
+        if (skip == CLIENT_SKIP_NONE || (skip == CLIENT_SKIP_TILED && !is_tiled(f->client)) || (skip == CLIENT_SKIP_FLOATING && is_tiled(f->client))
+                || (skip == CLIENT_SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
+                || (skip == CLIENT_SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0))
+            if ((dir == NEAREST_OLDER
+                        && (f->client->uid < n->client->uid)
+                        && (x == NULL || f->client->uid > x->client->uid))
+                    || (dir == NEAREST_NEWER
+                        && (f->client->uid > n->client->uid)
+                        && (x == NULL || f->client->uid < x->client->uid)))
+                x = f;
+
+    focus_node(m, d, x, true);
 }
 
 void update_vacant_state(node_t *n)

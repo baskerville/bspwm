@@ -36,12 +36,12 @@ void transfer_node(monitor_t *, desktop_t *, monitor_t *, desktop_t *, node_t *)
 void select_monitor(monitor_t *);
 void select_desktop(desktop_t *);
 void cycle_monitor(cycle_dir_t);
-void cycle_desktop(cycle_dir_t);
-void nearest_leaf(monitor_t *, desktop_t *, node_t *, nearest_arg_t, skip_client_t);
+void cycle_desktop(monitor_t *, desktop_t *, cycle_dir_t, skip_desktop_t);
 void cycle_leaf(monitor_t *, desktop_t *, node_t *, cycle_dir_t, skip_client_t);
+void nearest_leaf(monitor_t *, desktop_t *, node_t *, nearest_arg_t, skip_client_t);
 void update_vacant_state(node_t *);
-monitor_t *find_monitor(char *);
 void add_desktop(monitor_t *, char *);
 void add_monitor(xcb_rectangle_t *);
+monitor_t *find_monitor(char *);
 
 #endif
