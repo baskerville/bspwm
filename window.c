@@ -15,24 +15,15 @@
 
 bool locate_window(xcb_window_t win, window_location_t *loc)
 {
-    monitor_t *m = mon_head;
-    while (m != NULL) {
-        desktop_t *d = m->desk_head;
-        while (d != NULL) {
-            node_t *n = first_extrema(d->root);
-            while (n != NULL) {
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
                 if (n->client->window == win) {
                     loc->monitor = m;
                     loc->desktop = d;
                     loc->node = n;
                     return true;
                 }
-                n = next_leaf(n);
-            }
-            d = d->next;
-        }
-        m = m->next;
-    }
     return false;
 }
 

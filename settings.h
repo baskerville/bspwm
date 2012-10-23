@@ -28,7 +28,8 @@
 #define LEFT_PADDING        0
 #define RIGHT_PADDING       0
 
-#define BORDERLESS_MONOCLE  false
+#define BORDERLESS_MONOCLE   false
+#define FOCUS_FOLLOWS_MOUSE  false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -64,6 +65,7 @@ int left_padding;
 int right_padding;
 
 bool borderless_monocle;
+bool focus_follows_mouse;
 
 char wm_name[MAXLEN];
 

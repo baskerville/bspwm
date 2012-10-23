@@ -198,6 +198,20 @@ void process_message(char *msg, char *rsp)
             if (parse_cycle_direction(dir, &d))
                 cycle_desktop(d);
         }
+    } else if (strcmp(cmd, "nearest") == 0) {
+        if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
+            return;
+        char *arg = strtok(NULL, TOKEN_SEP);
+        if (arg != NULL) {
+            nearest_arg_t a;
+            if (parse_nearest_argument(arg, &a)) {
+                skip_client_t k;
+                char *skip = strtok(NULL, TOKEN_SEP);
+                if (parse_skip_client(skip, &k))
+                    nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
+            }
+        }
+        return;
     } else if (strcmp(cmd, "cycle") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
@@ -208,7 +222,7 @@ void process_message(char *msg, char *rsp)
                 skip_client_t k;
                 char *skip = strtok(NULL, TOKEN_SEP);
                 if (parse_skip_client(skip, &k))
-                    cycle_leaf(d, k);
+                    cycle_leaf(mon, mon->desk, mon->desk->focus, d, k);
             }
         }
         return;
@@ -227,10 +241,12 @@ void process_message(char *msg, char *rsp)
             rule_head = rule;
         }
         return;
+    } else if (strcmp(cmd, "alternate") == 0) {
+        focus_node(mon, mon->desk, mon->desk->last_focus, true);
+    } else if (strcmp(cmd, "alternate_desktop") == 0) {
+        select_desktop(mon->last_desk);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {
         select_monitor(last_mon);
-    } else if (strcmp(cmd, "alternate") == 0) {
-        select_desktop(mon->last_desk);
     } else if (strcmp(cmd, "add_in") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
@@ -332,6 +348,10 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             borderless_monocle = b;
+    } else if (strcmp(name, "focus_follows_mouse") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            focus_follows_mouse = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
@@ -389,6 +409,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s (%06X)", urgent_border_color, urgent_border_color_pxl);
     else if (strcmp(name, "borderless_monocle") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(borderless_monocle));
+    else if (strcmp(name, "focus_follows_mouse") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_mouse));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else
@@ -432,6 +454,18 @@ bool parse_direction(char *s, direction_t *d)
         return true;
     } else if (strcmp(s, "right") == 0) {
         *d = DIR_RIGHT;
+        return true;
+    }
+    return false;
+}
+
+bool parse_nearest_argument(char *s, nearest_arg_t *a)
+{
+    if (strcmp(s, "older") == 0) {
+        *a = NEAREST_OLDER;
+        return true;
+    } else if (strcmp(s, "newer") == 0) {
+        *a = NEAREST_NEWER;
         return true;
     }
     return false;
