@@ -324,8 +324,13 @@ void button_press(xcb_generic_event_t *evt)
                 break;
             case XCB_BUTTON_INDEX_1:
             case XCB_BUTTON_INDEX_3:
-                if (!is_floating(loc.node->client))
+                if (is_tiled(loc.node->client)) {
+                    loc.node->client->floating_rectangle = loc.node->client->tiled_rectangle;
+                    toggle_floating(loc.node);
+                    arrange(loc.monitor, loc.desktop);
+                } else if (loc.node->client->fullscreen) {
                     return;
+                }
                 frozen_pointer->desktop = loc.desktop;
                 frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;
