@@ -27,7 +27,7 @@ void process_message(char *msg, char *rsp)
         char *value = strtok(NULL, TOKEN_SEP);
         set_setting(name, value, rsp);
         return;
-    } else if (strcmp(cmd, "dump") == 0) {
+    } else if (strcmp(cmd, "list") == 0) {
         dump_tree(mon->desk, mon->desk->root, rsp, 0);
         return;
     } else if (strcmp(cmd, "list_monitors") == 0) {
@@ -36,13 +36,13 @@ void process_message(char *msg, char *rsp)
         if (parse_list_option(arg, &opt))
             list_monitors(opt, rsp);
         return;
-    } else if (strcmp(cmd, "list") == 0) {
+    } else if (strcmp(cmd, "list_desktops") == 0) {
         char *arg = strtok(NULL, TOKEN_SEP);
         list_option_t opt;
         if (parse_list_option(arg, &opt))
             list_desktops(mon, opt, 0, rsp);
         return;
-    } else if (strcmp(cmd, "windows") == 0) {
+    } else if (strcmp(cmd, "list_windows") == 0) {
         list_windows(rsp);
         return;
     } else if (strcmp(cmd, "close") == 0) {

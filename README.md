@@ -67,7 +67,7 @@ was sent beforehand:
 
 ## Messages
 
-The syntax for the client is `bspc COMMAND ARGUMENTS...`.
+The syntax for the client is `bspc COMMAND ARGUMENTS ...`.
 
 The following messages are handled:
 
@@ -80,68 +80,68 @@ The following messages are handled:
     set SETTING VALUE
         Set the value of the given setting.
 
-    dump
-        Output the internal representation of the window tree.
-
-    list_monitors [--quiet]
-        Perform a dump of each monitor.
-
-    list [--quiet]
-        Perform a dump of each desktop for the current monitor.
-
-    windows
-        Return the list of managed windows (i.e. their identifiers).
-
     close
         Close the focused window.
 
     kill
         Kill the focused window.
 
-    presel DIR
-        Switch to manual mode and select the splitting direction.
+    list
+        Output the internal representation of the window tree.
 
-    ratio VALUE
-        Set the splitting ratio of the focused window.
+    list_desktops [--quiet]
+        Perform a dump of each desktop for the current monitor.
+
+    list_monitors [--quiet]
+        Perform a dump of each monitor.
+
+    list_windows
+        Return the list of managed windows (i.e. their identifiers).
+
+    presel left|right|up|down
+        Switch to manual mode and select the splitting direction.
 
     cancel
         Switch to automatic mode.
 
-    focus DIR
+    ratio VALUE
+        Set the splitting ratio of the focused window.
+
+    focus left|right|up|down
         Focus the neighbor node situated in the given direction. 
 
-    shift DIR
+    shift left|right|up|down
         Focus the neighbor node situated in the given direction. 
 
-    push DIR
+    push left|right|up|down
         Push the fence located in the given direction.
 
-    pull DIR
+    pull left|right|up|down
         Pull the fence located in the given direction.
+
+    cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
+        Focus the next or previous window in the list of leaves.
 
     nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
         Focus the nearest leaf matching the given constraints.
 
-    cycle CYC [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
-        Focus the next or previous window in the list of leaves.
-
-    rotate ROT
+    rotate clockwise|counter_clockwise|full_cycle
         Rotate the tree of the current desktop.
 
-    magnetise COR
+    magnetise top_left|top_right|bottom_left|bottom_right
         Move all the fences toward the given corner.
-
-    send_to_monitor MONITOR_NAME
-        Send the focused window to the given monitor.
 
     send_to DESKTOP_NAME
         Send the focused window to the given desktop.
 
-    use_monitor MONITOR_NAME
-        Select the given monitor.
+    send_to_monitor MONITOR_NAME
+        Send the focused window to the given monitor.
 
     use DESKTOP_NAME
         Select the given desktop.
+
+    use_monitor MONITOR_NAME
+        Select the given monitor.
 
     alternate
         Alternate between the current and the last focused window.
@@ -152,11 +152,11 @@ The following messages are handled:
     alternate_monitor
         Alternate between the current and the last focused monitor.
 
-    add_in MONITOR_NAME DESKTOP_NAME ...
-        Make new desktops with the given names in the given monitor.
-
     add DESKTOP_NAME ...
         Make new desktops with the given names.
+
+    add_in MONITOR_NAME DESKTOP_NAME ...
+        Make new desktops with the given names in the given monitor.
 
     rename_monitor CURRENT_NAME NEW_NAME
         Rename the monitor named CURRENT_NAME to NEW_NAME.
@@ -164,14 +164,14 @@ The following messages are handled:
     rename CURRENT_NAME NEW_NAME
         Rename the desktop named CURRENT_NAME to NEW_NAME.
 
-    cycle_monitor CYC
+    cycle_monitor next|prev
         Select the next or previous monitor.
 
-    cycle_desktop CYC [--skip-free|--skip-occupied]
+    cycle_desktop next|prev [--skip-free|--skip-occupied]
         Select the next or previous desktop.
         
-    layout LYT
-        Set the layout of the current desktop to LYT.
+    layout monocle|tiled
+        Set the layout of the current desktop.
 
     cycle_layout
         Cycle the layout of the current desktop.
@@ -196,14 +196,6 @@ The following messages are handled:
 
     reload
         Reload the autostart file and the default settings.
-
-Where
-
-    DIR = left|right|up|down
-    CYC = next|prev
-    ROT = clockwise|counter_clockwise|full_cycle
-    COR = top_left|top_right|bottom_left|bottom_right
-    LYT = monocle|tiled
 
 ## Settings
 
@@ -288,4 +280,3 @@ libxcb, xcb-util, xcb-util-wm.
 
     make
     make install
-
