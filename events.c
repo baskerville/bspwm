@@ -277,8 +277,10 @@ void enter_notify(xcb_generic_event_t *evt)
         return;
 
     window_location_t loc;
-    if (locate_window(e->event, &loc))
+    if (locate_window(e->event, &loc)) {
+        select_monitor(loc.monitor);
         focus_node(loc.monitor, loc.desktop, loc.node, true);
+    }
 }
 
 void client_message(xcb_generic_event_t *evt)
