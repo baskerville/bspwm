@@ -362,8 +362,11 @@ void set_setting(char *name, char *value, char *rsp)
         return;
     } else if (strcmp(name, "button_modifier") == 0) {
         unsigned int m;
-        if (parse_modifier_mask(value, &m))
+        if (parse_modifier_mask(value, &m)) {
+            ungrab_buttons();
             button_modifier = m;
+            grab_buttons();
+        }
         return;
     } else {
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
@@ -422,6 +425,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_mouse));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
+    else if (strcmp(name, "button_modifier") == 0)
+        print_modifier_mask(rsp, button_modifier);
     else
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
 }
@@ -604,4 +609,25 @@ bool parse_modifier_mask(char *s, unsigned int *m)
         return true;
     }
     return false;
+}
+
+void print_modifier_mask(char *s, unsigned int m)
+{
+    switch(m) {
+        case XCB_MOD_MASK_1:
+            snprintf(s, BUFSIZ, "mod1");
+            break;
+        case XCB_MOD_MASK_2:
+            snprintf(s, BUFSIZ, "mod2");
+            break;
+        case XCB_MOD_MASK_3:
+            snprintf(s, BUFSIZ, "mod3");
+            break;
+        case XCB_MOD_MASK_4:
+            snprintf(s, BUFSIZ, "mod4");
+            break;
+        case XCB_MOD_MASK_5:
+            snprintf(s, BUFSIZ, "mod5");
+            break;
+    }
 }
