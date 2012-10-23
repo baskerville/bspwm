@@ -32,7 +32,6 @@ bool running;
 void register_events(void);
 void grab_buttons(void);
 void ungrab_buttons(void);
-void handle_zombie(int);
 void setup(void);
 void quit(void);
 
