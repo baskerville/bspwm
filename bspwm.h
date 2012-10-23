@@ -5,7 +5,6 @@
 
 #define ROOT_EVENT_MASK    (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY)
 #define CLIENT_EVENT_MASK  (XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_ENTER_WINDOW)
-#define BUTTON_MODIFIER    XCB_MOD_MASK_4
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
@@ -29,6 +28,7 @@ pointer_state_t *frozen_pointer;
 bool running;
 
 void register_events(void);
+void grab_buttons(void);
 void handle_zombie(int);
 void setup(void);
 void quit(void);

@@ -256,6 +256,9 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     wm_name
         The value that shall be used for the _NET_WM_NAME property of the root window.
 
+    button_modifier
+        The modifier mask used for mouse bindings (possible values: 'mod1' ... 'mod5').
+
     borderless_monocle 
         Whether to remove borders for tiled windows in monocle mode.
 
@@ -264,16 +267,14 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 ## Mouse Bindings
 
-    M4 + Left Button
+    button_modifier + left mouse button
         Move the window under the pointer.
 
-    M4 + Middle Button
+    button_modifier + middle mouse button
         Focus the window under the pointer.
 
-    M4 + Middle Button
+    button_modifier + right mouse button
         Resize the window under the pointer (by moving one of its four corners).
-
-Where *M4* is the fourth modifier mask (generally bound to *Super*).
 
 ## Panel
 

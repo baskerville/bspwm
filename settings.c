@@ -53,6 +53,7 @@ void load_settings(void)
     urgent_border_color_pxl = get_color(urgent_border_color);
 
     strncpy(wm_name, WM_NAME, sizeof(wm_name));
+    button_modifier = BUTTON_MODIFIER;
 
     inner_border_width = INNER_BORDER_WIDTH;
     main_border_width = MAIN_BORDER_WIDTH;

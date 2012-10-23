@@ -356,6 +356,11 @@ void set_setting(char *name, char *value, char *rsp)
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
         return;
+    } else if (strcmp(name, "button_modifier") == 0) {
+        unsigned int m;
+        if (parse_modifier_mask(value, &m))
+            button_modifier = m;
+        return;
     } else {
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
         return;
@@ -556,6 +561,27 @@ bool parse_fence_move(char *s, fence_move_t *m)
         return true;
     } else if (strcmp(s, "pull") == 0) {
         *m = MOVE_PULL;
+        return true;
+    }
+    return false;
+}
+
+bool parse_modifier_mask(char *s, unsigned int *m)
+{
+    if (strcmp(s, "mod1") == 0) {
+        *m = XCB_MOD_MASK_1;
+        return true;
+    } else if (strcmp(s, "mod2") == 0) {
+        *m = XCB_MOD_MASK_2;
+        return true;
+    } else if (strcmp(s, "mod3") == 0) {
+        *m = XCB_MOD_MASK_3;
+        return true;
+    } else if (strcmp(s, "mod4") == 0) {
+        *m = XCB_MOD_MASK_4;
+        return true;
+    } else if (strcmp(s, "mod5") == 0) {
+        *m = XCB_MOD_MASK_5;
         return true;
     }
     return false;

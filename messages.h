@@ -16,5 +16,6 @@ bool parse_skip_client(char *, skip_client_t *);
 bool parse_corner(char *, corner_t *);
 bool parse_rotate(char *, rotate_t *);
 bool parse_fence_move(char *, fence_move_t *);
+bool parse_modifier_mask(char *, unsigned int *);
 
 #endif
