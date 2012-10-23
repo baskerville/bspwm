@@ -37,7 +37,6 @@ void register_events(void)
         xcb_disconnect(dpy);
         err("another WM is already running\n");
     }
-
 }
 
 void grab_buttons(void)
@@ -113,6 +112,7 @@ void setup(void)
     ewmh_update_desktop_names();
     rule_head = make_rule();
     frozen_pointer = make_pointer_state();
+    get_pointer_position(&pointer_position);
     split_mode = MODE_AUTOMATIC;
 }
 

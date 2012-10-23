@@ -25,6 +25,7 @@ monitor_t *mon_head;
 monitor_t *mon_tail;
 rule_t *rule_head;
 pointer_state_t *frozen_pointer;
+xcb_point_t pointer_position;
 
 bool running;
 

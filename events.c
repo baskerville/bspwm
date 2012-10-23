@@ -273,13 +273,19 @@ void enter_notify(xcb_generic_event_t *evt)
 
     PRINTF("enter notify %X %d %d\n", e->event, e->mode, e->detail);
 
-    if (!focus_follows_mouse || e->mode != XCB_NOTIFY_MODE_NORMAL || e->detail != XCB_NOTIFY_DETAIL_ANCESTOR)
+    xcb_point_t pos;
+    get_pointer_position(&pos);
+
+    if (!focus_follows_mouse 
+            || (e->mode != XCB_NOTIFY_MODE_NORMAL && e->detail == XCB_NOTIFY_DETAIL_INFERIOR)
+            || (pointer_position.x == pos.x && pointer_position.y == pos.y))
         return;
 
     window_location_t loc;
     if (locate_window(e->event, &loc)) {
         select_monitor(loc.monitor);
         focus_node(loc.monitor, loc.desktop, loc.node, true);
+        pointer_position = pos;
     }
 }
 

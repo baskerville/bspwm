@@ -268,6 +268,8 @@ void arrange(monitor_t *m, desktop_t *d)
     rect.y += top_padding + window_gap;
     rect.width -= left_padding + right_padding + window_gap;
     rect.height -= top_padding + bottom_padding + window_gap;
+    if (focus_follows_mouse)
+        get_pointer_position(&pointer_position);
     apply_layout(m, d, d->root, rect, rect);
 }
 

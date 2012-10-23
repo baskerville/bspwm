@@ -51,3 +51,12 @@ uint32_t get_color(char *col)
 
     return pxl;
 }
+
+void get_pointer_position(xcb_point_t *pos)
+{
+    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, screen->root), NULL);
+    if (qpr != NULL) {
+        *pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
+        free(qpr);
+    }
+}
