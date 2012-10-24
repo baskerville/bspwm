@@ -10,7 +10,7 @@ The windows are represented as the leaves of a binary tree.
 
 `bspwm` have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
 
-Those messages are sent through the `bspc` program.
+Those messages are sent via `bspc`.
 
 If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
@@ -67,7 +67,7 @@ was sent beforehand:
 
 ## Messages
 
-The syntax for the client is `bspc COMMAND ARGUMENTS ...`.
+The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
 
 The following messages are handled:
 
@@ -99,10 +99,10 @@ The following messages are handled:
         Set the splitting ratio of the focused window.
 
     focus left|right|up|down
-        Focus the neighbor window situated in the given direction. 
+        Focus the neighbor window situated in the given direction.
 
     shift left|right|up|down
-        Exchange the current window with the given neighbor. 
+        Exchange the current window with the given neighbor.
 
     push left|right|up|down
         Push the fence located in the given direction.
@@ -123,7 +123,7 @@ The following messages are handled:
         Toggle the floating state of the current window.
 
     toggle_locked
-        Toggle the locked state of the current window (locked windows will not respond to the 'close' command).
+        Toggle the locked state of the current window (locked windows will not respond to the 'close' message).
 
     close
         Close the focused window.
@@ -169,7 +169,7 @@ The following messages are handled:
 
     cycle_desktop next|prev [--skip-free|--skip-occupied]
         Select the next or previous desktop.
-        
+
     layout monocle|tiled
         Set the layout of the current desktop.
 
@@ -182,8 +182,8 @@ The following messages are handled:
     magnetise top_left|top_right|bottom_left|bottom_right
         Move all the fences toward the given corner.
 
-    rule PATTERN floating 
-        Make a new rule that will float the windows whose class name or instance name equals PATTERN. 
+    rule PATTERN floating
+        Make a new rule that will float the windows whose class name or instance name equals PATTERN.
 
     reload_autostart
         Reload the autostart file.
@@ -209,13 +209,13 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
     normal_border_color
         Color of the main border of an unfocused window.
-    
+
     inner_border_color
         Color of the inner border of a window.
 
     outer_border_color
         Color of the outer border of a window.
-    
+
     presel_border_color
         Color of the *presel* message feedback.
 
@@ -251,7 +251,7 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     button_modifier
         The modifier mask used for mouse bindings (possible values: 'mod1' ... 'mod5').
 
-    borderless_monocle 
+    borderless_monocle
         Whether to remove borders for tiled windows in monocle mode.
 
     focus_follows_mouse

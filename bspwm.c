@@ -123,8 +123,13 @@ void setup(void)
     split_mode = MODE_AUTOMATIC;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    if (argc == 2 && strcmp(argv[1], "-v") == 0) {
+        printf("%s\n", VERSION);
+        exit(EXIT_SUCCESS);
+    }
+
     fd_set descriptors;
     char socket_path[MAXLEN];
     int sock_fd, ret_fd, dpy_fd, sel, n;

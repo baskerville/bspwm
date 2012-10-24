@@ -2,7 +2,7 @@ VERSION = 0.1
 
 CC      = gcc
 LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
-CFLAGS  = -std=c99 -pedantic -Wall -Wextra
+CFLAGS  = -std=c99 -pedantic -Wall -Wextra -DVERSION=\"$(VERSION)\"
 LDFLAGS = $(LIBS)
 
 PREFIX    ?= /usr/local
