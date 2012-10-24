@@ -46,7 +46,7 @@ Example: insertion of a new node (number 4) into the given tree in
         |            |            |         |            |     |      |
         +-------------------------+         +-------------------------+
 
-Same departure, but the mode is *manual*, a `presel up` message
+Same departure, but the mode is *manual*, and a `presel up` message
 was sent beforehand:
 
                      b                                   b
@@ -71,20 +71,11 @@ The syntax for the client is `bspc COMMAND ARGUMENTS ...`.
 
 The following messages are handled:
 
-    quit
-        Quit.
-
     get SETTING
         Return the value of the given setting.
 
     set SETTING VALUE
         Set the value of the given setting.
-
-    close
-        Close the focused window.
-
-    kill
-        Kill the focused window.
 
     list
         Output the internal representation of the window tree.
@@ -108,10 +99,10 @@ The following messages are handled:
         Set the splitting ratio of the focused window.
 
     focus left|right|up|down
-        Focus the neighbor node situated in the given direction. 
+        Focus the neighbor window situated in the given direction. 
 
     shift left|right|up|down
-        Focus the neighbor node situated in the given direction. 
+        Exchange the current window with the given neighbor. 
 
     push left|right|up|down
         Push the fence located in the given direction.
@@ -120,16 +111,25 @@ The following messages are handled:
         Pull the fence located in the given direction.
 
     cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
-        Focus the next or previous window in the list of leaves.
+        Focus the next or previous window matching the given constraints.
 
     nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
-        Focus the nearest leaf matching the given constraints.
+        Focus the nearest window matching the given constraints.
 
-    rotate clockwise|counter_clockwise|full_cycle
-        Rotate the tree of the current desktop.
+    toggle_fullscreen
+        Toggle the fullscreen state of the current window.
 
-    magnetise top_left|top_right|bottom_left|bottom_right
-        Move all the fences toward the given corner.
+    toggle_floating
+        Toggle the floating state of the current window.
+
+    toggle_locked
+        Toggle the locked state of the current window (locked windows will not respond to the 'close' command).
+
+    close
+        Close the focused window.
+
+    kill
+        Kill the focused window.
 
     send_to DESKTOP_NAME
         Send the focused window to the given desktop.
@@ -176,14 +176,11 @@ The following messages are handled:
     cycle_layout
         Cycle the layout of the current desktop.
 
-    toggle_fullscreen
-        Toggle the fullscreen state of the current window.
+    rotate clockwise|counter_clockwise|full_cycle
+        Rotate the tree of the current desktop.
 
-    toggle_floating
-        Toggle the floating state of the current window.
-
-    toggle_locked
-        Toggle the locked state of the current window (locked windows will not respond to the 'close' command).
+    magnetise top_left|top_right|bottom_left|bottom_right
+        Move all the fences toward the given corner.
 
     rule PATTERN floating 
         Make a new rule that will float the windows whose class name or instance name equals PATTERN. 
@@ -197,9 +194,12 @@ The following messages are handled:
     reload
         Reload the autostart file and the default settings.
 
+    quit
+        Quit.
+
 ## Settings
 
-Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or '#RRGGBB', booleans are 'true' or 'false'.
+Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or *#RRGGBB*, booleans are *true* or *false*.
 
     focused_border_color
         Color of the main border of a focused window of a focused monitor.
@@ -268,9 +268,19 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     button_modifier + right mouse button
         Resize the window under the pointer (by moving one of its four corners).
 
+## Key Features
+
+- Configured and controlled through messages
+- Multiple monitors support (via *Xinerama*)
+- EWMH support (`tint2` works)
+- Automatic and manual modes
+- Triple window borders
+
 ## Panel
 
 `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
+
+Or any EWMH compliant panel.
 
 ## Required Libraries:
 
