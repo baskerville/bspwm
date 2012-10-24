@@ -8,6 +8,7 @@
 
 bool locate_window(xcb_window_t, window_location_t *);
 bool locate_desktop(char *, desktop_location_t *);
+void manage_window(xcb_window_t);
 void window_draw_border(node_t *, bool, bool);
 void window_close(node_t *);
 void window_kill(desktop_t *, node_t *);
