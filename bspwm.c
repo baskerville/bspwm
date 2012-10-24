@@ -20,6 +20,7 @@
 #include "events.h"
 #include "common.h"
 #include "helpers.h"
+#include "window.h"
 #include "bspwm.h"
 #include "tree.h"
 #include "ewmh.h"
@@ -51,6 +52,21 @@ void ungrab_buttons(void)
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_1, screen->root, button_modifier);
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_2, screen->root, button_modifier);
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_3, screen->root, button_modifier);
+}
+
+void adopt_orphans(void)
+{
+    xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, screen->root), NULL);
+    if (qtr == NULL)
+        return;
+    int len = xcb_query_tree_children_length(qtr);
+    if (len == 0)
+        return;
+    xcb_window_t *wins = xcb_query_tree_children(qtr);
+    for (int i = 0; i < len; i++)
+        manage_window(wins[i]);
+    free(wins);
+    free(qtr);
 }
 
 void setup(void)
@@ -174,6 +190,7 @@ int main(int argc, char *argv[])
     run_autostart();
     grab_buttons();
     ewmh_update_wm_name();
+    adopt_orphans();
 
     while (running) {
 

@@ -4,11 +4,13 @@
 #include <string.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include <xcb/xcb_icccm.h>
 #include "types.h"
 #include "tree.h"
 #include "bspwm.h"
 #include "settings.h"
 #include "ewmh.h"
+#include "rules.h"
 #include "window.h"
 
 bool locate_window(xcb_window_t win, window_location_t *loc)
@@ -41,6 +43,79 @@ bool locate_desktop(char *name, desktop_location_t *loc)
         m = m->next;
     }
     return false;
+}
+
+void manage_window(xcb_window_t win)
+{
+    window_location_t loc;
+    xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
+    uint8_t override_redirect = 0;
+
+    if (wa != NULL) {
+        override_redirect = wa->override_redirect;
+        free(wa);
+    }
+
+    if (override_redirect || locate_window(win, &loc))
+        return;
+
+    bool floating = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
+
+    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus, &manage);
+
+    if (!manage) {
+        window_show(win);
+        return;
+    }
+
+    desktop_t *desk = mon->desk;
+    client_t *c = make_client(win);
+    update_floating_rectangle(c);
+
+    xcb_icccm_get_wm_class_reply_t reply;
+    if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
+        strncpy(c->class_name, reply.class_name, sizeof(c->class_name));
+        xcb_icccm_get_wm_class_reply_wipe(&reply);
+    }
+
+    if (c->transient)
+        floating = true;
+
+    node_t *birth = make_node();
+    birth->client = c;
+
+    if (floating)
+        split_mode = MODE_MANUAL;
+
+    insert_node(desk, birth);
+
+    if (floating)
+        toggle_floating(birth);
+
+    if (desk->focus != NULL && desk->focus->client->fullscreen)
+        toggle_fullscreen(mon, desk->focus->client);
+
+    if (fullscreen)
+        toggle_fullscreen(mon, birth->client);
+
+    c->transient = transient;
+
+    if (takes_focus)
+        focus_node(mon, desk, birth, false);
+
+    fit_monitor(mon, birth->client);
+    arrange(mon, desk);
+    window_show(c->window);
+
+    if (takes_focus)
+        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
+
+    uint32_t values[] = {CLIENT_EVENT_MASK};
+    xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
+
+    num_clients++;
+    ewmh_set_wm_desktop(birth, desk);
+    ewmh_update_client_list();
 }
 
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
