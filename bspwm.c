@@ -63,8 +63,14 @@ void adopt_orphans(void)
     if (len == 0)
         return;
     xcb_window_t *wins = xcb_query_tree_children(qtr);
-    for (int i = 0; i < len; i++)
-        manage_window(wins[i]);
+    for (int i = 0; i < len; i++) {
+        xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, wins[i]), NULL);
+        if (wa != NULL) {
+            if (wa->map_state == XCB_MAP_STATE_VIEWABLE)
+                manage_window(wins[i]);
+            free(wa);
+        }
+    }
     free(qtr);
 }
 
