@@ -313,8 +313,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
         window_border_width(n->client->window, n->client->border_width);
         window_draw_border(n, n == d->focus, m == mon);
 
-        if (d->layout == LAYOUT_MONOCLE && n == d->focus)
-            window_raise(n->client->window);
+        if (d->layout == LAYOUT_MONOCLE && is_tiled(n->client) && n != d->focus)
+            window_lower(n->client->window);
 
     } else {
         xcb_rectangle_t first_rect;
@@ -453,10 +453,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 
-    if (!is_tiled(n->client) || d->layout == LAYOUT_MONOCLE)
+    if (!is_tiled(n->client))
         window_raise(n->client->window);
-    else if (is_tiled(n->client))
-        window_lower(n->client->window);
 
     if (d->focus != n) {
         d->last_focus = d->focus;

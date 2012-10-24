@@ -98,6 +98,9 @@ void manage_window(xcb_window_t win)
     if (fullscreen)
         toggle_fullscreen(mon, birth->client);
 
+    if (is_tiled(c))
+        window_lower(c->window);
+
     c->transient = transient;
 
     if (takes_focus)
@@ -265,6 +268,8 @@ void toggle_fullscreen(monitor_t *m, client_t *c)
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
+        if (is_tiled(c))
+            window_lower(c->window);
     } else {
         c->fullscreen = true;
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};

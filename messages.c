@@ -215,7 +215,8 @@ void process_message(char *msg, char *rsp)
                     cycle_leaf(mon, mon->desk, mon->desk->focus, d, k);
             }
         }
-        return;
+        if (mon->desk->layout == LAYOUT_TILED)
+            return;
     } else if (strcmp(cmd, "nearest") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
@@ -229,7 +230,8 @@ void process_message(char *msg, char *rsp)
                     nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
             }
         }
-        return;
+        if (mon->desk->layout == LAYOUT_TILED)
+            return;
     } else if (strcmp(cmd, "rule") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
@@ -275,7 +277,8 @@ void process_message(char *msg, char *rsp)
                 focus_node(mon, mon->desk, n, true);
             }
         }
-        return;
+        if (mon->desk->layout == LAYOUT_TILED)
+            return;
     } else if (strcmp(cmd, "reload") == 0) {
         load_settings();
         run_autostart();
