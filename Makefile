@@ -7,6 +7,7 @@ LDFLAGS = $(LIBS)
 
 PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
+MANPREFIX = $(PREFIX)/share/man
 
 WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
 CL_SRC = bspc.c helpers.c
@@ -48,9 +49,13 @@ install:
 	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
 	@install -D -m 755 bspwm $(DESTDIR)$(BINPREFIX)/bspwm
 	@install -D -m 755 bspc $(DESTDIR)$(BINPREFIX)/bspc
+	@echo "installing manual page to $(DESTDIR)$(MANPREFIX)/man1"
+	@install -D -m 644 bspwm.1 $(DESTDIR)$(MANPREFIX)/man1/bspwm.1
 
 uninstall:
 	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
 	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c}
+	@echo "removing manual page from $(DESTDIR)$(MANPREFIX)/man1"
+	@rm -f $(DESTDIR)$(MANPREFIX)/man1/bspwm.1
 
 .PHONY: all debug options clean install uninstall
