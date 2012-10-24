@@ -60,8 +60,6 @@ void adopt_orphans(void)
     if (qtr == NULL)
         return;
     int len = xcb_query_tree_children_length(qtr);
-    if (len == 0)
-        return;
     xcb_window_t *wins = xcb_query_tree_children(qtr);
     for (int i = 0; i < len; i++) {
         xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, wins[i]), NULL);
