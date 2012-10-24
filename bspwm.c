@@ -65,7 +65,6 @@ void adopt_orphans(void)
     xcb_window_t *wins = xcb_query_tree_children(qtr);
     for (int i = 0; i < len; i++)
         manage_window(wins[i]);
-    free(wins);
     free(qtr);
 }
 
