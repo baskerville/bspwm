@@ -1,0 +1,323 @@
+.TH BSPWM 1 bspwm
+.SH NAME
+bspwm \- Tiling window manager based on binary space partitioning
+.SH SYNOPSIS
+.BI bspwm
+.RI [ -v ]
+.P
+.BI bspc " MESSAGE"
+.RI [ ARGUMENTS ]
+.RI [ OPTIONS ]
+.SH DESCRIPTION
+.B bspwm
+is a tiling window manager where each window is represented as the leaf of a binary tree. It is controlled and configured via
+.BR bspc .
+.SH CONFIGURATION
+.B bspwm
+have only two sources of informations: the
+.B X
+events it receives and the messages it reads on a dedicated socket.
+.P
+Those messages are sent via
+.BR bspc .
+.P
+If the
+.I BSPWM_SOCKET
+environment variable is defined, it will be used as the socket path, otherwise
+.I /tmp/bspwm-socket
+is used.
+.P
+The recommended way of defining keyboard shortcuts is to use
+.BR xbindkeys .
+.P
+The only way to configure
+.B bspwm
+is by sending
+.I set
+messages via the client, hence
+.BR bspwm \'s
+configuration file is an executable called
+.I autostart
+which lives in
+.IR $XDG_CONFIG_HOME/bspwm/ .
+.SH SPLITTING MODES
+There is only two splitting modes:
+.IR automatic " and " manual .
+.P
+The default mode is
+.IR automatic .
+The
+.I manual
+mode is entered by sending a
+.B presel
+message.
+.P
+Example: insertion of a new node (number 4) into the given tree in
+.I automatic
+mode:
+
+                 b                                   c
+                / \\                                 / \\
+               3   a              -->              4   b
+               ^  / \\                              ^  / \\
+                 2   1                               3   a
+                                                        / \\
+                                                       2   1
+    +-------------------------+         +-------------------------+
+    |            |            |         |            |            |
+    |            |     2      |         |            |     3      |
+    |            |            |         |            |            |
+    |     3      |------------|   -->   |     4      |------------|
+    |     ^      |            |         |     ^      |     |      |
+    |            |     1      |         |            |  1  |  2   |
+    |            |            |         |            |     |      |
+    +-------------------------+         +-------------------------+
+
+.P
+Same departure, but the mode is
+.IR manual ,
+and a
+.BI presel " up"
+message was sent beforehand:
+
+                 b                                   b
+                / \\                                 / \\
+               3   a              -->              c   a
+               ^  / \\                             / \\ / \\
+                 2   1                           4  3 2  1
+                                                 ^
+    +-------------------------+         +-------------------------+
+    |            |            |         |            |            |
+    |            |     2      |         |     4      |     2      |
+    |            |            |         |     ^      |            |
+    |     3      |------------|   -->   |------------|------------|
+    |     ^      |            |         |            |            |
+    |            |     1      |         |     3      |     1      |
+    |            |            |         |            |            |
+    +-------------------------+         +-------------------------+
+
+.SH MESSAGES
+.TP
+.BI get " SETTING"
+Return the value of the given setting.
+.TP
+.BI set " SETTING VALUE"
+Set the value of the given setting.
+.TP
+.BI list
+Output the internal representation of the window tree.
+.TP
+.BI list_desktops " [--quiet]"
+Perform a dump of each desktop for the current monitor.
+.TP
+.BI list_monitors " [--quiet]"
+Perform a dump of each monitor.
+.TP
+.BI list_windows
+Return the list of managed windows (i.e. their identifiers).
+.TP
+.BI presel " left|right|up|down"
+Switch to manual mode and select the splitting direction.
+.TP
+.BI cancel
+Switch to automatic mode.
+.TP
+.BI ratio " VALUE"
+Set the splitting ratio of the focused window.
+.TP
+.BI focus " left|right|up|down"
+Focus the neighbor window situated in the given direction.
+.TP
+.BI shift " left|right|up|down"
+Exchange the current window with the given neighbor.
+.TP
+.BI push " left|right|up|down"
+Push the fence located in the given direction.
+.TP
+.BI pull " left|right|up|down"
+Pull the fence located in the given direction.
+.TP
+.BI cycle " next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]"
+Focus the next or previous window matching the given constraints.
+.TP
+.BI nearest " older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]"
+Focus the nearest window matching the given constraints.
+.TP
+.BI toggle_fullscreen
+Toggle the fullscreen state of the current window.
+.TP
+.BI toggle_floating
+Toggle the floating state of the current window.
+.TP
+.BI toggle_locked
+Toggle the locked state of the current window (locked windows will not respond to the
+.B close
+message).
+.TP
+.BI close
+Close the focused window.
+.TP
+.BI kill
+Kill the focused window.
+.TP
+.BI send_to " DESKTOP_NAME"
+Send the focused window to the given desktop.
+.TP
+.BI send_to_monitor " MONITOR_NAME"
+Send the focused window to the given monitor.
+.TP
+.BI use " DESKTOP_NAME"
+Select the given desktop.
+.TP
+.BI use_monitor " MONITOR_NAME"
+Select the given monitor.
+.TP
+.BI alternate
+Alternate between the current and the last focused window.
+.TP
+.BI alternate_desktop
+Alternate between the current and the last focused desktop.
+.TP
+.BI alternate_monitor
+Alternate between the current and the last focused monitor.
+.TP
+.BI add " DESKTOP_NAME ..."
+Make new desktops with the given names.
+.TP
+.BI add_in " MONITOR_NAME DESKTOP_NAME ..."
+Make new desktops with the given names in the given monitor.
+.TP
+.BI rename_monitor " CURRENT_NAME NEW_NAME"
+Rename the monitor named CURRENT_NAME to NEW_NAME.
+.TP
+.BI rename " CURRENT_NAME NEW_NAME"
+Rename the desktop named CURRENT_NAME to NEW_NAME.
+.TP
+.BI cycle_monitor " next|prev"
+Select the next or previous monitor.
+.TP
+.BI cycle_desktop " next|prev [--skip-free|--skip-occupied]"
+Select the next or previous desktop.
+
+.BI layout " monocle|tiled"
+Set the layout of the current desktop.
+.TP
+.BI cycle_layout
+Cycle the layout of the current desktop.
+.TP
+.BI rotate " clockwise|counter_clockwise|full_cycle"
+Rotate the tree of the current desktop.
+.TP
+.BI magnetise " top_left|top_right|bottom_left|bottom_right"
+Move all the fences toward the given corner.
+.TP
+.BI rule " PATTERN floating "
+Make a new rule that will float the windows whose class name or instance name equals PATTERN.
+.TP
+.BI reload_autostart
+Reload the autostart file.
+.TP
+.BI reload_settings
+Reload the default settings.
+.TP
+.BI reload
+Reload the autostart file and the default settings.
+.TP
+.BI quit
+Quit.
+.SH SETTINGS
+Colors are either
+.B X
+color names (cf.
+.I COLOR NAMES
+in
+.BR X (7))
+or
+.I #RRGGBB
+, booleans are
+.IR "true " "or " false .
+.TP
+.I focused_border_color
+Color of the main border of a focused window of a focused monitor.
+.TP
+.I active_border_color
+Color of the main border of a focused window of an unfocused monitor.
+.TP
+.I normal_border_color
+Color of the main border of an unfocused window.
+.TP
+.I inner_border_color
+Color of the inner border of a window.
+.TP
+.I outer_border_color
+Color of the outer border of a window.
+.TP
+.I presel_border_color
+Color of the
+.B presel
+message feedback.
+.TP
+.I focused_locked_border_color
+Color of the main border of a focused locked window of a focused monitor.
+.TP
+.I active_locked_border_color
+Color of the main border of a focused locked window of an unfocused monitor.
+.TP
+.I normal_locked_border_color
+Color of the main border of an unfocused locked window.
+.TP
+.I urgent_border_color
+Color of the border of an urgent window.
+.TP
+.I {inner,main,outer}_border_width
+Width of the inner, main and outer borders.
+.TP
+.I window_gap
+Value of the gap that separates windows.
+.TP
+.I {top,bottom,left,right}_padding
+Padding space added at the sides of the screen.
+.TP
+.I wm_name
+The value that shall be used for the
+.B _NET_WM_NAME
+property of the root window.
+.TP
+.I button_modifier
+The modifier mask used for mouse bindings (possible values:
+.BR mod1 " ... " mod5 ).
+.TP
+.I borderless_monocle
+Whether to remove borders for tiled windows in monocle mode.
+.TP
+.I focus_follows_mouse
+Wether to focus the window under the mouse pointer.
+.TP
+.BR -q ,\  --quiet "  (search, query, foreigns, orphans, owns)"
+Provide quiet search results.
+.TP
+.BR -a ,\  --aur "  (update, search)"
+Restrain the action to the AUR packages.
+.SH MOUSE BINDINGS
+.TP
+.I button_modifier + left mouse button
+Move the window under the pointer.
+.TP
+.I button_modifier + middle mouse button
+Focus the window under the pointer.
+.TP
+.I button_modifier + right mouse button
+Resize the window under the pointer (by moving one of its four corners).
+.SH AUTHOR
+.EX
+Bastien Dejean <baskerville at lavabit.com>
+.SH CONTRIBUTORS
+.EX
+Ivan Kanakarakis <ivan.kanak at gmail.com>
+.EE
+.SH HOMEPAGE
+.TP
+https://github.com/baskerville/bspwm
+.SH SEE ALSO
+.BR monsterwm (1),
+.BR tmux (1).
