@@ -185,6 +185,9 @@ The following messages are handled:
     rule PATTERN floating
         Make a new rule that will float the windows whose class name or instance name equals PATTERN.
 
+    adopt_orphans
+        Manage all the unmanaged windows remaining from a previous session.
+
     reload_autostart
         Reload the autostart file.
 

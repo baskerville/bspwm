@@ -54,22 +54,6 @@ void ungrab_buttons(void)
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_3, screen->root, button_modifier);
 }
 
-void adopt_orphans(void)
-{
-    xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, screen->root), NULL);
-    if (qtr == NULL)
-        return;
-    int len = xcb_query_tree_children_length(qtr);
-    xcb_window_t *wins = xcb_query_tree_children(qtr);
-    for (int i = 0; i < len; i++) {
-        uint32_t d;
-        xcb_window_t win = wins[i];
-        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &d, NULL) == 1)
-            manage_window(win);
-    }
-    free(qtr);
-}
-
 void setup(void)
 {
     ewmh_init();
@@ -191,7 +175,6 @@ int main(int argc, char *argv[])
     run_autostart();
     grab_buttons();
     ewmh_update_wm_name();
-    adopt_orphans();
 
     while (running) {
 

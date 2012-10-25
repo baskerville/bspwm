@@ -121,6 +121,22 @@ void manage_window(xcb_window_t win)
     ewmh_update_client_list();
 }
 
+void adopt_orphans(void)
+{
+    xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, screen->root), NULL);
+    if (qtr == NULL)
+        return;
+    int len = xcb_query_tree_children_length(qtr);
+    xcb_window_t *wins = xcb_query_tree_children(qtr);
+    for (int i = 0; i < len; i++) {
+        uint32_t d;
+        xcb_window_t win = wins[i];
+        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &d, NULL) == 1)
+            manage_window(win);
+    }
+    free(qtr);
+}
+
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 {
     if (n == NULL)
