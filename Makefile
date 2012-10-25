@@ -33,11 +33,11 @@ options:
 	@echo "CC $<"
 	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -c -o $@ $<
 
-bspwm: $(WM_OBJ)
+bspwm: $(WM_OBJ) *.h
 	@echo CC -o $@
 	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS)
 
-bspc: $(CL_OBJ)
+bspc: $(CL_OBJ) *.h
 	@echo CC -o $@
 	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS)
 
