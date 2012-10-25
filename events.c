@@ -58,7 +58,7 @@ void map_request(xcb_generic_event_t *evt)
 
     PRINTF("map request %X\n", e->window);
 
-    manage_window(e->window);
+    manage_window(mon, mon->desk, e->window);
 }
 
 void configure_request(xcb_generic_event_t *evt)

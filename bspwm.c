@@ -118,6 +118,7 @@ void setup(void)
 
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
+    ewmh_update_current_desktop();
     rule_head = make_rule();
     frozen_pointer = make_pointer_state();
     get_pointer_position(&pointer_position);

@@ -29,23 +29,17 @@ bool locate_window(xcb_window_t win, window_location_t *loc)
 
 bool locate_desktop(char *name, desktop_location_t *loc)
 {
-    monitor_t *m = mon_head;
-    while (m != NULL) {
-        desktop_t *d = m->desk_head;
-        while (d != NULL) {
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
             if (strcmp(d->name, name) == 0) {
                 loc->monitor = m;
                 loc->desktop = d;
                 return true;
             }
-            d = d->next;
-        }
-        m = m->next;
-    }
     return false;
 }
 
-void manage_window(xcb_window_t win)
+void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 {
     window_location_t loc;
     xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
@@ -68,7 +62,6 @@ void manage_window(xcb_window_t win)
         return;
     }
 
-    desktop_t *desk = mon->desk;
     client_t *c = make_client(win);
     update_floating_rectangle(c);
 
@@ -87,16 +80,16 @@ void manage_window(xcb_window_t win)
     if (floating)
         split_mode = MODE_MANUAL;
 
-    insert_node(desk, birth);
+    insert_node(d, birth);
 
     if (floating)
         toggle_floating(birth);
 
-    if (desk->focus != NULL && desk->focus->client->fullscreen)
-        toggle_fullscreen(mon, desk->focus->client);
+    if (d->focus != NULL && d->focus->client->fullscreen)
+        toggle_fullscreen(m, d->focus->client);
 
     if (fullscreen)
-        toggle_fullscreen(mon, birth->client);
+        toggle_fullscreen(m, birth->client);
 
     if (is_tiled(c))
         window_lower(c->window);
@@ -104,11 +97,12 @@ void manage_window(xcb_window_t win)
     c->transient = transient;
 
     if (takes_focus)
-        focus_node(mon, desk, birth, false);
+        focus_node(m, d, birth, false);
 
-    fit_monitor(mon, birth->client);
-    arrange(mon, desk);
-    window_show(c->window);
+    fit_monitor(m, birth->client);
+    arrange(m, d);
+    if (d == m->desk)
+        window_show(c->window);
 
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
@@ -117,7 +111,7 @@ void manage_window(xcb_window_t win)
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
-    ewmh_set_wm_desktop(birth, desk);
+    ewmh_set_wm_desktop(birth, d);
     ewmh_update_client_list();
 }
 
@@ -129,10 +123,15 @@ void adopt_orphans(void)
     int len = xcb_query_tree_children_length(qtr);
     xcb_window_t *wins = xcb_query_tree_children(qtr);
     for (int i = 0; i < len; i++) {
-        uint32_t d;
+        uint32_t idx;
         xcb_window_t win = wins[i];
-        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &d, NULL) == 1)
-            manage_window(win);
+        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
+            desktop_location_t loc;
+            if (ewmh_locate_desktop(idx, &loc))
+                manage_window(loc.monitor, loc.desktop, win);
+            else
+                manage_window(mon, mon->desk, win);
+        }
     }
     free(qtr);
 }

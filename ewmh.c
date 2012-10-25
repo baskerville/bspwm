@@ -43,6 +43,19 @@ uint32_t ewmh_get_desktop_index(desktop_t *d)
     return 0;
 }
 
+bool ewmh_locate_desktop(uint32_t i, desktop_location_t *loc)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, i--)
+            if (i == 0) {
+                loc->monitor = m;
+                loc->desktop = d;
+                return true;
+            }
+
+    return false;
+}
+
 void ewmh_update_current_desktop(void)
 {
     uint32_t i = ewmh_get_desktop_index(mon->desk);
