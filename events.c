@@ -234,11 +234,10 @@ void client_message(xcb_generic_event_t *evt)
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
             toggle_fullscreen(loc.monitor, loc.desktop->focus->client);
-        if (loc.monitor->desk != loc.desktop) {
-            arrange(loc.monitor, loc.desktop);
-            select_desktop(loc.desktop);
-        }
+        select_monitor(loc.monitor);
+        select_desktop(loc.desktop);
         focus_node(loc.monitor, loc.desktop, loc.node, true);
+        arrange(loc.monitor, loc.desktop);
     }
 }
 
