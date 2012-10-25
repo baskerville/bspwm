@@ -62,12 +62,10 @@ void adopt_orphans(void)
     int len = xcb_query_tree_children_length(qtr);
     xcb_window_t *wins = xcb_query_tree_children(qtr);
     for (int i = 0; i < len; i++) {
-        xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, wins[i]), NULL);
-        if (wa != NULL) {
-            if (wa->map_state == XCB_MAP_STATE_VIEWABLE)
-                manage_window(wins[i]);
-            free(wa);
-        }
+        uint32_t d;
+        xcb_window_t win = wins[i];
+        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &d, NULL) == 1)
+            manage_window(win);
     }
     free(qtr);
 }
