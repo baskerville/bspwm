@@ -131,7 +131,7 @@ void configure_request(xcb_generic_event_t *evt)
             rect = loc.node->client->tiled_rectangle;
             bw = border_width;
         } else {
-            rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
+            rect = loc.monitor->rectangle;
             bw = 0;
         }
 

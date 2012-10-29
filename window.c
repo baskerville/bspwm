@@ -80,7 +80,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (floating)
         split_mode = MODE_MANUAL;
 
-    insert_node(d, birth);
+    insert_node(m, d, birth);
 
     if (floating)
         toggle_floating(birth);

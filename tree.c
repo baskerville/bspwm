@@ -343,7 +343,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
     }
 }
 
-void insert_node(desktop_t *d, node_t *n)
+void insert_node(monitor_t *m, desktop_t *d, node_t *n)
 {
     if (d == NULL || n == NULL)
         return;
@@ -364,7 +364,7 @@ void insert_node(desktop_t *d, node_t *n)
                 if (fopar == NULL) {
                     dad->first_child = n;
                     dad->second_child = focus;
-                    if (focus->rectangle.width > focus->rectangle.height)
+                    if (m->rectangle.width > m->rectangle.height)
                         dad->split_type = TYPE_VERTICAL;
                     else
                         dad->split_type = TYPE_HORIZONTAL;
@@ -610,7 +610,7 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     PRINTF("transfer node %X\n", n->client->window);
 
     unlink_node(ds, n);
-    insert_node(dd, n);
+    insert_node(md, dd, n);
     ewmh_set_wm_desktop(n, dd);
 
     if (ds == ms->desk && dd != md->desk) {
