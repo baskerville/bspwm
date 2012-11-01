@@ -116,6 +116,9 @@ The following messages are handled:
     nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
         Focus the nearest window matching the given constraints.
 
+    circulate forward|backward
+        Circulate the leaves in the given direction.
+
     toggle_fullscreen
         Toggle the fullscreen state of the current window.
 

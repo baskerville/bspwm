@@ -232,6 +232,15 @@ void process_message(char *msg, char *rsp)
         }
         if (mon->desk->layout == LAYOUT_TILED)
             return;
+    } else if (strcmp(cmd, "circulate") == 0) {
+        if (mon->desk->layout == LAYOUT_MONOCLE || (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen))
+            return;
+        char *dir = strtok(NULL, TOKEN_SEP);
+        if (dir != NULL) {
+            circulate_dir_t d;
+            if (parse_circulate_direction(dir, &d))
+                circulate_leaves(mon, mon->desk, d);
+        }
     } else if (strcmp(cmd, "rule") == 0) {
         char *name = strtok(NULL, TOKEN_SEP);
         if (name != NULL) {
@@ -497,6 +506,18 @@ bool parse_cycle_direction(char *s, cycle_dir_t *d)
         return true;
     } else if (strcmp(s, "next") == 0) {
         *d = CYCLE_NEXT;
+        return true;
+    }
+    return false;
+}
+
+bool parse_circulate_direction(char *s, circulate_dir_t *d)
+{
+    if (strcmp(s, "forward") == 0) {
+        *d = CIRCULATE_FORWARD;
+        return true;
+    } else if (strcmp(s, "backward") == 0) {
+        *d = CIRCULATE_BACKWARD;
         return true;
     }
     return false;

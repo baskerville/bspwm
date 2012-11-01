@@ -751,6 +751,25 @@ void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip
     focus_node(m, d, x, true);
 }
 
+void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir) {
+    if (d == NULL || d->root == NULL || is_leaf(d->root))
+        return;
+    node_t *par = d->focus->parent;
+    bool first = is_first_child(d->focus);
+    if (dir == CIRCULATE_FORWARD)
+        for (node_t *s = second_extrema(d->root), *f = prev_leaf(s); f != NULL && s != NULL; s = prev_leaf(f), f = prev_leaf(s))
+            swap_nodes(f, s);
+    else
+        for (node_t *f = first_extrema(d->root), *s = next_leaf(f); f != NULL && s != NULL; f = next_leaf(s), s = next_leaf(f))
+            swap_nodes(f, s);
+    if (is_floating(d->focus->client))
+        return;
+    if (first)
+        focus_node(m, d, par->first_child, true);
+    else
+        focus_node(m, d, par->second_child, true);
+}
+
 void update_vacant_state(node_t *n)
 {
     if (n == NULL)

@@ -66,6 +66,11 @@ typedef enum {
 } nearest_arg_t;
 
 typedef enum {
+    CIRCULATE_FORWARD,
+    CIRCULATE_BACKWARD
+} circulate_dir_t;
+
+typedef enum {
     ROTATE_CLOCKWISE,
     ROTATE_COUNTER_CLOCKWISE,
     ROTATE_FULL_CYCLE
