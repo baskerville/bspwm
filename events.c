@@ -264,6 +264,7 @@ void button_press(xcb_generic_event_t *evt)
                 } else if (loc.node->client->fullscreen) {
                     return;
                 }
+                frozen_pointer->monitor = loc.monitor;
                 frozen_pointer->desktop = loc.desktop;
                 frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;
@@ -305,6 +306,9 @@ void motion_notify(xcb_generic_event_t *evt)
     xcb_rectangle_t rect = frozen_pointer->rectangle;
     xcb_window_t win = c->window;
 
+    x = y = 0;
+    w = h = 1;
+
     /* PRINTF("motion notify %X\n", win); */
 
     delta_x = e->root_x - frozen_pointer->position.x;
@@ -337,7 +341,6 @@ void motion_notify(xcb_generic_event_t *evt)
                     h = rect.height + delta_y;
                     break;
                 case BOTTOM_RIGHT:
-                default:
                     x = rect.x;
                     y = rect.y;
                     w = rect.width + delta_x;
@@ -349,6 +352,7 @@ void motion_notify(xcb_generic_event_t *evt)
             window_move_resize(win, x, y, width, height);
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, d->focus == n, mon == m);
+            break;
     }
 }
 
