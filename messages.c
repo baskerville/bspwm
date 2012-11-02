@@ -233,7 +233,8 @@ void process_message(char *msg, char *rsp)
         if (mon->desk->layout == LAYOUT_TILED)
             return;
     } else if (strcmp(cmd, "circulate") == 0) {
-        if (mon->desk->layout == LAYOUT_MONOCLE || (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen))
+        if (mon->desk->layout == LAYOUT_MONOCLE
+                || (mon->desk->focus != NULL && !is_tiled(mon->desk->focus->client)))
             return;
         char *dir = strtok(NULL, TOKEN_SEP);
         if (dir != NULL) {
