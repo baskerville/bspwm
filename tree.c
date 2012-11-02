@@ -315,7 +315,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
         window_border_width(n->client->window, n->client->border_width);
         window_draw_border(n, n == d->focus, m == mon);
 
-        if (d->layout == LAYOUT_MONOCLE && is_tiled(n->client) && n != d->focus)
+        if (d->layout == LAYOUT_MONOCLE && is_tiled(d->focus->client) && is_tiled(n->client) && n != d->focus)
             window_lower(n->client->window);
 
     } else {
