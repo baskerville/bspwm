@@ -266,10 +266,11 @@ void arrange(monitor_t *m, desktop_t *d)
     PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
 
     xcb_rectangle_t rect = m->rectangle;
-    rect.x += left_padding + window_gap;
-    rect.y += top_padding + window_gap;
-    rect.width -= left_padding + right_padding + window_gap;
-    rect.height -= top_padding + bottom_padding + window_gap;
+    int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
+    rect.x += left_padding + wg;
+    rect.y += top_padding + wg;
+    rect.width -= left_padding + right_padding + wg;
+    rect.height -= top_padding + bottom_padding + wg;
     if (focus_follows_mouse)
         get_pointer_position(&pointer_position);
     apply_layout(m, d, d->root, rect, rect);
@@ -303,7 +304,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
                 r = rect;
             else if (d->layout == LAYOUT_MONOCLE)
                 r = root_rect;
-            int bleed = window_gap + 2 * n->client->border_width;
+            int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
+            int bleed = wg + 2 * n->client->border_width;
             r.width = (bleed < r.width ? r.width - bleed : 1);
             r.height = (bleed < r.height ? r.height - bleed : 1);
             n->client->tiled_rectangle = r;

@@ -367,6 +367,10 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             borderless_monocle = b;
+    } else if (strcmp(name, "gapless_monocle") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            gapless_monocle = b;
     } else if (strcmp(name, "focus_follows_mouse") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -436,6 +440,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s (%06X)", urgent_border_color, urgent_border_color_pxl);
     else if (strcmp(name, "borderless_monocle") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(borderless_monocle));
+    else if (strcmp(name, "gapless_monocle") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(gapless_monocle));
     else if (strcmp(name, "focus_follows_mouse") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_mouse));
     else if (strcmp(name, "wm_name") == 0)
