@@ -207,8 +207,7 @@ void process_message(char *msg, char *rsp)
                     cycle_leaf(mon, mon->desk, mon->desk->focus, d, k);
             }
         }
-        if (mon->desk->layout == LAYOUT_TILED)
-            return;
+        return;
     } else if (strcmp(cmd, "nearest") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
@@ -222,8 +221,7 @@ void process_message(char *msg, char *rsp)
                     nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
             }
         }
-        if (mon->desk->layout == LAYOUT_TILED)
-            return;
+        return;
     } else if (strcmp(cmd, "circulate") == 0) {
         if (mon->desk->layout == LAYOUT_MONOCLE
                 || (mon->desk->focus != NULL && !is_tiled(mon->desk->focus->client)))
@@ -251,6 +249,7 @@ void process_message(char *msg, char *rsp)
         return;
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, mon->desk->last_focus, true);
+        return;
     } else if (strcmp(cmd, "alternate_desktop") == 0) {
         select_desktop(mon->last_desk);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {

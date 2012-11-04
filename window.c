@@ -294,6 +294,7 @@ void toggle_fullscreen(monitor_t *m, client_t *c)
         xcb_rectangle_t r = m->rectangle;
         window_move_resize(c->window, r.x, r.y, r.width, r.height);
     }
+    update_current();
 }
 
 void toggle_floating(node_t *n)
@@ -311,6 +312,7 @@ void toggle_floating(node_t *n)
         window_raise(c->window);
     else if (is_tiled(c))
         window_lower(c->window);
+    update_current();
 }
 
 void toggle_locked(client_t *c)
@@ -391,6 +393,13 @@ void window_raise(xcb_window_t win)
 {
     uint32_t values[] = {XCB_STACK_MODE_ABOVE};
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
+}
+
+void window_pseudo_raise(desktop_t *d, xcb_window_t win)
+{
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+        if (is_tiled(n->client) && n->client->window != win)
+            window_lower(n->client->window);
 }
 
 void window_lower(xcb_window_t win)
