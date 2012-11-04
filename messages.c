@@ -45,6 +45,9 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "list_windows") == 0) {
         list_windows(rsp);
         return;
+    } else if (strcmp(cmd, "list_history") == 0) {
+        list_history(mon->desk, rsp);
+        return;
     } else if (strcmp(cmd, "close") == 0) {
         window_close(mon->desk->focus);
         return;
@@ -258,7 +261,9 @@ void process_message(char *msg, char *rsp)
         }
         return;
     } else if (strcmp(cmd, "alternate") == 0) {
-        focus_node(mon, mon->desk, mon->desk->last_focus, true);
+        node_list_t *a = mon->desk->focus_history->head->prev;
+        if (a != NULL)
+            focus_node(mon, mon->desk, a->node, true);
     } else if (strcmp(cmd, "alternate_desktop") == 0) {
         select_desktop(mon->last_desk);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {

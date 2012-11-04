@@ -39,7 +39,8 @@ desktop_t *make_desktop(const char *name)
         strncpy(d->name, name, sizeof(d->name));
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
-    d->root = d->focus = d->last_focus = NULL;
+    d->root = d->focus = NULL;
+    d->focus_history = make_focus_history();
     return d;
 }
 
@@ -54,6 +55,21 @@ client_t *make_client(xcb_window_t win)
     return c;
 }
 
+focus_history_t *make_focus_history(void)
+{
+    focus_history_t *f = malloc(sizeof(focus_history_t));
+    f->head = f->tail = f->position = NULL;
+    return f;
+}
+
+node_list_t *make_node_list(void)
+{
+    node_list_t *n = malloc(sizeof(node_list_t));
+    n->node = NULL;
+    n->prev = n->next = NULL;
+    return n;
+}
+
 rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
@@ -66,4 +82,32 @@ pointer_state_t *make_pointer_state(void)
 {
     pointer_state_t *p = malloc(sizeof(pointer_state_t));
     return p;
+}
+
+void history_add(focus_history_t *f, node_t *n)
+{
+    node_list_t *a = make_node_list();
+    a->node = n;
+    if (f->head == NULL) {
+        f->head = f->tail = f->position = a;
+    } else {
+        f->head->next = a;
+        a->prev = f->head;
+        f->head = a;
+    }
+}
+
+void history_remove(focus_history_t *f, node_t *n)
+{
+    for(node_list_t *b = f->head; b != NULL; b = b->prev)
+        if (b->node == n) {
+            node_list_t *a = b->prev;
+            node_list_t *c = b->next;
+            if (a != NULL)
+                a->next = c;
+            if (c != NULL)
+                c->prev = a;
+            free(b);
+            return;
+        }
 }

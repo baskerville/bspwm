@@ -261,6 +261,15 @@ void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rs
     }
 }
 
+void list_history(desktop_t *d, char *rsp)
+{
+    char line[MAXLEN];
+    for (node_list_t *a = d->focus_history->head; a != NULL; a = a->prev) {
+        snprintf(line, sizeof(line), "%s %X\n", a->node->client->class_name, a->node->client->window);
+        strncat(rsp, line, REMLEN(rsp));
+    }
+}
+
 void arrange(monitor_t *m, desktop_t *d)
 {
     PRINTF("arrange %s:%s\n", m->name, d->name);
@@ -459,8 +468,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         window_raise(n->client->window);
 
     if (d->focus != n) {
-        d->last_focus = d->focus;
         d->focus = n;
+        history_add(d->focus_history, n);
     }
 
     ewmh_update_active_window();
@@ -486,7 +495,6 @@ void unlink_node(desktop_t *d, node_t *n)
     if (p == NULL) {
         d->root = NULL;
         d->focus = NULL;
-        d->last_focus = NULL;
     } else {
         node_t *b;
         node_t *g = p->parent;
@@ -513,18 +521,19 @@ void unlink_node(desktop_t *d, node_t *n)
         n->parent = NULL;
         free(p);
 
-        if (n == d->last_focus) {
-            d->last_focus = NULL;
-        } else if (n == d->focus) {
-            if (d->last_focus != NULL)
-                d->focus = d->last_focus;
-            else
+        if (n == d->focus) {
+            if (d->focus_history->head->prev != NULL) {
+                d->focus = d->focus_history->head->prev->node;
+            } else {
                 d->focus = (n_first_child ? first_extrema(b) : second_extrema(b));
-            d->last_focus = NULL;
+                history_add(d->focus_history, d->focus);
+            }
         }
 
         update_vacant_state(b->parent);
     }
+
+    history_remove(d->focus_history, n);
 }
 
 void remove_node(desktop_t *d, node_t *n)

@@ -25,6 +25,7 @@ void insert_node(monitor_t *, desktop_t *, node_t *);
 void dump_tree(desktop_t *, node_t *, char *, unsigned int);
 void list_desktops(monitor_t *, list_option_t, unsigned int, char *);
 void list_monitors(list_option_t, char *);
+void list_history(desktop_t *, char *);
 void focus_node(monitor_t *, desktop_t *, node_t *, bool);
 void update_current(void);
 void unlink_node(desktop_t *, node_t *);

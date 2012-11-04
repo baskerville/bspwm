@@ -399,6 +399,13 @@ void window_lower(xcb_window_t win)
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }
 
+void window_pseudo_raise(desktop_t *d, xcb_window_t win)
+{
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+        if (is_tiled(n->client) && n->client->window != win)
+            window_lower(n->client->window);
+}
+
 void window_set_visibility(xcb_window_t win, bool visible) {
     uint32_t values_off[] = {ROOT_EVENT_MASK & ~XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
     uint32_t values_on[] = {ROOT_EVENT_MASK};
