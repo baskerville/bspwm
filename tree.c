@@ -263,7 +263,7 @@ void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rs
 
 void arrange(monitor_t *m, desktop_t *d)
 {
-    PRINTF("arrange %s:%s\n", m->name, d->name);
+    PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
 
     xcb_rectangle_t rect = m->rectangle;
     rect.x += left_padding + window_gap;
