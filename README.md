@@ -182,9 +182,6 @@ The following messages are handled:
     rotate clockwise|counter_clockwise|full_cycle
         Rotate the tree of the current desktop.
 
-    magnetise top_left|top_right|bottom_left|bottom_right
-        Move all the fences toward the given corner.
-
     rule PATTERN floating
         Make a new rule that will float the windows whose class name or instance name equals PATTERN.
 

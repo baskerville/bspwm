@@ -50,14 +50,6 @@ void process_message(char *msg, char *rsp)
         return;
     } else if (strcmp(cmd, "kill") == 0) {
         window_kill(mon->desk, mon->desk->focus);
-    } else if (strcmp(cmd, "magnetise") == 0) {
-        char *cor = strtok(NULL, TOKEN_SEP);
-        if (cor != NULL) {
-            corner_t c;
-            if (parse_corner(cor, &c)) {
-                magnetise_tree(mon->desk->root, c);
-            }
-        }
     } else if (strcmp(cmd, "rotate") == 0) {
         char *deg = strtok(NULL, TOKEN_SEP);
         if (deg != NULL) {
@@ -573,24 +565,6 @@ bool parse_list_option(char *s, list_option_t *o)
         return true;
     } else if (strcmp(s, "--quiet") == 0) {
         *o = LIST_OPTION_QUIET;
-        return true;
-    }
-    return false;
-}
-
-bool parse_corner(char *s, corner_t *c)
-{
-    if (strcmp(s, "top_left") == 0) {
-        *c = TOP_LEFT;
-        return true;
-    } else if (strcmp(s, "top_right") == 0) {
-        *c = TOP_RIGHT;
-        return true;
-    } else if (strcmp(s, "bottom_left") == 0) {
-        *c = BOTTOM_LEFT;
-        return true;
-    } else if (strcmp(s, "bottom_right") == 0) {
-        *c = BOTTOM_RIGHT;
         return true;
     }
     return false;
