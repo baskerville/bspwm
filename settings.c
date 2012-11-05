@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
@@ -15,16 +16,18 @@ void run_autostart(void)
 
     snprintf(path, sizeof(path), "%s/%s/%s", getenv("XDG_CONFIG_HOME"), WM_NAME, AUTOSTART_FILE);
 
-    if (fork() != 0)
-        return;
+    if (fork() == 0) {
+        if (dpy != NULL)
+            close(xcb_get_file_descriptor(dpy));
+        if (fork() == 0) {
+            setsid();
+            execl(path, path, NULL);
+            err("could not run autostart file\n");
+        }
+        exit(EXIT_SUCCESS);
+    }
 
-    if (dpy != NULL)
-        close(xcb_get_file_descriptor(dpy));
-
-    setsid();
-    execl(path, path, NULL);
-
-    err("could not run autostart file\n");
+    wait(NULL);
 }
 
 void load_settings(void)
