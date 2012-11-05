@@ -61,9 +61,18 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "layout") == 0) {
         char *lyt = strtok(NULL, TOKEN_SEP);
         if (lyt != NULL) {
-            layout_t l;
-            if (parse_layout(lyt, &l)) {
-                mon->desk->layout = l;
+            layout_t y;
+            if (parse_layout(lyt, &y)) {
+                char *name = strtok(NULL, TOKEN_SEP);
+                if (name == NULL) {
+                    mon->desk->layout = y;
+                } else {
+                    desktop_location_t loc;
+                    do {
+                        if (locate_desktop(name, &loc))
+                            loc.desktop->layout = y;
+                    } while ((name = strtok(NULL, TOKEN_SEP)) != NULL);
+                }
             }
         }
     } else if (strcmp(cmd, "cycle_layout") == 0) {

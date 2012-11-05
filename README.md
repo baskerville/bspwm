@@ -173,8 +173,8 @@ The following messages are handled:
     cycle_desktop next|prev [--skip-free|--skip-occupied]
         Select the next or previous desktop.
 
-    layout monocle|tiled
-        Set the layout of the current desktop.
+    layout monocle|tiled [DESKTOP_NAME ...]
+        Set the layout of the given desktops (current if none given).
 
     cycle_layout
         Cycle the layout of the current desktop.
