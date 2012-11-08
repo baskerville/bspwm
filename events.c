@@ -362,6 +362,11 @@ void button_release(void)
 
     xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
     update_floating_rectangle(frozen_pointer->node->client);
+    monitor_t *m = underlying_monitor(frozen_pointer->node->client);
+    if (m != NULL && m != frozen_pointer->monitor) {
+        transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
+        select_monitor(m);
+    }
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
