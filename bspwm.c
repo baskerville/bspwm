@@ -60,6 +60,7 @@ void setup(void)
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (!screen)
         err("can't acquire screen\n");
+    register_events();
 
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
@@ -150,12 +151,10 @@ int main(int argc, char *argv[])
         err("can't open display\n");
 
     setup();
-    register_events();
 
     dpy_fd = xcb_get_file_descriptor(dpy);
 
     char *sp = getenv(SOCKET_ENV_VAR);
-
     strncpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp), sizeof(socket_path));
 
     sock_address.sun_family = AF_UNIX;
