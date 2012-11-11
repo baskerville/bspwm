@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#define TOK_SEP  " "
+
 void process_message(char*, char*);
 void get_setting(char*, char*);
 void set_setting(char*, char*, char*);

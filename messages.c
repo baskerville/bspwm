@@ -13,31 +13,31 @@
 
 void process_message(char *msg, char *rsp)
 {
-    char *cmd = strtok(msg, TOKEN_SEP);
+    char *cmd = strtok(msg, TOK_SEP);
 
     if (cmd == NULL)
         return;
 
     if (strcmp(cmd, "get") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         get_setting(name, rsp);
         return;
     } else if (strcmp(cmd, "set") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
-        char *value = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
+        char *value = strtok(NULL, TOK_SEP);
         set_setting(name, value, rsp);
         return;
     } else if (strcmp(cmd, "list") == 0) {
         dump_tree(mon->desk, mon->desk->root, rsp, 0);
         return;
     } else if (strcmp(cmd, "list_monitors") == 0) {
-        char *arg = strtok(NULL, TOKEN_SEP);
+        char *arg = strtok(NULL, TOK_SEP);
         list_option_t opt;
         if (parse_list_option(arg, &opt))
             list_monitors(opt, rsp);
         return;
     } else if (strcmp(cmd, "list_desktops") == 0) {
-        char *arg = strtok(NULL, TOKEN_SEP);
+        char *arg = strtok(NULL, TOK_SEP);
         list_option_t opt;
         if (parse_list_option(arg, &opt))
             list_desktops(mon, opt, 0, rsp);
@@ -51,7 +51,7 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "kill") == 0) {
         window_kill(mon->desk, mon->desk->focus);
     } else if (strcmp(cmd, "rotate") == 0) {
-        char *deg = strtok(NULL, TOKEN_SEP);
+        char *deg = strtok(NULL, TOK_SEP);
         if (deg != NULL) {
             rotate_t r;
             if (parse_rotate(deg, &r)) {
@@ -59,11 +59,11 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "layout") == 0) {
-        char *lyt = strtok(NULL, TOKEN_SEP);
+        char *lyt = strtok(NULL, TOK_SEP);
         if (lyt != NULL) {
             layout_t y;
             if (parse_layout(lyt, &y)) {
-                char *name = strtok(NULL, TOKEN_SEP);
+                char *name = strtok(NULL, TOK_SEP);
                 if (name == NULL) {
                     mon->desk->layout = y;
                 } else {
@@ -71,7 +71,7 @@ void process_message(char *msg, char *rsp)
                     do {
                         if (locate_desktop(name, &loc))
                             loc.desktop->layout = y;
-                    } while ((name = strtok(NULL, TOKEN_SEP)) != NULL);
+                    } while ((name = strtok(NULL, TOK_SEP)) != NULL);
                 }
             }
         }
@@ -81,7 +81,7 @@ void process_message(char *msg, char *rsp)
         else
             mon->desk->layout = LAYOUT_MONOCLE;
     } else if (strcmp(cmd, "shift") == 0) {
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
@@ -98,7 +98,7 @@ void process_message(char *msg, char *rsp)
         if (mon->desk->focus != NULL)
             toggle_locked(mon->desk->focus->client);
     } else if (strcmp(cmd, "ratio") == 0) {
-        char *value = strtok(NULL, TOKEN_SEP);
+        char *value = strtok(NULL, TOK_SEP);
         if (value != NULL && mon->desk->focus != NULL)
             sscanf(value, "%lf", &mon->desk->focus->split_ratio);
     } else if (strcmp(cmd, "cancel") == 0) {
@@ -108,7 +108,7 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "presel") == 0) {
         if (mon->desk->focus == NULL || !is_tiled(mon->desk->focus->client) || mon->desk->layout != LAYOUT_TILED)
             return;
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
@@ -119,7 +119,7 @@ void process_message(char *msg, char *rsp)
         }
         return;
     } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             fence_move_t m;
             direction_t d;
@@ -128,7 +128,7 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "send_to_monitor") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
             if (m != NULL && m != mon) {
@@ -137,7 +137,7 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
@@ -147,22 +147,22 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "rename_monitor") == 0) {
-        char *cur_name = strtok(NULL, TOKEN_SEP);
+        char *cur_name = strtok(NULL, TOK_SEP);
         if (cur_name != NULL) {
             monitor_t *m = find_monitor(cur_name);
             if (m != NULL) {
-                char *new_name = strtok(NULL, TOKEN_SEP);
+                char *new_name = strtok(NULL, TOK_SEP);
                 if (new_name != NULL) {
                     strncpy(m->name, new_name, sizeof(m->name));
                 }
             }
         }
     } else if (strcmp(cmd, "rename") == 0) {
-        char *cur_name = strtok(NULL, TOKEN_SEP);
+        char *cur_name = strtok(NULL, TOK_SEP);
         if (cur_name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(cur_name, &loc)) {
-                char *new_name = strtok(NULL, TOKEN_SEP);
+                char *new_name = strtok(NULL, TOK_SEP);
                 if (new_name != NULL) {
                     strncpy(loc.desktop->name, new_name, sizeof(loc.desktop->name));
                     ewmh_update_desktop_names();
@@ -170,14 +170,14 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "use_monitor") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
             if (m != NULL)
                 select_monitor(m);
         }
     } else if (strcmp(cmd, "use") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
@@ -186,19 +186,19 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "cycle_monitor") == 0) {
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             cycle_dir_t d;
             if (parse_cycle_direction(dir, &d))
                 cycle_monitor(d);
         }
     } else if (strcmp(cmd, "cycle_desktop") == 0) {
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             cycle_dir_t d;
             if (parse_cycle_direction(dir, &d)) {
                 skip_desktop_t k;
-                char *skip = strtok(NULL, TOKEN_SEP);
+                char *skip = strtok(NULL, TOK_SEP);
                 if (parse_skip_desktop(skip, &k))
                     cycle_desktop(mon, mon->desk, d, k);
             }
@@ -206,12 +206,12 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "cycle") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             cycle_dir_t d;
             if (parse_cycle_direction(dir, &d)) {
                 skip_client_t k;
-                char *skip = strtok(NULL, TOKEN_SEP);
+                char *skip = strtok(NULL, TOK_SEP);
                 if (parse_skip_client(skip, &k))
                     cycle_leaf(mon, mon->desk, mon->desk->focus, d, k);
             }
@@ -220,12 +220,12 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "nearest") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
-        char *arg = strtok(NULL, TOKEN_SEP);
+        char *arg = strtok(NULL, TOK_SEP);
         if (arg != NULL) {
             nearest_arg_t a;
             if (parse_nearest_argument(arg, &a)) {
                 skip_client_t k;
-                char *skip = strtok(NULL, TOKEN_SEP);
+                char *skip = strtok(NULL, TOK_SEP);
                 if (parse_skip_client(skip, &k))
                     nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
             }
@@ -235,18 +235,18 @@ void process_message(char *msg, char *rsp)
         if (mon->desk->layout == LAYOUT_MONOCLE
                 || (mon->desk->focus != NULL && !is_tiled(mon->desk->focus->client)))
             return;
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             circulate_dir_t d;
             if (parse_circulate_direction(dir, &d))
                 circulate_leaves(mon, mon->desk, d);
         }
     } else if (strcmp(cmd, "rule") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             rule_t *rule = make_rule();
             strncpy(rule->cause.name, name, sizeof(rule->cause.name));
-            char *arg = strtok(NULL, TOKEN_SEP);
+            char *arg = strtok(NULL, TOK_SEP);
             while (arg != NULL) {
                 if (strcmp(arg, "floating") == 0) {
                     rule->effect.floating = true;
@@ -257,7 +257,7 @@ void process_message(char *msg, char *rsp)
                         rule->effect.desktop = loc.desktop;
                     }
                 }
-                arg = strtok(NULL, TOKEN_SEP);
+                arg = strtok(NULL, TOK_SEP);
             }
             rule->next = rule_head;
             rule_head = rule;
@@ -271,22 +271,22 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "alternate_monitor") == 0) {
         select_monitor(last_mon);
     } else if (strcmp(cmd, "add_in") == 0) {
-        char *name = strtok(NULL, TOKEN_SEP);
+        char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
             if (m != NULL)
-                for (name = strtok(NULL, TOKEN_SEP); name != NULL; name = strtok(NULL, TOKEN_SEP))
+                for (name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
                     add_desktop(m, name);
         }
         return;
     } else if (strcmp(cmd, "add") == 0) {
-        for (char *name = strtok(NULL, TOKEN_SEP); name != NULL; name = strtok(NULL, TOKEN_SEP))
+        for (char *name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
             add_desktop(mon, name);
         return;
     } else if (strcmp(cmd, "focus") == 0) {
         if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
             return;
-        char *dir = strtok(NULL, TOKEN_SEP);
+        char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
