@@ -182,8 +182,8 @@ The following messages are handled:
     rotate clockwise|counter_clockwise|full_cycle
         Rotate the tree of the current desktop.
 
-    rule PATTERN floating
-        Make a new rule that will float the windows whose class name or instance name equals PATTERN.
+    rule PATTERN [DESKTOP_NAME] [floating]
+        Create a new rule (PATTERN must match the class or instance name).
 
     adopt_orphans
         Manage all the unmanaged windows remaining from a previous session.

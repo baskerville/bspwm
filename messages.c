@@ -248,8 +248,15 @@ void process_message(char *msg, char *rsp)
             strncpy(rule->cause.name, name, sizeof(rule->cause.name));
             char *arg = strtok(NULL, TOKEN_SEP);
             while (arg != NULL) {
-                if (strcmp(arg, "floating") == 0)
+                if (strcmp(arg, "floating") == 0) {
                     rule->effect.floating = true;
+                } else {
+                    desktop_location_t loc;
+                    if (locate_desktop(arg, &loc)) {
+                        rule->effect.monitor = loc.monitor;
+                        rule->effect.desktop = loc.desktop;
+                    }
+                }
                 arg = strtok(NULL, TOKEN_SEP);
             }
             rule->next = rule_head;

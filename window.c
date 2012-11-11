@@ -71,7 +71,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     bool floating = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
 
-    handle_rules(win, &floating, &transient, &fullscreen, &takes_focus, &manage);
+    handle_rules(win, &m, &d, &floating, &transient, &fullscreen, &takes_focus, &manage);
 
     if (!manage) {
         window_show(win);

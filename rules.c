@@ -19,7 +19,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -60,8 +60,13 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
 
     while (rule != NULL) {
         if (is_match(rule, win)) {
-            if (rule->effect.floating)
+            rule_effect_t efc = rule->effect;
+            if (efc.floating)
                 *floating = true;
+            if (efc.monitor != NULL && efc.desktop != NULL) {
+                *m = efc.monitor;
+                *d = efc.desktop;
+            }
         }
         rule = rule->next;
     }

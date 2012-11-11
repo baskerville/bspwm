@@ -146,6 +146,8 @@ typedef struct {
 
 typedef struct {
     bool floating;
+    monitor_t *monitor;
+    desktop_t *desktop;
 } rule_effect_t;
 
 typedef struct rule_t rule_t;

@@ -58,6 +58,8 @@ rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
     r->effect.floating = false;
+    r->effect.monitor = NULL;
+    r->effect.desktop = NULL;
     r->next = NULL;
     return r;
 }
