@@ -28,7 +28,14 @@ void process_message(char *msg, char *rsp)
         set_setting(name, value, rsp);
         return;
     } else if (strcmp(cmd, "list") == 0) {
-        dump_tree(mon->desk, mon->desk->root, rsp, 0);
+        char *name = strtok(NULL, TOK_SEP);
+        if (name != NULL) {
+            desktop_location_t loc;
+            if (locate_desktop(name, &loc))
+                dump_tree(loc.desktop, loc.desktop->root, rsp, 0);
+        } else {
+            dump_tree(mon->desk, mon->desk->root, rsp, 0);
+        }
         return;
     } else if (strcmp(cmd, "list_monitors") == 0) {
         char *arg = strtok(NULL, TOK_SEP);

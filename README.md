@@ -77,7 +77,7 @@ The following messages are handled:
     set SETTING VALUE
         Set the value of the given setting.
 
-    list
+    list [DESKTOP_NAME]
         Output the internal representation of the window tree.
 
     list_desktops [--quiet]
