@@ -41,9 +41,9 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
     xcb_size_hints_t size_hints;
 
     if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
-        if (size_hints.min_width == size_hints.max_width
-                && size_hints.min_height == size_hints.max_height
-                && size_hints.min_width > 0 && size_hints.min_height > 0)
+        if (size_hints.min_width > 0 && size_hints.min_height > 0
+                && size_hints.min_width == size_hints.max_width
+                && size_hints.min_height == size_hints.max_height)
             *floating = true;
     }
 
