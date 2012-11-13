@@ -38,6 +38,14 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
         xcb_ewmh_get_atoms_reply_wipe(&win_type);
     }
 
+    xcb_size_hints_t size_hints;
+
+    if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
+        if (size_hints.min_width == size_hints.max_width
+                && size_hints.min_height == size_hints.max_height)
+            *floating = true;
+    }
+
     xcb_ewmh_get_atoms_reply_t win_state;
 
     if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &win_state, NULL) == 1) {
