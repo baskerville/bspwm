@@ -98,6 +98,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     insert_node(m, d, birth);
 
+    disable_shadow(c->window);
+
     if (floating)
         toggle_floating(birth);
 
@@ -328,6 +330,10 @@ void toggle_floating(node_t *n)
         window_raise(c->window);
     else if (is_tiled(c))
         window_lower(c->window);
+    if (c->floating)
+        enable_shadow(c->window);
+    else
+        disable_shadow(c->window);
     update_current();
 }
 
@@ -336,6 +342,21 @@ void toggle_locked(client_t *c)
     PRINTF("toggle locked %X\n", c->window);
 
     c->locked = !c->locked;
+}
+
+void set_shadow(xcb_window_t win, uint32_t value)
+{
+    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, compton_shadow, XCB_ATOM_CARDINAL, 32, sizeof(value), &value);
+}
+
+void enable_shadow(xcb_window_t win)
+{
+    set_shadow(win, 1);
+}
+
+void disable_shadow(xcb_window_t win)
+{
+    set_shadow(win, 0);
 }
 
 void list_windows(char *rsp)

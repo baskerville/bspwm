@@ -84,6 +84,13 @@ void setup(void)
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
 
+    xcb_intern_atom_reply_t *iar = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("_COMPTON_SHADOW"), "_COMPTON_SHADOW"), NULL);
+
+    if (iar != NULL) {
+        compton_shadow = iar->atom;
+        free(iar);
+    }
+
     monitor_uid = desktop_uid = client_uid = 0;
     mon = last_mon = mon_head = mon_tail = NULL;
 
