@@ -40,24 +40,31 @@ void register_events(void)
     }
 }
 
+void handle_buttons(bool grab)
+{
+    uint8_t buts[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
+    uint16_t mods[] = {button_modifier, button_modifier | numlock_modifier, button_modifier | capslock_modifier, button_modifier | numlock_modifier | capslock_modifier};
+
+    for (unsigned int i = 0; i < LENGTH(buts); i++) {
+        uint8_t b = buts[i];
+        for (unsigned int j = 0; j < LENGTH(mods); j++) {
+            uint16_t m = mods[j];
+            if (grab)
+                xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, b, m);
+            else
+                xcb_ungrab_button(dpy, b, screen->root, m);
+        }
+    }
+}
+
 void grab_buttons(void)
 {
-    xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_1, button_modifier);
-    xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_2, button_modifier);
-    xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_3, button_modifier);
-    xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_1, button_modifier | XCB_MOD_MASK_LOCK);
-    xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_2, button_modifier | XCB_MOD_MASK_LOCK);
-    xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_BUTTON_INDEX_3, button_modifier | XCB_MOD_MASK_LOCK);
+    handle_buttons(true);
 }
 
 void ungrab_buttons(void)
 {
-    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_1, screen->root, button_modifier);
-    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_2, screen->root, button_modifier);
-    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_3, screen->root, button_modifier);
-    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_1, screen->root, button_modifier | XCB_MOD_MASK_LOCK);
-    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_2, screen->root, button_modifier | XCB_MOD_MASK_LOCK);
-    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_3, screen->root, button_modifier | XCB_MOD_MASK_LOCK);
+    handle_buttons(false);
 }
 
 void setup(void)

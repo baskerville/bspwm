@@ -246,7 +246,7 @@ void button_press(xcb_generic_event_t *evt)
     xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
     xcb_window_t win = e->child;
 
-    PRINTF("button press %u %X\n", e->detail, win);
+    PRINTF("button press %u %u %X\n", e->detail, e->state, win);
 
     window_location_t loc;
     if (locate_window(win, &loc)) {

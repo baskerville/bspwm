@@ -401,6 +401,22 @@ void set_setting(char *name, char *value, char *rsp)
             grab_buttons();
         }
         return;
+    } else if (strcmp(name, "numlock_modifier") == 0) {
+        unsigned int m;
+        if (parse_modifier_mask(value, &m)) {
+            ungrab_buttons();
+            numlock_modifier = m;
+            grab_buttons();
+        }
+        return;
+    } else if (strcmp(name, "capslock_modifier") == 0) {
+        unsigned int m;
+        if (parse_modifier_mask(value, &m)) {
+            ungrab_buttons();
+            capslock_modifier = m;
+            grab_buttons();
+        }
+        return;
     } else {
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
         return;
@@ -462,6 +478,10 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else if (strcmp(name, "button_modifier") == 0)
         print_modifier_mask(rsp, button_modifier);
+    else if (strcmp(name, "numlock_modifier") == 0)
+        print_modifier_mask(rsp, numlock_modifier);
+    else if (strcmp(name, "capslock_modifier") == 0)
+        print_modifier_mask(rsp, capslock_modifier);
     else
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
 }
@@ -621,7 +641,19 @@ bool parse_fence_move(char *s, fence_move_t *m)
 
 bool parse_modifier_mask(char *s, unsigned int *m)
 {
-    if (strcmp(s, "mod1") == 0) {
+    if (strcmp(s, "shift") == 0) {
+        *m = XCB_MOD_MASK_SHIFT;
+        return true;
+    } else if (strcmp(s, "control") == 0) {
+        *m = XCB_MOD_MASK_CONTROL;
+        return true;
+    } else if (strcmp(s, "lock") == 0) {
+        *m = XCB_MOD_MASK_LOCK;
+        return true;
+    } else if (strcmp(s, "mod1") == 0) {
+        *m = XCB_MOD_MASK_1;
+        return true;
+    } else if (strcmp(s, "mod1") == 0) {
         *m = XCB_MOD_MASK_1;
         return true;
     } else if (strcmp(s, "mod2") == 0) {
@@ -643,6 +675,15 @@ bool parse_modifier_mask(char *s, unsigned int *m)
 void print_modifier_mask(char *s, unsigned int m)
 {
     switch(m) {
+        case XCB_MOD_MASK_SHIFT:
+            snprintf(s, BUFSIZ, "shift");
+            break;
+        case XCB_MOD_MASK_CONTROL:
+            snprintf(s, BUFSIZ, "control");
+            break;
+        case XCB_MOD_MASK_LOCK:
+            snprintf(s, BUFSIZ, "lock");
+            break;
         case XCB_MOD_MASK_1:
             snprintf(s, BUFSIZ, "mod1");
             break;

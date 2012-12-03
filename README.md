@@ -252,7 +252,13 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
         The value that shall be used for the _NET_WM_NAME property of the root window.
 
     button_modifier
-        The modifier mask used for mouse bindings (possible values: 'mod1' ... 'mod5').
+        The modifier mask used for mouse bindings (possible values: 'shift', 'control', 'lock', 'mod1' ... 'mod5').
+
+    numlock_modifier
+        The modifier holding Num_Lock (cf. xmodmap).
+
+    capslock_modifier
+        The modifier holding Lock.
 
     borderless_monocle
         Whether to remove borders for tiled windows in monocle mode.
