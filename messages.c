@@ -653,9 +653,6 @@ bool parse_modifier_mask(char *s, unsigned int *m)
     } else if (strcmp(s, "mod1") == 0) {
         *m = XCB_MOD_MASK_1;
         return true;
-    } else if (strcmp(s, "mod1") == 0) {
-        *m = XCB_MOD_MASK_1;
-        return true;
     } else if (strcmp(s, "mod2") == 0) {
         *m = XCB_MOD_MASK_2;
         return true;
