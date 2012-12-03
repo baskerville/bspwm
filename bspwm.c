@@ -55,6 +55,9 @@ void ungrab_buttons(void)
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_1, screen->root, button_modifier);
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_2, screen->root, button_modifier);
     xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_3, screen->root, button_modifier);
+    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_1, screen->root, button_modifier | XCB_MOD_MASK_LOCK);
+    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_2, screen->root, button_modifier | XCB_MOD_MASK_LOCK);
+    xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_3, screen->root, button_modifier | XCB_MOD_MASK_LOCK);
 }
 
 void setup(void)
