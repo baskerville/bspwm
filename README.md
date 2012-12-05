@@ -1,4 +1,4 @@
-![logo](https://github.com/baskerville/bspwm/raw/master/resources/bspwm_logo.png)
+![logo](https://github.com/baskerville/bspwm/raw/master/logo/bspwm-logo.png)
 
 ## Description
 
