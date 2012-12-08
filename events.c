@@ -229,6 +229,7 @@ void client_message(xcb_generic_event_t *evt)
             select_monitor(loc.monitor);
             select_desktop(loc.desktop);
         }
+        return;
     }
 
     window_location_t loc;
