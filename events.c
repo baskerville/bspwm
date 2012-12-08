@@ -221,10 +221,17 @@ void client_message(xcb_generic_event_t *evt)
 {
     xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
 
-    PRINTF("client message %X\n", e->window);
+    PRINTF("client message %X %u\n", e->window, e->type);
+
+    if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
+        desktop_location_t loc;
+        if (ewmh_locate_desktop(e->data.data32[0], &loc)) {
+            select_monitor(loc.monitor);
+            select_desktop(loc.desktop);
+        }
+    }
 
     window_location_t loc;
-
     if (!locate_window(e->window, &loc))
         return;
 
