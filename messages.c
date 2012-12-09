@@ -104,6 +104,25 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "toggle_locked") == 0) {
         if (mon->desk->focus != NULL)
             toggle_locked(mon->desk->focus->client);
+    } else if (strcmp(cmd, "pad") == 0) {
+        char *name = strtok(NULL, TOK_SEP);
+        if (name != NULL) {
+            monitor_t *m = find_monitor(name);
+            if (m != NULL) {
+                char args[BUFSIZ] = {0}, *s;
+                while ((s = strtok(NULL, TOK_SEP)) != NULL) {
+                    strncat(args, s, REMLEN(args));
+                    strncat(args, TOK_SEP, REMLEN(args));
+                }
+                if (strlen(args) > 0) {
+                    sscanf(args, "%i %i %i %i", &m->top_padding, &m->right_padding, &m->bottom_padding, &m->left_padding);
+                    arrange(m, m->desk);
+                } else {
+                    snprintf(rsp, BUFSIZ, "%i %i %i %i\n", m->top_padding, m->right_padding, m->bottom_padding, m->left_padding);
+                }
+            }
+        }
+        return;
     } else if (strcmp(cmd, "ratio") == 0) {
         char *value = strtok(NULL, TOK_SEP);
         if (value != NULL && mon->desk->focus != NULL)
@@ -340,13 +359,13 @@ void set_setting(char *name, char *value, char *rsp)
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
     } else if (strcmp(name, "left_padding") == 0) {
-        sscanf(value, "%i", &left_padding);
+        sscanf(value, "%i", &mon->left_padding);
     } else if (strcmp(name, "right_padding") == 0) {
-        sscanf(value, "%i", &right_padding);
+        sscanf(value, "%i", &mon->right_padding);
     } else if (strcmp(name, "top_padding") == 0) {
-        sscanf(value, "%i", &top_padding);
+        sscanf(value, "%i", &mon->top_padding);
     } else if (strcmp(name, "bottom_padding") == 0) {
-        sscanf(value, "%i", &bottom_padding);
+        sscanf(value, "%i", &mon->bottom_padding);
     } else if (strcmp(name, "focused_border_color") == 0) {
         strncpy(focused_border_color, value, sizeof(focused_border_color));
         focused_border_color_pxl = get_color(focused_border_color);
@@ -441,13 +460,13 @@ void get_setting(char *name, char* rsp)
     else if (strcmp(name, "window_gap") == 0)
         snprintf(rsp, BUFSIZ, "%i", window_gap);
     else if (strcmp(name, "left_padding") == 0)
-        snprintf(rsp, BUFSIZ, "%i", left_padding);
+        snprintf(rsp, BUFSIZ, "%i", mon->left_padding);
     else if (strcmp(name, "right_padding") == 0)
-        snprintf(rsp, BUFSIZ, "%i", right_padding);
+        snprintf(rsp, BUFSIZ, "%i", mon->right_padding);
     else if (strcmp(name, "top_padding") == 0)
-        snprintf(rsp, BUFSIZ, "%i", top_padding);
+        snprintf(rsp, BUFSIZ, "%i", mon->top_padding);
     else if (strcmp(name, "bottom_padding") == 0)
-        snprintf(rsp, BUFSIZ, "%i", bottom_padding);
+        snprintf(rsp, BUFSIZ, "%i", mon->bottom_padding);
     else if (strcmp(name, "focused_border_color") == 0)
         snprintf(rsp, BUFSIZ, "%s (%06X)", focused_border_color, focused_border_color_pxl);
     else if (strcmp(name, "active_border_color") == 0)

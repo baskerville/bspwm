@@ -64,12 +64,7 @@ void load_settings(void)
     outer_border_width = OUTER_BORDER_WIDTH;
 
     border_width = inner_border_width + main_border_width + outer_border_width;
-
     window_gap = WINDOW_GAP;
-    left_padding = LEFT_PADDING;
-    right_padding = RIGHT_PADDING;
-    top_padding = TOP_PADDING;
-    bottom_padding = BOTTOM_PADDING;
 
     borderless_monocle = BORDERLESS_MONOCLE;
     gapless_monocle = GAPLESS_MONOCLE;

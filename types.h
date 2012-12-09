@@ -132,6 +132,10 @@ typedef struct monitor_t monitor_t;
 struct monitor_t {
     char name[MAXLEN];
     xcb_rectangle_t rectangle;
+    int top_padding;
+    int right_padding;
+    int bottom_padding;
+    int left_padding;
     desktop_t *desk;
     desktop_t *last_desk;
     desktop_t *desk_head;

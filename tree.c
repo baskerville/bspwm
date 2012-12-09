@@ -239,10 +239,10 @@ void arrange(monitor_t *m, desktop_t *d)
 
     xcb_rectangle_t rect = m->rectangle;
     int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
-    rect.x += left_padding + wg;
-    rect.y += top_padding + wg;
-    rect.width -= left_padding + right_padding + wg;
-    rect.height -= top_padding + bottom_padding + wg;
+    rect.x += m->left_padding + wg;
+    rect.y += m->top_padding + wg;
+    rect.width -= m->left_padding + m->right_padding + wg;
+    rect.height -= m->top_padding + m->bottom_padding + wg;
     if (focus_follows_mouse)
         get_pointer_position(&pointer_position);
     apply_layout(m, d, d->root, rect, rect);

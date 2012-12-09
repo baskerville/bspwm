@@ -98,6 +98,9 @@ The following messages are handled:
     ratio VALUE
         Set the splitting ratio of the focused window.
 
+    pad MONITOR_NAME [TOP_PADDING [RIGHT_PADDING [BOTTOM_PADDING [LEFT_PADDING]]]]
+        Set the padding of the given monitor.
+
     focus left|right|up|down
         Focus the neighbor window situated in the given direction.
 
@@ -242,11 +245,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     window_gap
         Value of the gap that separates windows.
 
-    top_padding
-    bottom_padding
-    left_padding
-    right_padding
-        Padding space added at the sides of the screen.
+    {top,right,bottom,left}_padding
+        Padding space added at the sides of the current monitor.
 
     wm_name
         The value that shall be used for the _NET_WM_NAME property of the root window.

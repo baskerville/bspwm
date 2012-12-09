@@ -27,6 +27,7 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
         m->rectangle = *rect;
     else
         warn("no rectangle was given for monitor '%s'\n", m->name);
+    m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     return m;
 }
 

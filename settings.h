@@ -23,13 +23,9 @@
 #define INNER_BORDER_WIDTH  3
 #define MAIN_BORDER_WIDTH   1
 #define OUTER_BORDER_WIDTH  3
-#define SPLIT_RATIO         0.5
 
 #define WINDOW_GAP          6
-#define TOP_PADDING         0
-#define BOTTOM_PADDING      0
-#define LEFT_PADDING        0
-#define RIGHT_PADDING       0
+#define SPLIT_RATIO         0.5
 
 #define BORDERLESS_MONOCLE   false
 #define GAPLESS_MONOCLE      false
@@ -63,10 +59,6 @@ unsigned int outer_border_width;
 unsigned int border_width;
 
 int window_gap;
-int top_padding;
-int bottom_padding;
-int left_padding;
-int right_padding;
 
 bool borderless_monocle;
 bool gapless_monocle;
