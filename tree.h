@@ -30,7 +30,6 @@ void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
 void swap_nodes(node_t *, node_t *);
 void fit_monitor(monitor_t *, client_t *);
-void translate_coordinates(monitor_t *, monitor_t *, client_t *);
 void transfer_node(monitor_t *, desktop_t *, monitor_t *, desktop_t *, node_t *);
 void select_monitor(monitor_t *);
 void select_desktop(desktop_t *);

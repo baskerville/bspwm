@@ -558,23 +558,17 @@ void swap_nodes(node_t *n1, node_t *n2)
 
 void fit_monitor(monitor_t *m, client_t *c)
 {
-    xcb_rectangle_t cr = c->floating_rectangle;
-    xcb_rectangle_t mr = m->rectangle;
-    if (cr.x < mr.x)
-        cr.x += mr.x;
-    if (cr.y < mr.y)
-        cr.y += mr.y;
-}
-
-void translate_coordinates(monitor_t *ms, monitor_t *md, client_t *c)
-{
-    if (ms == md)
-        return;
-
-    uint32_t vx = md->rectangle.x - ms->rectangle.x;
-    uint32_t vy = md->rectangle.y - ms->rectangle.y;
-    c->floating_rectangle.x += vx;
-    c->floating_rectangle.y += vy;
+    xcb_rectangle_t crect = c->floating_rectangle;
+    xcb_rectangle_t mrect = m->rectangle;
+    while (crect.x < mrect.x)
+        crect.x += mrect.width;
+    while (crect.x > (mrect.x + mrect.width - 1))
+        crect.x -= mrect.width;
+    while (crect.y < mrect.y)
+        crect.y += mrect.height;
+    while (crect.y > (mrect.y + mrect.height - 1))
+        crect.y -= mrect.height;
+    c->floating_rectangle = crect;
 }
 
 void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
@@ -592,7 +586,8 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
         window_hide(n->client->window);
     }
 
-    translate_coordinates(ms, md, n->client);
+    fit_monitor(md, n->client);
+
     if (n->client->fullscreen)
         window_move_resize(n->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
 
