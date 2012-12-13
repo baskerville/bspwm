@@ -269,6 +269,9 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     focus_follows_mouse
         Wether to focus the window under the mouse pointer.
 
+    adaptative_raise
+        Prevent floating windows from being raised when they might cover other floating windows.
+
 ## Mouse Bindings
 
     button_modifier + left mouse button

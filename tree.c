@@ -428,10 +428,12 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 
-    if (!is_tiled(n->client))
-        window_raise(n->client->window);
-    else
+    if (!is_tiled(n->client)) {
+        if (!adaptative_raise || !might_cover(d, n))
+            window_raise(n->client->window);
+    } else {
         window_pseudo_raise(d, n->client->window);
+    }
 
     if (d->focus != n) {
         d->last_focus = d->focus;

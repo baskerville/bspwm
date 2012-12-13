@@ -408,6 +408,10 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             focus_follows_mouse = b;
+    } else if (strcmp(name, "adaptative_raise") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            adaptative_raise = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
@@ -493,6 +497,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(gapless_monocle));
     else if (strcmp(name, "focus_follows_mouse") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_mouse));
+    else if (strcmp(name, "adaptative_raise") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else if (strcmp(name, "button_modifier") == 0)

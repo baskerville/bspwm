@@ -6,6 +6,8 @@
 #include <xcb/xcb_event.h>
 #include "types.h"
 
+bool contains(xcb_rectangle_t, xcb_rectangle_t);
+bool might_cover(desktop_t *, node_t *);
 bool locate_window(xcb_window_t, window_location_t *);
 bool locate_desktop(char *, desktop_location_t *);
 bool is_inside(monitor_t *, xcb_point_t);

@@ -13,6 +13,20 @@
 #include "rules.h"
 #include "window.h"
 
+bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
+{
+    return (a.x <= b.x && (a.x + a.width) >= (b.x + b.width)
+            && a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
+}
+
+bool might_cover(desktop_t *d, node_t *n)
+{
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f))
+        if (f != n && is_floating(f->client) && contains(n->client->floating_rectangle, f->client->floating_rectangle))
+            return true;
+    return false;
+}
+
 bool locate_window(xcb_window_t win, window_location_t *loc)
 {
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
