@@ -14,7 +14,7 @@ Those messages are sent via `bspc`.
 
 If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
-The recommended way of defining keyboard shortcuts is to use `xbindkeys`.
+The recommended way of defining keyboard shortcuts is to use `shkd` or `xbindkeys`.
 
 The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
 
