@@ -13,6 +13,14 @@
 #include "rules.h"
 #include "window.h"
 
+void center(xcb_rectangle_t a, xcb_rectangle_t *b)
+{
+    if (b->width < a.width)
+        b->x = a.x + (a.width - b->width) / 2;
+    if (b->height < a.height)
+        b->y = a.y + (a.height - b->height) / 2;
+}
+
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
 {
     return (a.x <= b.x && (a.x + a.width) >= (b.x + b.width)
@@ -130,6 +138,11 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         focus_node(m, d, birth, false);
 
     fit_monitor(m, birth->client);
+
+    xcb_rectangle_t *frect = &birth->client->floating_rectangle;
+    if (frect->x == 0 && frect->y == 0)
+        center(m->rectangle, frect);
+
     arrange(m, d);
     if (d == m->desk)
         window_show(c->window);
