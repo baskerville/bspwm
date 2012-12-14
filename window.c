@@ -137,13 +137,14 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (takes_focus)
         focus_node(m, d, birth, false);
 
-    fit_monitor(m, birth->client);
-
     xcb_rectangle_t *frect = &birth->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
         center(m->rectangle, frect);
 
+    fit_monitor(m, birth->client);
+
     arrange(m, d);
+
     if (d == m->desk)
         window_show(c->window);
 
