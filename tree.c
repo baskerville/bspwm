@@ -239,7 +239,7 @@ void put_status(void)
             printf("%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
         }
     }
-    printf("L%c:W%X\n", (mon->desk->layout == LAYOUT_TILED ? 'T' : 'M'), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    printf("L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
     fflush(stdout);
 }
 
