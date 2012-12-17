@@ -192,13 +192,6 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
     dump_tree(d, n->second_child, rsp, depth + 1);
 }
 
-void refresh_current(void) {
-    if (mon->desk->focus == NULL)
-        ewmh_update_active_window();
-    else
-        focus_node(mon, mon->desk, mon->desk->focus, true);
-}
-
 void list_monitors(list_option_t opt, char *rsp)
 {
     monitor_t *m = mon_head;
