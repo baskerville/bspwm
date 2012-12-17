@@ -82,11 +82,13 @@ void process_message(char *msg, char *rsp)
                 }
             }
         }
+        put_status();
     } else if (strcmp(cmd, "cycle_layout") == 0) {
         if (mon->desk->layout == LAYOUT_MONOCLE)
             mon->desk->layout = LAYOUT_TILED;
         else
             mon->desk->layout = LAYOUT_MONOCLE;
+        put_status();
     } else if (strcmp(cmd, "shift") == 0) {
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
@@ -180,6 +182,7 @@ void process_message(char *msg, char *rsp)
                 char *new_name = strtok(NULL, TOK_SEP);
                 if (new_name != NULL) {
                     strncpy(m->name, new_name, sizeof(m->name));
+                    put_status();
                 }
             }
         }
@@ -192,6 +195,7 @@ void process_message(char *msg, char *rsp)
                 if (new_name != NULL) {
                     strncpy(loc.desktop->name, new_name, sizeof(loc.desktop->name));
                     ewmh_update_desktop_names();
+                    put_status();
                 }
             }
         }
@@ -412,6 +416,10 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             adaptative_raise = b;
+    } else if (strcmp(name, "status_stdout") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            status_stdout = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
@@ -499,6 +507,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_mouse));
     else if (strcmp(name, "adaptative_raise") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
+    else if (strcmp(name, "status_stdout") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(status_stdout));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else if (strcmp(name, "button_modifier") == 0)

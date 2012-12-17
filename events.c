@@ -192,6 +192,7 @@ void property_notify(xcb_generic_event_t *evt)
             return;
         if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1) {
             loc.node->client->urgent = (hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY);
+            put_status();
             if (loc.monitor->desk == loc.desktop)
                 arrange(loc.monitor, loc.desktop);
         }

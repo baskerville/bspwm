@@ -31,6 +31,7 @@
 #define GAPLESS_MONOCLE      false
 #define FOCUS_FOLLOWS_MOUSE  false
 #define ADAPTATIVE_RAISE     false
+#define STATUS_STDOUT        false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -65,6 +66,7 @@ bool borderless_monocle;
 bool gapless_monocle;
 bool focus_follows_mouse;
 bool adaptative_raise;
+bool status_stdout;
 
 char wm_name[MAXLEN];
 unsigned int button_modifier;
