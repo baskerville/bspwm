@@ -311,3 +311,7 @@ Or any EWMH compliant panel.
 ## Contributors
 
 - [Ivan Kanakarakis](https://github.com/c00kiemon5ter)
+
+## Mailing List
+
+bspwm *at* librelist *dot* com.
