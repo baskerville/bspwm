@@ -65,6 +65,12 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
+## Synopsis
+
+    bspwm [-v|-s STATUS_FIFO]
+
+    bspc MESSAGE [ARGUMENTS] [OPTIONS]
+
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
@@ -271,9 +277,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
     adaptative_raise
         Prevent floating windows from being raised when they might cover other floating windows.
-
-    status_stdout
-        Output the status of monitors and desktops on stdout.
 
 ## Mouse Bindings
 

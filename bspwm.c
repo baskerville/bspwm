@@ -141,23 +141,30 @@ void setup(void)
 
 int main(int argc, char *argv[])
 {
-    if (argc == 2 && strcmp(argv[1], "-v") == 0) {
-        printf("%s\n", VERSION);
-        exit(EXIT_SUCCESS);
-    }
-
     fd_set descriptors;
     char socket_path[MAXLEN];
+    char *fifo_path = NULL;
     int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
     size_t rsplen = 0;
     char msg[BUFSIZ] = {0};
     char rsp[BUFSIZ] = {0};
-
     xcb_generic_event_t *event;
+    char opt;
+
+    while ((opt = getopt(argc, argv, "vs:")) != -1) {
+        switch (opt) {
+            case 'v':
+                printf("%s\n", VERSION);
+                exit(EXIT_SUCCESS);
+                break;
+            case 's':
+                fifo_path = optarg;
+                break;
+        }
+    }
 
     running = true;
-
     dpy = xcb_connect(NULL, &default_screen);
 
     if (xcb_connection_has_error(dpy))
@@ -181,8 +188,15 @@ int main(int argc, char *argv[])
 
     bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
     listen(sock_fd, SOMAXCONN);
-
     sel = MAX(sock_fd, dpy_fd) + 1;
+
+    if (fifo_path != NULL) {
+        int fifo_fd = open(fifo_path, O_RDWR | O_NONBLOCK);
+        if (fifo_fd != -1)
+            status_fifo = fdopen(fifo_fd, "w");
+        else
+            warn("couldn't open status fifo\n");
+    }
 
     load_settings();
     run_autostart();
@@ -228,6 +242,8 @@ int main(int argc, char *argv[])
     }
 
     close(sock_fd);
+    if (status_fifo != NULL)
+        fclose(status_fifo);
     xcb_ewmh_connection_wipe(ewmh);
     free(ewmh);
     xcb_flush(dpy);

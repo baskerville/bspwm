@@ -31,7 +31,7 @@ options:
 
 .c.o:
 	@echo "CC $<"
-	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -c -o $@ $<
+	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -D_POSIX_C_SOURCE="2" -c -o $@ $<
 
 bspwm: $(WM_OBJ)
 	@echo CC -o $@

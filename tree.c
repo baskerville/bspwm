@@ -228,19 +228,19 @@ void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rs
 
 void put_status(void)
 {
-    if (!status_stdout)
+    if (status_fifo == NULL)
         return;
     bool urgent = false;
     for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        printf("%c%s:", (mon == m ? 'M' : 'm'), m->name);
+        fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
             for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
                 urgent |= n->client->urgent;
-            printf("%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
+            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
         }
     }
-    printf("L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
-    fflush(stdout);
+    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    fflush(status_fifo);
 }
 
 void arrange(monitor_t *m, desktop_t *d)
