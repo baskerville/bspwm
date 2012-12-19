@@ -299,9 +299,10 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 ## Panel
 
-`dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
-
-Or any EWMH compliant panel.
+Multiple choices:
+- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
+- A custom panel if the `-s` flag is used (have a look at the files in `examples/`).
+- Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
 
 ## Required Libraries:
 
