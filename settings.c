@@ -70,4 +70,5 @@ void load_settings(void)
     gapless_monocle = GAPLESS_MONOCLE;
     focus_follows_mouse = FOCUS_FOLLOWS_MOUSE;
     adaptative_raise = ADAPTATIVE_RAISE;
+    status_stdout = STATUS_STDOUT;
 }

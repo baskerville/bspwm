@@ -226,6 +226,23 @@ void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rs
     }
 }
 
+void put_status(void)
+{
+    if (status_fifo == NULL)
+        return;
+    bool urgent = false;
+    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+        fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
+            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
+                urgent |= n->client->urgent;
+            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
+        }
+    }
+    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    fflush(status_fifo);
+}
+
 void arrange(monitor_t *m, desktop_t *d)
 {
     PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
@@ -434,6 +451,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     }
 
     ewmh_update_active_window();
+    put_status();
 }
 
 void update_current(void)
@@ -442,6 +460,7 @@ void update_current(void)
         ewmh_update_active_window();
     else
         focus_node(mon, mon->desk, mon->desk->focus, true);
+    put_status();
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -610,6 +629,7 @@ void select_monitor(monitor_t *m)
     mon = m;
 
     ewmh_update_current_desktop();
+    put_status();
 }
 
 void select_desktop(desktop_t *d)
@@ -638,6 +658,7 @@ void select_desktop(desktop_t *d)
 
     update_current();
     ewmh_update_current_desktop();
+    put_status();
 }
 
 void cycle_monitor(cycle_dir_t dir)
@@ -772,6 +793,7 @@ void add_desktop(monitor_t *m, char *name)
     num_desktops++;
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
+    put_status();
 }
 
 void add_monitor(xcb_rectangle_t *rect)

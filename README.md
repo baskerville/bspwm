@@ -65,6 +65,12 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
+## Synopsis
+
+    bspwm [-v|-s STATUS_FIFO]
+
+    bspc MESSAGE [ARGUMENTS] [OPTIONS]
+
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.

@@ -16,6 +16,7 @@ unsigned int desktop_uid;
 unsigned int client_uid;
 xcb_screen_t *screen;
 uint8_t root_depth;
+FILE *status_fifo;
 
 split_mode_t split_mode;
 direction_t split_dir;
