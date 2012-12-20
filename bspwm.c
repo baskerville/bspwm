@@ -136,6 +136,7 @@ void setup(void)
     rule_head = make_rule();
     frozen_pointer = make_pointer_state();
     get_pointer_position(&pointer_position);
+    last_entered = XCB_NONE;
     split_mode = MODE_AUTOMATIC;
 }
 

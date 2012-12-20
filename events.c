@@ -207,7 +207,8 @@ void enter_notify(xcb_generic_event_t *evt)
 
     if (!focus_follows_mouse 
             || (e->mode != XCB_NOTIFY_MODE_NORMAL && e->detail == XCB_NOTIFY_DETAIL_INFERIOR)
-            || (pointer_position.x == e->root_x && pointer_position.y == e->root_y))
+            || (pointer_position.x == e->root_x && pointer_position.y == e->root_y)
+            || last_entered == e->event)
         return;
 
     window_location_t loc;
@@ -215,6 +216,7 @@ void enter_notify(xcb_generic_event_t *evt)
         select_monitor(loc.monitor);
         focus_node(loc.monitor, loc.desktop, loc.node, true);
         pointer_position = (xcb_point_t) {e->root_x, e->root_y};
+        last_entered = e->event;
     }
 }
 
