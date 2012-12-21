@@ -142,6 +142,9 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 split_mode = MODE_MANUAL;
                 split_dir = d;
+                char *rat = strtok(NULL, TOK_SEP);
+                if (rat != NULL)
+                    sscanf(rat, "%lf", &mon->desk->focus->split_ratio);
                 window_draw_border(mon->desk->focus, true, true);
             }
         }

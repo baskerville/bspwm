@@ -95,7 +95,7 @@ The following messages are handled:
     list_windows
         Return the list of managed windows (i.e. their identifiers).
 
-    presel left|right|up|down
+    presel left|right|up|down [SPLIT_RATIO]
         Switch to manual mode and select the splitting direction.
 
     cancel
