@@ -19,7 +19,10 @@ If you use `vim`:
 
 ## Debugging
 
-To get a debug executable use `make debug` instead of `make install`.
+To produce debug executables, issue:
+```
+make clean && make debug && make install
+```
 
 If you use `systemd`, X might be started on the same virtual terminal as `bspwm` and you won't see its output, hence use something like `startx -- vt08` to start X (you can switch to the virtual terminal number *n* with *Ctrl-Alt-Fn*).
 
