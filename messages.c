@@ -167,6 +167,10 @@ void process_message(char *msg, char *rsp)
             if (m != NULL && m != mon) {
                 transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
                 arrange(m, m->desk);
+                char *arg = strtok(NULL, TOK_SEP);
+                send_option_t opt;
+                if (parse_send_option(arg, &opt) && opt == SEND_OPTION_FOLLOW)
+                    select_monitor(m);
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
@@ -177,6 +181,12 @@ void process_message(char *msg, char *rsp)
                 transfer_node(mon, mon->desk, loc.monitor, loc.desktop, mon->desk->focus);
                 if (mon != loc.monitor && loc.monitor->desk == loc.desktop)
                     arrange(loc.monitor, loc.desktop);
+                char *arg = strtok(NULL, TOK_SEP);
+                send_option_t opt;
+                if (parse_send_option(arg, &opt) && opt == SEND_OPTION_FOLLOW) {
+                    select_monitor(loc.monitor);
+                    select_desktop(loc.desktop);
+                }
             }
         }
     } else if (strcmp(cmd, "rename_monitor") == 0) {
@@ -641,6 +651,18 @@ bool parse_list_option(char *s, list_option_t *o)
         return true;
     } else if (strcmp(s, "--quiet") == 0) {
         *o = LIST_OPTION_QUIET;
+        return true;
+    }
+    return false;
+}
+
+bool parse_send_option(char *s, send_option_t *o)
+{
+    if (s == NULL) {
+        *o = SEND_OPTION_DONT_FOLLOW;
+        return true;
+    } else if (strcmp(s, "--follow") == 0) {
+        *o = SEND_OPTION_FOLLOW;
         return true;
     }
     return false;

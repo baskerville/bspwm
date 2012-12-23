@@ -146,10 +146,10 @@ The following messages are handled:
     kill
         Kill the focused window.
 
-    send_to DESKTOP_NAME
+    send_to DESKTOP_NAME [--follow]
         Send the focused window to the given desktop.
 
-    send_to_monitor MONITOR_NAME
+    send_to_monitor MONITOR_NAME [--follow]
         Send the focused window to the given monitor.
 
     use DESKTOP_NAME

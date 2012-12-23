@@ -42,6 +42,11 @@ typedef enum {
 } list_option_t;
 
 typedef enum {
+    SEND_OPTION_FOLLOW,
+    SEND_OPTION_DONT_FOLLOW
+} send_option_t;
+
+typedef enum {
     CLIENT_SKIP_NONE,
     CLIENT_SKIP_FLOATING,
     CLIENT_SKIP_TILED,
