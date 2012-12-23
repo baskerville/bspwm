@@ -484,4 +484,6 @@ void toggle_visibility(void)
         window_set_visibility(win, visible);
         xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_on);
     }
+    if (visible)
+        update_current();
 }
