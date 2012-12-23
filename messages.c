@@ -106,6 +106,8 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "toggle_locked") == 0) {
         if (mon->desk->focus != NULL)
             toggle_locked(mon->desk->focus->client);
+    } else if (strcmp(cmd, "toggle_visibility") == 0) {
+        toggle_visibility();
     } else if (strcmp(cmd, "pad") == 0) {
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {

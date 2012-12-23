@@ -145,7 +145,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     arrange(m, d);
 
-    if (d == m->desk)
+    if (d == m->desk && visible)
         window_show(c->window);
 
     if (takes_focus)
@@ -471,4 +471,17 @@ void window_hide(xcb_window_t win)
 void window_show(xcb_window_t win)
 {
     window_set_visibility(win, true);
+}
+
+void toggle_visibility(void)
+{
+    uint32_t values_off[] = {CLIENT_EVENT_MASK & ~XCB_EVENT_MASK_ENTER_WINDOW};
+    uint32_t values_on[] = {CLIENT_EVENT_MASK};
+    visible = !visible;
+    for (node_t *n = first_extrema(mon->desk->root); n != NULL; n = next_leaf(n)) {
+        xcb_window_t win = n->client->window;
+        xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_off);
+        window_set_visibility(win, visible);
+        xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_on);
+    }
 }

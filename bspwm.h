@@ -29,6 +29,7 @@ pointer_state_t *frozen_pointer;
 xcb_point_t pointer_position;
 xcb_window_t last_entered;
 
+bool visible;
 bool running;
 
 void register_events(void);

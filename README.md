@@ -137,6 +137,9 @@ The following messages are handled:
     toggle_locked
         Toggle the locked state of the current window (locked windows will not respond to the 'close' message).
 
+    toggle_visibility
+        Toggle the visibility of all the managed windows.
+
     close
         Close the focused window.
 

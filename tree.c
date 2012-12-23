@@ -639,18 +639,20 @@ void select_desktop(desktop_t *d)
 
     PRINTF("select desktop %s\n", d->name);
 
-    node_t *n = first_extrema(d->root);
+    if (visible) {
+        node_t *n = first_extrema(d->root);
 
-    while (n != NULL) {
-        window_show(n->client->window);
-        n = next_leaf(n);
-    }
+        while (n != NULL) {
+            window_show(n->client->window);
+            n = next_leaf(n);
+        }
 
-    n = first_extrema(mon->desk->root);
+        n = first_extrema(mon->desk->root);
 
-    while (n != NULL) {
-        window_hide(n->client->window);
-        n = next_leaf(n);
+        while (n != NULL) {
+            window_hide(n->client->window);
+            n = next_leaf(n);
+        }
     }
 
     mon->last_desk = mon->desk;

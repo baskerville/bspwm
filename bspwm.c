@@ -138,6 +138,7 @@ void setup(void)
     get_pointer_position(&pointer_position);
     last_entered = XCB_NONE;
     split_mode = MODE_AUTOMATIC;
+    visible = true;
 }
 
 int main(int argc, char *argv[])
