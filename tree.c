@@ -429,17 +429,16 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     n->client->urgent = false;
 
     if (is_mapped) {
-		if (mon != m || d->focus != n) {
-			/* Honour active_border_color setting. */
-			window_draw_border(mon->desk->focus, true, false);
-			window_draw_border(d->focus, m != mon, m == mon);
-			window_draw_border(n, true, true);
-		}
-
-		if (focus_follows_mouse)
+        if (mon != m || d->focus != n) {
+            /* honour active_border_color setting */
+            window_draw_border(mon->desk->focus, true, false);
+            window_draw_border(d->focus, m != mon, m == mon);
+            window_draw_border(n, true, true);
+        }
+        if (focus_follows_mouse)
             get_pointer_position(&pointer_position);
-		xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
-	}
+        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+    }
 
     if (!is_tiled(n->client)) {
         if (!adaptative_raise || !might_cover(d, n))
