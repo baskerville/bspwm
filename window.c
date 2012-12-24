@@ -478,12 +478,13 @@ void toggle_visibility(void)
     uint32_t values_off[] = {CLIENT_EVENT_MASK & ~XCB_EVENT_MASK_ENTER_WINDOW};
     uint32_t values_on[] = {CLIENT_EVENT_MASK};
     visible = !visible;
-    for (node_t *n = first_extrema(mon->desk->root); n != NULL; n = next_leaf(n)) {
-        xcb_window_t win = n->client->window;
-        xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_off);
-        window_set_visibility(win, visible);
-        xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_on);
-    }
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n)) {
+            xcb_window_t win = n->client->window;
+            xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_off);
+            window_set_visibility(win, visible);
+            xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_on);
+        }
     if (visible)
         update_current();
 }
