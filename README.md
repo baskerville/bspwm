@@ -206,10 +206,7 @@ The following messages are handled:
     reload_settings
         Reload the default settings.
 
-    reload
-        Reload the autostart file and the default settings.
-
-    quit
+    quit [EXIT_STATUS]
         Quit.
 
 ## Settings

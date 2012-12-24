@@ -139,6 +139,7 @@ void setup(void)
     last_entered = XCB_NONE;
     split_mode = MODE_AUTOMATIC;
     visible = true;
+    exit_status = 0;
 }
 
 int main(int argc, char *argv[])
@@ -250,5 +251,5 @@ int main(int argc, char *argv[])
     free(ewmh);
     xcb_flush(dpy);
     xcb_disconnect(dpy);
-    return 0;
+    return exit_status;
 }

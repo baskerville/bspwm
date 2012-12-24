@@ -343,14 +343,14 @@ void process_message(char *msg, char *rsp)
             return;
     } else if (strcmp(cmd, "adopt_orphans") == 0) {
         adopt_orphans();
-    } else if (strcmp(cmd, "reload") == 0) {
-        load_settings();
-        run_autostart();
     } else if (strcmp(cmd, "reload_autostart") == 0) {
         run_autostart();
     } else if (strcmp(cmd, "reload_settings") == 0) {
         load_settings();
     } else if (strcmp(cmd, "quit") == 0) {
+        char *arg = strtok(NULL, TOK_SEP);
+        if (arg != NULL)
+            sscanf(arg, "%i", &exit_status);
         quit();
         return;
     } else {
