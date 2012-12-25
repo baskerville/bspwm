@@ -429,10 +429,17 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     n->client->urgent = false;
 
     if (is_mapped) {
-        if (mon != m || d->focus != n) {
-            /* honour active_border_color setting */
-            window_draw_border(mon->desk->focus, true, false);
-            window_draw_border(d->focus, m != mon, m == mon);
+        if (mon != m) {
+            for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
+                window_draw_border(cd->focus, true, false);
+            for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next)
+                if (cd != d)
+                    window_draw_border(cd->focus, true, true);
+            if (d->focus == n)
+                window_draw_border(n, true, true);
+        }
+        if (d->focus != n) {
+            window_draw_border(d->focus, false, true);
             window_draw_border(n, true, true);
         }
         if (focus_follows_mouse)
