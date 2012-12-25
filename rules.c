@@ -97,7 +97,7 @@ void list_rules(char *rsp)
     char line[MAXLEN];
 
     for (rule_t *r = rule_head; r != NULL; r = r->next) {
-        snprintf(line, sizeof(line), "%03X %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"));
+        snprintf(line, sizeof(line), "%02X %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"));
         strncat(rsp, line, REMLEN(rsp));
     }
 }
