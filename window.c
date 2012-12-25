@@ -169,6 +169,7 @@ void adopt_orphans(void)
     for (int i = 0; i < len; i++) {
         uint32_t idx;
         xcb_window_t win = wins[i];
+        window_hide(win);
         if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
             desktop_location_t loc;
             if (ewmh_locate_desktop(idx, &loc))
