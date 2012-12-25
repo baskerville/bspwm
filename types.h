@@ -161,8 +161,10 @@ typedef struct {
 
 typedef struct rule_t rule_t;
 struct rule_t {
+    unsigned int uid;
     rule_cause_t cause;
     rule_effect_t effect;
+    rule_t *prev;
     rule_t *next;
 };
 

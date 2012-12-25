@@ -58,6 +58,7 @@ client_t *make_client(xcb_window_t win)
 rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
+    r->uid = ++rule_uid;
     r->effect.floating = false;
     r->effect.monitor = NULL;
     r->effect.desktop = NULL;

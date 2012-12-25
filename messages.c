@@ -10,6 +10,7 @@
 #include "helpers.h"
 #include "window.h"
 #include "tree.h"
+#include "rules.h"
 
 void process_message(char *msg, char *rsp)
 {
@@ -51,6 +52,9 @@ void process_message(char *msg, char *rsp)
         return;
     } else if (strcmp(cmd, "list_windows") == 0) {
         list_windows(rsp);
+        return;
+    } else if (strcmp(cmd, "list_rules") == 0) {
+        list_rules(rsp);
         return;
     } else if (strcmp(cmd, "close") == 0) {
         window_close(mon->desk->focus);
@@ -304,8 +308,7 @@ void process_message(char *msg, char *rsp)
                 }
                 arg = strtok(NULL, TOK_SEP);
             }
-            rule->next = rule_head;
-            rule_head = rule;
+            add_rule(rule);
         }
         return;
     } else if (strcmp(cmd, "alternate") == 0) {
