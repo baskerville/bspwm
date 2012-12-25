@@ -18,6 +18,31 @@ void add_rule(rule_t *r)
     }
 }
 
+void remove_rule(unsigned int uid)
+{
+    rule_t *r = find_rule(uid);
+    if (r != NULL) {
+        rule_t *prev = r->prev;
+        rule_t *next = r->next;
+        if (prev != NULL)
+            prev->next = next;
+        if (next != NULL)
+            next->prev = prev;
+        if (r == rule_head)
+            rule_head = next;
+        if (r == rule_tail)
+            rule_tail = prev;
+    }
+}
+
+rule_t *find_rule(unsigned int uid)
+{
+    for (rule_t *r = rule_head; r != NULL; r = r->next)
+        if (r->uid == uid)
+            return r;
+    return NULL;
+}
+
 bool is_match(rule_t *r, xcb_window_t win)
 {
     xcb_icccm_get_wm_class_reply_t reply; 

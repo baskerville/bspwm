@@ -200,6 +200,9 @@ The following messages are handled:
     rule PATTERN [DESKTOP_NAME] [floating]
         Create a new rule (PATTERN must match the class or instance name).
 
+    remove_rule UID ...
+        Remove the rules with the given UIDs.
+
     adopt_orphans
         Manage all the unmanaged windows remaining from a previous session.
 
