@@ -33,9 +33,9 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc))
-                dump_tree(loc.desktop, loc.desktop->root, rsp, 0);
+                list(loc.desktop, loc.desktop->root, rsp, 0);
         } else {
-            dump_tree(mon->desk, mon->desk->root, rsp, 0);
+            list(mon->desk, mon->desk->root, rsp, 0);
         }
         return;
     } else if (strcmp(cmd, "list_monitors") == 0) {

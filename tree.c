@@ -166,7 +166,7 @@ void rotate_tree(node_t *n, rotate_t rot)
     rotate_tree(n->second_child, rot);
 }
 
-void dump_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
+void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 {
     if (n == NULL)
         return;
@@ -188,8 +188,8 @@ void dump_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
     else
         strncat(rsp, "\n", REMLEN(rsp));
 
-    dump_tree(d, n->first_child, rsp, depth + 1);
-    dump_tree(d, n->second_child, rsp, depth + 1);
+    list(d, n->first_child, rsp, depth + 1);
+    list(d, n->second_child, rsp, depth + 1);
 }
 
 void list_monitors(list_option_t opt, char *rsp)
@@ -221,7 +221,7 @@ void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rs
         else
             strncat(rsp, "\n", REMLEN(rsp));
         if (opt == LIST_OPTION_VERBOSE)
-            dump_tree(d, d->root, rsp, depth + 1);
+            list(d, d->root, rsp, depth + 1);
         d = d->next;
     }
 }

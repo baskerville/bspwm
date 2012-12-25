@@ -21,7 +21,7 @@ void rotate_tree(node_t *, rotate_t);
 void arrange(monitor_t *, desktop_t *);
 void apply_layout(monitor_t *, desktop_t *, node_t *, xcb_rectangle_t, xcb_rectangle_t);
 void insert_node(monitor_t *, desktop_t *, node_t *);
-void dump_tree(desktop_t *, node_t *, char *, unsigned int);
+void list(desktop_t *, node_t *, char *, unsigned int);
 void list_desktops(monitor_t *, list_option_t, unsigned int, char *);
 void list_monitors(list_option_t, char *);
 void put_status(void);
