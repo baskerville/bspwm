@@ -3,6 +3,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
+#include "ewmh.h"
 #include "settings.h"
 #include "types.h"
 #include "tree.h"
@@ -30,6 +31,29 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
         warn("no rectangle was given for monitor '%s'\n", m->name);
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     return m;
+}
+
+monitor_t *find_monitor(char *name)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (strcmp(m->name, name) == 0)
+            return m;
+    return NULL;
+}
+
+void add_monitor(xcb_rectangle_t *rect)
+{
+    monitor_t *m = make_monitor(rect);
+    if (mon == NULL) {
+        mon = m;
+        mon_head = m;
+        mon_tail = m;
+    } else {
+        mon_tail->next = m;
+        m->prev = mon_tail;
+        mon_tail = m;
+    }
+    num_monitors++;
 }
 
 void remove_monitor(monitor_t *m)
@@ -60,6 +84,24 @@ desktop_t *make_desktop(const char *name)
     d->prev = d->next = NULL;
     d->root = d->focus = d->last_focus = NULL;
     return d;
+}
+
+void add_desktop(monitor_t *m, char *name)
+{
+    desktop_t *d = make_desktop(name);
+    if (m->desk == NULL) {
+        m->desk = d;
+        m->desk_head = d;
+        m->desk_tail = d;
+    } else {
+        m->desk_tail->next = d;
+        d->prev = m->desk_tail;
+        m->desk_tail = d;
+    }
+    num_desktops++;
+    ewmh_update_number_of_desktops();
+    ewmh_update_desktop_names();
+    put_status();
 }
 
 void remove_desktop(monitor_t *m, desktop_t *d)
