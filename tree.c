@@ -176,15 +176,19 @@ void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
     for (unsigned int i = 0; i < depth; i++)
         strncat(rsp, "  ", REMLEN(rsp));
 
-    if (is_leaf(n))
-        snprintf(line, sizeof(line), "%s %X %s%s%s%s%s", n->client->class_name, n->client->window, (n->client->floating ? "f" : "-"), (n->client->transient ? "t" : "-"), (n->client->fullscreen ? "F" : "-"), (n->client->urgent ? "u" : "-"), (n->client->locked ? "l" : "-"));
-    else
-        snprintf(line, sizeof(line), "%s %.2f", (n->split_type == TYPE_HORIZONTAL ? "H" : "V"), n->split_ratio);
+    if (is_leaf(n)) {
+        client_t *c = n->client;
+        snprintf(line, sizeof(line), "%c %s %X %X %u %ux%u%+i%+i %c%c%c%c%c", (c->born_as == MODE_AUTOMATIC ? 'a' : 'm'), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
+    } else {
+        snprintf(line, sizeof(line), "%c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), n->split_ratio);
+    }
 
     strncat(rsp, line, REMLEN(rsp));
 
     if (n == d->focus)
         strncat(rsp, " *\n", REMLEN(rsp));
+    else if (n == d->last_focus)
+        strncat(rsp, " ·\n", REMLEN(rsp));
     else
         strncat(rsp, "\n", REMLEN(rsp));
 
@@ -194,35 +198,37 @@ void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 
 void list_monitors(list_option_t opt, char *rsp)
 {
-    monitor_t *m = mon_head;
-
-    while (m != NULL) {
-        strncat(rsp, m->name, REMLEN(rsp));
-        if (mon == m)
+    char line[MAXLEN];
+    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+        snprintf(line, sizeof(line), "%s %ux%u%+i%+i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y);
+        strncat(rsp, line, REMLEN(rsp));
+        if (m == mon)
             strncat(rsp, " #\n", REMLEN(rsp));
+        else if (m == last_mon)
+            strncat(rsp, " ·\n", REMLEN(rsp));
         else
             strncat(rsp, "\n", REMLEN(rsp));
         if (opt == LIST_OPTION_VERBOSE)
             list_desktops(m, opt, 1, rsp);
-        m = m->next;
     }
 }
 
 void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rsp)
 {
-    desktop_t *d = m->desk_head;
-
-    while (d != NULL) {
+    char line[MAXLEN];
+    for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
         for (unsigned int i = 0; i < depth; i++)
             strncat(rsp, "  ", REMLEN(rsp));
-        strncat(rsp, d->name, REMLEN(rsp));
-        if (m->desk == d)
+        snprintf(line, sizeof(line), "%s %c", d->name, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
+        strncat(rsp, line, REMLEN(rsp));
+        if (d == m->desk)
             strncat(rsp, " @\n", REMLEN(rsp));
+        else if (d == m->last_desk)
+            strncat(rsp, " ·\n", REMLEN(rsp));
         else
             strncat(rsp, "\n", REMLEN(rsp));
         if (opt == LIST_OPTION_VERBOSE)
             list(d, d->root, rsp, depth + 1);
-        d = d->next;
     }
 }
 
@@ -339,7 +345,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         node_t *dad = make_node();
         node_t *fopar = focus->parent;
         n->parent = dad;
-        n->born_as = split_mode;
+        n->client->born_as = split_mode;
         switch (split_mode) {
             case MODE_AUTOMATIC:
                 if (fopar == NULL) {
@@ -491,11 +497,11 @@ void unlink_node(desktop_t *d, node_t *n)
         bool n_first_child = is_first_child(n);
         if (n_first_child) {
             b = p->second_child;
-            if (n->born_as == MODE_AUTOMATIC)
+            if (n->client->born_as == MODE_AUTOMATIC)
                 rotate_tree(b, ROTATE_COUNTER_CLOCKWISE);
         } else {
             b = p->first_child;
-            if (n->born_as == MODE_AUTOMATIC)
+            if (n->client->born_as == MODE_AUTOMATIC)
                 rotate_tree(b, ROTATE_CLOCKWISE);
         }
         b->parent = g;
