@@ -32,6 +32,7 @@ void remove_rule(rule_t *r)
         rule_head = next;
     if (r == rule_tail)
         rule_tail = prev;
+    free(r);
 }
 
 void remove_rule_by_uid(unsigned int uid)

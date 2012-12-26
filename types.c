@@ -46,6 +46,7 @@ void remove_monitor(monitor_t *m)
         mon_head = next;
     if (m == mon_tail)
         mon_tail = prev;
+    free(m);
 }
 
 desktop_t *make_desktop(const char *name)
@@ -75,6 +76,7 @@ void remove_desktop(monitor_t *m, desktop_t *d)
         m->desk_head = next;
     if (d == m->desk_tail)
         m->desk_tail = prev;
+    free(d);
 }
 
 client_t *make_client(xcb_window_t win)
