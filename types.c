@@ -5,6 +5,7 @@
 #include "bspwm.h"
 #include "settings.h"
 #include "types.h"
+#include "tree.h"
 
 node_t *make_node(void)
 {
@@ -31,6 +32,22 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
     return m;
 }
 
+void remove_monitor(monitor_t *m)
+{
+    while (m->desk_head != NULL)
+        remove_desktop(m, m->desk_head);
+    monitor_t *prev = m->prev;
+    monitor_t *next = m->next;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    if (m == mon_head)
+        mon_head = next;
+    if (m == mon_tail)
+        mon_tail = prev;
+}
+
 desktop_t *make_desktop(const char *name)
 {
     desktop_t *d = malloc(sizeof(desktop_t));
@@ -42,6 +59,22 @@ desktop_t *make_desktop(const char *name)
     d->prev = d->next = NULL;
     d->root = d->focus = d->last_focus = NULL;
     return d;
+}
+
+void remove_desktop(monitor_t *m, desktop_t *d)
+{
+    while (d->root != NULL)
+        remove_node(d, first_extrema(d->root));
+    desktop_t *prev = d->prev;
+    desktop_t *next = d->next;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    if (d == m->desk_head)
+        m->desk_head = next;
+    if (d == m->desk_tail)
+        m->desk_tail = prev;
 }
 
 client_t *make_client(xcb_window_t win)

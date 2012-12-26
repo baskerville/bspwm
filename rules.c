@@ -18,21 +18,25 @@ void add_rule(rule_t *r)
     }
 }
 
-void remove_rule(unsigned int uid)
+void remove_rule(rule_t *r)
 {
-    rule_t *r = find_rule(uid);
-    if (r != NULL) {
-        rule_t *prev = r->prev;
-        rule_t *next = r->next;
-        if (prev != NULL)
-            prev->next = next;
-        if (next != NULL)
-            next->prev = prev;
-        if (r == rule_head)
-            rule_head = next;
-        if (r == rule_tail)
-            rule_tail = prev;
-    }
+    if (r == NULL)
+        return;
+    rule_t *prev = r->prev;
+    rule_t *next = r->next;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    if (r == rule_head)
+        rule_head = next;
+    if (r == rule_tail)
+        rule_tail = prev;
+}
+
+void remove_rule_by_uid(unsigned int uid)
+{
+    remove_rule(find_rule(uid));
 }
 
 rule_t *find_rule(unsigned int uid)

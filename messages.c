@@ -316,7 +316,7 @@ void process_message(char *msg, char *rsp)
         unsigned int uid;
         while ((arg = strtok(NULL, TOK_SEP)) != NULL)
             if (sscanf(arg, "%X", &uid) > 0)
-                remove_rule(uid);
+                remove_rule_by_uid(uid);
         return;
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, mon->desk->last_focus, true);

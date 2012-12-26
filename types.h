@@ -191,7 +191,9 @@ typedef struct {
 
 node_t *make_node(void);
 monitor_t *make_monitor(xcb_rectangle_t *);
+void remove_monitor(monitor_t *);
 desktop_t *make_desktop(const char *);
+void remove_desktop(monitor_t *, desktop_t *);
 client_t *make_client(xcb_window_t);
 rule_t *make_rule(void);
 pointer_state_t *make_pointer_state(void);

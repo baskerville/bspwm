@@ -30,6 +30,15 @@ void quit(void)
     running = false;
 }
 
+void cleanup(void)
+{
+    while (mon_head != NULL)
+        remove_monitor(mon_head);
+    while (rule_head != NULL)
+        remove_rule(rule_head);
+    free(frozen_pointer);
+}
+
 void register_events(void)
 {
     uint32_t values[] = {ROOT_EVENT_MASK};
@@ -244,6 +253,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    cleanup();
     close(sock_fd);
     if (status_fifo != NULL)
         fclose(status_fifo);
