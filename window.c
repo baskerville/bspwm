@@ -390,10 +390,10 @@ uint32_t get_main_border_color(client_t *c, bool focused_window, bool focused_mo
         else
             return focused_border_color_pxl;
     } else if (focused_window) {
-        if (c->locked)
-            return active_locked_border_color_pxl;
-        else if (c->urgent)
+        if (c->urgent)
             return urgent_border_color_pxl;
+        else if (c->locked)
+            return active_locked_border_color_pxl;
         else
             return active_border_color_pxl;
     } else {
