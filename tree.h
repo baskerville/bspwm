@@ -21,14 +21,11 @@ void rotate_tree(node_t *, rotate_t);
 void arrange(monitor_t *, desktop_t *);
 void apply_layout(monitor_t *, desktop_t *, node_t *, xcb_rectangle_t, xcb_rectangle_t);
 void insert_node(monitor_t *, desktop_t *, node_t *);
-void list(desktop_t *, node_t *, char *, unsigned int);
-void list_desktops(monitor_t *, list_option_t, unsigned int, char *);
-void list_monitors(list_option_t, char *);
-void put_status(void);
 void focus_node(monitor_t *, desktop_t *, node_t *, bool);
 void update_current(void);
 void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
+void destroy_tree(node_t *);
 void swap_nodes(node_t *, node_t *);
 void fit_monitor(monitor_t *, client_t *);
 void transfer_node(monitor_t *, desktop_t *, monitor_t *, desktop_t *, node_t *);
@@ -40,5 +37,10 @@ void cycle_leaf(monitor_t *, desktop_t *, node_t *, cycle_dir_t, skip_client_t);
 void nearest_leaf(monitor_t *, desktop_t *, node_t *, nearest_arg_t, skip_client_t);
 void circulate_leaves(monitor_t *, desktop_t *, circulate_dir_t);
 void update_vacant_state(node_t *);
+void put_status(void);
+void list_monitors(list_option_t, char *);
+void list_desktops(monitor_t *, list_option_t, unsigned int, char *);
+void list(desktop_t *, node_t *, char *, unsigned int);
+void restore(char *);
 
 #endif

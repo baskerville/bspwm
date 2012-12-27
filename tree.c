@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <math.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
@@ -166,88 +167,6 @@ void rotate_tree(node_t *n, rotate_t rot)
     rotate_tree(n->second_child, rot);
 }
 
-void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
-{
-    if (n == NULL)
-        return;
-
-    char line[MAXLEN];
-
-    for (unsigned int i = 0; i < depth; i++)
-        strncat(rsp, "  ", REMLEN(rsp));
-
-    if (is_leaf(n)) {
-        client_t *c = n->client;
-        snprintf(line, sizeof(line), "%c %s %X %X %u %ux%u%+i%+i %c%c%c%c%c", (c->born_as == MODE_AUTOMATIC ? 'a' : 'm'), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
-    } else {
-        snprintf(line, sizeof(line), "%c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), n->split_ratio);
-    }
-
-    strncat(rsp, line, REMLEN(rsp));
-
-    if (n == d->focus)
-        strncat(rsp, " *\n", REMLEN(rsp));
-    else if (n == d->last_focus)
-        strncat(rsp, " ·\n", REMLEN(rsp));
-    else
-        strncat(rsp, "\n", REMLEN(rsp));
-
-    list(d, n->first_child, rsp, depth + 1);
-    list(d, n->second_child, rsp, depth + 1);
-}
-
-void list_monitors(list_option_t opt, char *rsp)
-{
-    char line[MAXLEN];
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        snprintf(line, sizeof(line), "%s %ux%u%+i%+i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y);
-        strncat(rsp, line, REMLEN(rsp));
-        if (m == mon)
-            strncat(rsp, " #\n", REMLEN(rsp));
-        else if (m == last_mon)
-            strncat(rsp, " ·\n", REMLEN(rsp));
-        else
-            strncat(rsp, "\n", REMLEN(rsp));
-        if (opt == LIST_OPTION_VERBOSE)
-            list_desktops(m, opt, 1, rsp);
-    }
-}
-
-void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rsp)
-{
-    char line[MAXLEN];
-    for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-        for (unsigned int i = 0; i < depth; i++)
-            strncat(rsp, "  ", REMLEN(rsp));
-        snprintf(line, sizeof(line), "%s %c", d->name, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
-        strncat(rsp, line, REMLEN(rsp));
-        if (d == m->desk)
-            strncat(rsp, " @\n", REMLEN(rsp));
-        else if (d == m->last_desk)
-            strncat(rsp, " ·\n", REMLEN(rsp));
-        else
-            strncat(rsp, "\n", REMLEN(rsp));
-        if (opt == LIST_OPTION_VERBOSE)
-            list(d, d->root, rsp, depth + 1);
-    }
-}
-
-void put_status(void)
-{
-    if (status_fifo == NULL)
-        return;
-    bool urgent = false;
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
-                urgent |= n->client->urgent;
-            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
-        }
-    }
-    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
-    fflush(status_fifo);
-}
 
 void arrange(monitor_t *m, desktop_t *d)
 {
@@ -549,6 +468,19 @@ void remove_node(desktop_t *d, node_t *n)
         update_current();
 }
 
+void destroy_tree(node_t *n)
+{
+    if (n == NULL)
+        return;
+    node_t *first_tree = n->first_child;
+    node_t *second_tree = n->second_child;
+    if (n->client != NULL)
+        free(n->client);
+    free(n);
+    destroy_tree(first_tree);
+    destroy_tree(second_tree);
+}
+
 void swap_nodes(node_t *n1, node_t *n2)
 {
     if (n1 == NULL || n2 == NULL || n1 == n2)
@@ -583,21 +515,6 @@ void swap_nodes(node_t *n1, node_t *n2)
         update_vacant_state(n1->parent);
         update_vacant_state(n2->parent);
     }
-}
-
-void fit_monitor(monitor_t *m, client_t *c)
-{
-    xcb_rectangle_t crect = c->floating_rectangle;
-    xcb_rectangle_t mrect = m->rectangle;
-    while (crect.x < mrect.x)
-        crect.x += mrect.width;
-    while (crect.x > (mrect.x + mrect.width - 1))
-        crect.x -= mrect.width;
-    while (crect.y < mrect.y)
-        crect.y += mrect.height;
-    while (crect.y > (mrect.y + mrect.height - 1))
-        crect.y -= mrect.height;
-    c->floating_rectangle = crect;
 }
 
 void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
@@ -785,4 +702,235 @@ void update_vacant_state(node_t *n)
         p->vacant = (p->first_child->vacant && p->second_child->vacant);
         p = p->parent;
     }
+}
+
+void fit_monitor(monitor_t *m, client_t *c)
+{
+    xcb_rectangle_t crect = c->floating_rectangle;
+    xcb_rectangle_t mrect = m->rectangle;
+    while (crect.x < mrect.x)
+        crect.x += mrect.width;
+    while (crect.x > (mrect.x + mrect.width - 1))
+        crect.x -= mrect.width;
+    while (crect.y < mrect.y)
+        crect.y += mrect.height;
+    while (crect.y > (mrect.y + mrect.height - 1))
+        crect.y -= mrect.height;
+    c->floating_rectangle = crect;
+}
+
+void put_status(void)
+{
+    if (status_fifo == NULL)
+        return;
+    bool urgent = false;
+    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+        fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
+            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
+                urgent |= n->client->urgent;
+            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
+        }
+    }
+    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    fflush(status_fifo);
+}
+
+void list_monitors(list_option_t opt, char *rsp)
+{
+    char line[MAXLEN];
+    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+        snprintf(line, sizeof(line), "%s %ux%u%+i%+i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y);
+        strncat(rsp, line, REMLEN(rsp));
+        if (m == mon)
+            strncat(rsp, " #\n", REMLEN(rsp));
+        else if (m == last_mon)
+            strncat(rsp, " ~\n", REMLEN(rsp));
+        else
+            strncat(rsp, "\n", REMLEN(rsp));
+        if (opt == LIST_OPTION_VERBOSE)
+            list_desktops(m, opt, 1, rsp);
+    }
+}
+
+void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rsp)
+{
+    char line[MAXLEN];
+    for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+        for (unsigned int i = 0; i < depth; i++)
+            strncat(rsp, "  ", REMLEN(rsp));
+        snprintf(line, sizeof(line), "%s %c", d->name, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
+        strncat(rsp, line, REMLEN(rsp));
+        if (d == m->desk)
+            strncat(rsp, " @\n", REMLEN(rsp));
+        else if (d == m->last_desk)
+            strncat(rsp, " ~\n", REMLEN(rsp));
+        else
+            strncat(rsp, "\n", REMLEN(rsp));
+        if (opt == LIST_OPTION_VERBOSE)
+            list(d, d->root, rsp, depth + 1);
+    }
+}
+
+void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
+{
+    if (n == NULL)
+        return;
+
+    char line[MAXLEN];
+
+    for (unsigned int i = 0; i < depth; i++)
+        strncat(rsp, "  ", REMLEN(rsp));
+
+    if (is_leaf(n)) {
+        client_t *c = n->client;
+        snprintf(line, sizeof(line), "%c %s %X %u %u %ux%u%+i%+i %c%c%c%c%c", (c->born_as == MODE_AUTOMATIC ? 'a' : 'm'), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
+    } else {
+        snprintf(line, sizeof(line), "%c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), n->split_ratio);
+    }
+
+    strncat(rsp, line, REMLEN(rsp));
+
+    if (n == d->focus)
+        strncat(rsp, " *\n", REMLEN(rsp));
+    else if (n == d->last_focus)
+        strncat(rsp, " ~\n", REMLEN(rsp));
+    else
+        strncat(rsp, "\n", REMLEN(rsp));
+
+    list(d, n->first_child, rsp, depth + 1);
+    list(d, n->second_child, rsp, depth + 1);
+}
+
+void restore(char *file_path)
+{
+    if (file_path == NULL)
+        return;
+
+    FILE *snapshot = fopen(file_path, "r");
+    if (snapshot == NULL) {
+        warn("restore: can't open file\n");
+        return;
+    }
+
+    char line[MAXLEN];
+    monitor_t *m = NULL;
+    desktop_t *d = NULL;
+    node_t *n = NULL;
+    num_clients = 0;
+    unsigned int level, last_level = 0, max_uid = 0;
+    bool aborted = false;
+
+    while (!aborted && fgets(line, sizeof(line), snapshot) != NULL) {
+        unsigned int len = strlen(line);
+        level = 0;
+        while (level < strlen(line) && isspace(line[level]))
+            level++;
+        if (level == 0) {
+            if (m == NULL)
+                m = mon_head;
+            else
+                m = m->next;
+            if (len >= 2)
+                switch (line[len - 2]) {
+                    case '#':
+                        mon = m;
+                        break;
+                    case '~':
+                        last_mon = m;
+                        break;
+                }
+        } else if (level == 2) {
+            if (d == NULL)
+                d = m->desk_head;
+            else
+                d = d->next;
+            int i = len - 1;
+            while (i > 0 && !isupper(line[i]))
+                i--;
+            if (line[i] == 'M')
+                d->layout = LAYOUT_MONOCLE;
+            else if (line[i] == 'T')
+                d->layout = LAYOUT_TILED;
+            if (len >= 2)
+                switch (line[len - 2]) {
+                    case '@':
+                        m->desk = d;
+                        break;
+                    case '~':
+                        m->last_desk = d;
+                        break;
+                }
+        } else {
+            node_t *birth = make_node();
+            if (level == 4) {
+                empty_desktop(d);
+                d->root = birth;
+            } else {
+                if (level > last_level) {
+                    n->first_child = birth;
+                } else {
+                    do {
+                        n = n->parent;
+                    } while (n != NULL && n->second_child != NULL);
+                    if (n == NULL) {
+                        warn("restore: file is malformed\n");
+                        aborted = true;
+                    }
+                    n->second_child = birth;
+                }
+                birth->parent = n;
+            }
+            n = birth;
+
+            if (isupper(line[level])) {
+                char st;
+                sscanf(line + level, "%c %lf", &st, &n->split_ratio);
+                if (st == 'H')
+                    n->split_type = TYPE_HORIZONTAL;
+                else if (st == 'V')
+                    n->split_type = TYPE_VERTICAL;
+            } else {
+                client_t *c = make_client(XCB_NONE);
+                num_clients++;
+                char ba, floating, transient, fullscreen, urgent, locked;
+                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c%c%c%c%c", &ba, c->class_name, &c->window, &c->uid, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
+                if (ba == 'a')
+                    c->born_as = MODE_AUTOMATIC;
+                else if (ba == 'm')
+                    c->born_as = MODE_MANUAL;
+                c->floating = (floating == '-' ? false : true);
+                c->transient = (transient == '-' ? false : true);
+                c->fullscreen = (fullscreen == '-' ? false : true);
+                c->urgent = (urgent == '-' ? false : true);
+                c->locked = (locked == '-' ? false : true);
+                if (c->uid > max_uid)
+                    max_uid = c->uid;
+                n->client = c;
+                if (len >= 2)
+                    switch (line[len - 2]) {
+                        case '*':
+                            d->focus = n;
+                            break;
+                        case '~':
+                            d->last_focus = n;
+                            break;
+                    }
+            }
+        }
+        last_level = level;
+    }
+
+    if (!aborted) {
+        client_uid = max_uid + 1;
+        for (monitor_t *m = mon_head; m != NULL; m = m->next)
+            for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+                for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+                    if (n->client->floating) {
+                        n->vacant = true;
+                        update_vacant_state(n->parent);
+                    }
+    }
+
+    fclose(snapshot);
 }

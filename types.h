@@ -196,6 +196,7 @@ void add_monitor(xcb_rectangle_t *);
 void remove_monitor(monitor_t *);
 desktop_t *make_desktop(const char *);
 void add_desktop(monitor_t *, char *);
+void empty_desktop(desktop_t *);
 void remove_desktop(monitor_t *, desktop_t *);
 client_t *make_client(xcb_window_t);
 rule_t *make_rule(void);

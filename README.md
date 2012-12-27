@@ -212,6 +212,9 @@ The following messages are handled:
     reload_settings
         Reload the default settings.
 
+    restore FILE_PATH
+        Restore the layout of each desktop from the content of FILE_PATH.
+
     quit [EXIT_STATUS]
         Quit.
 

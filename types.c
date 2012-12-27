@@ -71,6 +71,7 @@ void remove_monitor(monitor_t *m)
     if (m == mon_tail)
         mon_tail = prev;
     free(m);
+    num_monitors--;
 }
 
 desktop_t *make_desktop(const char *name)
@@ -104,10 +105,15 @@ void add_desktop(monitor_t *m, char *name)
     put_status();
 }
 
+void empty_desktop(desktop_t *d)
+{
+    destroy_tree(d->root);
+    d->root = d->focus = d->last_focus = NULL;
+}
+
 void remove_desktop(monitor_t *m, desktop_t *d)
 {
-    while (d->root != NULL)
-        remove_node(d, first_extrema(d->root));
+    empty_desktop(d);
     desktop_t *prev = d->prev;
     desktop_t *next = d->next;
     if (prev != NULL)
@@ -119,6 +125,7 @@ void remove_desktop(monitor_t *m, desktop_t *d)
     if (d == m->desk_tail)
         m->desk_tail = prev;
     free(d);
+    num_desktops--;
 }
 
 client_t *make_client(xcb_window_t win)
