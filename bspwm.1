@@ -55,6 +55,7 @@ message.
 Example: insertion of a new node (number 4) into the given tree in
 .I automatic
 mode:
+.EX
 
                  b                                   c
                 / \\                                 / \\
@@ -73,12 +74,14 @@ mode:
     |            |            |         |            |     |      |
     +-------------------------+         +-------------------------+
 
+.EE
 .P
 Same departure, but the mode is
 .IR manual ,
 and a
 .BI presel " up"
 message was sent beforehand:
+.EX
 
                  b                                   b
                 / \\                                 / \\
@@ -96,6 +99,7 @@ message was sent beforehand:
     |            |            |         |            |            |
     +-------------------------+         +-------------------------+
 
+.EE
 .SH MESSAGES
 .TP
 .BI get " SETTING"
