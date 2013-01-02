@@ -39,10 +39,9 @@ void ungrab_buttons(void)
 void get_lock_fields(void)
 {
     num_lock = modfield_from_keysym(XK_Num_Lock);
-    caps_lock = modfield_from_keysym(XK_Caps_Lock);
+    caps_lock = XCB_MOD_MASK_LOCK;
     scroll_lock = modfield_from_keysym(XK_Scroll_Lock);
-    if (caps_lock == XCB_NO_SYMBOL)
-        caps_lock = XCB_MOD_MASK_LOCK;
+    PRINTF("lock fields %u %u %u\n", num_lock, caps_lock, scroll_lock);
 }
 
 int16_t modfield_from_keysym(xcb_keysym_t keysym)
