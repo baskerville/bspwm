@@ -161,7 +161,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
 void adopt_orphans(void)
 {
-    xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, screen->root), NULL);
+    xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, root), NULL);
     if (qtr == NULL)
         return;
     int len = xcb_query_tree_children_length(qtr);
@@ -458,12 +458,12 @@ void window_lower(xcb_window_t win)
 void window_set_visibility(xcb_window_t win, bool visible) {
     uint32_t values_off[] = {ROOT_EVENT_MASK & ~XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
     uint32_t values_on[] = {ROOT_EVENT_MASK};
-    xcb_change_window_attributes(dpy, screen->root, XCB_CW_EVENT_MASK, values_off);
+    xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_off);
     if (visible)
         xcb_map_window(dpy, win);
     else
         xcb_unmap_window(dpy, win);
-    xcb_change_window_attributes(dpy, screen->root, XCB_CW_EVENT_MASK, values_on);
+    xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_on);
 }
 
 void window_hide(xcb_window_t win)

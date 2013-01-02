@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_keysyms.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 #include "types.h"
 #include "bspwm.h"
 #include "settings.h"
+#include "buttons.h"
 #include "helpers.h"
 #include "window.h"
 #include "events.h"
@@ -34,6 +36,9 @@ void handle_event(xcb_generic_event_t *evt)
             break;
         case XCB_PROPERTY_NOTIFY:
             property_notify(evt);
+            break;
+        case XCB_MAPPING_NOTIFY:
+            mapping_notify(evt);
             break;
         case XCB_ENTER_NOTIFY:
             enter_notify(evt);
@@ -200,6 +205,17 @@ void property_notify(xcb_generic_event_t *evt)
     }
 }
 
+void mapping_notify(xcb_generic_event_t *evt)
+{
+    xcb_mapping_notify_event_t *e = (xcb_mapping_notify_event_t *) evt;
+    if (e->count > 0) {
+        ungrab_buttons();
+        xcb_refresh_keyboard_mapping(symbols, e);
+        get_lock_fields();
+        grab_buttons();
+    }
+}
+
 void enter_notify(xcb_generic_event_t *evt)
 {
     xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
@@ -298,7 +314,7 @@ void button_press(xcb_generic_event_t *evt)
                             frozen_pointer->corner = TOP_LEFT;
                     }
                 }
-                xcb_grab_pointer(dpy, false, screen->root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
+                xcb_grab_pointer(dpy, false, root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
                 break;
         }
     }

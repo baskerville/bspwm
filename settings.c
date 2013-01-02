@@ -56,8 +56,6 @@ void load_settings(void)
 
     strncpy(wm_name, WM_NAME, sizeof(wm_name));
     button_modifier = BUTTON_MODIFIER;
-    numlock_modifier = NUMLOCK_MODIFIER;
-    capslock_modifier = CAPSLOCK_MODIFIER;
 
     inner_border_width = INNER_BORDER_WIDTH;
     main_border_width = MAIN_BORDER_WIDTH;

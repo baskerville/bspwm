@@ -12,9 +12,11 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>
+#include <xcb/xcb_keysyms.h>
 #include <xcb/xinerama.h>
 #include "types.h"
 #include "settings.h"
+#include "buttons.h"
 #include "messages.h"
 #include "rules.h"
 #include "events.h"
@@ -37,43 +39,17 @@ void cleanup(void)
     while (rule_head != NULL)
         remove_rule(rule_head);
     free(frozen_pointer);
+    xcb_key_symbols_free(symbols);
 }
 
 void register_events(void)
 {
     uint32_t values[] = {ROOT_EVENT_MASK};
-    xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, screen->root, XCB_CW_EVENT_MASK, values));
+    xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, root, XCB_CW_EVENT_MASK, values));
     if (e != NULL) {
         xcb_disconnect(dpy);
         err("another wm is already running\n");
     }
-}
-
-void handle_buttons(bool grab)
-{
-    uint8_t buts[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
-    uint16_t mods[] = {button_modifier, button_modifier | numlock_modifier, button_modifier | capslock_modifier, button_modifier | numlock_modifier | capslock_modifier};
-
-    for (unsigned int i = 0; i < LENGTH(buts); i++) {
-        uint8_t b = buts[i];
-        for (unsigned int j = 0; j < LENGTH(mods); j++) {
-            uint16_t m = mods[j];
-            if (grab)
-                xcb_grab_button(dpy, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, b, m);
-            else
-                xcb_ungrab_button(dpy, b, screen->root, m);
-        }
-    }
-}
-
-void grab_buttons(void)
-{
-    handle_buttons(true);
-}
-
-void ungrab_buttons(void)
-{
-    handle_buttons(false);
 }
 
 void setup(void)
@@ -82,6 +58,7 @@ void setup(void)
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (!screen)
         err("can't acquire screen\n");
+    root = screen->root;
     register_events();
 
     screen_width = screen->width_in_pixels;
@@ -143,6 +120,7 @@ void setup(void)
     ewmh_update_desktop_names();
     ewmh_update_current_desktop();
     rule_head = rule_tail = NULL;
+    symbols = xcb_key_symbols_alloc(dpy);
     frozen_pointer = make_pointer_state();
     get_pointer_position(&pointer_position);
     last_entered = XCB_NONE;
@@ -212,6 +190,7 @@ int main(int argc, char *argv[])
 
     load_settings();
     run_autostart();
+    get_lock_fields();
     grab_buttons();
     ewmh_update_wm_name();
 
@@ -223,7 +202,7 @@ int main(int argc, char *argv[])
         FD_SET(sock_fd, &descriptors);
         FD_SET(dpy_fd, &descriptors);
 
-        if (select(sel, &descriptors, NULL, NULL, NULL)) {
+        if (select(sel, &descriptors, NULL, NULL, NULL) > 0) {
 
             if (FD_ISSET(sock_fd, &descriptors)) {
                 ret_fd = accept(sock_fd, NULL, 0);

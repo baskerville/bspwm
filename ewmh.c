@@ -18,7 +18,7 @@ void ewmh_init(void)
 void ewmh_update_wm_name(void)
 {
     if (wm_name != NULL)
-        xcb_ewmh_set_wm_name(ewmh, screen->root, strlen(wm_name), wm_name);
+        xcb_ewmh_set_wm_name(ewmh, root, strlen(wm_name), wm_name);
 }
 
 void ewmh_update_active_window(void)

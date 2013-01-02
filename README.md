@@ -269,12 +269,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     button_modifier
         The modifier mask used for mouse bindings (possible values: 'shift', 'control', 'lock', 'mod1' ... 'mod5').
 
-    numlock_modifier
-        The modifier holding Num_Lock (cf. xmodmap).
-
-    capslock_modifier
-        The modifier holding Lock.
-
     borderless_monocle
         Whether to remove borders for tiled windows in monocle mode.
 
@@ -318,6 +312,7 @@ Multiple choices:
 - libxcb
 - xcb-util
 - xcb-util-wm
+- xcb-util-keysyms
 
 ## Installation
 

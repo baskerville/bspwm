@@ -456,22 +456,6 @@ void set_setting(char *name, char *value, char *rsp)
             grab_buttons();
         }
         return;
-    } else if (strcmp(name, "numlock_modifier") == 0) {
-        unsigned int m;
-        if (parse_modifier_mask(value, &m)) {
-            ungrab_buttons();
-            numlock_modifier = m;
-            grab_buttons();
-        }
-        return;
-    } else if (strcmp(name, "capslock_modifier") == 0) {
-        unsigned int m;
-        if (parse_modifier_mask(value, &m)) {
-            ungrab_buttons();
-            capslock_modifier = m;
-            grab_buttons();
-        }
-        return;
     } else {
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
         return;
@@ -535,10 +519,6 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else if (strcmp(name, "button_modifier") == 0)
         print_modifier_mask(rsp, button_modifier);
-    else if (strcmp(name, "numlock_modifier") == 0)
-        print_modifier_mask(rsp, numlock_modifier);
-    else if (strcmp(name, "capslock_modifier") == 0)
-        print_modifier_mask(rsp, capslock_modifier);
     else
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
 }

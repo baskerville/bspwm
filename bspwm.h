@@ -16,6 +16,7 @@ unsigned int desktop_uid;
 unsigned int client_uid;
 unsigned int rule_uid;
 xcb_screen_t *screen;
+xcb_window_t root;
 uint8_t root_depth;
 FILE *status_fifo;
 
@@ -27,9 +28,11 @@ monitor_t *mon_head;
 monitor_t *mon_tail;
 rule_t *rule_head;
 rule_t *rule_tail;
+
 pointer_state_t *frozen_pointer;
 xcb_point_t pointer_position;
 xcb_window_t last_entered;
+
 int exit_status;
 
 bool visible;
