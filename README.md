@@ -14,11 +14,11 @@ Those messages are sent via `bspc`.
 
 If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
-The recommended way of defining keyboard shortcuts is to use `shkd` or `xbindkeys`.
+The recommended way of defining keyboard shortcuts is to use [sxhkd](https://github.com/baskerville/sxhkd).
 
 The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
 
-Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc).
+Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [sxhkdrc](https://github.com/baskerville/dotfiles/blob/master/sxhkdrc).
 
 ## Splitting Modes
 
