@@ -2,7 +2,7 @@ VERSION = 0.3
 
 CC      = gcc
 LIBS    = -lm -lxcb -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
-CFLAGS  = -std=c99 -pedantic -Wall -Wextra -DVERSION=\"$(VERSION)\"
+CFLAGS  = -std=c99 -pedantic -Wall -Wextra -D_POSIX_C_SOURCE=2 -DVERSION=\"$(VERSION)\"
 LDFLAGS = $(LIBS)
 
 PREFIX    ?= /usr/local
@@ -31,7 +31,7 @@ options:
 
 .c.o:
 	@echo "CC $<"
-	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -D_POSIX_C_SOURCE="2" -c -o $@ $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 bspwm: $(WM_OBJ)
 	@echo CC -o $@
