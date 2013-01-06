@@ -46,7 +46,7 @@ void register_events(void)
     xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, root, XCB_CW_EVENT_MASK, values));
     if (e != NULL) {
         xcb_disconnect(dpy);
-        err("another wm is already running\n");
+        err("Another window manager is already running.\n");
     }
 }
 
@@ -55,7 +55,7 @@ void setup(void)
     ewmh_init();
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (!screen)
-        err("can't acquire screen\n");
+        err("Can't acquire the default screen.\n");
     root = screen->root;
     register_events();
 
@@ -98,7 +98,6 @@ void setup(void)
         xcb_xinerama_query_screens_reply_t *xsq = xcb_xinerama_query_screens_reply(dpy, xcb_xinerama_query_screens(dpy), NULL);
         xcb_xinerama_screen_info_t *xsi = xcb_xinerama_query_screens_screen_info(xsq);
         int n = xcb_xinerama_query_screens_screen_info_length(xsq);
-        PRINTF("number of monitors: %d\n", n);
         for (int i = 0; i < n; i++) {
             xcb_xinerama_screen_info_t info = xsi[i];
             xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
@@ -106,7 +105,7 @@ void setup(void)
         }
         free(xsq);
     } else {
-        warn("Xinerama is inactive");
+        warn("Xinerama is inactive.");
         xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
         add_monitor(&rect);
     }
@@ -155,7 +154,7 @@ int main(int argc, char *argv[])
     dpy = xcb_connect(NULL, &default_screen);
 
     if (xcb_connection_has_error(dpy))
-        err("can't open display\n");
+        err("Can't open the default display.\n");
 
     setup();
 
@@ -171,10 +170,14 @@ int main(int argc, char *argv[])
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (sock_fd == -1)
-        err("couldn't create socket\n");
+        err("Couldn't create the socket.\n");
 
-    bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
-    listen(sock_fd, SOMAXCONN);
+    if (bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
+        err("Couldn't bind a name to the socket.\n");
+
+    if (listen(sock_fd, SOMAXCONN) == -1)
+        err("Couldn't listen to the socket.\n");
+
     sel = MAX(sock_fd, dpy_fd) + 1;
 
     if (fifo_path != NULL) {
@@ -182,7 +185,7 @@ int main(int argc, char *argv[])
         if (fifo_fd != -1)
             status_fifo = fdopen(fifo_fd, "w");
         else
-            warn("couldn't open status fifo\n");
+            warn("Couldn't open status fifo.\n");
     }
 
     load_settings();
@@ -222,9 +225,8 @@ int main(int argc, char *argv[])
 
         }
 
-        if (xcb_connection_has_error(dpy)) {
-            err("connection has errors\n");
-        }
+        if (xcb_connection_has_error(dpy))
+            err("The server has closed the connection.\n");
     }
 
     cleanup();

@@ -22,7 +22,7 @@ void run_autostart(void)
         if (fork() == 0) {
             setsid();
             execl(path, path, NULL);
-            err("could not run autostart file\n");
+            err("Couldn't spawn the autostart file.\n");
         }
         exit(EXIT_SUCCESS);
     }
