@@ -9,6 +9,7 @@
 #include "ewmh.h"
 #include "helpers.h"
 #include "window.h"
+#include "events.h"
 #include "tree.h"
 #include "rules.h"
 
@@ -68,6 +69,13 @@ void process_message(char *msg, char *rsp)
             if (parse_rotate(deg, &r)) {
                 rotate_tree(mon->desk->root, r);
             }
+        }
+    } else if (strcmp(cmd, "mouse") == 0) {
+        char *mac = strtok(NULL, TOK_SEP);
+        if (mac != NULL) {
+            mouse_action_t a;
+            if (parse_mouse_action(mac, &a))
+                mouse_do(a);
         }
     } else if (strcmp(cmd, "layout") == 0) {
         char *lyt = strtok(NULL, TOK_SEP);
@@ -448,14 +456,6 @@ void set_setting(char *name, char *value, char *rsp)
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
         return;
-    } else if (strcmp(name, "button_modifier") == 0) {
-        unsigned int m;
-        if (parse_modifier_mask(value, &m)) {
-            ungrab_buttons();
-            button_modifier = m;
-            grab_buttons();
-        }
-        return;
     } else {
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
         return;
@@ -517,8 +517,6 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
-    else if (strcmp(name, "button_modifier") == 0)
-        print_modifier_mask(rsp, button_modifier);
     else
         snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
 }
@@ -688,62 +686,17 @@ bool parse_fence_move(char *s, fence_move_t *m)
     return false;
 }
 
-bool parse_modifier_mask(char *s, unsigned int *m)
+bool parse_mouse_action(char *s, mouse_action_t *a)
 {
-    if (strcmp(s, "shift") == 0) {
-        *m = XCB_MOD_MASK_SHIFT;
+    if (strcmp(s, "move") == 0) {
+        *a = MOUSE_MOVE;
         return true;
-    } else if (strcmp(s, "control") == 0) {
-        *m = XCB_MOD_MASK_CONTROL;
+    } else if (strcmp(s, "focus") == 0) {
+        *a = MOUSE_FOCUS;
         return true;
-    } else if (strcmp(s, "lock") == 0) {
-        *m = XCB_MOD_MASK_LOCK;
-        return true;
-    } else if (strcmp(s, "mod1") == 0) {
-        *m = XCB_MOD_MASK_1;
-        return true;
-    } else if (strcmp(s, "mod2") == 0) {
-        *m = XCB_MOD_MASK_2;
-        return true;
-    } else if (strcmp(s, "mod3") == 0) {
-        *m = XCB_MOD_MASK_3;
-        return true;
-    } else if (strcmp(s, "mod4") == 0) {
-        *m = XCB_MOD_MASK_4;
-        return true;
-    } else if (strcmp(s, "mod5") == 0) {
-        *m = XCB_MOD_MASK_5;
+    } else if (strcmp(s, "resize") == 0) {
+        *a = MOUSE_RESIZE;
         return true;
     }
     return false;
-}
-
-void print_modifier_mask(char *s, unsigned int m)
-{
-    switch(m) {
-        case XCB_MOD_MASK_SHIFT:
-            snprintf(s, BUFSIZ, "shift");
-            break;
-        case XCB_MOD_MASK_CONTROL:
-            snprintf(s, BUFSIZ, "control");
-            break;
-        case XCB_MOD_MASK_LOCK:
-            snprintf(s, BUFSIZ, "lock");
-            break;
-        case XCB_MOD_MASK_1:
-            snprintf(s, BUFSIZ, "mod1");
-            break;
-        case XCB_MOD_MASK_2:
-            snprintf(s, BUFSIZ, "mod2");
-            break;
-        case XCB_MOD_MASK_3:
-            snprintf(s, BUFSIZ, "mod3");
-            break;
-        case XCB_MOD_MASK_4:
-            snprintf(s, BUFSIZ, "mod4");
-            break;
-        case XCB_MOD_MASK_5:
-            snprintf(s, BUFSIZ, "mod5");
-            break;
-    }
 }

@@ -156,6 +156,9 @@ Focus the nearest window matching the given constraints.
 .BI circulate " forward|backward"
 Circulate the leaves in the given direction.
 .TP
+.BI mouse " move|resize|focus"
+Perform the given mouse action on the window under the pointer.
+.TP
 .BI toggle_fullscreen
 Toggle the fullscreen state of the current window.
 .TP
@@ -312,10 +315,6 @@ The value that shall be used for the
 .B _NET_WM_NAME
 property of the root window.
 .TP
-.I button_modifier
-The modifier mask used for mouse bindings (possible values:
-.BR shift ", " control ", " lock ", " mod1 " ... " mod5 ).
-.TP
 .I borderless_monocle
 Whether to remove borders for tiled windows in monocle mode.
 .TP
@@ -327,16 +326,6 @@ Wether to focus the window under the mouse pointer.
 .TP
 .I adaptative_raise
 Prevent floating windows from being raised when they might cover other floating windows.
-.SH MOUSE BINDINGS
-.TP
-.I button_modifier + left mouse button
-Move the window under the pointer.
-.TP
-.I button_modifier + middle mouse button
-Focus the window under the pointer.
-.TP
-.I button_modifier + right mouse button
-Resize the window under the pointer (by moving one of its four corners).
 .SH AUTHOR
 .EX
 Bastien Dejean <baskerville at lavabit.com>

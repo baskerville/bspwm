@@ -39,9 +39,6 @@ bool visible;
 bool running;
 
 void register_events(void);
-void handle_buttons(bool);
-void grab_buttons(void);
-void ungrab_buttons(void);
 void setup(void);
 void cleanup(void);
 void quit(void);

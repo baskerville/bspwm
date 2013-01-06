@@ -5,7 +5,6 @@
 
 #define WM_NAME             "bspwm"
 #define AUTOSTART_FILE      "autostart"
-#define BUTTON_MODIFIER     XCB_MOD_MASK_4
 
 #define FOCUSED_BORDER_COLOR        "#7D7F8A"
 #define ACTIVE_BORDER_COLOR         "#7D7F8A"
@@ -65,7 +64,6 @@ bool focus_follows_mouse;
 bool adaptative_raise;
 
 char wm_name[MAXLEN];
-unsigned int button_modifier;
 
 void load_settings(void);
 void run_autostart(void);

@@ -1,7 +1,7 @@
-VERSION = 0.3
+VERSION = 0.4
 
 CC      = gcc
-LIBS    = -lm -lxcb -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
+LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
 CFLAGS  = -std=c99 -pedantic -Wall -Wextra -D_POSIX_C_SOURCE=2 -DVERSION=\"$(VERSION)\"
 LDFLAGS = $(LIBS)
 
@@ -9,7 +9,7 @@ PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 MANPREFIX = $(PREFIX)/share/man
 
-WM_SRC = bspwm.c events.c messages.c buttons.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
+WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
 CL_SRC = bspc.c helpers.c
 
 WM_OBJ = $(WM_SRC:.c=.o)

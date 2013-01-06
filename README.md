@@ -131,6 +131,9 @@ The following messages are handled:
     circulate forward|backward
         Circulate the leaves in the given direction.
 
+    mouse move|resize|focus
+        Perform the given mouse action on the window under the pointer.
+
     toggle_fullscreen
         Toggle the fullscreen state of the current window.
 
@@ -266,9 +269,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     wm_name
         The value that shall be used for the _NET_WM_NAME property of the root window.
 
-    button_modifier
-        The modifier mask used for mouse bindings (possible values: 'shift', 'control', 'lock', 'mod1' ... 'mod5').
-
     borderless_monocle
         Whether to remove borders for tiled windows in monocle mode.
 
@@ -280,17 +280,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
     adaptative_raise
         Prevent floating windows from being raised when they might cover other floating windows.
-
-## Mouse Bindings
-
-    button_modifier + left mouse button
-        Move the window under the pointer.
-
-    button_modifier + middle mouse button
-        Focus the window under the pointer.
-
-    button_modifier + right mouse button
-        Resize the window under the pointer (by moving one of its four corners).
 
 ## Key Features
 
@@ -312,7 +301,6 @@ Multiple choices:
 - libxcb
 - xcb-util
 - xcb-util-wm
-- xcb-util-keysyms
 
 ## Installation
 

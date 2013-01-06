@@ -179,7 +179,7 @@ void arrange(monitor_t *m, desktop_t *d)
     rect.width -= m->left_padding + m->right_padding + wg;
     rect.height -= m->top_padding + m->bottom_padding + wg;
     if (focus_follows_mouse)
-        get_pointer_position(&pointer_position);
+        update_pointer_position(&pointer_position);
     apply_layout(m, d, d->root, rect, rect);
 }
 
@@ -368,7 +368,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
             window_draw_border(n, true, true);
         }
         if (focus_follows_mouse)
-            get_pointer_position(&pointer_position);
+            update_pointer_position(&pointer_position);
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 

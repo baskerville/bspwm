@@ -16,7 +16,6 @@
 #include <xcb/xinerama.h>
 #include "types.h"
 #include "settings.h"
-#include "buttons.h"
 #include "messages.h"
 #include "rules.h"
 #include "events.h"
@@ -39,7 +38,6 @@ void cleanup(void)
     while (rule_head != NULL)
         remove_rule(rule_head);
     free(frozen_pointer);
-    xcb_key_symbols_free(symbols);
 }
 
 void register_events(void)
@@ -120,9 +118,8 @@ void setup(void)
     ewmh_update_desktop_names();
     ewmh_update_current_desktop();
     rule_head = rule_tail = NULL;
-    symbols = xcb_key_symbols_alloc(dpy);
     frozen_pointer = make_pointer_state();
-    get_pointer_position(&pointer_position);
+    update_pointer_position(&pointer_position);
     last_entered = XCB_NONE;
     split_mode = MODE_AUTOMATIC;
     visible = true;
@@ -190,8 +187,6 @@ int main(int argc, char *argv[])
 
     load_settings();
     run_autostart();
-    get_lock_fields();
-    grab_buttons();
     ewmh_update_wm_name();
 
     while (running) {

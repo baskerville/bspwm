@@ -8,7 +8,6 @@
 #include "types.h"
 #include "bspwm.h"
 #include "settings.h"
-#include "buttons.h"
 #include "helpers.h"
 #include "window.h"
 #include "events.h"
@@ -37,14 +36,8 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_PROPERTY_NOTIFY:
             property_notify(evt);
             break;
-        case XCB_MAPPING_NOTIFY:
-            mapping_notify(evt);
-            break;
         case XCB_ENTER_NOTIFY:
             enter_notify(evt);
-            break;
-        case XCB_BUTTON_PRESS:
-            button_press(evt);
             break;
         case XCB_MOTION_NOTIFY:
             motion_notify(evt);
@@ -205,17 +198,6 @@ void property_notify(xcb_generic_event_t *evt)
     }
 }
 
-void mapping_notify(xcb_generic_event_t *evt)
-{
-    xcb_mapping_notify_event_t *e = (xcb_mapping_notify_event_t *) evt;
-    if (e->count > 0) {
-        ungrab_buttons();
-        xcb_refresh_keyboard_mapping(symbols, e);
-        get_lock_fields();
-        grab_buttons();
-    }
-}
-
 void enter_notify(xcb_generic_event_t *evt)
 {
     xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
@@ -269,22 +251,31 @@ void client_message(xcb_generic_event_t *evt)
     }
 }
 
-void button_press(xcb_generic_event_t *evt)
+void mouse_do(mouse_action_t mac)
 {
-    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
-    xcb_window_t win = e->child;
+    PRINTF("mouse action %u\n", mac);
 
-    PRINTF("button press %u %u %X\n", e->detail, e->state, win);
+    xcb_window_t win;
+    xcb_point_t pos;
+
+    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+    if (qpr != NULL) {
+        pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
+        win = qpr->child;
+        free(qpr);
+    } else {
+        return;
+    }
 
     window_location_t loc;
     if (locate_window(win, &loc)) {
         client_t *c = loc.node->client;
-        switch (e->detail)  {
-            case XCB_BUTTON_INDEX_2:
+        switch (mac)  {
+            case MOUSE_FOCUS:
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
-            case XCB_BUTTON_INDEX_1:
-            case XCB_BUTTON_INDEX_3:
+            case MOUSE_MOVE:
+            case MOUSE_RESIZE:
                 if (is_tiled(loc.node->client)) {
                     loc.node->client->floating_rectangle = loc.node->client->tiled_rectangle;
                     toggle_floating(loc.node);
@@ -296,19 +287,19 @@ void button_press(xcb_generic_event_t *evt)
                 frozen_pointer->desktop = loc.desktop;
                 frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;
-                frozen_pointer->position = (xcb_point_t) {e->root_x, e->root_y};
-                frozen_pointer->button = e->detail;
-                if (e->detail == XCB_BUTTON_INDEX_3) {
+                frozen_pointer->position = pos;
+                frozen_pointer->action = mac;
+                if (mac == MOUSE_RESIZE) {
                     int16_t mid_x, mid_y;
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
                     mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
-                    if (e->root_x > mid_x) {
-                        if (e->root_y > mid_y)
+                    if (pos.x > mid_x) {
+                        if (pos.y > mid_y)
                             frozen_pointer->corner = BOTTOM_RIGHT;
                         else
                             frozen_pointer->corner = TOP_RIGHT;
                     } else {
-                        if (e->root_y > mid_y)
+                        if (pos.y > mid_y)
                             frozen_pointer->corner = BOTTOM_LEFT;
                         else
                             frozen_pointer->corner = TOP_LEFT;
@@ -342,13 +333,13 @@ void motion_notify(xcb_generic_event_t *evt)
     delta_x = e->root_x - frozen_pointer->position.x;
     delta_y = e->root_y - frozen_pointer->position.y;
 
-    switch (frozen_pointer->button) {
-        case XCB_BUTTON_INDEX_1:
+    switch (frozen_pointer->action) {
+        case MOUSE_MOVE:
             x = rect.x + delta_x;
             y = rect.y + delta_y;
             window_move(win, x, y);
             break;
-        case XCB_BUTTON_INDEX_3:
+        case MOUSE_RESIZE:
             switch (frozen_pointer->corner) {
                 case TOP_LEFT:
                     x = rect.x + delta_x;
@@ -380,6 +371,8 @@ void motion_notify(xcb_generic_event_t *evt)
             window_move_resize(win, x, y, width, height);
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, d->focus == n, mon == m);
+            break;
+        case MOUSE_FOCUS:
             break;
     }
 }
