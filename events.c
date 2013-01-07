@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <xcb/xcb.h>
-#include <xcb/xcb_keysyms.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 #include "types.h"
