@@ -1,0 +1,4 @@
+- Handle *focus_follows_mouse* through motion notify events.
+- Handle mouse actions without grabbing the pointer.
+- Window move/resize mouse cursor feedbacks (with *util-cursor*).
+- Focus history.
