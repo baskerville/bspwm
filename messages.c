@@ -174,27 +174,23 @@ void process_message(char *msg, char *rsp)
         }
     } else if (strcmp(cmd, "send_to_monitor") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
-        send_option_t opt;
-        monitor_t *m = NULL;
-
         if (arg != NULL) {
-            /* Check whether we're using the previous/next monitor to send the
-             * client to.
-             */
+            send_option_t opt;
             if (parse_send_option(arg, &opt)) {
+                monitor_t *m;
                 if (opt == SEND_OPTION_NEXT)
                     m = ((mon->next == NULL ? mon_head : mon->next));
-                else if (opt == SEND_OPTION_PREV) {
+                else if (opt == SEND_OPTION_PREV)
                     m = ((mon->prev == NULL ? mon_tail : mon->prev));
+                else
+                    m = find_monitor(arg);
+                if (m != NULL && m != mon) {
+                    transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
+                    arrange(m, m->desk);
+                    if (opt == SEND_OPTION_FOLLOW)
+                        select_monitor(m);
                 }
-            } else
-                m = find_monitor(arg);
-        }
-        if (m != NULL && m != mon) {
-            transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
-            arrange(m, m->desk);
-            if (opt == SEND_OPTION_FOLLOW)
-                select_monitor(m);
+            } 
         }
     } else if (strcmp(cmd, "send_to") == 0) {
         char *name = strtok(NULL, TOK_SEP);
