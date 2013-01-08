@@ -366,15 +366,16 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
             window_draw_border(n, true, true);
         }
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
-        if (focus_follows_pointer) {
-            if (under_pointer != XCB_NONE) {
-                uint32_t values[] = {CLIENT_EVENT_MASK_FFP};
-                xcb_change_window_attributes(dpy, under_pointer, XCB_CW_EVENT_MASK, values);
-            }
-            uint32_t values[] = {CLIENT_EVENT_MASK};
-            xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-            under_pointer = n->client->window;
+    }
+
+    if (n != mon->desk->focus && focus_follows_pointer) {
+        if (last_pointed != XCB_NONE) {
+            uint32_t values[] = {CLIENT_EVENT_MASK_FFP};
+            xcb_change_window_attributes(dpy, last_pointed, XCB_CW_EVENT_MASK, values);
         }
+        uint32_t values[] = {CLIENT_EVENT_MASK};
+        xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+        last_pointed = n->client->window;
     }
 
     if (!is_tiled(n->client)) {

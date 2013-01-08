@@ -31,7 +31,7 @@ rule_t *rule_head;
 rule_t *rule_tail;
 
 pointer_state_t *frozen_pointer;
-xcb_window_t under_pointer;
+xcb_window_t last_pointed;
 
 int exit_status;
 

@@ -117,7 +117,7 @@ void setup(void)
     ewmh_update_current_desktop();
     rule_head = rule_tail = NULL;
     frozen_pointer = make_pointer_state();
-    under_pointer = XCB_NONE;
+    last_pointed = XCB_NONE;
     split_mode = MODE_AUTOMATIC;
     visible = true;
     exit_status = 0;
