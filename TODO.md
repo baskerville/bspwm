@@ -1,4 +1,7 @@
 - Handle *focus_follows_mouse* through motion notify events.
 - Handle mouse actions without grabbing the pointer.
 - Window move/resize mouse cursor feedbacks (with *util-cursor*).
+- Swap with last focus message.
+- Grow/shrink through swap.
+- Send to previous/next desktop.
 - Focus history.
