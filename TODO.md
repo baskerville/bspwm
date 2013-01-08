@@ -1,5 +1,7 @@
-- Window move/resize mouse cursor feedbacks (with *util-cursor*).
-- Swap with last focus message.
+- Window move/resize pointer cursor feedbacks (via *util-cursor*).
+- Swap with last focused window message.
 - Grow/shrink through swap.
 - Send to previous/next desktop.
+- Command line completion for *bspc*.
+- Better handling of the floating window concept.
 - Focus history.
