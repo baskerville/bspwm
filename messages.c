@@ -70,13 +70,26 @@ void process_message(char *msg, char *rsp)
                 rotate_tree(mon->desk->root, r);
             }
         }
-    } else if (strcmp(cmd, "mouse") == 0) {
-        char *mac = strtok(NULL, TOK_SEP);
-        if (mac != NULL) {
-            mouse_action_t a;
-            if (parse_mouse_action(mac, &a))
-                mouse_do(a);
+    } else if (strcmp(cmd, "grab_pointer") == 0) {
+        char *pac = strtok(NULL, TOK_SEP);
+        if (pac != NULL) {
+            pointer_action_t a;
+            if (parse_pointer_action(pac, &a))
+                grab_pointer(a);
         }
+    } else if (strcmp(cmd, "track_pointer") == 0) {
+        char *arg1 = strtok(NULL, TOK_SEP);
+        if (arg1 == NULL)
+            return;
+        char *arg2 = strtok(NULL, TOK_SEP);
+        if (arg2 == NULL)
+            return;
+        int root_x, root_y;
+        if (sscanf(arg1, "%i", &root_x) == 1 && sscanf(arg2, "%i", &root_y) == 1)
+            track_pointer(root_x, root_y);
+        return;
+    } else if (strcmp(cmd, "ungrab_pointer") == 0) {
+        ungrab_pointer();
     } else if (strcmp(cmd, "layout") == 0) {
         char *lyt = strtok(NULL, TOK_SEP);
         if (lyt != NULL) {
@@ -451,10 +464,19 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             gapless_monocle = b;
-    } else if (strcmp(name, "focus_follows_mouse") == 0) {
+    } else if (strcmp(name, "focus_follows_pointer") == 0) {
         bool b;
-        if (parse_bool(value, &b))
-            focus_follows_mouse = b;
+        if (parse_bool(value, &b)) {
+            if (b != focus_follows_pointer) {
+                uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK : CLIENT_EVENT_MASK_FFP)};
+                for (monitor_t *m = mon_head; m != NULL; m = m->next)
+                    for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+                        for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+                            xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+
+            }
+            focus_follows_pointer = b;
+        }
     } else if (strcmp(name, "adaptative_raise") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -518,8 +540,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(borderless_monocle));
     else if (strcmp(name, "gapless_monocle") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(gapless_monocle));
-    else if (strcmp(name, "focus_follows_mouse") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_mouse));
+    else if (strcmp(name, "focus_follows_pointer") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_pointer));
     else if (strcmp(name, "adaptative_raise") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "wm_name") == 0)
@@ -699,16 +721,16 @@ bool parse_fence_move(char *s, fence_move_t *m)
     return false;
 }
 
-bool parse_mouse_action(char *s, mouse_action_t *a)
+bool parse_pointer_action(char *s, pointer_action_t *a)
 {
     if (strcmp(s, "move") == 0) {
-        *a = MOUSE_MOVE;
+        *a = POINTER_MOVE;
         return true;
     } else if (strcmp(s, "focus") == 0) {
-        *a = MOUSE_FOCUS;
+        *a = POINTER_FOCUS;
         return true;
     } else if (strcmp(s, "resize") == 0) {
-        *a = MOUSE_RESIZE;
+        *a = POINTER_RESIZE;
         return true;
     }
     return false;

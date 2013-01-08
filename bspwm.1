@@ -156,8 +156,14 @@ Focus the nearest window matching the given constraints.
 .BI circulate " forward|backward"
 Circulate the leaves in the given direction.
 .TP
-.BI mouse " move|resize|focus"
-Perform the given mouse action on the window under the pointer.
+.BI grab_pointer " move|resize|focus"
+Begin the specified pointer action.
+.TP
+.BI track_pointer " ROOT_X ROOT_Y"
+Pass the pointer root coordinates for the current pointer action.
+.TP
+.BI ungrab_pointer
+End the current pointer action.
 .TP
 .BI toggle_fullscreen
 Toggle the fullscreen state of the current window.
@@ -321,8 +327,8 @@ Whether to remove borders for tiled windows in monocle mode.
 .I gapless_monocle
 Whether to remove gaps for tiled windows in monocle mode.
 .TP
-.I focus_follows_mouse
-Wether to focus the window under the mouse pointer.
+.I focus_follows_pointer
+Wether to focus the window under the pointer.
 .TP
 .I adaptative_raise
 Prevent floating windows from being raised when they might cover other floating windows.

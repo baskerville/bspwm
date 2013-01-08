@@ -35,14 +35,8 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_PROPERTY_NOTIFY:
             property_notify(evt);
             break;
-        case XCB_ENTER_NOTIFY:
-            enter_notify(evt);
-            break;
         case XCB_MOTION_NOTIFY:
             motion_notify(evt);
-            break;
-        case XCB_BUTTON_RELEASE:
-            button_release();
             break;
         default:
             break;
@@ -197,27 +191,6 @@ void property_notify(xcb_generic_event_t *evt)
     }
 }
 
-void enter_notify(xcb_generic_event_t *evt)
-{
-    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
-
-    PRINTF("enter notify %X %d %d\n", e->event, e->mode, e->detail);
-
-    if (!focus_follows_mouse 
-            || (e->mode != XCB_NOTIFY_MODE_NORMAL && e->detail == XCB_NOTIFY_DETAIL_INFERIOR)
-            || (pointer_position.x == e->root_x && pointer_position.y == e->root_y)
-            || last_entered == e->event)
-        return;
-
-    window_location_t loc;
-    if (locate_window(e->event, &loc)) {
-        select_monitor(loc.monitor);
-        focus_node(loc.monitor, loc.desktop, loc.node, true);
-        pointer_position = (xcb_point_t) {e->root_x, e->root_y};
-        last_entered = e->event;
-    }
-}
-
 void client_message(xcb_generic_event_t *evt)
 {
     xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
@@ -250,9 +223,39 @@ void client_message(xcb_generic_event_t *evt)
     }
 }
 
-void mouse_do(mouse_action_t mac)
+void motion_notify(xcb_generic_event_t *evt)
 {
-    PRINTF("mouse action %u\n", mac);
+    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
+    xcb_window_t win = e->event;
+
+    PRINTF("motion notify %X\n", win);
+
+    window_location_t loc;
+    if (locate_window(win, &loc)) {
+        if (loc.node == mon->desk->focus)
+            return;
+        select_monitor(loc.monitor);
+        select_desktop(loc.desktop);
+        focus_node(loc.monitor, loc.desktop, loc.node, true);
+    }
+}
+
+void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
+{
+    if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
+        bool fs = n->client->fullscreen;
+        if (action == XCB_EWMH_WM_STATE_TOGGLE
+                || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
+            toggle_fullscreen(m, n->client);
+            arrange(m, d);
+        }
+    }
+}
+
+void grab_pointer(pointer_action_t pac)
+{
+    PRINTF("grab pointer %u\n", pac);
 
     xcb_window_t win;
     xcb_point_t pos;
@@ -269,12 +272,12 @@ void mouse_do(mouse_action_t mac)
     window_location_t loc;
     if (locate_window(win, &loc)) {
         client_t *c = loc.node->client;
-        switch (mac)  {
-            case MOUSE_FOCUS:
+        switch (pac)  {
+            case POINTER_FOCUS:
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
-            case MOUSE_MOVE:
-            case MOUSE_RESIZE:
+            case POINTER_MOVE:
+            case POINTER_RESIZE:
                 if (is_tiled(loc.node->client)) {
                     loc.node->client->floating_rectangle = loc.node->client->tiled_rectangle;
                     toggle_floating(loc.node);
@@ -287,8 +290,8 @@ void mouse_do(mouse_action_t mac)
                 frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;
                 frozen_pointer->position = pos;
-                frozen_pointer->action = mac;
-                if (mac == MOUSE_RESIZE) {
+                frozen_pointer->action = pac;
+                if (pac == POINTER_RESIZE) {
                     int16_t mid_x, mid_y;
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
                     mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
@@ -304,16 +307,13 @@ void mouse_do(mouse_action_t mac)
                             frozen_pointer->corner = TOP_LEFT;
                     }
                 }
-                xcb_grab_pointer(dpy, false, root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
                 break;
         }
     }
 }
 
-void motion_notify(xcb_generic_event_t *evt)
+void track_pointer(int root_x, int root_y)
 {
-    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-
     int16_t delta_x, delta_y, x, y, w, h;
     uint16_t width, height;
 
@@ -327,18 +327,16 @@ void motion_notify(xcb_generic_event_t *evt)
     x = y = 0;
     w = h = 1;
 
-    /* PRINTF("motion notify %X\n", win); */
-
-    delta_x = e->root_x - frozen_pointer->position.x;
-    delta_y = e->root_y - frozen_pointer->position.y;
+    delta_x = root_x - frozen_pointer->position.x;
+    delta_y = root_y - frozen_pointer->position.y;
 
     switch (frozen_pointer->action) {
-        case MOUSE_MOVE:
+        case POINTER_MOVE:
             x = rect.x + delta_x;
             y = rect.y + delta_y;
             window_move(win, x, y);
             break;
-        case MOUSE_RESIZE:
+        case POINTER_RESIZE:
             switch (frozen_pointer->corner) {
                 case TOP_LEFT:
                     x = rect.x + delta_x;
@@ -371,33 +369,19 @@ void motion_notify(xcb_generic_event_t *evt)
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, d->focus == n, mon == m);
             break;
-        case MOUSE_FOCUS:
+        case POINTER_FOCUS:
             break;
     }
 }
 
-void button_release(void)
+void ungrab_pointer(void)
 {
-    PUTS("button release");
+    PUTS("ungrab pointer");
 
-    xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
     update_floating_rectangle(frozen_pointer->node->client);
     monitor_t *m = underlying_monitor(frozen_pointer->node->client);
     if (m != NULL && m != frozen_pointer->monitor) {
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
         select_monitor(m);
-    }
-}
-
-void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
-{
-    if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-        bool fs = n->client->fullscreen;
-        if (action == XCB_EWMH_WM_STATE_TOGGLE
-                || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
-            toggle_fullscreen(m, n->client);
-            arrange(m, d);
-        }
     }
 }

@@ -98,10 +98,10 @@ typedef enum {
 } corner_t;
 
 typedef enum {
-    MOUSE_MOVE,
-    MOUSE_RESIZE,
-    MOUSE_FOCUS
-} mouse_action_t;
+    POINTER_MOVE,
+    POINTER_RESIZE,
+    POINTER_FOCUS
+} pointer_action_t;
 
 typedef struct {
     xcb_window_t window;
@@ -189,7 +189,7 @@ typedef struct {
 
 typedef struct {
     xcb_point_t position;
-    mouse_action_t action;
+    pointer_action_t action;
     xcb_rectangle_t rectangle;
     monitor_t *monitor;
     desktop_t *desktop;

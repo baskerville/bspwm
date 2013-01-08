@@ -24,10 +24,10 @@
 #define WINDOW_GAP          6
 #define SPLIT_RATIO         0.5
 
-#define BORDERLESS_MONOCLE   false
-#define GAPLESS_MONOCLE      false
-#define FOCUS_FOLLOWS_MOUSE  false
-#define ADAPTATIVE_RAISE     false
+#define BORDERLESS_MONOCLE     false
+#define GAPLESS_MONOCLE        false
+#define FOCUS_FOLLOWS_POINTER  false
+#define ADAPTATIVE_RAISE       false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -60,7 +60,7 @@ int window_gap;
 
 bool borderless_monocle;
 bool gapless_monocle;
-bool focus_follows_mouse;
+bool focus_follows_pointer;
 bool adaptative_raise;
 
 char wm_name[MAXLEN];

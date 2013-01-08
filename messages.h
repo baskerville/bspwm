@@ -20,6 +20,6 @@ bool parse_skip_client(char *, skip_client_t *);
 bool parse_skip_desktop(char *, skip_desktop_t *);
 bool parse_rotate(char *, rotate_t *);
 bool parse_fence_move(char *, fence_move_t *);
-bool parse_mouse_action(char *, mouse_action_t *);
+bool parse_pointer_action(char *, pointer_action_t *);
 
 #endif

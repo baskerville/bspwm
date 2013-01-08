@@ -151,7 +151,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
-    uint32_t values[] = {CLIENT_EVENT_MASK};
+    uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
@@ -478,16 +478,10 @@ void window_show(xcb_window_t win)
 
 void toggle_visibility(void)
 {
-    uint32_t values_off[] = {CLIENT_EVENT_MASK & ~XCB_EVENT_MASK_ENTER_WINDOW};
-    uint32_t values_on[] = {CLIENT_EVENT_MASK};
     visible = !visible;
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n)) {
-            xcb_window_t win = n->client->window;
-            xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_off);
-            window_set_visibility(win, visible);
-            xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values_on);
-        }
+        for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n))
+            window_set_visibility(n->client->window, visible);
     if (visible)
         update_current();
 }

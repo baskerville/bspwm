@@ -131,8 +131,14 @@ The following messages are handled:
     circulate forward|backward
         Circulate the leaves in the given direction.
 
-    mouse move|resize|focus
-        Perform the given mouse action on the window under the pointer.
+    grab_pointer move|resize|focus
+        Begin the specified pointer action.
+
+    track_pointer ROOT_X ROOT_Y
+        Pass the pointer root coordinates for the current pointer action.
+
+    ungrab_pointer
+        End the current pointer action.
 
     toggle_fullscreen
         Toggle the fullscreen state of the current window.
@@ -275,8 +281,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     gapless_monocle
         Whether to remove gaps for tiled windows in monocle mode.
 
-    focus_follows_mouse
-        Wether to focus the window under the mouse pointer.
+    focus_follows_pointer
+        Wether to focus the window under the pointer.
 
     adaptative_raise
         Prevent floating windows from being raised when they might cover other floating windows.
