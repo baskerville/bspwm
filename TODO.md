@@ -1,5 +1,4 @@
 - Window move/resize pointer cursor feedbacks (via *util-cursor*).
-- Swap with last focused window message.
 - Grow/shrink through swap.
 - Send to previous/next desktop.
 - Command line completion for *bspc*.

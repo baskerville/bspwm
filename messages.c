@@ -346,6 +346,8 @@ void process_message(char *msg, char *rsp)
             if (sscanf(arg, "%X", &uid) > 0)
                 remove_rule_by_uid(uid);
         return;
+    } else if (strcmp(cmd, "swap") == 0) {
+        swap_nodes(mon->desk->focus, mon->desk->last_focus);
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, mon->desk->last_focus, true);
         return;
