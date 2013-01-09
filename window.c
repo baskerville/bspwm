@@ -418,6 +418,28 @@ void update_floating_rectangle(client_t *c)
     }
 }
 
+
+void save_pointer_position(xcb_point_t *pos)
+{
+    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+    if (qpr != NULL) {
+        *pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
+        free(qpr);
+    }
+}
+
+void window_focus(xcb_window_t win)
+{
+    window_location_t loc;
+    if (locate_window(win, &loc)) {
+        if (loc.node == mon->desk->focus)
+            return;
+        select_monitor(loc.monitor);
+        select_desktop(loc.desktop);
+        focus_node(loc.monitor, loc.desktop, loc.node, true);
+    }
+}
+
 void window_border_width(xcb_window_t win, uint32_t bw)
 {
     uint32_t values[] = {bw};

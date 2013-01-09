@@ -35,6 +35,9 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_PROPERTY_NOTIFY:
             property_notify(evt);
             break;
+        case XCB_ENTER_NOTIFY:
+            enter_notify(evt);
+            break;
         case XCB_MOTION_NOTIFY:
             motion_notify(evt);
             break;
@@ -223,6 +226,20 @@ void client_message(xcb_generic_event_t *evt)
     }
 }
 
+void enter_notify(xcb_generic_event_t *evt)
+{
+    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
+    xcb_window_t win = e->event;
+
+    PRINTF("enter notify %X %d %d\n", win, e->mode, e->detail);
+
+    if (e->mode != XCB_NOTIFY_MODE_NORMAL
+            || (last_pointer_position.x = e->root_x && last_pointer_position.y == e->root_y))
+        return;
+
+    window_focus(win);
+}
+
 void motion_notify(xcb_generic_event_t *evt)
 {
     xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
@@ -230,14 +247,7 @@ void motion_notify(xcb_generic_event_t *evt)
 
     PRINTF("motion notify %X\n", win);
 
-    window_location_t loc;
-    if (locate_window(win, &loc)) {
-        if (loc.node == mon->desk->focus)
-            return;
-        select_monitor(loc.monitor);
-        select_desktop(loc.desktop);
-        focus_node(loc.monitor, loc.desktop, loc.node, true);
-    }
+    window_focus(win);
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)

@@ -24,6 +24,7 @@ void toggle_locked(client_t *);
 void window_border_width(xcb_window_t, uint32_t);
 void window_move(xcb_window_t, int16_t, int16_t);
 void window_move_resize(xcb_window_t, int16_t, int16_t, uint16_t, uint16_t);
+void window_focus(xcb_window_t);
 void window_raise(xcb_window_t);
 void window_pseudo_raise(desktop_t *, xcb_window_t);
 void window_lower(xcb_window_t);
@@ -33,6 +34,7 @@ void window_show(xcb_window_t);
 void toggle_visibility(void);
 uint32_t get_main_border_color(client_t *, bool, bool);
 void update_floating_rectangle(client_t *);
+void save_pointer_position(xcb_point_t *);
 void list_windows(char *);
 
 #endif

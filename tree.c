@@ -178,6 +178,8 @@ void arrange(monitor_t *m, desktop_t *d)
     rect.y += m->top_padding + wg;
     rect.width -= m->left_padding + m->right_padding + wg;
     rect.height -= m->top_padding + m->bottom_padding + wg;
+    if (focus_follows_pointer)
+        save_pointer_position(&last_pointer_position);
     apply_layout(m, d, d->root, rect, rect);
 }
 
@@ -368,14 +370,17 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 
-    if (n != mon->desk->focus && focus_follows_pointer) {
-        if (last_pointed != XCB_NONE) {
-            uint32_t values[] = {CLIENT_EVENT_MASK_FFP};
-            xcb_change_window_attributes(dpy, last_pointed, XCB_CW_EVENT_MASK, values);
+    if (focus_follows_pointer) {
+        save_pointer_position(&last_pointer_position);
+        if (n != mon->desk->focus) {
+            if (last_focused_window != XCB_NONE) {
+                uint32_t values[] = {CLIENT_EVENT_MASK_FFP};
+                xcb_change_window_attributes(dpy, last_focused_window, XCB_CW_EVENT_MASK, values);
+            }
+            uint32_t values[] = {CLIENT_EVENT_MASK};
+            xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+            last_focused_window = n->client->window;
         }
-        uint32_t values[] = {CLIENT_EVENT_MASK};
-        xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-        last_pointed = n->client->window;
     }
 
     if (!is_tiled(n->client)) {
