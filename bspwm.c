@@ -12,6 +12,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>
+#include <xcb/xcb_cursor.h>
 #include <xcb/xinerama.h>
 #include "types.h"
 #include "settings.h"
@@ -37,6 +38,7 @@ void cleanup(void)
     while (rule_head != NULL)
         remove_rule(rule_head);
     free(frozen_pointer);
+    xcb_cursor_context_free(cursor_context);
 }
 
 void register_events(void)
@@ -119,6 +121,8 @@ void setup(void)
     frozen_pointer = make_pointer_state();
     last_focused_window = XCB_NONE;
     save_pointer_position(&last_pointer_position);
+    if (xcb_cursor_context_new(&cursor_context, dpy) == -1)
+        warn("Couldn't create the cursor context.\n");
     split_mode = MODE_AUTOMATIC;
     visible = true;
     exit_status = 0;

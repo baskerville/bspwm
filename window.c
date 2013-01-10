@@ -5,6 +5,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
+#include <xcb/xcb_cursor.h>
 #include "types.h"
 #include "tree.h"
 #include "bspwm.h"
@@ -496,6 +497,13 @@ void window_hide(xcb_window_t win)
 void window_show(xcb_window_t win)
 {
     window_set_visibility(win, true);
+}
+
+void window_set_cursor(xcb_window_t win, char *name)
+{
+    xcb_cursor_t cursor = xcb_cursor_load_cursor(cursor_context, name);
+    uint32_t values[] = {cursor};
+    xcb_change_window_attributes(dpy, win, XCB_CW_CURSOR, values);
 }
 
 void toggle_visibility(void)

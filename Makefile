@@ -1,7 +1,7 @@
 VERSION = 0.4
 
 CC      = gcc
-LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
+LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama -lxcb-cursor
 CFLAGS  = -std=c99 -pedantic -Wall -Wextra -D_POSIX_C_SOURCE=2 -DVERSION=\"$(VERSION)\"
 LDFLAGS = $(LIBS)
 

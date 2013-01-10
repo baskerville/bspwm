@@ -306,16 +306,24 @@ void grab_pointer(pointer_action_t pac)
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
                     mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
                     if (pos.x > mid_x) {
-                        if (pos.y > mid_y)
+                        if (pos.y > mid_y) {
                             frozen_pointer->corner = BOTTOM_RIGHT;
-                        else
+                            window_set_cursor(loc.node->client->window, CURSOR_RESIZE_BR);
+                        } else {
                             frozen_pointer->corner = TOP_RIGHT;
+                            window_set_cursor(loc.node->client->window, CURSOR_RESIZE_TR);
+                        }
                     } else {
-                        if (pos.y > mid_y)
+                        if (pos.y > mid_y) {
                             frozen_pointer->corner = BOTTOM_LEFT;
-                        else
+                            window_set_cursor(loc.node->client->window, CURSOR_RESIZE_BL);
+                        } else {
                             frozen_pointer->corner = TOP_LEFT;
+                            window_set_cursor(loc.node->client->window, CURSOR_RESIZE_TL);
+                        }
                     }
+                } else {
+                    window_set_cursor(loc.node->client->window, CURSOR_MOVE);
                 }
                 break;
         }
@@ -388,6 +396,7 @@ void ungrab_pointer(void)
 {
     PUTS("ungrab pointer");
 
+    window_set_cursor(frozen_pointer->node->client->window, CURSOR_NORMAL);
     update_floating_rectangle(frozen_pointer->node->client);
     monitor_t *m = underlying_monitor(frozen_pointer->node->client);
     if (m != NULL && m != frozen_pointer->monitor) {

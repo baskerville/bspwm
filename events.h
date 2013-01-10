@@ -1,6 +1,13 @@
 #ifndef _EVENTS_H
 #define _EVENTS_H
 
+#define CURSOR_NORMAL     "left_ptr"
+#define CURSOR_MOVE       "fleur"
+#define CURSOR_RESIZE_TL  "top_left_corner"
+#define CURSOR_RESIZE_TR  "top_right_corner"
+#define CURSOR_RESIZE_BR  "bottom_right_corner"
+#define CURSOR_RESIZE_BL  "bottom_left_corner"
+
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 
