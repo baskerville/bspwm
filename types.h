@@ -98,9 +98,10 @@ typedef enum {
 } corner_t;
 
 typedef enum {
-    POINTER_MOVE,
-    POINTER_RESIZE,
-    POINTER_FOCUS
+    ACTION_MOVE,
+    ACTION_RESIZE,
+    ACTION_FOCUS,
+    ACTION_NONE
 } pointer_action_t;
 
 typedef struct {

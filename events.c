@@ -283,11 +283,11 @@ void grab_pointer(pointer_action_t pac)
     if (locate_window(win, &loc)) {
         client_t *c = loc.node->client;
         switch (pac)  {
-            case POINTER_FOCUS:
+            case ACTION_FOCUS:
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
-            case POINTER_MOVE:
-            case POINTER_RESIZE:
+            case ACTION_MOVE:
+            case ACTION_RESIZE:
                 if (is_tiled(loc.node->client)) {
                     loc.node->client->floating_rectangle = loc.node->client->tiled_rectangle;
                     toggle_floating(loc.node);
@@ -301,7 +301,7 @@ void grab_pointer(pointer_action_t pac)
                 frozen_pointer->rectangle = c->floating_rectangle;
                 frozen_pointer->position = pos;
                 frozen_pointer->action = pac;
-                if (pac == POINTER_RESIZE) {
+                if (pac == ACTION_RESIZE) {
                     int16_t mid_x, mid_y;
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
                     mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
@@ -326,12 +326,19 @@ void grab_pointer(pointer_action_t pac)
                     window_set_cursor(loc.node->client->window, CURSOR_MOVE);
                 }
                 break;
+            case ACTION_NONE:
+                break;
         }
+    } else {
+        frozen_pointer->action = ACTION_NONE;
     }
 }
 
 void track_pointer(int root_x, int root_y)
 {
+    if (frozen_pointer->action == ACTION_NONE)
+        return;
+
     int16_t delta_x, delta_y, x, y, w, h;
     uint16_t width, height;
 
@@ -349,12 +356,12 @@ void track_pointer(int root_x, int root_y)
     delta_y = root_y - frozen_pointer->position.y;
 
     switch (frozen_pointer->action) {
-        case POINTER_MOVE:
+        case ACTION_MOVE:
             x = rect.x + delta_x;
             y = rect.y + delta_y;
             window_move(win, x, y);
             break;
-        case POINTER_RESIZE:
+        case ACTION_RESIZE:
             switch (frozen_pointer->corner) {
                 case TOP_LEFT:
                     x = rect.x + delta_x;
@@ -387,7 +394,8 @@ void track_pointer(int root_x, int root_y)
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, d->focus == n, mon == m);
             break;
-        case POINTER_FOCUS:
+        case ACTION_FOCUS:
+        case ACTION_NONE:
             break;
     }
 }
@@ -395,6 +403,9 @@ void track_pointer(int root_x, int root_y)
 void ungrab_pointer(void)
 {
     PUTS("ungrab pointer");
+
+    if (frozen_pointer->action == ACTION_NONE)
+        return;
 
     window_set_cursor(frozen_pointer->node->client->window, CURSOR_NORMAL);
     update_floating_rectangle(frozen_pointer->node->client);

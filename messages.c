@@ -726,13 +726,13 @@ bool parse_fence_move(char *s, fence_move_t *m)
 bool parse_pointer_action(char *s, pointer_action_t *a)
 {
     if (strcmp(s, "move") == 0) {
-        *a = POINTER_MOVE;
+        *a = ACTION_MOVE;
         return true;
     } else if (strcmp(s, "focus") == 0) {
-        *a = POINTER_FOCUS;
+        *a = ACTION_FOCUS;
         return true;
     } else if (strcmp(s, "resize") == 0) {
-        *a = POINTER_RESIZE;
+        *a = ACTION_RESIZE;
         return true;
     }
     return false;
