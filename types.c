@@ -146,6 +146,7 @@ rule_t *make_rule(void)
     r->effect.floating = false;
     r->effect.monitor = NULL;
     r->effect.desktop = NULL;
+    r->prev = NULL;
     r->next = NULL;
     return r;
 }
