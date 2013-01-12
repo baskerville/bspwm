@@ -1,7 +1,6 @@
 #ifndef _BSPWM_H
 #define _BSPWM_H
 
-#include "xcb/xcb_cursor.h"
 #include "types.h"
 
 #define ROOT_EVENT_MASK        (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY)
@@ -34,7 +33,6 @@ rule_t *rule_tail;
 pointer_state_t *frozen_pointer;
 xcb_window_t last_focused_window;
 xcb_point_t last_pointer_position;
-xcb_cursor_context_t *cursor_context;
 
 int exit_status;
 

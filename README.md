@@ -310,7 +310,6 @@ Multiple choices:
 - libxcb
 - xcb-util
 - xcb-util-wm
-- xcb-util-cursor
 
 ## Installation
 
