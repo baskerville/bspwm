@@ -185,25 +185,53 @@ void process_message(char *msg, char *rsp)
                 move_fence(mon->desk->focus, d, m);
             }
         }
-    } else if (strcmp(cmd, "send_to_monitor") == 0) {
-        char *arg = strtok(NULL, TOK_SEP);
-        if (arg != NULL) {
-            send_option_t opt;
-            if (parse_send_option(arg, &opt)) {
+    } else if (strcmp(cmd, "drop_to_monitor") == 0) {
+        char *dir = strtok(NULL, TOK_SEP);
+        if (dir != NULL) {
+            cycle_dir_t d;
+            if (parse_cycle_direction(dir, &d)) {
                 monitor_t *m;
-                if (opt == SEND_OPTION_NEXT)
+                if (d == CYCLE_NEXT)
                     m = ((mon->next == NULL ? mon_head : mon->next));
-                else if (opt == SEND_OPTION_PREV)
-                    m = ((mon->prev == NULL ? mon_tail : mon->prev));
                 else
-                    m = find_monitor(arg);
-                if (m != NULL && m != mon) {
-                    transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
-                    arrange(m, m->desk);
-                    if (opt == SEND_OPTION_FOLLOW)
-                        select_monitor(m);
-                }
-            } 
+                    m = ((mon->prev == NULL ? mon_tail : mon->prev));
+                transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
+                arrange(m, m->desk);
+                char *opt = strtok(NULL, TOK_SEP);
+                send_option_t o;
+                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
+                    select_monitor(m);
+            }
+        }
+    } else if (strcmp(cmd, "send_to_monitor") == 0) {
+        char *name = strtok(NULL, TOK_SEP);
+        if (name != NULL) {
+            monitor_t *m = find_monitor(name);
+            if (m != NULL && m != mon) {
+                transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
+                arrange(m, m->desk);
+                char *opt = strtok(NULL, TOK_SEP);
+                send_option_t o;
+                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
+                    select_monitor(m);
+            }
+        } 
+    } else if (strcmp(cmd, "drop_to") == 0) {
+        char *dir = strtok(NULL, TOK_SEP);
+        if (dir != NULL) {
+            cycle_dir_t c;
+            if (parse_cycle_direction(dir, &c)) {
+                desktop_t *d;
+                if (c == CYCLE_NEXT)
+                    d = ((mon->desk->next == NULL ? mon->desk_head : mon->desk->next));
+                else
+                    d = ((mon->desk->prev == NULL ? mon->desk_tail : mon->desk->prev));
+                transfer_node(mon, mon->desk, mon, d, mon->desk->focus);
+                char *opt = strtok(NULL, TOK_SEP);
+                send_option_t o;
+                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
+                    select_desktop(d);
+            }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
         char *name = strtok(NULL, TOK_SEP);
@@ -213,9 +241,9 @@ void process_message(char *msg, char *rsp)
                 transfer_node(mon, mon->desk, loc.monitor, loc.desktop, mon->desk->focus);
                 if (mon != loc.monitor && loc.monitor->desk == loc.desktop)
                     arrange(loc.monitor, loc.desktop);
-                char *arg = strtok(NULL, TOK_SEP);
-                send_option_t opt;
-                if (parse_send_option(arg, &opt) && opt == SEND_OPTION_FOLLOW) {
+                char *opt = strtok(NULL, TOK_SEP);
+                send_option_t o;
+                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW) {
                     select_monitor(loc.monitor);
                     select_desktop(loc.desktop);
                 }
@@ -685,12 +713,6 @@ bool parse_send_option(char *s, send_option_t *o)
         return true;
     } else if (strcmp(s, "--follow") == 0) {
         *o = SEND_OPTION_FOLLOW;
-        return true;
-    } else if (strcmp(s, "--next") == 0) {
-        *o = SEND_OPTION_NEXT;
-        return true;
-    } else if (strcmp(s, "--prev") == 0) {
-        *o = SEND_OPTION_PREV;
         return true;
     }
     return false;

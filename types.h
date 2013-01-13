@@ -43,9 +43,7 @@ typedef enum {
 
 typedef enum {
     SEND_OPTION_FOLLOW,
-    SEND_OPTION_DONT_FOLLOW,
-    SEND_OPTION_NEXT,
-    SEND_OPTION_PREV
+    SEND_OPTION_DONT_FOLLOW
 } send_option_t;
 
 typedef enum {

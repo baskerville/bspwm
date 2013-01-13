@@ -164,8 +164,14 @@ The following messages are handled:
     send_to DESKTOP_NAME [--follow]
         Send the focused window to the given desktop.
 
+    drop_to next|prev [--follow]
+        Send the focused window to the next or previous desktop.
+
     send_to_monitor MONITOR_NAME [--follow]
         Send the focused window to the given monitor.
+
+    drop_to_monitor next|prev [--follow]
+        Send the focused window to the next or previous monitor.
 
     use DESKTOP_NAME
         Select the given desktop.
