@@ -28,6 +28,7 @@ options:
 	@echo "CC      = $(CC)"
 	@echo "CFLAGS  = $(CFLAGS)"
 	@echo "LDFLAGS = $(LDFLAGS)"
+	@echo "LIBS    = $(LIBS)"
 	@echo "PREFIX  = $(PREFIX)"
 
 .c.o:
