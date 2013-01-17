@@ -7,6 +7,47 @@
 #include "ewmh.h"
 #include "rules.h"
 
+void add_rule(rule_t *r)
+{
+    if (rule_head == NULL) {
+        rule_head = rule_tail = r;
+    } else {
+        rule_tail->next = r;
+        r->prev = rule_tail;
+        rule_tail = r;
+    }
+}
+
+void remove_rule(rule_t *r)
+{
+    if (r == NULL)
+        return;
+    rule_t *prev = r->prev;
+    rule_t *next = r->next;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    if (r == rule_head)
+        rule_head = next;
+    if (r == rule_tail)
+        rule_tail = prev;
+    free(r);
+}
+
+void remove_rule_by_uid(unsigned int uid)
+{
+    remove_rule(find_rule(uid));
+}
+
+rule_t *find_rule(unsigned int uid)
+{
+    for (rule_t *r = rule_head; r != NULL; r = r->next)
+        if (r->uid == uid)
+            return r;
+    return NULL;
+}
+
 bool is_match(rule_t *r, xcb_window_t win)
 {
     xcb_icccm_get_wm_class_reply_t reply; 
@@ -78,5 +119,15 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
             }
         }
         rule = rule->next;
+    }
+}
+
+void list_rules(char *rsp)
+{
+    char line[MAXLEN];
+
+    for (rule_t *r = rule_head; r != NULL; r = r->next) {
+        snprintf(line, sizeof(line), "%02X %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"));
+        strncat(rsp, line, REMLEN(rsp));
     }
 }

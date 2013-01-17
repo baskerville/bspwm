@@ -1,0 +1,5 @@
+- New setting: 'windows\_per\_desktop' that would automatically send the oldest window of the current desktop to the first found desktop having a number of windows inferior to the limit and create a new desktop if there is none when the number of windows in the current desktop reaches the limit.
+- Grow/shrink through swap.
+- Command line completion for *bspc*.
+- Better handling of the floating window concept.
+- Focus history.

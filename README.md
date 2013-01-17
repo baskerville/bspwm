@@ -1,4 +1,4 @@
-![logo](https://github.com/baskerville/bspwm/raw/master/resources/bspwm_logo.png)
+![logo](https://github.com/baskerville/bspwm/raw/master/logo/bspwm-logo.png)
 
 ## Description
 
@@ -14,11 +14,11 @@ Those messages are sent via `bspc`.
 
 If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
-The recommended way of defining keyboard shortcuts is to use `xbindkeys`.
+The recommended way of defining keyboard shortcuts is to use [sxhkd](https://github.com/baskerville/sxhkd).
 
 The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
 
-Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc).
+Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [sxhkdrc](https://github.com/baskerville/dotfiles/blob/master/sxhkdrc).
 
 ## Splitting Modes
 
@@ -65,6 +65,12 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
+## Synopsis
+
+    bspwm [-v|-s STATUS_FIFO]
+
+    bspc MESSAGE [ARGUMENTS] [OPTIONS]
+
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
@@ -89,7 +95,10 @@ The following messages are handled:
     list_windows
         Return the list of managed windows (i.e. their identifiers).
 
-    presel left|right|up|down
+    list_rules
+        Return the list of rules.
+
+    presel left|right|up|down [SPLIT_RATIO]
         Switch to manual mode and select the splitting direction.
 
     cancel
@@ -98,11 +107,17 @@ The following messages are handled:
     ratio VALUE
         Set the splitting ratio of the focused window.
 
+    pad MONITOR_NAME [TOP_PADDING [RIGHT_PADDING [BOTTOM_PADDING [LEFT_PADDING]]]]
+        Set the padding of the given monitor.
+
     focus left|right|up|down
         Focus the neighbor window situated in the given direction.
 
     shift left|right|up|down
         Exchange the current window with the given neighbor.
+
+    swap
+        Swap the focused window with the last focused window.
 
     push left|right|up|down
         Push the fence located in the given direction.
@@ -119,6 +134,15 @@ The following messages are handled:
     circulate forward|backward
         Circulate the leaves in the given direction.
 
+    grab_pointer move|resize|focus
+        Begin the specified pointer action.
+
+    track_pointer ROOT_X ROOT_Y
+        Pass the pointer root coordinates for the current pointer action.
+
+    ungrab_pointer
+        End the current pointer action.
+
     toggle_fullscreen
         Toggle the fullscreen state of the current window.
 
@@ -128,17 +152,26 @@ The following messages are handled:
     toggle_locked
         Toggle the locked state of the current window (locked windows will not respond to the 'close' message).
 
+    toggle_visibility
+        Toggle the visibility of all the managed windows.
+
     close
         Close the focused window.
 
     kill
         Kill the focused window.
 
-    send_to DESKTOP_NAME
+    send_to DESKTOP_NAME [--follow]
         Send the focused window to the given desktop.
 
-    send_to_monitor MONITOR_NAME
+    drop_to next|prev [--follow]
+        Send the focused window to the next or previous desktop.
+
+    send_to_monitor MONITOR_NAME [--follow]
         Send the focused window to the given monitor.
+
+    drop_to_monitor next|prev [--follow]
+        Send the focused window to the next or previous monitor.
 
     use DESKTOP_NAME
         Select the given desktop.
@@ -185,6 +218,9 @@ The following messages are handled:
     rule PATTERN [DESKTOP_NAME] [floating]
         Create a new rule (PATTERN must match the class or instance name).
 
+    remove_rule UID ...
+        Remove the rules with the given UIDs.
+
     adopt_orphans
         Manage all the unmanaged windows remaining from a previous session.
 
@@ -194,10 +230,10 @@ The following messages are handled:
     reload_settings
         Reload the default settings.
 
-    reload
-        Reload the autostart file and the default settings.
+    restore FILE_PATH
+        Restore the layout of each desktop from the content of FILE_PATH.
 
-    quit
+    quit [EXIT_STATUS]
         Quit.
 
 ## Settings
@@ -242,17 +278,11 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     window_gap
         Value of the gap that separates windows.
 
-    top_padding
-    bottom_padding
-    left_padding
-    right_padding
-        Padding space added at the sides of the screen.
+    {top,right,bottom,left}_padding
+        Padding space added at the sides of the current monitor.
 
     wm_name
         The value that shall be used for the _NET_WM_NAME property of the root window.
-
-    button_modifier
-        The modifier mask used for mouse bindings (possible values: 'mod1' ... 'mod5').
 
     borderless_monocle
         Whether to remove borders for tiled windows in monocle mode.
@@ -260,19 +290,11 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
     gapless_monocle
         Whether to remove gaps for tiled windows in monocle mode.
 
-    focus_follows_mouse
-        Wether to focus the window under the mouse pointer.
+    focus_follows_pointer
+        Wether to focus the window under the pointer.
 
-## Mouse Bindings
-
-    button_modifier + left mouse button
-        Move the window under the pointer.
-
-    button_modifier + middle mouse button
-        Focus the window under the pointer.
-
-    button_modifier + right mouse button
-        Resize the window under the pointer (by moving one of its four corners).
+    adaptative_raise
+        Prevent floating windows from being raised when they might cover other floating windows.
 
 ## Key Features
 
@@ -284,9 +306,10 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 ## Panel
 
-`dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
-
-Or any EWMH compliant panel.
+Multiple choices:
+- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
+- A custom panel if the `-s` flag is used (have a look at the files in `examples/`).
+- Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
 
 ## Required Libraries:
 
@@ -302,3 +325,7 @@ Or any EWMH compliant panel.
 ## Contributors
 
 - [Ivan Kanakarakis](https://github.com/c00kiemon5ter)
+
+## Mailing List
+
+bspwm *at* librelist *dot* com.

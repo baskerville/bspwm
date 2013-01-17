@@ -2,8 +2,8 @@
 .SH NAME
 bspwm \- Tiling window manager based on binary space partitioning
 .SH SYNOPSIS
-.BI bspwm
-.RI [ -v ]
+.B bspwm
+.RI [ -v | "-s STATUS_FIFO" ]
 .P
 .BI bspc " MESSAGE"
 .RI [ ARGUMENTS ]
@@ -28,7 +28,7 @@ environment variable is defined, it will be used as the socket path, otherwise
 is used.
 .P
 The recommended way of defining keyboard shortcuts is to use
-.BR xbindkeys .
+.BR sxhkd .
 .P
 The only way to configure
 .B bspwm
@@ -55,6 +55,7 @@ message.
 Example: insertion of a new node (number 4) into the given tree in
 .I automatic
 mode:
+.EX
 
                  b                                   c
                 / \\                                 / \\
@@ -73,12 +74,14 @@ mode:
     |            |            |         |            |     |      |
     +-------------------------+         +-------------------------+
 
+.EE
 .P
 Same departure, but the mode is
 .IR manual ,
 and a
 .BI presel " up"
 message was sent beforehand:
+.EX
 
                  b                                   b
                 / \\                                 / \\
@@ -96,6 +99,7 @@ message was sent beforehand:
     |            |            |         |            |            |
     +-------------------------+         +-------------------------+
 
+.EE
 .SH MESSAGES
 .TP
 .BI get " SETTING"
@@ -116,7 +120,10 @@ Perform a dump of each monitor.
 .BI list_windows
 Return the list of managed windows (i.e. their identifiers).
 .TP
-.BI presel " left|right|up|down"
+.BI list_rules
+Return the list of rules.
+.TP
+.BI presel " left|right|up|down [SPLIT_RATIO]"
 Switch to manual mode and select the splitting direction.
 .TP
 .BI cancel
@@ -125,11 +132,17 @@ Switch to automatic mode.
 .BI ratio " VALUE"
 Set the splitting ratio of the focused window.
 .TP
+.BI pad " MONITOR_NAME [TOP_PADDING [RIGHT_PADDING [BOTTOM_PADDING [LEFT_PADDING]]]]"
+Set the padding of the given monitor.
+.TP
 .BI focus " left|right|up|down"
 Focus the neighbor window situated in the given direction.
 .TP
 .BI shift " left|right|up|down"
 Exchange the current window with the given neighbor.
+.TP
+.BI swap
+Swap the focused window with the last focused window.
 .TP
 .BI push " left|right|up|down"
 Push the fence located in the given direction.
@@ -146,6 +159,15 @@ Focus the nearest window matching the given constraints.
 .BI circulate " forward|backward"
 Circulate the leaves in the given direction.
 .TP
+.BI grab_pointer " move|resize|focus"
+Begin the specified pointer action.
+.TP
+.BI track_pointer " ROOT_X ROOT_Y"
+Pass the pointer root coordinates for the current pointer action.
+.TP
+.BI ungrab_pointer
+End the current pointer action.
+.TP
 .BI toggle_fullscreen
 Toggle the fullscreen state of the current window.
 .TP
@@ -157,17 +179,26 @@ Toggle the locked state of the current window (locked windows will not respond t
 .B close
 message).
 .TP
+.BI toggle_visibility
+Toggle the visibility of all the managed windows.
+.TP
 .BI close
 Close the focused window.
 .TP
 .BI kill
 Kill the focused window.
 .TP
-.BI send_to " DESKTOP_NAME"
+.BI send_to " DESKTOP_NAME [--follow]"
 Send the focused window to the given desktop.
 .TP
-.BI send_to_monitor " MONITOR_NAME"
+.BI drop_to " next|prev [--follow]"
+Send the focused window to the next or previous desktop.
+.TP
+.BI send_to_monitor " MONITOR_NAME [--follow]"
 Send the focused window to the given monitor.
+.TP
+.BI drop_to_monitor " next|prev [--follow]"
+Send the focused window to the next or previous monitor.
 .TP
 .BI use " DESKTOP_NAME"
 Select the given desktop.
@@ -211,8 +242,11 @@ Cycle the layout of the current desktop.
 .BI rotate " clockwise|counter_clockwise|full_cycle"
 Rotate the tree of the current desktop.
 .TP
-.BI rule " PATTERN [DESKTOP_NAME] [floating] "
+.BI rule " PATTERN [DESKTOP_NAME] [floating]"
 Create a new rule (PATTERN must match the class or instance name).
+.TP
+.BI remove_rule " UID ..."
+Remove the rules with the given UIDs.
 .TP
 .BI adopt_orphans
 Manage all the unmanaged windows remaining from a previous session.
@@ -223,10 +257,10 @@ Reload the autostart file.
 .BI reload_settings
 Reload the default settings.
 .TP
-.BI reload
-Reload the autostart file and the default settings.
+.BI restore " FILE_PATH"
+Restore the layout of each desktop from the content of FILE_PATH.
 .TP
-.BI quit
+.BI quit " [EXIT_STATUS]"
 Quit.
 .SH SETTINGS
 Colors are either
@@ -272,23 +306,29 @@ Color of the main border of an unfocused locked window.
 .I urgent_border_color
 Color of the border of an urgent window.
 .TP
-.I {inner,main,outer}_border_width
+.I inner_border_width
+.TQ
+.I main_border_width
+.TQ
+.I outer_border_width
 Width of the inner, main and outer borders.
 .TP
 .I window_gap
 Value of the gap that separates windows.
 .TP
-.I {top,bottom,left,right}_padding
-Padding space added at the sides of the screen.
+.I top_padding
+.TQ
+.I right_padding
+.TQ
+.I bottom_padding
+.TQ
+.I left_padding
+Padding space added at the sides of the current monitor.
 .TP
 .I wm_name
 The value that shall be used for the
 .B _NET_WM_NAME
 property of the root window.
-.TP
-.I button_modifier
-The modifier mask used for mouse bindings (possible values:
-.BR mod1 " ... " mod5 ).
 .TP
 .I borderless_monocle
 Whether to remove borders for tiled windows in monocle mode.
@@ -296,18 +336,11 @@ Whether to remove borders for tiled windows in monocle mode.
 .I gapless_monocle
 Whether to remove gaps for tiled windows in monocle mode.
 .TP
-.I focus_follows_mouse
-Wether to focus the window under the mouse pointer.
-.SH MOUSE BINDINGS
+.I focus_follows_pointer
+Wether to focus the window under the pointer.
 .TP
-.I button_modifier + left mouse button
-Move the window under the pointer.
-.TP
-.I button_modifier + middle mouse button
-Focus the window under the pointer.
-.TP
-.I button_modifier + right mouse button
-Resize the window under the pointer (by moving one of its four corners).
+.I adaptative_raise
+Prevent floating windows from being raised when they might cover other floating windows.
 .SH AUTHOR
 .EX
 Bastien Dejean <baskerville at lavabit.com>
@@ -318,6 +351,9 @@ Ivan Kanakarakis <ivan.kanak at gmail.com>
 .SH HOMEPAGE
 .TP
 https://github.com/baskerville/bspwm
+.SH MAILING LIST
+.TP
+bspwm at librelist.com
 .SH SEE ALSO
 .BR monsterwm (1),
 .BR tmux (1).
