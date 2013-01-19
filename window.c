@@ -347,7 +347,7 @@ void toggle_fullscreen(monitor_t *m, client_t *c)
 
 void toggle_floating(node_t *n)
 {
-    if (n == NULL || n->client->transient)
+    if (n == NULL || n->client->transient || n->client->fullscreen)
         return;
 
     PRINTF("toggle floating %X\n", n->client->window);
