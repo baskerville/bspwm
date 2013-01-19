@@ -31,7 +31,6 @@ void window_focus(xcb_window_t);
 void window_raise(xcb_window_t);
 void window_pseudo_raise(desktop_t *, xcb_window_t);
 void window_lower(xcb_window_t);
-void window_pseudo_raise(desktop_t *, xcb_window_t);
 void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
 void window_show(xcb_window_t);
