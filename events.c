@@ -293,6 +293,7 @@ void grab_pointer(pointer_action_t pac)
                     toggle_floating(loc.node);
                     arrange(loc.monitor, loc.desktop);
                 } else if (loc.node->client->fullscreen) {
+                    frozen_pointer->action = ACTION_NONE;
                     return;
                 }
                 frozen_pointer->monitor = loc.monitor;
