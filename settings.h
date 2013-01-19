@@ -28,6 +28,7 @@
 #define GAPLESS_MONOCLE        false
 #define FOCUS_FOLLOWS_POINTER  false
 #define ADAPTATIVE_RAISE       false
+#define APPLY_SHADOW_PROPERTY  false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -62,6 +63,7 @@ bool borderless_monocle;
 bool gapless_monocle;
 bool focus_follows_pointer;
 bool adaptative_raise;
+bool apply_shadow_property;
 
 char wm_name[MAXLEN];
 

@@ -223,6 +223,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
+- `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
+
 ## Key Features
 
 - Configured and controlled through messages
