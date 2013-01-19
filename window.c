@@ -96,6 +96,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     handle_rules(win, &m, &d, &floating, &transient, &fullscreen, &takes_focus, &manage);
 
     if (!manage) {
+        disable_shadow(win);
         window_show(win);
         return;
     }
