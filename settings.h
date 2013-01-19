@@ -5,7 +5,6 @@
 
 #define WM_NAME             "bspwm"
 #define AUTOSTART_FILE      "autostart"
-#define BUTTON_MODIFIER     XCB_MOD_MASK_4
 
 #define FOCUSED_BORDER_COLOR        "#7D7F8A"
 #define ACTIVE_BORDER_COLOR         "#7D7F8A"
@@ -21,16 +20,15 @@
 #define INNER_BORDER_WIDTH  3
 #define MAIN_BORDER_WIDTH   1
 #define OUTER_BORDER_WIDTH  3
-#define SPLIT_RATIO         0.5
 
 #define WINDOW_GAP          6
-#define TOP_PADDING         0
-#define BOTTOM_PADDING      0
-#define LEFT_PADDING        0
-#define RIGHT_PADDING       0
+#define SPLIT_RATIO         0.5
 
-#define BORDERLESS_MONOCLE   false
-#define FOCUS_FOLLOWS_MOUSE  false
+#define BORDERLESS_MONOCLE     false
+#define GAPLESS_MONOCLE        false
+#define FOCUS_FOLLOWS_POINTER  false
+#define ADAPTATIVE_RAISE       false
+#define APPLY_SHADOW_PROPERTY  false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -60,16 +58,14 @@ unsigned int outer_border_width;
 unsigned int border_width;
 
 int window_gap;
-int top_padding;
-int bottom_padding;
-int left_padding;
-int right_padding;
 
 bool borderless_monocle;
-bool focus_follows_mouse;
+bool gapless_monocle;
+bool focus_follows_pointer;
+bool adaptative_raise;
+bool apply_shadow_property;
 
 char wm_name[MAXLEN];
-unsigned int button_modifier;
 
 void load_settings(void);
 void run_autostart(void);

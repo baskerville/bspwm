@@ -38,14 +38,8 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_ENTER_NOTIFY:
             enter_notify(evt);
             break;
-        case XCB_BUTTON_PRESS:
-            button_press(evt);
-            break;
         case XCB_MOTION_NOTIFY:
             motion_notify(evt);
-            break;
-        case XCB_BUTTON_RELEASE:
-            button_release();
             break;
         default:
             break;
@@ -188,32 +182,15 @@ void property_notify(xcb_generic_event_t *evt)
 
     window_location_t loc;
     if (locate_window(e->window, &loc)) {
-        if (loc.node == loc.desktop->focus)
-            return;
         if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1) {
-            loc.node->client->urgent = (hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY);
-            if (loc.monitor->desk == loc.desktop)
-                arrange(loc.monitor, loc.desktop);
+            uint32_t urgent = xcb_icccm_wm_hints_get_urgency(&hints);
+            if (urgent != 0 && loc.node != mon->desk->focus) {
+                loc.node->client->urgent = urgent;
+                put_status();
+                if (loc.monitor->desk == loc.desktop)
+                    arrange(loc.monitor, loc.desktop);
+            }
         }
-    }
-}
-
-void enter_notify(xcb_generic_event_t *evt)
-{
-    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
-
-    PRINTF("enter notify %X %d %d\n", e->event, e->mode, e->detail);
-
-    if (!focus_follows_mouse 
-            || (e->mode != XCB_NOTIFY_MODE_NORMAL && e->detail == XCB_NOTIFY_DETAIL_INFERIOR)
-            || (pointer_position.x == e->root_x && pointer_position.y == e->root_y))
-        return;
-
-    window_location_t loc;
-    if (locate_window(e->event, &loc)) {
-        select_monitor(loc.monitor);
-        focus_node(loc.monitor, loc.desktop, loc.node, true);
-        pointer_position = (xcb_point_t) {e->root_x, e->root_y};
     }
 }
 
@@ -221,10 +198,18 @@ void client_message(xcb_generic_event_t *evt)
 {
     xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
 
-    PRINTF("client message %X\n", e->window);
+    PRINTF("client message %X %u\n", e->window, e->type);
+
+    if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
+        desktop_location_t loc;
+        if (ewmh_locate_desktop(e->data.data32[0], &loc)) {
+            select_monitor(loc.monitor);
+            select_desktop(loc.desktop);
+        }
+        return;
+    }
 
     window_location_t loc;
-
     if (!locate_window(e->window, &loc))
         return;
 
@@ -241,60 +226,111 @@ void client_message(xcb_generic_event_t *evt)
     }
 }
 
-void button_press(xcb_generic_event_t *evt)
+void enter_notify(xcb_generic_event_t *evt)
 {
-    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
-    xcb_window_t win = e->child;
+    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
+    xcb_window_t win = e->event;
 
-    PRINTF("button press %u %X\n", e->detail, win);
+    PRINTF("enter notify %X %d %d\n", win, e->mode, e->detail);
+
+    if (e->mode != XCB_NOTIFY_MODE_NORMAL
+            || (last_pointer_position.x = e->root_x && last_pointer_position.y == e->root_y))
+        return;
+
+    window_focus(win);
+}
+
+void motion_notify(xcb_generic_event_t *evt)
+{
+    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
+    xcb_window_t win = e->event;
+
+    PRINTF("motion notify %X\n", win);
+
+    window_focus(win);
+}
+
+void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
+{
+    if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
+        bool fs = n->client->fullscreen;
+        if (action == XCB_EWMH_WM_STATE_TOGGLE
+                || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
+            toggle_fullscreen(m, n->client);
+            arrange(m, d);
+        }
+    }
+}
+
+void grab_pointer(pointer_action_t pac)
+{
+    PRINTF("grab pointer %u\n", pac);
+
+    xcb_window_t win;
+    xcb_point_t pos;
+
+    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+    if (qpr != NULL) {
+        pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
+        win = qpr->child;
+        free(qpr);
+    } else {
+        return;
+    }
 
     window_location_t loc;
     if (locate_window(win, &loc)) {
         client_t *c = loc.node->client;
-        switch (e->detail)  {
-            case XCB_BUTTON_INDEX_2:
+        switch (pac)  {
+            case ACTION_FOCUS:
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
-            case XCB_BUTTON_INDEX_1:
-            case XCB_BUTTON_INDEX_3:
+            case ACTION_MOVE:
+            case ACTION_RESIZE:
                 if (is_tiled(loc.node->client)) {
                     loc.node->client->floating_rectangle = loc.node->client->tiled_rectangle;
                     toggle_floating(loc.node);
                     arrange(loc.monitor, loc.desktop);
                 } else if (loc.node->client->fullscreen) {
+                    frozen_pointer->action = ACTION_NONE;
                     return;
                 }
                 frozen_pointer->monitor = loc.monitor;
                 frozen_pointer->desktop = loc.desktop;
                 frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;
-                frozen_pointer->position = (xcb_point_t) {e->root_x, e->root_y};
-                frozen_pointer->button = e->detail;
-                if (e->detail == XCB_BUTTON_INDEX_3) {
+                frozen_pointer->position = pos;
+                frozen_pointer->action = pac;
+                if (pac == ACTION_RESIZE) {
                     int16_t mid_x, mid_y;
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
                     mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
-                    if (e->root_x > mid_x) {
-                        if (e->root_y > mid_y)
+                    if (pos.x > mid_x) {
+                        if (pos.y > mid_y)
                             frozen_pointer->corner = BOTTOM_RIGHT;
                         else
                             frozen_pointer->corner = TOP_RIGHT;
                     } else {
-                        if (e->root_y > mid_y)
+                        if (pos.y > mid_y)
                             frozen_pointer->corner = BOTTOM_LEFT;
                         else
                             frozen_pointer->corner = TOP_LEFT;
                     }
                 }
-                xcb_grab_pointer(dpy, false, screen->root, XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
+                break;
+            case ACTION_NONE:
                 break;
         }
+    } else {
+        frozen_pointer->action = ACTION_NONE;
     }
 }
 
-void motion_notify(xcb_generic_event_t *evt)
+void track_pointer(int root_x, int root_y)
 {
-    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
+    if (frozen_pointer->action == ACTION_NONE)
+        return;
 
     int16_t delta_x, delta_y, x, y, w, h;
     uint16_t width, height;
@@ -309,18 +345,16 @@ void motion_notify(xcb_generic_event_t *evt)
     x = y = 0;
     w = h = 1;
 
-    /* PRINTF("motion notify %X\n", win); */
+    delta_x = root_x - frozen_pointer->position.x;
+    delta_y = root_y - frozen_pointer->position.y;
 
-    delta_x = e->root_x - frozen_pointer->position.x;
-    delta_y = e->root_y - frozen_pointer->position.y;
-
-    switch (frozen_pointer->button) {
-        case XCB_BUTTON_INDEX_1:
+    switch (frozen_pointer->action) {
+        case ACTION_MOVE:
             x = rect.x + delta_x;
             y = rect.y + delta_y;
             window_move(win, x, y);
             break;
-        case XCB_BUTTON_INDEX_3:
+        case ACTION_RESIZE:
             switch (frozen_pointer->corner) {
                 case TOP_LEFT:
                     x = rect.x + delta_x;
@@ -353,26 +387,23 @@ void motion_notify(xcb_generic_event_t *evt)
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, d->focus == n, mon == m);
             break;
+        case ACTION_FOCUS:
+        case ACTION_NONE:
+            break;
     }
 }
 
-void button_release(void)
+void ungrab_pointer(void)
 {
-    PUTS("button release");
+    PUTS("ungrab pointer");
 
-    xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
+    if (frozen_pointer->action == ACTION_NONE)
+        return;
+
     update_floating_rectangle(frozen_pointer->node->client);
-}
-
-void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
-{
-    if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-        bool fs = n->client->fullscreen;
-        if (action == XCB_EWMH_WM_STATE_TOGGLE
-                || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
-            toggle_fullscreen(m, n->client);
-            arrange(m, d);
-        }
+    monitor_t *m = underlying_monitor(frozen_pointer->node->client);
+    if (m != NULL && m != frozen_pointer->monitor) {
+        transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
+        select_monitor(m);
     }
 }

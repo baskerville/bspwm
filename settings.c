@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
@@ -15,16 +16,18 @@ void run_autostart(void)
 
     snprintf(path, sizeof(path), "%s/%s/%s", getenv("XDG_CONFIG_HOME"), WM_NAME, AUTOSTART_FILE);
 
-    if (fork() != 0)
-        return;
+    if (fork() == 0) {
+        if (dpy != NULL)
+            close(xcb_get_file_descriptor(dpy));
+        if (fork() == 0) {
+            setsid();
+            execl(path, path, NULL);
+            err("Couldn't spawn the autostart file.\n");
+        }
+        exit(EXIT_SUCCESS);
+    }
 
-    if (dpy != NULL)
-        close(xcb_get_file_descriptor(dpy));
-
-    setsid();
-    execl(path, path, NULL);
-
-    err("could not run autostart file\n");
+    wait(NULL);
 }
 
 void load_settings(void)
@@ -52,20 +55,17 @@ void load_settings(void)
     urgent_border_color_pxl = get_color(urgent_border_color);
 
     strncpy(wm_name, WM_NAME, sizeof(wm_name));
-    button_modifier = BUTTON_MODIFIER;
 
     inner_border_width = INNER_BORDER_WIDTH;
     main_border_width = MAIN_BORDER_WIDTH;
     outer_border_width = OUTER_BORDER_WIDTH;
 
     border_width = inner_border_width + main_border_width + outer_border_width;
-
     window_gap = WINDOW_GAP;
-    left_padding = LEFT_PADDING;
-    right_padding = RIGHT_PADDING;
-    top_padding = TOP_PADDING;
-    bottom_padding = BOTTOM_PADDING;
 
     borderless_monocle = BORDERLESS_MONOCLE;
-    focus_follows_mouse = FOCUS_FOLLOWS_MOUSE;
+    gapless_monocle = GAPLESS_MONOCLE;
+    focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
+    adaptative_raise = ADAPTATIVE_RAISE;
+    apply_shadow_property = APPLY_SHADOW_PROPERTY;
 }

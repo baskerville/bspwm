@@ -7,6 +7,47 @@
 #include "ewmh.h"
 #include "rules.h"
 
+void add_rule(rule_t *r)
+{
+    if (rule_head == NULL) {
+        rule_head = rule_tail = r;
+    } else {
+        rule_tail->next = r;
+        r->prev = rule_tail;
+        rule_tail = r;
+    }
+}
+
+void remove_rule(rule_t *r)
+{
+    if (r == NULL)
+        return;
+    rule_t *prev = r->prev;
+    rule_t *next = r->next;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    if (r == rule_head)
+        rule_head = next;
+    if (r == rule_tail)
+        rule_tail = prev;
+    free(r);
+}
+
+void remove_rule_by_uid(unsigned int uid)
+{
+    remove_rule(find_rule(uid));
+}
+
+rule_t *find_rule(unsigned int uid)
+{
+    for (rule_t *r = rule_head; r != NULL; r = r->next)
+        if (r->uid == uid)
+            return r;
+    return NULL;
+}
+
 bool is_match(rule_t *r, xcb_window_t win)
 {
     xcb_icccm_get_wm_class_reply_t reply; 
@@ -19,7 +60,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -36,6 +77,15 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
             }
         }
         xcb_ewmh_get_atoms_reply_wipe(&win_type);
+    }
+
+    xcb_size_hints_t size_hints;
+
+    if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
+        if (size_hints.min_width > 0 && size_hints.min_height > 0
+                && size_hints.min_width == size_hints.max_width
+                && size_hints.min_height == size_hints.max_height)
+            *floating = true;
     }
 
     xcb_ewmh_get_atoms_reply_t win_state;
@@ -60,9 +110,24 @@ void handle_rules(xcb_window_t win, bool *floating, bool *transient, bool *fulls
 
     while (rule != NULL) {
         if (is_match(rule, win)) {
-            if (rule->effect.floating)
+            rule_effect_t efc = rule->effect;
+            if (efc.floating)
                 *floating = true;
+            if (efc.monitor != NULL && efc.desktop != NULL) {
+                *m = efc.monitor;
+                *d = efc.desktop;
+            }
         }
         rule = rule->next;
+    }
+}
+
+void list_rules(char *rsp)
+{
+    char line[MAXLEN];
+
+    for (rule_t *r = rule_head; r != NULL; r = r->next) {
+        snprintf(line, sizeof(line), "%02X %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"));
+        strncat(rsp, line, REMLEN(rsp));
     }
 }

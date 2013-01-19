@@ -42,6 +42,11 @@ typedef enum {
 } list_option_t;
 
 typedef enum {
+    SEND_OPTION_FOLLOW,
+    SEND_OPTION_DONT_FOLLOW
+} send_option_t;
+
+typedef enum {
     CLIENT_SKIP_NONE,
     CLIENT_SKIP_FLOATING,
     CLIENT_SKIP_TILED,
@@ -90,10 +95,18 @@ typedef enum {
     BOTTOM_RIGHT
 } corner_t;
 
+typedef enum {
+    ACTION_MOVE,
+    ACTION_RESIZE,
+    ACTION_FOCUS,
+    ACTION_NONE
+} pointer_action_t;
+
 typedef struct {
     xcb_window_t window;
     unsigned int uid;
     char class_name[MAXLEN];
+    split_mode_t born_as;
     unsigned int border_width;
     bool floating;
     bool transient;  /* transient window are always floating */
@@ -110,7 +123,6 @@ struct node_t {
     double split_ratio;
     xcb_rectangle_t rectangle;
     bool vacant;          /* vacant nodes only hold floating clients */
-    split_mode_t born_as;
     node_t *first_child;
     node_t *second_child;
     node_t *parent;
@@ -145,6 +157,10 @@ typedef struct monitor_t monitor_t;
 struct monitor_t {
     char name[MAXLEN];
     xcb_rectangle_t rectangle;
+    int top_padding;
+    int right_padding;
+    int bottom_padding;
+    int left_padding;
     desktop_t *desk;
     desktop_t *last_desk;
     desktop_t *desk_head;
@@ -159,12 +175,16 @@ typedef struct {
 
 typedef struct {
     bool floating;
+    monitor_t *monitor;
+    desktop_t *desktop;
 } rule_effect_t;
 
 typedef struct rule_t rule_t;
 struct rule_t {
+    unsigned int uid;
     rule_cause_t cause;
     rule_effect_t effect;
+    rule_t *prev;
     rule_t *next;
 };
 
@@ -181,7 +201,7 @@ typedef struct {
 
 typedef struct {
     xcb_point_t position;
-    xcb_button_t button;
+    pointer_action_t action;
     xcb_rectangle_t rectangle;
     monitor_t *monitor;
     desktop_t *desktop;
@@ -191,7 +211,13 @@ typedef struct {
 
 node_t *make_node(void);
 monitor_t *make_monitor(xcb_rectangle_t *);
+monitor_t *find_monitor(char *);
+void add_monitor(xcb_rectangle_t *);
+void remove_monitor(monitor_t *);
 desktop_t *make_desktop(const char *);
+void add_desktop(monitor_t *, char *);
+void empty_desktop(desktop_t *);
+void remove_desktop(monitor_t *, desktop_t *);
 client_t *make_client(xcb_window_t);
 focus_history_t *make_focus_history(void);
 node_list_t *make_node_list(void);

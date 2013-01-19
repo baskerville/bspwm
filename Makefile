@@ -1,9 +1,10 @@
-VERSION = 0.2
+VERSION = 0.4
 
 CC      = gcc
 LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
-CFLAGS  = -std=c99 -pedantic -Wall -Wextra -DVERSION=\"$(VERSION)\"
-LDFLAGS = $(LIBS)
+CFLAGS  = -std=c99 -pedantic -Wall -Wextra -I$(PREFIX)/include
+CFLAGS  += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
+LDFLAGS = -L$(PREFIX)/lib
 
 PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
@@ -27,19 +28,20 @@ options:
 	@echo "CC      = $(CC)"
 	@echo "CFLAGS  = $(CFLAGS)"
 	@echo "LDFLAGS = $(LDFLAGS)"
+	@echo "LIBS    = $(LIBS)"
 	@echo "PREFIX  = $(PREFIX)"
 
 .c.o:
 	@echo "CC $<"
-	@$(CC) $(CFLAGS) -DVERSION=\"$(VERSION)\" -c -o $@ $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 bspwm: $(WM_OBJ)
 	@echo CC -o $@
-	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS)
+	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS) $(LIBS)
 
 bspc: $(CL_OBJ)
 	@echo CC -o $@
-	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS)
+	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS) $(LIBS)
 
 clean:
 	@echo "cleaning"
@@ -47,15 +49,18 @@ clean:
 
 install:
 	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
-	@install -D -m 755 bspwm $(DESTDIR)$(BINPREFIX)/bspwm
-	@install -D -m 755 bspc $(DESTDIR)$(BINPREFIX)/bspc
+	@mkdir -p "$(DESTDIR)$(BINPREFIX)"
+	@cp bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
+	@chmod 755 "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
 	@echo "installing manual page to $(DESTDIR)$(MANPREFIX)/man1"
-	@install -D -m 644 bspwm.1 $(DESTDIR)$(MANPREFIX)/man1/bspwm.1
+	@mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
+	@cp bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
+	@chmod 644 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 
 uninstall:
 	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
-	@rm -f $(DESTDIR)$(BINPREFIX)/bsp{wm,c}
+	@rm -f "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
 	@echo "removing manual page from $(DESTDIR)$(MANPREFIX)/man1"
-	@rm -f $(DESTDIR)$(MANPREFIX)/man1/bspwm.1
+	@rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 
 .PHONY: all debug options clean install uninstall

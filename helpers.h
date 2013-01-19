@@ -29,6 +29,5 @@ void warn(char *, ...);
 __attribute__((noreturn))
 void err(char *, ...);
 uint32_t get_color(char *);
-void get_pointer_position(xcb_point_t *);
 
 #endif

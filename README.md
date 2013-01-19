@@ -1,4 +1,4 @@
-![logo](https://github.com/baskerville/bspwm/raw/master/resources/bspwm_logo.png)
+![logo](https://github.com/baskerville/bspwm/raw/master/logo/bspwm-logo.png)
 
 ## Description
 
@@ -14,11 +14,11 @@ Those messages are sent via `bspc`.
 
 If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
 
-The recommended way of defining keyboard shortcuts is to use `xbindkeys`.
+The recommended way of defining keyboard shortcuts is to use [sxhkd](https://github.com/baskerville/sxhkd).
 
 The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
 
-Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [xbindkeysrc](https://github.com/baskerville/dotfiles/blob/master/xbindkeysrc).
+Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [sxhkdrc](https://github.com/baskerville/dotfiles/blob/master/sxhkdrc).
 
 ## Splitting Modes
 
@@ -65,214 +65,165 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
+## Synopsis
+
+    bspwm [-v|-s STATUS_FIFO]
+
+    bspc MESSAGE [ARGUMENTS] [OPTIONS]
+
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
 
 The following messages are handled:
 
-    get SETTING
-        Return the value of the given setting.
+- `get SETTING` — Return the value of the given setting.
 
-    set SETTING VALUE
-        Set the value of the given setting.
+- `set SETTING VALUE` — Set the value of the given setting.
 
-    list
-        Output the internal representation of the window tree.
+- `list [DESKTOP_NAME]` — Output the internal representation of the window tree.
 
-    list_desktops [--quiet]
-        Perform a dump of each desktop for the current monitor.
+- `list_desktops [--quiet]` — Perform a dump of each desktop for the current monitor.
 
-    list_monitors [--quiet]
-        Perform a dump of each monitor.
+- `list_monitors [--quiet]` — Perform a dump of each monitor.
 
-    list_windows
-        Return the list of managed windows (i.e. their identifiers).
+- `list_windows` — Return the list of managed windows (i.e. their identifiers).
 
-    presel left|right|up|down
-        Switch to manual mode and select the splitting direction.
+- `list_rules` — Return the list of rules.
 
-    cancel
-        Switch to automatic mode.
+- `presel left|right|up|down [SPLIT_RATIO]` — Switch to manual mode and select the splitting direction.
 
-    ratio VALUE
-        Set the splitting ratio of the focused window.
+- `cancel` — Switch to automatic mode.
 
-    focus left|right|up|down
-        Focus the neighbor window situated in the given direction.
+- `ratio VALUE` — Set the splitting ratio of the focused window.
 
-    shift left|right|up|down
-        Exchange the current window with the given neighbor.
+- `pad MONITOR_NAME [TOP_PADDING [RIGHT_PADDING [BOTTOM_PADDING [LEFT_PADDING]]]]` — Set the padding of the given monitor.
 
-    push left|right|up|down
-        Push the fence located in the given direction.
+- `focus left|right|up|down` — Focus the neighbor window situated in the given direction.
 
-    pull left|right|up|down
-        Pull the fence located in the given direction.
+- `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-    cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
-        Focus the next or previous window matching the given constraints.
+- `swap` — Swap the focused window with the last focused window.
 
-    nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]
-        Focus the nearest window matching the given constraints.
+- `push left|right|up|down` — Push the fence located in the given direction.
 
-    circulate forward|backward
-        Circulate the leaves in the given direction.
+- `pull left|right|up|down` — Pull the fence located in the given direction.
 
-    toggle_fullscreen
-        Toggle the fullscreen state of the current window.
+- `cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the next or previous window matching the given constraints.
 
-    toggle_floating
-        Toggle the floating state of the current window.
+- `nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the nearest window matching the given constraints.
 
-    toggle_locked
-        Toggle the locked state of the current window (locked windows will not respond to the 'close' message).
+- `circulate forward|backward` — Circulate the leaves in the given direction.
 
-    close
-        Close the focused window.
+- `grab_pointer move|resize|focus` — Begin the specified pointer action.
 
-    kill
-        Kill the focused window.
+- `track_pointer ROOT_X ROOT_Y` — Pass the pointer root coordinates for the current pointer action.
 
-    send_to DESKTOP_NAME
-        Send the focused window to the given desktop.
+- `ungrab_pointer` — End the current pointer action.
 
-    send_to_monitor MONITOR_NAME
-        Send the focused window to the given monitor.
+- `toggle_fullscreen` — Toggle the fullscreen state of the current window.
 
-    use DESKTOP_NAME
-        Select the given desktop.
+- `toggle_floating` — Toggle the floating state of the current window.
 
-    use_monitor MONITOR_NAME
-        Select the given monitor.
+- `toggle_locked` — Toggle the locked state of the current window (locked windows will not respond to the `close` message).
 
-    alternate
-        Alternate between the current and the last focused window.
+- `toggle_visibility` — Toggle the visibility of all the managed windows.
 
-    alternate_desktop
-        Alternate between the current and the last focused desktop.
+- `close` — Close the focused window.
 
-    alternate_monitor
-        Alternate between the current and the last focused monitor.
+- `kill` — Kill the focused window.
 
-    add DESKTOP_NAME ...
-        Make new desktops with the given names.
+- `send_to DESKTOP_NAME [--follow]` — Send the focused window to the given desktop.
 
-    add_in MONITOR_NAME DESKTOP_NAME ...
-        Make new desktops with the given names in the given monitor.
+- `drop_to next|prev [--follow]` — Send the focused window to the next or previous desktop.
 
-    rename_monitor CURRENT_NAME NEW_NAME
-        Rename the monitor named CURRENT_NAME to NEW_NAME.
+- `send_to_monitor MONITOR_NAME [--follow]` — Send the focused window to the given monitor.
 
-    rename CURRENT_NAME NEW_NAME
-        Rename the desktop named CURRENT_NAME to NEW_NAME.
+- `drop_to_monitor next|prev [--follow]` — Send the focused window to the next or previous monitor.
 
-    cycle_monitor next|prev
-        Select the next or previous monitor.
+- `use DESKTOP_NAME` — Select the given desktop.
 
-    cycle_desktop next|prev [--skip-free|--skip-occupied]
-        Select the next or previous desktop.
+- `use_monitor MONITOR_NAME` — Select the given monitor.
 
-    layout monocle|tiled
-        Set the layout of the current desktop.
+- `alternate` — Alternate between the current and the last focused window.
 
-    cycle_layout
-        Cycle the layout of the current desktop.
+- `alternate_desktop` — Alternate between the current and the last focused desktop.
 
-    rotate clockwise|counter_clockwise|full_cycle
-        Rotate the tree of the current desktop.
+- `alternate_monitor` — Alternate between the current and the last focused monitor.
 
-    magnetise top_left|top_right|bottom_left|bottom_right
-        Move all the fences toward the given corner.
+- `add DESKTOP_NAME ...` — Make new desktops with the given names.
 
-    rule PATTERN floating
-        Make a new rule that will float the windows whose class name or instance name equals PATTERN.
+- `add_in MONITOR_NAME DESKTOP_NAME ...` — Make new desktops with the given names in the given monitor.
 
-    adopt_orphans
-        Manage all the unmanaged windows remaining from a previous session.
+- `rename_monitor CURRENT_NAME NEW_NAME` — Rename the monitor named `CURRENT_NAME` to `NEW_NAME`.
 
-    reload_autostart
-        Reload the autostart file.
+- `rename CURRENT_NAME NEW_NAME` — Rename the desktop named `CURRENT_NAME` to `NEW_NAME`.
 
-    reload_settings
-        Reload the default settings.
+- `cycle_monitor next|prev` — Select the next or previous monitor.
 
-    reload
-        Reload the autostart file and the default settings.
+- `cycle_desktop next|prev [--skip-free|--skip-occupied]` — Select the next or previous desktop.
 
-    quit
-        Quit.
+- `layout monocle|tiled [DESKTOP_NAME ...]` — Set the layout of the given desktops (current if none given).
+
+- `cycle_layout` — Cycle the layout of the current desktop.
+
+- `rotate clockwise|counter_clockwise|full_cycle` — Rotate the tree of the current desktop.
+
+- `rule PATTERN [DESKTOP_NAME] [floating]` — Create a new rule (`PATTERN` must match the class or instance name).
+
+- `remove_rule UID ...` — Remove the rules with the given UIDs.
+
+- `adopt_orphans` — Manage all the unmanaged windows remaining from a previous session.
+
+- `reload_autostart` — Reload the autostart file.
+
+- `reload_settings` — Reload the default settings.
+
+- `restore FILE_PATH` — Restore the layout of each desktop from the content of `FILE_PATH`.
+
+- `quit [EXIT_STATUS]` — Quit.
 
 ## Settings
 
 Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or *#RRGGBB*, booleans are *true* or *false*.
 
-    focused_border_color
-        Color of the main border of a focused window of a focused monitor.
+- `focused_border_color` — Color of the main border of a focused window of a focused monitor.
 
-    active_border_color
-        Color of the main border of a focused window of an unfocused monitor.
+- `active_border_color` — Color of the main border of a focused window of an unfocused monitor.
 
-    normal_border_color
-        Color of the main border of an unfocused window.
+- `normal_border_color` — Color of the main border of an unfocused window.
 
-    inner_border_color
-        Color of the inner border of a window.
+- `inner_border_color` — Color of the inner border of a window.
 
-    outer_border_color
-        Color of the outer border of a window.
+- `outer_border_color` — Color of the outer border of a window.
 
-    presel_border_color
-        Color of the *presel* message feedback.
+- `presel_border_color` — Color of the `presel` message feedback.
 
-    focused_locked_border_color
-        Color of the main border of a focused locked window of a focused monitor.
+- `focused_locked_border_color` — Color of the main border of a focused locked window of a focused monitor.
 
-    active_locked_border_color
-        Color of the main border of a focused locked window of an unfocused monitor.
+- `active_locked_border_color` — Color of the main border of a focused locked window of an unfocused monitor.
 
-    normal_locked_border_color
-        Color of the main border of an unfocused locked window.
+- `normal_locked_border_color` — Color of the main border of an unfocused locked window.
 
-    urgent_border_color
-        Color of the border of an urgent window.
+- `urgent_border_color` — Color of the border of an urgent window.
 
-    inner_border_width
-    main_border_width
-    outer_border_width
-        Width of the inner, main and outer borders.
+- `{inner,main,outer}_border_width` — Width of the inner, main and outer borders.
 
-    window_gap
-        Value of the gap that separates windows.
+- `window_gap` — Value of the gap that separates windows.
 
-    top_padding
-    bottom_padding
-    left_padding
-    right_padding
-        Padding space added at the sides of the screen.
+- `{top,right,bottom,left}_padding` — Padding space added at the sides of the current monitor.
 
-    wm_name
-        The value that shall be used for the _NET_WM_NAME property of the root window.
+- `wm_name` — The value that shall be used for the `_NET_WM_NAME` property of the root window.
 
-    button_modifier
-        The modifier mask used for mouse bindings (possible values: 'mod1' ... 'mod5').
+- `borderless_monocle` — Whether to remove borders for tiled windows in monocle mode.
 
-    borderless_monocle
-        Whether to remove borders for tiled windows in monocle mode.
+- `gapless_monocle` — Whether to remove gaps for tiled windows in monocle mode.
 
-    focus_follows_mouse
-        Wether to focus the window under the mouse pointer.
+- `focus_follows_pointer` — Wether to focus the window under the pointer.
 
-## Mouse Bindings
+- `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
-    button_modifier + left mouse button
-        Move the window under the pointer.
-
-    button_modifier + middle mouse button
-        Focus the window under the pointer.
-
-    button_modifier + right mouse button
-        Resize the window under the pointer (by moving one of its four corners).
+- `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
 
 ## Key Features
 
@@ -284,9 +235,10 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 ## Panel
 
-`dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
-
-Or any EWMH compliant panel.
+Multiple choices:
+- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
+- A custom panel if the `-s` flag is used (have a look at the files in `examples/`).
+- Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
 
 ## Required Libraries:
 
@@ -302,3 +254,7 @@ Or any EWMH compliant panel.
 ## Contributors
 
 - [Ivan Kanakarakis](https://github.com/c00kiemon5ter)
+
+## Mailing List
+
+bspwm *at* librelist *dot* com.
