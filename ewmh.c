@@ -9,10 +9,9 @@
 
 void ewmh_init(void)
 {
-    ewmh = (xcb_ewmh_connection_t *) malloc(sizeof(xcb_ewmh_connection_t));
-    xcb_intern_atom_cookie_t *ewmh_cookies;
-    ewmh_cookies = xcb_ewmh_init_atoms(dpy, ewmh);
-    xcb_ewmh_init_atoms_replies(ewmh, ewmh_cookies, NULL);
+    ewmh = malloc(sizeof(xcb_ewmh_connection_t));
+    if (xcb_ewmh_init_atoms_replies(ewmh, xcb_ewmh_init_atoms(dpy, ewmh), NULL) == 0)
+        err("Can't initialize EWMH atoms.\n");
 }
 
 void ewmh_update_wm_name(void)
