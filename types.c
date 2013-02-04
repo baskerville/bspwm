@@ -154,5 +154,10 @@ rule_t *make_rule(void)
 pointer_state_t *make_pointer_state(void)
 {
     pointer_state_t *p = malloc(sizeof(pointer_state_t));
+    p->monitor = NULL;
+    p->desktop = NULL;
+    p->node = NULL;
+    p->client = NULL;
+    p->window = XCB_NONE;
     return p;
 }

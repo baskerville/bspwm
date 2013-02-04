@@ -96,10 +96,12 @@ typedef enum {
 } corner_t;
 
 typedef enum {
+    ACTION_NONE,
     ACTION_MOVE,
     ACTION_RESIZE,
     ACTION_FOCUS,
-    ACTION_NONE
+    ACTION_MOVE_TILED,
+    ACTION_RESIZE_TILED
 } pointer_action_t;
 
 typedef struct {
@@ -193,8 +195,15 @@ typedef struct {
     monitor_t *monitor;
     desktop_t *desktop;
     node_t *node;
+    client_t *client;
+    xcb_window_t window;
     corner_t corner;
 } pointer_state_t;
+
+typedef struct {
+    node_t *fence;
+    unsigned int distance;
+} fence_distance_t;
 
 node_t *make_node(void);
 monitor_t *make_monitor(xcb_rectangle_t *);

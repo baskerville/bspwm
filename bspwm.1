@@ -159,7 +159,7 @@ Focus the nearest window matching the given constraints.
 .BI circulate " forward|backward"
 Circulate the leaves in the given direction.
 .TP
-.BI grab_pointer " move|resize|focus"
+.BI grab_pointer " move|resize|focus|move_tiled|resize_tiled"
 Begin the specified pointer action.
 .TP
 .BI track_pointer " ROOT_X ROOT_Y"
@@ -346,6 +346,13 @@ Prevent floating windows from being raised when they might cover other floating 
 Enable shadows for floating windows via the
 .B _COMPTON_SHADOW
 property.
+.TP
+.I fence_grip
+If the distance to the nearest fence is greater than
+.IR fence_grip ,
+the
+.B resize_tiled
+action will not be engaged.
 .SH AUTHOR
 .EX
 Bastien Dejean <baskerville at lavabit.com>

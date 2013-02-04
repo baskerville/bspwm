@@ -280,28 +280,35 @@ void grab_pointer(pointer_action_t pac)
     }
 
     window_location_t loc;
-    if (locate_window(win, &loc)) {
-        client_t *c = loc.node->client;
+    bool found_win = locate_window(win, &loc);
+    if (found_win || pac == ACTION_RESIZE_TILED) {
+        fence_distance_t fd;
+        client_t *c = NULL;
+        frozen_pointer->position = pos;
+        frozen_pointer->action = pac;
+        if (found_win) {
+            c = loc.node->client;
+            frozen_pointer->monitor = loc.monitor;
+            frozen_pointer->desktop = loc.desktop;
+            frozen_pointer->node = loc.node;
+            frozen_pointer->client = c;
+            frozen_pointer->window = c->window;
+        }
         switch (pac)  {
             case ACTION_FOCUS:
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE:
-                if (is_tiled(loc.node->client)) {
-                    loc.node->client->floating_rectangle = loc.node->client->tiled_rectangle;
+                if (is_tiled(c)) {
+                    loc.node->client->floating_rectangle = c->tiled_rectangle;
                     toggle_floating(loc.node);
                     arrange(loc.monitor, loc.desktop);
-                } else if (loc.node->client->fullscreen) {
+                } else if (c->fullscreen) {
                     frozen_pointer->action = ACTION_NONE;
                     return;
                 }
-                frozen_pointer->monitor = loc.monitor;
-                frozen_pointer->desktop = loc.desktop;
-                frozen_pointer->node = loc.node;
                 frozen_pointer->rectangle = c->floating_rectangle;
-                frozen_pointer->position = pos;
-                frozen_pointer->action = pac;
                 if (pac == ACTION_RESIZE) {
                     int16_t mid_x, mid_y;
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
@@ -318,6 +325,20 @@ void grab_pointer(pointer_action_t pac)
                             frozen_pointer->corner = TOP_LEFT;
                     }
                 }
+                break;
+            case ACTION_RESIZE_TILED:
+                fd = nearest_fence(pos, mon->desk->root);
+                if (fd.fence != NULL && fd.distance < fence_grip) {
+                    frozen_pointer->node = fd.fence;
+                    frozen_pointer->action = pac;
+                    frozen_pointer->rectangle = fd.fence->rectangle;
+                } else {
+                    frozen_pointer->action = ACTION_NONE;
+                }
+                break;
+            case ACTION_MOVE_TILED:
+                if (!is_tiled(c))
+                    frozen_pointer->action = ACTION_NONE;
                 break;
             case ACTION_NONE:
                 break;
@@ -338,15 +359,19 @@ void track_pointer(int root_x, int root_y)
     monitor_t *m = frozen_pointer->monitor;
     desktop_t *d = frozen_pointer->desktop;
     node_t *n = frozen_pointer->node;
-    client_t *c = n->client;
+    client_t *c = frozen_pointer->client;
+    xcb_window_t win = frozen_pointer->window;
     xcb_rectangle_t rect = frozen_pointer->rectangle;
-    xcb_window_t win = c->window;
 
     x = y = 0;
     w = h = 1;
 
     delta_x = root_x - frozen_pointer->position.x;
     delta_y = root_y - frozen_pointer->position.y;
+    double sr;
+    xcb_query_pointer_reply_t *qpr;
+    xcb_window_t pwin;
+    window_location_t loc;
 
     switch (frozen_pointer->action) {
         case ACTION_MOVE:
@@ -387,6 +412,27 @@ void track_pointer(int root_x, int root_y)
             c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             window_draw_border(n, d->focus == n, mon == m);
             break;
+        case ACTION_RESIZE_TILED:
+            if (n->split_type == TYPE_VERTICAL)
+                sr = (double) (root_x - rect.x + window_gap / 2) / rect.width;
+            else
+                sr = (double) (root_y - rect.y + window_gap / 2) / rect.height;
+            sr = MAX(0, sr);
+            sr = MIN(1, sr);
+            n->split_ratio = sr;
+            arrange(mon, mon->desk);
+            break;
+        case ACTION_MOVE_TILED:
+            qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+            if (qpr != NULL) {
+                pwin = qpr->child;
+                free(qpr);
+                if (locate_window(pwin, &loc) && loc.monitor == m && loc.desktop == d && is_tiled(loc.node->client)) {
+                    swap_nodes(n, loc.node);
+                    arrange(m, d);
+                }
+            }
+            break;
         case ACTION_FOCUS:
         case ACTION_NONE:
             break;
@@ -400,8 +446,9 @@ void ungrab_pointer(void)
     if (frozen_pointer->action == ACTION_NONE)
         return;
 
-    update_floating_rectangle(frozen_pointer->node->client);
-    monitor_t *m = underlying_monitor(frozen_pointer->node->client);
+    if (is_floating(frozen_pointer->client))
+        update_floating_rectangle(frozen_pointer->client);
+    monitor_t *m = underlying_monitor(frozen_pointer->client);
     if (m != NULL && m != frozen_pointer->monitor) {
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
         select_monitor(m);

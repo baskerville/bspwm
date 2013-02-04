@@ -115,7 +115,7 @@ The following messages are handled:
 
 - `circulate forward|backward` — Circulate the leaves in the given direction.
 
-- `grab_pointer move|resize|focus` — Begin the specified pointer action.
+- `grab_pointer move|resize|focus|move_tiled|resize_tiled` — Begin the specified pointer action.
 
 - `track_pointer ROOT_X ROOT_Y` — Pass the pointer root coordinates for the current pointer action.
 
@@ -224,6 +224,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 - `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
+
+- `fence_grip` — If the distance to the nearest fence is greater than `fence_grip`, the `resize_tiled` action will not be engaged.
 
 ## Key Features
 

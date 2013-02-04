@@ -23,6 +23,7 @@
 
 #define WINDOW_GAP          6
 #define SPLIT_RATIO         0.5
+#define FENCE_GRIP          20
 
 #define BORDERLESS_MONOCLE     false
 #define GAPLESS_MONOCLE        false
@@ -58,6 +59,7 @@ unsigned int outer_border_width;
 unsigned int border_width;
 
 int window_gap;
+unsigned int fence_grip;
 
 bool borderless_monocle;
 bool gapless_monocle;
