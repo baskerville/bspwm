@@ -1,5 +1,4 @@
 - Rewrite `focus_follows_pointer` by using a root sized input only window mapped and unmapped via enter notify events.
-- Optimize border drawing by considering the `{outer,inner}_border_width == 0` case.
 - New setting: `windows_per_desktop` that would automatically send the oldest window of the current desktop to the first found desktop having a number of windows inferior to the limit and create a new desktop if there is none when the number of windows in the current desktop reaches the limit.
 - Grow/shrink through swap.
 - Command line completion for *bspc*.

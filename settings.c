@@ -35,8 +35,6 @@ void load_settings(void)
     strncpy(normal_border_color, NORMAL_BORDER_COLOR, sizeof(normal_border_color));
     strncpy(focused_border_color, FOCUSED_BORDER_COLOR, sizeof(focused_border_color));
     strncpy(active_border_color, ACTIVE_BORDER_COLOR, sizeof(active_border_color));
-    strncpy(inner_border_color, INNER_BORDER_COLOR, sizeof(inner_border_color));
-    strncpy(outer_border_color, OUTER_BORDER_COLOR, sizeof(outer_border_color));
     strncpy(presel_border_color, PRESEL_BORDER_COLOR, sizeof(presel_border_color));
     strncpy(focused_locked_border_color, FOCUSED_LOCKED_BORDER_COLOR, sizeof(focused_locked_border_color));
     strncpy(active_locked_border_color, ACTIVE_LOCKED_BORDER_COLOR, sizeof(active_locked_border_color));
@@ -46,8 +44,6 @@ void load_settings(void)
     normal_border_color_pxl = get_color(normal_border_color);
     focused_border_color_pxl = get_color(active_border_color);
     active_border_color_pxl = get_color(active_border_color);
-    inner_border_color_pxl = get_color(inner_border_color);
-    outer_border_color_pxl = get_color(outer_border_color);
     presel_border_color_pxl = get_color(presel_border_color);
     focused_locked_border_color_pxl = get_color(active_locked_border_color);
     active_locked_border_color_pxl = get_color(active_locked_border_color);
@@ -56,11 +52,7 @@ void load_settings(void)
 
     strncpy(wm_name, WM_NAME, sizeof(wm_name));
 
-    inner_border_width = INNER_BORDER_WIDTH;
-    main_border_width = MAIN_BORDER_WIDTH;
-    outer_border_width = OUTER_BORDER_WIDTH;
-
-    border_width = inner_border_width + main_border_width + outer_border_width;
+    border_width = BORDER_WIDTH;
     window_gap = WINDOW_GAP;
     fence_grip = FENCE_GRIP;
 

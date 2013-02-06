@@ -187,27 +187,23 @@ The following messages are handled:
 
 Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or *#RRGGBB*, booleans are *true* or *false*.
 
-- `focused_border_color` — Color of the main border of a focused window of a focused monitor.
+- `focused_border_color` — Color of the border of a focused window of a focused monitor.
 
-- `active_border_color` — Color of the main border of a focused window of an unfocused monitor.
+- `active_border_color` — Color of the border of a focused window of an unfocused monitor.
 
-- `normal_border_color` — Color of the main border of an unfocused window.
-
-- `inner_border_color` — Color of the inner border of a window.
-
-- `outer_border_color` — Color of the outer border of a window.
+- `normal_border_color` — Color of the border of an unfocused window.
 
 - `presel_border_color` — Color of the `presel` message feedback.
 
-- `focused_locked_border_color` — Color of the main border of a focused locked window of a focused monitor.
+- `focused_locked_border_color` — Color of the border of a focused locked window of a focused monitor.
 
-- `active_locked_border_color` — Color of the main border of a focused locked window of an unfocused monitor.
+- `active_locked_border_color` — Color of the border of a focused locked window of an unfocused monitor.
 
-- `normal_locked_border_color` — Color of the main border of an unfocused locked window.
+- `normal_locked_border_color` — Color of the border of an unfocused locked window.
 
 - `urgent_border_color` — Color of the border of an urgent window.
 
-- `{inner,main,outer}_border_width` — Width of the inner, main and outer borders.
+- `border_width` — Window border width.
 
 - `window_gap` — Value of the gap that separates windows.
 
@@ -233,7 +229,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 - Multiple monitors support (via *Xinerama*)
 - EWMH support (`tint2` works)
 - Automatic and manual modes
-- Triple window borders
 
 ## Panel
 

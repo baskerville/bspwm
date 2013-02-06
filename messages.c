@@ -437,15 +437,8 @@ void set_setting(char *name, char *value, char *rsp)
     if (name == NULL || value == NULL)
         return;
 
-    if (strcmp(name, "inner_border_width") == 0) {
-        sscanf(value, "%u", &inner_border_width);
-        border_width = inner_border_width + main_border_width + outer_border_width;
-    } else if (strcmp(name, "main_border_width") == 0) {
-        sscanf(value, "%u", &main_border_width);
-        border_width = inner_border_width + main_border_width + outer_border_width;
-    } else if (strcmp(name, "outer_border_width") == 0) {
-        sscanf(value, "%u", &outer_border_width);
-        border_width = inner_border_width + main_border_width + outer_border_width;
+    if (strcmp(name, "border_width") == 0) {
+        sscanf(value, "%u", &border_width);
     } else if (strcmp(name, "fence_grip") == 0) {
         sscanf(value, "%u", &fence_grip);
     } else if (strcmp(name, "window_gap") == 0) {
@@ -467,12 +460,6 @@ void set_setting(char *name, char *value, char *rsp)
     } else if (strcmp(name, "normal_border_color") == 0) {
         strncpy(normal_border_color, value, sizeof(normal_border_color));
         normal_border_color_pxl = get_color(normal_border_color);
-    } else if (strcmp(name, "inner_border_color") == 0) {
-        strncpy(inner_border_color, value, sizeof(inner_border_color));
-        inner_border_color_pxl = get_color(inner_border_color);
-    } else if (strcmp(name, "outer_border_color") == 0) {
-        strncpy(outer_border_color, value, sizeof(outer_border_color));
-        outer_border_color_pxl = get_color(outer_border_color);
     } else if (strcmp(name, "presel_border_color") == 0) {
         strncpy(presel_border_color, value, sizeof(presel_border_color));
         presel_border_color_pxl = get_color(presel_border_color);
@@ -534,13 +521,7 @@ void get_setting(char *name, char* rsp)
     if (name == NULL)
         return;
 
-    if (strcmp(name, "inner_border_width") == 0)
-        snprintf(rsp, BUFSIZ, "%u", inner_border_width);
-    else if (strcmp(name, "main_border_width") == 0)
-        snprintf(rsp, BUFSIZ, "%u", main_border_width);
-    else if (strcmp(name, "outer_border_width") == 0)
-        snprintf(rsp, BUFSIZ, "%u", outer_border_width);
-    else if (strcmp(name, "border_width") == 0)
+    if (strcmp(name, "border_width") == 0)
         snprintf(rsp, BUFSIZ, "%u", border_width);
     else if (strcmp(name, "fence_grip") == 0)
         snprintf(rsp, BUFSIZ, "%u", fence_grip);
@@ -560,10 +541,6 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s (%06X)", active_border_color, active_border_color_pxl);
     else if (strcmp(name, "normal_border_color") == 0)
         snprintf(rsp, BUFSIZ, "%s (%06X)", normal_border_color, normal_border_color_pxl);
-    else if (strcmp(name, "inner_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", inner_border_color, inner_border_color_pxl);
-    else if (strcmp(name, "outer_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", outer_border_color, outer_border_color_pxl);
     else if (strcmp(name, "presel_border_color") == 0)
         snprintf(rsp, BUFSIZ, "%s (%06X)", presel_border_color, presel_border_color_pxl);
     else if (strcmp(name, "focused_locked_border_color") == 0)

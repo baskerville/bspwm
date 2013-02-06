@@ -35,7 +35,7 @@ void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
 void window_show(xcb_window_t);
 void toggle_visibility(void);
-uint32_t get_main_border_color(client_t *, bool, bool);
+uint32_t get_border_color(client_t *, bool, bool);
 void update_floating_rectangle(client_t *);
 void save_pointer_position(xcb_point_t *);
 void list_windows(char *);
