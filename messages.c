@@ -286,8 +286,12 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                select_monitor(loc.monitor);
-                select_desktop(loc.desktop);
+                if (loc.desktop == mon->desk) {
+                    select_desktop(mon->last_desk);
+                } else {
+                    select_monitor(loc.monitor);
+                    select_desktop(loc.desktop);
+                }
             }
         }
     } else if (strcmp(cmd, "cycle_monitor") == 0) {
