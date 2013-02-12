@@ -53,7 +53,7 @@ void setup(void)
 {
     ewmh_init();
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
-    if (!screen)
+    if (screen == NULL)
         err("Can't acquire the default screen.\n");
     root = screen->root;
     register_events();
