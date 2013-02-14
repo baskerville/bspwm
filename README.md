@@ -255,3 +255,7 @@ Multiple choices:
 ## Mailing List
 
 bspwm *at* librelist *dot* com.
+
+## License
+
+BSD.
