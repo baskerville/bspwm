@@ -201,6 +201,24 @@ void rotate_tree(node_t *n, rotate_t rot)
     rotate_tree(n->second_child, rot);
 }
 
+void flip_tree(node_t *n, flip_t flp)
+{
+    if (n == NULL || is_leaf(n))
+        return;
+
+    node_t *tmp;
+
+    if ((flp == FLIP_HORIZONTAL && n->split_type == TYPE_HORIZONTAL)
+            || (flp == FLIP_VERTICAL && n->split_type == TYPE_VERTICAL)) {
+        tmp = n->first_child;
+        n->first_child = n->second_child;
+        n->second_child = tmp;
+        n->split_ratio = 1.0 - n->split_ratio;
+    }
+
+    flip_tree(n->first_child, flp);
+    flip_tree(n->second_child, flp);
+}
 
 void arrange(monitor_t *m, desktop_t *d)
 {

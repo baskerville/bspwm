@@ -66,9 +66,15 @@ void process_message(char *msg, char *rsp)
         char *deg = strtok(NULL, TOK_SEP);
         if (deg != NULL) {
             rotate_t r;
-            if (parse_rotate(deg, &r)) {
+            if (parse_rotate(deg, &r))
                 rotate_tree(mon->desk->root, r);
-            }
+        }
+    } else if (strcmp(cmd, "flip") == 0) {
+        char *flp = strtok(NULL, TOK_SEP);
+        if (flp != NULL) {
+            flip_t f;
+            if (parse_flip(flp, &f))
+                flip_tree(mon->desk->root, f);
         }
     } else if (strcmp(cmd, "grab_pointer") == 0) {
         char *pac = strtok(NULL, TOK_SEP);
@@ -719,6 +725,18 @@ bool parse_rotate(char *s, rotate_t *r)
         return true;
     } else if (strcmp(s, "full_cycle") == 0) {
         *r = ROTATE_FULL_CYCLE;
+        return true;
+    }
+    return false;
+}
+
+bool parse_flip(char *s, flip_t *f)
+{
+    if (strcmp(s, "horizontal") == 0) {
+        *f = FLIP_HORIZONTAL;
+        return true;
+    } else if (strcmp(s, "vertical") == 0) {
+        *f = FLIP_VERTICAL;
         return true;
     }
     return false;

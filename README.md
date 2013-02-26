@@ -167,7 +167,9 @@ The following messages are handled:
 
 - `cycle_layout` — Cycle the layout of the current desktop.
 
-- `rotate clockwise|counter_clockwise|full_cycle` — Rotate the tree of the current desktop.
+- `rotate clockwise|counter_clockwise|full_cycle` — Rotate the window tree.
+
+- `flip horizontal|vertical` — Flip the window tree.
 
 - `rule PATTERN [DESKTOP_NAME] [floating]` — Create a new rule (`PATTERN` must match the class or instance name).
 
