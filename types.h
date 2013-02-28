@@ -94,16 +94,24 @@ typedef enum {
 } direction_t;
 
 typedef enum {
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT
+    CORNER_TOP_LEFT,
+    CORNER_TOP_RIGHT,
+    CORNER_BOTTOM_LEFT,
+    CORNER_BOTTOM_RIGHT
 } corner_t;
+
+typedef enum {
+    SIDE_LEFT,
+    SIDE_TOP,
+    SIDE_RIGHT,
+    SIDE_BOTTOM
+} side_t;
 
 typedef enum {
     ACTION_NONE,
     ACTION_MOVE,
-    ACTION_RESIZE,
+    ACTION_RESIZE_CORNER,
+    ACTION_RESIZE_SIDE,
     ACTION_FOCUS,
     ACTION_MOVE_TILED,
     ACTION_RESIZE_TILED
@@ -203,6 +211,7 @@ typedef struct {
     client_t *client;
     xcb_window_t window;
     corner_t corner;
+    side_t side;
 } pointer_state_t;
 
 typedef struct {

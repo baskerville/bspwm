@@ -299,7 +299,8 @@ void grab_pointer(pointer_action_t pac)
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
             case ACTION_MOVE:
-            case ACTION_RESIZE:
+            case ACTION_RESIZE_SIDE:
+            case ACTION_RESIZE_CORNER:
                 if (is_tiled(c)) {
                     loc.node->client->floating_rectangle = c->tiled_rectangle;
                     toggle_floating(loc.node);
@@ -309,20 +310,41 @@ void grab_pointer(pointer_action_t pac)
                     return;
                 }
                 frozen_pointer->rectangle = c->floating_rectangle;
-                if (pac == ACTION_RESIZE) {
+
+                if (pac == ACTION_RESIZE_SIDE) {
+                    float W = c->floating_rectangle.width;
+                    float H = c->floating_rectangle.height;
+                    float ratio = W / H;
+                    float x = pos.x - c->floating_rectangle.x;
+                    float y = pos.y - c->floating_rectangle.y;
+                    float diag_a = ratio * y;
+                    float diag_b = c->floating_rectangle.width - diag_a;
+
+                    if (x < diag_a) {
+                        if (x < diag_b)
+                            frozen_pointer->side = SIDE_LEFT;
+                        else
+                            frozen_pointer->side = SIDE_BOTTOM;
+                    } else {
+                        if (x < diag_b)
+                            frozen_pointer->side = SIDE_TOP;
+                        else
+                            frozen_pointer->side = SIDE_RIGHT;
+                    }
+                } else if (pac == ACTION_RESIZE_CORNER) {
                     int16_t mid_x, mid_y;
                     mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
                     mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
                     if (pos.x > mid_x) {
                         if (pos.y > mid_y)
-                            frozen_pointer->corner = BOTTOM_RIGHT;
+                            frozen_pointer->corner = CORNER_BOTTOM_RIGHT;
                         else
-                            frozen_pointer->corner = TOP_RIGHT;
+                            frozen_pointer->corner = CORNER_TOP_RIGHT;
                     } else {
                         if (pos.y > mid_y)
-                            frozen_pointer->corner = BOTTOM_LEFT;
+                            frozen_pointer->corner = CORNER_BOTTOM_LEFT;
                         else
-                            frozen_pointer->corner = TOP_LEFT;
+                            frozen_pointer->corner = CORNER_TOP_LEFT;
                     }
                 }
                 break;
@@ -379,27 +401,60 @@ void track_pointer(int root_x, int root_y)
             y = rect.y + delta_y;
             window_move(win, x, y);
             break;
-        case ACTION_RESIZE:
+        case ACTION_RESIZE_SIDE:
+            switch (frozen_pointer->side) {
+                case SIDE_TOP:
+                    x = rect.x;
+                    y = rect.y + delta_y;
+                    w = rect.width;
+                    h = rect.height - delta_y;
+                    break;
+                case SIDE_RIGHT:
+                    x = rect.x;
+                    y = rect.y;
+                    w = rect.width + delta_x;
+                    h = rect.height;
+                    break;
+                case SIDE_BOTTOM:
+                    x = rect.x;
+                    y = rect.y;
+                    w = rect.width;
+                    h = rect.height + delta_y;
+                    break;
+                case SIDE_LEFT:
+                    x = rect.x + delta_x;
+                    y = rect.y;
+                    w = rect.width - delta_x;
+                    h = rect.height;
+                    break;
+            }
+            width = MAX(1, w);
+            height = MAX(1, h);
+            window_move_resize(win, x, y, width, height);
+            c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
+            window_draw_border(n, d->focus == n, mon == m);
+            break;
+        case ACTION_RESIZE_CORNER:
             switch (frozen_pointer->corner) {
-                case TOP_LEFT:
+                case CORNER_TOP_LEFT:
                     x = rect.x + delta_x;
                     y = rect.y + delta_y;
                     w = rect.width - delta_x;
                     h = rect.height - delta_y;
                     break;
-                case TOP_RIGHT:
+                case CORNER_TOP_RIGHT:
                     x = rect.x;
                     y = rect.y + delta_y;
                     w = rect.width + delta_x;
                     h = rect.height - delta_y;
                     break;
-                case BOTTOM_LEFT:
+                case CORNER_BOTTOM_LEFT:
                     x = rect.x + delta_x;
                     y = rect.y;
                     w = rect.width - delta_x;
                     h = rect.height + delta_y;
                     break;
-                case BOTTOM_RIGHT:
+                case CORNER_BOTTOM_RIGHT:
                     x = rect.x;
                     y = rect.y;
                     w = rect.width + delta_x;

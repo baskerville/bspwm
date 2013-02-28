@@ -759,8 +759,11 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
     if (strcmp(s, "move") == 0) {
         *a = ACTION_MOVE;
         return true;
-    } else if (strcmp(s, "resize") == 0) {
-        *a = ACTION_RESIZE;
+    } else if (strcmp(s, "resize_corner") == 0) {
+        *a = ACTION_RESIZE_CORNER;
+        return true;
+    } else if (strcmp(s, "resize_side") == 0) {
+        *a = ACTION_RESIZE_SIDE;
         return true;
     } else if (strcmp(s, "focus") == 0) {
         *a = ACTION_FOCUS;

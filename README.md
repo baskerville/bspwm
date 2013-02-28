@@ -115,7 +115,7 @@ The following messages are handled:
 
 - `circulate forward|backward` — Circulate the leaves in the given direction.
 
-- `grab_pointer move|resize|focus|move_tiled|resize_tiled` — Begin the specified pointer action.
+- `grab_pointer move|resize_corner|resize_side|focus|move_tiled|resize_tiled` — Begin the specified pointer action.
 
 - `track_pointer ROOT_X ROOT_Y` — Pass the pointer root coordinates for the current pointer action.
 
