@@ -318,7 +318,7 @@ void grab_pointer(pointer_action_t pac)
                     float x = pos.x - c->floating_rectangle.x;
                     float y = pos.y - c->floating_rectangle.y;
                     float diag_a = ratio * y;
-                    float diag_b = c->floating_rectangle.width - diag_a;
+                    float diag_b = W - diag_a;
 
                     if (x < diag_a) {
                         if (x < diag_b)
