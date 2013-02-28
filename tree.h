@@ -17,8 +17,6 @@ node_t *prev_leaf(node_t *);
 node_t *find_fence(node_t *, direction_t);
 node_t *find_neighbor(node_t *, direction_t);
 void move_fence(node_t *, direction_t, fence_move_t);
-unsigned int distance_to_fence(xcb_point_t, node_t *);
-fence_distance_t nearest_fence(xcb_point_t, node_t *);
 void rotate_tree(node_t *, rotate_t);
 void flip_tree(node_t *, flip_t);
 void arrange(monitor_t *, desktop_t *);
