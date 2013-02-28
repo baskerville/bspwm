@@ -14,7 +14,11 @@ void run_autostart(void)
 {
     char path[MAXLEN];
 
-    snprintf(path, sizeof(path), "%s/%s/%s", getenv("XDG_CONFIG_HOME"), WM_NAME, AUTOSTART_FILE);
+    char *config_home = getenv(CONFIG_HOME_ENV);
+    if (config_home != NULL)
+        snprintf(path, sizeof(path), "%s/%s/%s", config_home, WM_NAME, AUTOSTART_FILE);
+    else
+        snprintf(path, sizeof(path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, AUTOSTART_FILE);
 
     if (fork() == 0) {
         if (dpy != NULL)

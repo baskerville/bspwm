@@ -5,6 +5,7 @@
 
 #define WM_NAME             "bspwm"
 #define AUTOSTART_FILE      "autostart"
+#define CONFIG_HOME_ENV     "XDG_CONFIG_HOME"
 
 #define FOCUSED_BORDER_COLOR        "#7E7F89"
 #define ACTIVE_BORDER_COLOR         "#545350"
