@@ -280,20 +280,19 @@ void grab_pointer(pointer_action_t pac)
     }
 
     window_location_t loc;
-    bool found_win = locate_window(win, &loc);
-    if (found_win || pac == ACTION_RESIZE_TILED) {
-        fence_distance_t fd;
+    if (locate_window(win, &loc)) {
         client_t *c = NULL;
         frozen_pointer->position = pos;
         frozen_pointer->action = pac;
-        if (found_win) {
-            c = loc.node->client;
-            frozen_pointer->monitor = loc.monitor;
-            frozen_pointer->desktop = loc.desktop;
-            frozen_pointer->node = loc.node;
-            frozen_pointer->client = c;
-            frozen_pointer->window = c->window;
-        }
+        c = loc.node->client;
+        frozen_pointer->monitor = loc.monitor;
+        frozen_pointer->desktop = loc.desktop;
+        frozen_pointer->node = loc.node;
+        frozen_pointer->client = c;
+        frozen_pointer->window = c->window;
+        frozen_pointer->horizontal_fence = NULL;
+        frozen_pointer->vertical_fence = NULL;
+
         switch (pac)  {
             case ACTION_FOCUS:
                 focus_node(loc.monitor, loc.desktop, loc.node, true);
@@ -302,24 +301,23 @@ void grab_pointer(pointer_action_t pac)
             case ACTION_RESIZE_SIDE:
             case ACTION_RESIZE_CORNER:
                 if (is_tiled(c)) {
-                    loc.node->client->floating_rectangle = c->tiled_rectangle;
-                    toggle_floating(loc.node);
-                    arrange(loc.monitor, loc.desktop);
-                } else if (c->fullscreen) {
+                    frozen_pointer->rectangle = c->tiled_rectangle;
+                    frozen_pointer->is_tiled = true;
+                } else if (is_floating(c)) {
+                    frozen_pointer->rectangle = c->floating_rectangle;
+                    frozen_pointer->is_tiled = false;
+                } else {
                     frozen_pointer->action = ACTION_NONE;
                     return;
                 }
-                frozen_pointer->rectangle = c->floating_rectangle;
-
                 if (pac == ACTION_RESIZE_SIDE) {
-                    float W = c->floating_rectangle.width;
-                    float H = c->floating_rectangle.height;
+                    float W = frozen_pointer->rectangle.width;
+                    float H = frozen_pointer->rectangle.height;
                     float ratio = W / H;
-                    float x = pos.x - c->floating_rectangle.x;
-                    float y = pos.y - c->floating_rectangle.y;
+                    float x = pos.x - frozen_pointer->rectangle.x;
+                    float y = pos.y - frozen_pointer->rectangle.y;
                     float diag_a = ratio * y;
                     float diag_b = W - diag_a;
-
                     if (x < diag_a) {
                         if (x < diag_b)
                             frozen_pointer->side = SIDE_LEFT;
@@ -332,9 +330,8 @@ void grab_pointer(pointer_action_t pac)
                             frozen_pointer->side = SIDE_RIGHT;
                     }
                 } else if (pac == ACTION_RESIZE_CORNER) {
-                    int16_t mid_x, mid_y;
-                    mid_x = c->floating_rectangle.x + (c->floating_rectangle.width / 2);
-                    mid_y = c->floating_rectangle.y + (c->floating_rectangle.height / 2);
+                    int16_t mid_x = frozen_pointer->rectangle.x + (frozen_pointer->rectangle.width / 2);
+                    int16_t mid_y = frozen_pointer->rectangle.y + (frozen_pointer->rectangle.height / 2);
                     if (pos.x > mid_x) {
                         if (pos.y > mid_y)
                             frozen_pointer->corner = CORNER_BOTTOM_RIGHT;
@@ -347,20 +344,47 @@ void grab_pointer(pointer_action_t pac)
                             frozen_pointer->corner = CORNER_TOP_LEFT;
                     }
                 }
-                break;
-            case ACTION_RESIZE_TILED:
-                fd = nearest_fence(pos, mon->desk->root);
-                if (fd.fence != NULL && fd.distance < fence_grip) {
-                    frozen_pointer->node = fd.fence;
-                    frozen_pointer->action = pac;
-                    frozen_pointer->rectangle = fd.fence->rectangle;
-                } else {
-                    frozen_pointer->action = ACTION_NONE;
+                if (frozen_pointer->is_tiled) {
+                    if (pac == ACTION_RESIZE_SIDE) {
+                        switch (frozen_pointer->side) {
+                            case SIDE_TOP:
+                                frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_UP);
+                                break;
+                            case SIDE_RIGHT:
+                                frozen_pointer->vertical_fence = find_fence(loc.node, DIR_RIGHT);
+                                break;
+                            case SIDE_BOTTOM:
+                                frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_DOWN);
+                                break;
+                            case SIDE_LEFT:
+                                frozen_pointer->vertical_fence = find_fence(loc.node, DIR_LEFT);
+                                break;
+                        }
+                    } else if (pac == ACTION_RESIZE_CORNER) {
+                        switch (frozen_pointer->corner) {
+                            case CORNER_TOP_LEFT:
+                                frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_UP);
+                                frozen_pointer->vertical_fence = find_fence(loc.node, DIR_LEFT);
+                                break;
+                            case CORNER_TOP_RIGHT:
+                                frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_UP);
+                                frozen_pointer->vertical_fence = find_fence(loc.node, DIR_RIGHT);
+                                break;
+                            case CORNER_BOTTOM_RIGHT:
+                                frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_DOWN);
+                                frozen_pointer->vertical_fence = find_fence(loc.node, DIR_RIGHT);
+                                break;
+                            case CORNER_BOTTOM_LEFT:
+                                frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_DOWN);
+                                frozen_pointer->vertical_fence = find_fence(loc.node, DIR_LEFT);
+                                break;
+                        }
+                    }
+                    if (frozen_pointer->horizontal_fence != NULL)
+                        frozen_pointer->horizontal_ratio = frozen_pointer->horizontal_fence->split_ratio;
+                    if (frozen_pointer->vertical_fence != NULL)
+                        frozen_pointer->vertical_ratio = frozen_pointer->vertical_fence->split_ratio;
                 }
-                break;
-            case ACTION_MOVE_TILED:
-                if (!is_tiled(c))
-                    frozen_pointer->action = ACTION_NONE;
                 break;
             case ACTION_NONE:
                 break;
@@ -378,113 +402,127 @@ void track_pointer(int root_x, int root_y)
     int16_t delta_x, delta_y, x, y, w, h;
     uint16_t width, height;
 
+    pointer_action_t pac = frozen_pointer->action;
     monitor_t *m = frozen_pointer->monitor;
     desktop_t *d = frozen_pointer->desktop;
     node_t *n = frozen_pointer->node;
     client_t *c = frozen_pointer->client;
     xcb_window_t win = frozen_pointer->window;
     xcb_rectangle_t rect = frozen_pointer->rectangle;
+    node_t *vertical_fence = frozen_pointer->vertical_fence;
+    node_t *horizontal_fence = frozen_pointer->horizontal_fence;
 
     x = y = 0;
     w = h = 1;
 
     delta_x = root_x - frozen_pointer->position.x;
     delta_y = root_y - frozen_pointer->position.y;
-    double sr;
-    xcb_query_pointer_reply_t *qpr;
-    xcb_window_t pwin;
-    window_location_t loc;
 
-    switch (frozen_pointer->action) {
+    switch (pac) {
         case ACTION_MOVE:
-            x = rect.x + delta_x;
-            y = rect.y + delta_y;
-            window_move(win, x, y);
+            if (frozen_pointer->is_tiled) {
+                xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+                if (qpr != NULL) {
+                    xcb_window_t pwin = qpr->child;
+                    free(qpr);
+                    window_location_t loc;
+                    if (locate_window(pwin, &loc) && is_tiled(loc.node->client)) {
+                        swap_nodes(n, loc.node);
+                        arrange(m, d);
+                        if (m != loc.monitor) {
+                            arrange(loc.monitor, loc.desktop);
+                            frozen_pointer->monitor = loc.monitor;
+                            frozen_pointer->desktop = loc.desktop;
+                        }
+                    }
+                }
+            } else {
+                x = rect.x + delta_x;
+                y = rect.y + delta_y;
+                window_move(win, x, y);
+            }
             break;
         case ACTION_RESIZE_SIDE:
-            switch (frozen_pointer->side) {
-                case SIDE_TOP:
-                    x = rect.x;
-                    y = rect.y + delta_y;
-                    w = rect.width;
-                    h = rect.height - delta_y;
-                    break;
-                case SIDE_RIGHT:
-                    x = rect.x;
-                    y = rect.y;
-                    w = rect.width + delta_x;
-                    h = rect.height;
-                    break;
-                case SIDE_BOTTOM:
-                    x = rect.x;
-                    y = rect.y;
-                    w = rect.width;
-                    h = rect.height + delta_y;
-                    break;
-                case SIDE_LEFT:
-                    x = rect.x + delta_x;
-                    y = rect.y;
-                    w = rect.width - delta_x;
-                    h = rect.height;
-                    break;
-            }
-            width = MAX(1, w);
-            height = MAX(1, h);
-            window_move_resize(win, x, y, width, height);
-            c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
-            window_draw_border(n, d->focus == n, mon == m);
-            break;
         case ACTION_RESIZE_CORNER:
-            switch (frozen_pointer->corner) {
-                case CORNER_TOP_LEFT:
-                    x = rect.x + delta_x;
-                    y = rect.y + delta_y;
-                    w = rect.width - delta_x;
-                    h = rect.height - delta_y;
-                    break;
-                case CORNER_TOP_RIGHT:
-                    x = rect.x;
-                    y = rect.y + delta_y;
-                    w = rect.width + delta_x;
-                    h = rect.height - delta_y;
-                    break;
-                case CORNER_BOTTOM_LEFT:
-                    x = rect.x + delta_x;
-                    y = rect.y;
-                    w = rect.width - delta_x;
-                    h = rect.height + delta_y;
-                    break;
-                case CORNER_BOTTOM_RIGHT:
-                    x = rect.x;
-                    y = rect.y;
-                    w = rect.width + delta_x;
-                    h = rect.height + delta_y;
-                    break;
-            }
-            width = MAX(1, w);
-            height = MAX(1, h);
-            window_move_resize(win, x, y, width, height);
-            c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
-            window_draw_border(n, d->focus == n, mon == m);
-            break;
-        case ACTION_RESIZE_TILED:
-            if (n->split_type == TYPE_VERTICAL)
-                sr = (double) (root_x - rect.x + window_gap / 2) / rect.width;
-            else
-                sr = (double) (root_y - rect.y + window_gap / 2) / rect.height;
-            sr = MAX(0, sr);
-            sr = MIN(1, sr);
-            n->split_ratio = sr;
-            arrange(mon, mon->desk);
-            break;
-        case ACTION_MOVE_TILED:
-            qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-            if (qpr != NULL) {
-                pwin = qpr->child;
-                free(qpr);
-                if (locate_window(pwin, &loc) && loc.monitor == m && loc.desktop == d && is_tiled(loc.node->client)) {
-                    swap_nodes(n, loc.node);
-                    arrange(m, d);
+            if (frozen_pointer->is_tiled) {
+                if (vertical_fence != NULL) {
+                    double sr = frozen_pointer->vertical_ratio + (double) delta_x / vertical_fence->rectangle.width;
+                    sr = MAX(0, sr);
+                    sr = MIN(1, sr);
+                    vertical_fence->split_ratio = sr;
+                }
+                if (horizontal_fence != NULL) {
+                    double sr = frozen_pointer->horizontal_ratio + (double) delta_y / horizontal_fence->rectangle.height;
+                    sr = MAX(0, sr);
+                    sr = MIN(1, sr);
+                    horizontal_fence->split_ratio = sr;
+                }
+                arrange(mon, mon->desk);
+            } else {
+                if (pac == ACTION_RESIZE_SIDE) {
+                    switch (frozen_pointer->side) {
+                        case SIDE_TOP:
+                            x = rect.x;
+                            y = rect.y + delta_y;
+                            w = rect.width;
+                            h = rect.height - delta_y;
+                            break;
+                        case SIDE_RIGHT:
+                            x = rect.x;
+                            y = rect.y;
+                            w = rect.width + delta_x;
+                            h = rect.height;
+                            break;
+                        case SIDE_BOTTOM:
+                            x = rect.x;
+                            y = rect.y;
+                            w = rect.width;
+                            h = rect.height + delta_y;
+                            break;
+                        case SIDE_LEFT:
+                            x = rect.x + delta_x;
+                            y = rect.y;
+                            w = rect.width - delta_x;
+                            h = rect.height;
+                            break;
+                    }
+                    width = MAX(1, w);
+                    height = MAX(1, h);
+                    window_move_resize(win, x, y, width, height);
+                    c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
+                    window_draw_border(n, d->focus == n, mon == m);
+                } else if (pac == ACTION_RESIZE_CORNER) {
+                    switch (frozen_pointer->corner) {
+                        case CORNER_TOP_LEFT:
+                            x = rect.x + delta_x;
+                            y = rect.y + delta_y;
+                            w = rect.width - delta_x;
+                            h = rect.height - delta_y;
+                            break;
+                        case CORNER_TOP_RIGHT:
+                            x = rect.x;
+                            y = rect.y + delta_y;
+                            w = rect.width + delta_x;
+                            h = rect.height - delta_y;
+                            break;
+                        case CORNER_BOTTOM_LEFT:
+                            x = rect.x + delta_x;
+                            y = rect.y;
+                            w = rect.width - delta_x;
+                            h = rect.height + delta_y;
+                            break;
+                        case CORNER_BOTTOM_RIGHT:
+                            x = rect.x;
+                            y = rect.y;
+                            w = rect.width + delta_x;
+                            h = rect.height + delta_y;
+                            break;
+                    }
+                    width = MAX(1, w);
+                    height = MAX(1, h);
+                    window_move_resize(win, x, y, width, height);
+                    c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
+                    window_draw_border(n, d->focus == n, mon == m);
                 }
             }
             break;

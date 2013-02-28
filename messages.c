@@ -449,8 +449,6 @@ void set_setting(char *name, char *value, char *rsp)
 
     if (strcmp(name, "border_width") == 0) {
         sscanf(value, "%u", &border_width);
-    } else if (strcmp(name, "fence_grip") == 0) {
-        sscanf(value, "%u", &fence_grip);
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
     } else if (strcmp(name, "left_padding") == 0) {
@@ -533,8 +531,6 @@ void get_setting(char *name, char* rsp)
 
     if (strcmp(name, "border_width") == 0)
         snprintf(rsp, BUFSIZ, "%u", border_width);
-    else if (strcmp(name, "fence_grip") == 0)
-        snprintf(rsp, BUFSIZ, "%u", fence_grip);
     else if (strcmp(name, "window_gap") == 0)
         snprintf(rsp, BUFSIZ, "%i", window_gap);
     else if (strcmp(name, "left_padding") == 0)
@@ -767,12 +763,6 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
         return true;
     } else if (strcmp(s, "focus") == 0) {
         *a = ACTION_FOCUS;
-        return true;
-    } else if (strcmp(s, "move_tiled") == 0) {
-        *a = ACTION_MOVE_TILED;
-        return true;
-    } else if (strcmp(s, "resize_tiled") == 0) {
-        *a = ACTION_RESIZE_TILED;
         return true;
     }
     return false;

@@ -140,40 +140,6 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
         change_split_ratio(fence, CHANGE_DECREASE);
 }
 
-unsigned int distance_to_fence(xcb_point_t pt, node_t *fence)
-{
-    xcb_rectangle_t rect = fence->rectangle;
-    if (fence->split_type == TYPE_VERTICAL) {
-        int fx = rect.x + fence->split_ratio * rect.width - window_gap / 2;
-        return ABS(pt.x - fx);
-    } else {
-        int fy = rect.y + fence->split_ratio * rect.height - window_gap / 2;
-        return ABS(pt.y - fy);
-    }
-}
-
-fence_distance_t nearest_fence(xcb_point_t pt, node_t *tree)
-{
-    fence_distance_t fd;
-    if (tree == NULL || is_leaf(tree)) {
-        fd.fence = NULL;
-    } else {
-        fd.fence = tree;
-        fd.distance = distance_to_fence(pt, tree);
-        fence_distance_t first_fd = nearest_fence(pt, tree->first_child);
-        fence_distance_t second_fd = nearest_fence(pt, tree->second_child);
-        if (first_fd.fence != NULL && fd.distance > first_fd.distance) {
-            fd.fence = first_fd.fence;
-            fd.distance = first_fd.distance;
-        }
-        if (second_fd.fence != NULL && fd.distance > second_fd.distance) {
-            fd.fence = second_fd.fence;
-            fd.distance = second_fd.distance;
-        }
-    }
-    return fd;
-}
-
 void rotate_tree(node_t *n, rotate_t rot)
 {
     if (n == NULL || is_leaf(n))

@@ -109,12 +109,10 @@ typedef enum {
 
 typedef enum {
     ACTION_NONE,
-    ACTION_MOVE,
-    ACTION_RESIZE_CORNER,
-    ACTION_RESIZE_SIDE,
     ACTION_FOCUS,
-    ACTION_MOVE_TILED,
-    ACTION_RESIZE_TILED
+    ACTION_MOVE,
+    ACTION_RESIZE_SIDE,
+    ACTION_RESIZE_CORNER
 } pointer_action_t;
 
 typedef struct {
@@ -205,11 +203,16 @@ typedef struct {
     xcb_point_t position;
     pointer_action_t action;
     xcb_rectangle_t rectangle;
+    node_t *vertical_fence;
+    node_t *horizontal_fence;
     monitor_t *monitor;
     desktop_t *desktop;
     node_t *node;
     client_t *client;
     xcb_window_t window;
+    bool is_tiled;
+    double vertical_ratio;
+    double horizontal_ratio;
     corner_t corner;
     side_t side;
 } pointer_state_t;

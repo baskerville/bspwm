@@ -19,7 +19,6 @@
 #define BORDER_WIDTH   1
 #define WINDOW_GAP     6
 #define SPLIT_RATIO    0.5
-#define FENCE_GRIP     20
 
 #define BORDERLESS_MONOCLE     false
 #define GAPLESS_MONOCLE        false
@@ -47,7 +46,6 @@ uint32_t urgent_border_color_pxl;
 
 unsigned int border_width;
 int window_gap;
-unsigned int fence_grip;
 
 bool borderless_monocle;
 bool gapless_monocle;

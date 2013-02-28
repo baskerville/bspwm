@@ -58,7 +58,6 @@ void load_settings(void)
 
     border_width = BORDER_WIDTH;
     window_gap = WINDOW_GAP;
-    fence_grip = FENCE_GRIP;
 
     borderless_monocle = BORDERLESS_MONOCLE;
     gapless_monocle = GAPLESS_MONOCLE;
