@@ -1,4 +1,3 @@
-- Rewrite `focus_follows_pointer` by using a root sized input only window mapped and unmapped via enter notify events.
 - Rewrite `find_neighbor` based on the distances between the windows sides (more intuitive).
 - Focus history.
 - Command line completion for *bspc*.

@@ -421,6 +421,15 @@ void save_pointer_position(xcb_point_t *pos)
     }
 }
 
+void get_pointed_window(xcb_window_t *win)
+{
+    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+    if (qpr != NULL) {
+        *win = qpr->child;
+        free(qpr);
+    }
+}
+
 void window_focus(xcb_window_t win)
 {
     window_location_t loc;
@@ -499,4 +508,15 @@ void toggle_visibility(void)
             window_set_visibility(n->client->window, visible);
     if (visible)
         update_current();
+}
+
+void enable_motion_recorder(void)
+{
+    window_raise(motion_recorder);
+    window_show(motion_recorder);
+}
+
+void disable_motion_recorder(void)
+{
+    window_hide(motion_recorder);
 }

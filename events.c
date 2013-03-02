@@ -39,7 +39,7 @@ void handle_event(xcb_generic_event_t *evt)
             enter_notify(evt);
             break;
         case XCB_MOTION_NOTIFY:
-            motion_notify(evt);
+            motion_notify();
             break;
         default:
             break;
@@ -234,20 +234,22 @@ void enter_notify(xcb_generic_event_t *evt)
     PRINTF("enter notify %X %d %d\n", win, e->mode, e->detail);
 
     if (e->mode != XCB_NOTIFY_MODE_NORMAL
-            || (last_pointer_position.x = e->root_x && last_pointer_position.y == e->root_y))
+            || (mon->desk->focus != NULL && mon->desk->focus->client->window == win))
         return;
 
-    window_focus(win);
+    enable_motion_recorder();
 }
 
-void motion_notify(xcb_generic_event_t *evt)
+void motion_notify(void)
 {
-    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-    xcb_window_t win = e->event;
+    PUTS("motion notify");
 
-    PRINTF("motion notify %X\n", win);
+    disable_motion_recorder();
 
-    window_focus(win);
+    xcb_window_t win = XCB_NONE;
+    get_pointed_window(&win);
+    if (win != XCB_NONE)
+        window_focus(win);
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
