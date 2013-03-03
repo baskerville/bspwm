@@ -152,7 +152,6 @@ struct node_list_t {
 typedef struct {
     node_list_t *head;
     node_list_t *tail;
-    node_list_t *position;
 } focus_history_t;
 
 typedef struct desktop_t desktop_t;
@@ -161,7 +160,7 @@ struct desktop_t {
     layout_t layout;
     node_t *root;
     node_t *focus;
-    focus_history_t *focus_history;
+    focus_history_t *history;
     desktop_t *prev;
     desktop_t *next;
 };
@@ -244,12 +243,14 @@ desktop_t *make_desktop(const char *);
 void add_desktop(monitor_t *, char *);
 void empty_desktop(desktop_t *);
 void remove_desktop(monitor_t *, desktop_t *);
+rule_t *make_rule(void);
+pointer_state_t *make_pointer_state(void);
 client_t *make_client(xcb_window_t);
 focus_history_t *make_focus_history(void);
 node_list_t *make_node_list(void);
-rule_t *make_rule(void);
-pointer_state_t *make_pointer_state(void);
 void history_add(focus_history_t *, node_t *);
 void history_remove(focus_history_t *, node_t *);
+void empty_history(focus_history_t *);
+node_t *history_get(focus_history_t *, int);
 
 #endif

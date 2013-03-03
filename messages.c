@@ -387,11 +387,9 @@ void process_message(char *msg, char *rsp)
                 remove_rule_by_uid(uid);
         return;
     } else if (strcmp(cmd, "swap") == 0) {
-        swap_nodes(mon->desk->focus, mon->desk->last_focus);
+        swap_nodes(mon->desk->focus, history_get(mon->desk->history, 1));
     } else if (strcmp(cmd, "alternate") == 0) {
-        node_list_t *a = mon->desk->focus_history->head->prev;
-        if (a != NULL)
-            focus_node(mon, mon->desk, a->node, true);
+        focus_node(mon, mon->desk, history_get(mon->desk->history, 1), true);
         return;
     } else if (strcmp(cmd, "alternate_desktop") == 0) {
         select_desktop(mon->last_desk);

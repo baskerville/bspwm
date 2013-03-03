@@ -84,7 +84,7 @@ desktop_t *make_desktop(const char *name)
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
     d->root = d->focus = NULL;
-    d->focus_history = make_focus_history();
+    d->history = make_focus_history();
     return d;
 }
 
@@ -109,7 +109,8 @@ void add_desktop(monitor_t *m, char *name)
 void empty_desktop(desktop_t *d)
 {
     destroy_tree(d->root);
-    d->root = d->focus = d->last_focus = NULL;
+    d->root = d->focus = NULL;
+    empty_history(d->history);
 }
 
 void remove_desktop(monitor_t *m, desktop_t *d)
@@ -140,21 +141,6 @@ client_t *make_client(xcb_window_t win)
     return c;
 }
 
-focus_history_t *make_focus_history(void)
-{
-    focus_history_t *f = malloc(sizeof(focus_history_t));
-    f->head = f->tail = f->position = NULL;
-    return f;
-}
-
-node_list_t *make_node_list(void)
-{
-    node_list_t *n = malloc(sizeof(node_list_t));
-    n->node = NULL;
-    n->prev = n->next = NULL;
-    return n;
-}
-
 rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
@@ -178,30 +164,85 @@ pointer_state_t *make_pointer_state(void)
     return p;
 }
 
+focus_history_t *make_focus_history(void)
+{
+    focus_history_t *f = malloc(sizeof(focus_history_t));
+    f->head = f->tail = NULL;
+    return f;
+}
+
+node_list_t *make_node_list(void)
+{
+    node_list_t *n = malloc(sizeof(node_list_t));
+    n->node = NULL;
+    n->prev = n->next = NULL;
+    return n;
+}
+
 void history_add(focus_history_t *f, node_t *n)
 {
     node_list_t *a = make_node_list();
     a->node = n;
     if (f->head == NULL) {
-        f->head = f->tail = f->position = a;
+        f->head = f->tail = a;
+    } else if (f->tail->node != n) {
+        f->tail->next = a;
+        a->prev = f->tail;
+        f->tail = a;
     } else {
-        f->head->next = a;
-        a->prev = f->head;
-        f->head = a;
+        free(a);
     }
 }
 
 void history_remove(focus_history_t *f, node_t *n)
 {
-    for(node_list_t *b = f->head; b != NULL; b = b->prev)
+    node_list_t *b = f->head;
+    while (b != NULL) {
         if (b->node == n) {
             node_list_t *a = b->prev;
             node_list_t *c = b->next;
-            if (a != NULL)
+            if (a != NULL) {
+                while (c != NULL && (c->node == a->node || c->node == n)) {
+                    node_list_t *d = c->next;
+                    free(c);
+                    c = d;
+                }
                 a->next = c;
+            }
             if (c != NULL)
                 c->prev = a;
+            if (f->head == b)
+                f->head = c;
+            if (f->tail == b)
+                f->tail = a;
             free(b);
-            return;
+            b = c;
+        } else {
+            b = b->next;
         }
+    }
+}
+
+void empty_history(focus_history_t *f)
+{
+    node_list_t *a = f->head;
+    while (a != NULL) {
+        node_list_t *b = a->next;
+        free(a);
+        a = b;
+    }
+    f->head = f->tail = NULL;
+}
+
+node_t *history_get(focus_history_t *f, int i)
+{
+    node_list_t *a = f->tail;
+    while (a != NULL && i > 0) {
+        a = a->prev;
+        i--;
+    }
+    if (a == NULL)
+        return NULL;
+    else
+        return a->node;
 }

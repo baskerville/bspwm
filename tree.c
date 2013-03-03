@@ -189,7 +189,7 @@ void flip_tree(node_t *n, flip_t flp)
 void list_history(desktop_t *d, char *rsp)
 {
     char line[MAXLEN];
-    for (node_list_t *a = d->focus_history->head; a != NULL; a = a->prev) {
+    for (node_list_t *a = d->history->head; a != NULL; a = a->next) {
         snprintf(line, sizeof(line), "%s %X\n", a->node->client->class_name, a->node->client->window);
         strncat(rsp, line, REMLEN(rsp));
     }
@@ -411,7 +411,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
 
     if (d->focus != n) {
         d->focus = n;
-        history_add(d->focus_history, n);
+        history_add(d->history, n);
     }
 
     ewmh_update_active_window();
@@ -466,18 +466,19 @@ void unlink_node(desktop_t *d, node_t *n)
         free(p);
 
         if (n == d->focus) {
-            if (d->focus_history->head->prev != NULL) {
-                d->focus = d->focus_history->head->prev->node;
+            node_t *last_focus = history_get(d->history, 1);
+            if (last_focus != NULL) {
+                d->focus = last_focus;
             } else {
                 d->focus = (n_first_child ? first_extrema(b) : second_extrema(b));
-                history_add(d->focus_history, d->focus);
+                history_add(d->history, d->focus);
             }
         }
 
         update_vacant_state(b->parent);
     }
 
-    history_remove(d->focus_history, n);
+    history_remove(d->history, n);
 }
 
 void remove_node(desktop_t *d, node_t *n)
@@ -823,8 +824,6 @@ void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 
     if (n == d->focus)
         strncat(rsp, " *\n", REMLEN(rsp));
-    else if (n == d->last_focus)
-        strncat(rsp, " ~\n", REMLEN(rsp));
     else
         strncat(rsp, "\n", REMLEN(rsp));
 
@@ -937,15 +936,8 @@ void restore(char *file_path)
                 if (c->uid > max_uid)
                     max_uid = c->uid;
                 n->client = c;
-                if (len >= 2)
-                    switch (line[len - 2]) {
-                        case '*':
-                            d->focus = n;
-                            break;
-                        case '~':
-                            d->last_focus = n;
-                            break;
-                    }
+                if (len >= 2 && line[len -2] == '*')
+                    d->focus = n;
             }
         }
         last_level = level;
