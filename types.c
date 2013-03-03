@@ -204,6 +204,8 @@ void history_remove(focus_history_t *f, node_t *n)
             if (a != NULL) {
                 while (c != NULL && (c->node == a->node || c->node == n)) {
                     node_list_t *d = c->next;
+                    if (f->tail == c)
+                        f->tail = (d == NULL ? b : d);
                     free(c);
                     c = d;
                 }

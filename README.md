@@ -87,6 +87,8 @@ The following messages are handled:
 
 - `list_monitors [--quiet]` — Perform a dump of each monitor.
 
+- `list_history [DESKTOP_NAME]` — Return the node focus history.
+
 - `list_windows` — Return the list of managed windows (i.e. their identifiers).
 
 - `list_rules` — Return the list of rules.
