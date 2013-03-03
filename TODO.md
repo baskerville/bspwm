@@ -1,5 +1,6 @@
 - Rewrite `find_neighbor` based on the distances between the windows sides (more intuitive).
 - Focus history.
-- Command line completion for *bspc*.
+- Command line completion for `bspc`.
 - Better handling of the floating window concept?
 - Use macros in `messages.c`.
+- Handle monitors through RandR.
