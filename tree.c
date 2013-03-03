@@ -391,6 +391,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         get_pointed_window(&win);
         if (win != n->client->window)
             enable_motion_recorder();
+        else
+            disable_motion_recorder();
     }
 
     if (!is_tiled(n->client)) {
