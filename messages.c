@@ -68,9 +68,15 @@ void process_message(char *msg, char *rsp)
         char *deg = strtok(NULL, TOK_SEP);
         if (deg != NULL) {
             rotate_t r;
-            if (parse_rotate(deg, &r)) {
+            if (parse_rotate(deg, &r))
                 rotate_tree(mon->desk->root, r);
-            }
+        }
+    } else if (strcmp(cmd, "flip") == 0) {
+        char *flp = strtok(NULL, TOK_SEP);
+        if (flp != NULL) {
+            flip_t f;
+            if (parse_flip(flp, &f))
+                flip_tree(mon->desk->root, f);
         }
     } else if (strcmp(cmd, "grab_pointer") == 0) {
         char *pac = strtok(NULL, TOK_SEP);
@@ -288,8 +294,12 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                select_monitor(loc.monitor);
-                select_desktop(loc.desktop);
+                if (loc.desktop == mon->desk) {
+                    select_desktop(mon->last_desk);
+                } else {
+                    select_monitor(loc.monitor);
+                    select_desktop(loc.desktop);
+                }
             }
         }
     } else if (strcmp(cmd, "cycle_monitor") == 0) {
@@ -441,15 +451,8 @@ void set_setting(char *name, char *value, char *rsp)
     if (name == NULL || value == NULL)
         return;
 
-    if (strcmp(name, "inner_border_width") == 0) {
-        sscanf(value, "%u", &inner_border_width);
-        border_width = inner_border_width + main_border_width + outer_border_width;
-    } else if (strcmp(name, "main_border_width") == 0) {
-        sscanf(value, "%u", &main_border_width);
-        border_width = inner_border_width + main_border_width + outer_border_width;
-    } else if (strcmp(name, "outer_border_width") == 0) {
-        sscanf(value, "%u", &outer_border_width);
-        border_width = inner_border_width + main_border_width + outer_border_width;
+    if (strcmp(name, "border_width") == 0) {
+        sscanf(value, "%u", &border_width);
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
     } else if (strcmp(name, "left_padding") == 0) {
@@ -469,12 +472,6 @@ void set_setting(char *name, char *value, char *rsp)
     } else if (strcmp(name, "normal_border_color") == 0) {
         strncpy(normal_border_color, value, sizeof(normal_border_color));
         normal_border_color_pxl = get_color(normal_border_color);
-    } else if (strcmp(name, "inner_border_color") == 0) {
-        strncpy(inner_border_color, value, sizeof(inner_border_color));
-        inner_border_color_pxl = get_color(inner_border_color);
-    } else if (strcmp(name, "outer_border_color") == 0) {
-        strncpy(outer_border_color, value, sizeof(outer_border_color));
-        outer_border_color_pxl = get_color(outer_border_color);
     } else if (strcmp(name, "presel_border_color") == 0) {
         strncpy(presel_border_color, value, sizeof(presel_border_color));
         presel_border_color_pxl = get_color(presel_border_color);
@@ -536,13 +533,7 @@ void get_setting(char *name, char* rsp)
     if (name == NULL)
         return;
 
-    if (strcmp(name, "inner_border_width") == 0)
-        snprintf(rsp, BUFSIZ, "%u", inner_border_width);
-    else if (strcmp(name, "main_border_width") == 0)
-        snprintf(rsp, BUFSIZ, "%u", main_border_width);
-    else if (strcmp(name, "outer_border_width") == 0)
-        snprintf(rsp, BUFSIZ, "%u", outer_border_width);
-    else if (strcmp(name, "border_width") == 0)
+    if (strcmp(name, "border_width") == 0)
         snprintf(rsp, BUFSIZ, "%u", border_width);
     else if (strcmp(name, "window_gap") == 0)
         snprintf(rsp, BUFSIZ, "%i", window_gap);
@@ -560,10 +551,6 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s (%06X)", active_border_color, active_border_color_pxl);
     else if (strcmp(name, "normal_border_color") == 0)
         snprintf(rsp, BUFSIZ, "%s (%06X)", normal_border_color, normal_border_color_pxl);
-    else if (strcmp(name, "inner_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", inner_border_color, inner_border_color_pxl);
-    else if (strcmp(name, "outer_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", outer_border_color, outer_border_color_pxl);
     else if (strcmp(name, "presel_border_color") == 0)
         snprintf(rsp, BUFSIZ, "%s (%06X)", presel_border_color, presel_border_color_pxl);
     else if (strcmp(name, "focused_locked_border_color") == 0)
@@ -743,6 +730,18 @@ bool parse_rotate(char *s, rotate_t *r)
     return false;
 }
 
+bool parse_flip(char *s, flip_t *f)
+{
+    if (strcmp(s, "horizontal") == 0) {
+        *f = FLIP_HORIZONTAL;
+        return true;
+    } else if (strcmp(s, "vertical") == 0) {
+        *f = FLIP_VERTICAL;
+        return true;
+    }
+    return false;
+}
+
 bool parse_fence_move(char *s, fence_move_t *m)
 {
     if (strcmp(s, "push") == 0) {
@@ -760,11 +759,14 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
     if (strcmp(s, "move") == 0) {
         *a = ACTION_MOVE;
         return true;
+    } else if (strcmp(s, "resize_corner") == 0) {
+        *a = ACTION_RESIZE_CORNER;
+        return true;
+    } else if (strcmp(s, "resize_side") == 0) {
+        *a = ACTION_RESIZE_SIDE;
+        return true;
     } else if (strcmp(s, "focus") == 0) {
         *a = ACTION_FOCUS;
-        return true;
-    } else if (strcmp(s, "resize") == 0) {
-        *a = ACTION_RESIZE;
         return true;
     }
     return false;

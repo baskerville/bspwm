@@ -186,69 +186,40 @@ void adopt_orphans(void)
 
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 {
-    if (n == NULL)
-        return;
-
-    if (border_width < 1 || n->client->border_width < 1)
+    if (n == NULL || border_width < 1 || n->client->border_width < 1)
         return;
 
     xcb_window_t win = n->client->window;
+    uint32_t border_color_pxl = get_border_color(n->client, focused_window, focused_monitor);
 
-    xcb_rectangle_t actual_rectangle = (is_tiled(n->client) ? n->client->tiled_rectangle : n->client->floating_rectangle);
+    if (split_mode == MODE_AUTOMATIC || !focused_monitor || !focused_window) {
+        xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXEL, &border_color_pxl);
+    } else {
+        xcb_rectangle_t actual_rectangle = (is_tiled(n->client) ? n->client->tiled_rectangle : n->client->floating_rectangle);
 
-    uint16_t width = actual_rectangle.width;
-    uint16_t height = actual_rectangle.height;
+        uint16_t width = actual_rectangle.width;
+        uint16_t height = actual_rectangle.height;
 
-    uint16_t full_width = width + 2 * border_width;
-    uint16_t full_height = height + 2 * border_width;
+        uint16_t full_width = width + 2 * border_width;
+        uint16_t full_height = height + 2 * border_width;
 
-    xcb_rectangle_t inner_rectangles[] =
-    {
-        { width, 0, 2 * border_width, height + 2 * border_width },
-        { 0, height, width + 2 * border_width, 2 * border_width }
-    };
+        xcb_rectangle_t border_rectangles[] =
+        {
+            { width, 0, 2 * border_width, height + 2 * border_width },
+            { 0, height, width + 2 * border_width, 2 * border_width }
+        };
 
-    xcb_rectangle_t main_rectangles[] =
-    {
-        { width + inner_border_width, 0, 2 * (main_border_width + outer_border_width), height + 2 * border_width },
-        { 0, height + inner_border_width, width + 2 * border_width, 2 * (main_border_width + outer_border_width) }
-    };
+        xcb_rectangle_t *presel_rectangles;
 
-    xcb_rectangle_t outer_rectangles[] =
-    {
-        { width + inner_border_width + main_border_width, 0, 2 * outer_border_width, height + 2 * border_width },
-        { 0, height + inner_border_width + main_border_width, width + 2 * border_width, 2 * outer_border_width }
-    };
+        xcb_pixmap_t pix = xcb_generate_id(dpy);
+        xcb_create_pixmap(dpy, root_depth, pix, win, full_width, full_height);
 
-    xcb_rectangle_t *presel_rectangles;
+        xcb_gcontext_t gc = xcb_generate_id(dpy);
+        xcb_create_gc(dpy, gc, pix, 0, NULL);
 
-    xcb_pixmap_t pix = xcb_generate_id(dpy);
-    xcb_create_pixmap(dpy, root_depth, pix, win, full_width, full_height);
+        xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &border_color_pxl);
+        xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(border_rectangles), border_rectangles);
 
-    xcb_gcontext_t gc = xcb_generate_id(dpy);
-    xcb_create_gc(dpy, gc, pix, 0, NULL);
-
-    uint32_t main_border_color_pxl = get_main_border_color(n->client, focused_window, focused_monitor);
-
-    /* inner border */
-    if (inner_border_width > 0) {
-        xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &inner_border_color_pxl);
-        xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(inner_rectangles), inner_rectangles);
-    }
-
-    /* main border */
-    if (main_border_width > 0) {
-        xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &main_border_color_pxl);
-        xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(main_rectangles), main_rectangles);
-    }
-
-    /* outer border */
-    if (outer_border_width > 0) {
-        xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &outer_border_color_pxl);
-        xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(outer_rectangles), outer_rectangles);
-    }
-
-    if (split_mode == MODE_MANUAL && focused_monitor && focused_window) {
         uint16_t fence = (int16_t) (n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width));
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
         switch (split_dir) {
@@ -269,16 +240,14 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
                 presel_rectangles[1] = (xcb_rectangle_t) {width, 0, border_width, full_height};
                 break;
         }
+
         xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &presel_border_color_pxl);
         xcb_poly_fill_rectangle(dpy, pix, gc, 2, presel_rectangles);
+        xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXMAP, &pix);
         free(presel_rectangles);
+        xcb_free_gc(dpy, gc);
+        xcb_free_pixmap(dpy, pix);
     }
-
-    /* apply border pixmap */
-    xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXMAP, &pix);
-
-    xcb_free_gc(dpy, gc);
-    xcb_free_pixmap(dpy, pix);
 }
 
 void window_close(node_t *n)
@@ -403,7 +372,7 @@ void list_windows(char *rsp)
             }
 }
 
-uint32_t get_main_border_color(client_t *c, bool focused_window, bool focused_monitor)
+uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor)
 {
     if (c == NULL)
         return 0;
@@ -448,6 +417,15 @@ void save_pointer_position(xcb_point_t *pos)
     xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
     if (qpr != NULL) {
         *pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
+        free(qpr);
+    }
+}
+
+void get_pointed_window(xcb_window_t *win)
+{
+    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+    if (qpr != NULL) {
+        *win = qpr->child;
         free(qpr);
     }
 }
@@ -530,4 +508,15 @@ void toggle_visibility(void)
             window_set_visibility(n->client->window, visible);
     if (visible)
         update_current();
+}
+
+void enable_motion_recorder(void)
+{
+    window_raise(motion_recorder);
+    window_show(motion_recorder);
+}
+
+void disable_motion_recorder(void)
+{
+    window_hide(motion_recorder);
 }

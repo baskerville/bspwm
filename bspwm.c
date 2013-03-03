@@ -53,7 +53,7 @@ void setup(void)
 {
     ewmh_init();
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
-    if (!screen)
+    if (screen == NULL)
         err("Can't acquire the default screen.\n");
     root = screen->root;
     register_events();
@@ -61,6 +61,11 @@ void setup(void)
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
     root_depth = screen->root_depth;
+
+    uint32_t mask = XCB_CW_EVENT_MASK;
+    uint32_t values[] = {XCB_EVENT_MASK_POINTER_MOTION};
+    motion_recorder = xcb_generate_id(dpy);
+    xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder, root, 0, 0, screen_width, screen_height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, mask, values);
 
     xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
                               ewmh->_NET_DESKTOP_NAMES,
@@ -124,8 +129,6 @@ void setup(void)
     ewmh_update_current_desktop();
     rule_head = rule_tail = NULL;
     frozen_pointer = make_pointer_state();
-    last_focused_window = XCB_NONE;
-    save_pointer_position(&last_pointer_position);
     split_mode = MODE_AUTOMATIC;
     visible = true;
     exit_status = 0;
@@ -240,6 +243,7 @@ int main(int argc, char *argv[])
     if (status_fifo != NULL)
         fclose(status_fifo);
     xcb_ewmh_connection_wipe(ewmh);
+    xcb_destroy_window(dpy, motion_recorder);
     free(ewmh);
     xcb_flush(dpy);
     xcb_disconnect(dpy);

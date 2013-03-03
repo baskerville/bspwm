@@ -82,6 +82,11 @@ typedef enum {
 } rotate_t;
 
 typedef enum {
+    FLIP_HORIZONTAL,
+    FLIP_VERTICAL
+} flip_t;
+
+typedef enum {
     DIR_LEFT,
     DIR_RIGHT,
     DIR_UP,
@@ -89,17 +94,25 @@ typedef enum {
 } direction_t;
 
 typedef enum {
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT
+    CORNER_TOP_LEFT,
+    CORNER_TOP_RIGHT,
+    CORNER_BOTTOM_LEFT,
+    CORNER_BOTTOM_RIGHT
 } corner_t;
 
 typedef enum {
-    ACTION_MOVE,
-    ACTION_RESIZE,
+    SIDE_LEFT,
+    SIDE_TOP,
+    SIDE_RIGHT,
+    SIDE_BOTTOM
+} side_t;
+
+typedef enum {
+    ACTION_NONE,
     ACTION_FOCUS,
-    ACTION_NONE
+    ACTION_MOVE,
+    ACTION_RESIZE_SIDE,
+    ACTION_RESIZE_CORNER
 } pointer_action_t;
 
 typedef struct {
@@ -203,11 +216,24 @@ typedef struct {
     xcb_point_t position;
     pointer_action_t action;
     xcb_rectangle_t rectangle;
+    node_t *vertical_fence;
+    node_t *horizontal_fence;
     monitor_t *monitor;
     desktop_t *desktop;
     node_t *node;
+    client_t *client;
+    xcb_window_t window;
+    bool is_tiled;
+    double vertical_ratio;
+    double horizontal_ratio;
     corner_t corner;
+    side_t side;
 } pointer_state_t;
+
+typedef struct {
+    node_t *fence;
+    unsigned int distance;
+} fence_distance_t;
 
 node_t *make_node(void);
 monitor_t *make_monitor(xcb_rectangle_t *);

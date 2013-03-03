@@ -115,7 +115,7 @@ The following messages are handled:
 
 - `circulate forward|backward` — Circulate the leaves in the given direction.
 
-- `grab_pointer move|resize|focus` — Begin the specified pointer action.
+- `grab_pointer focus|move|resize_side|resize_corner` — Begin the specified pointer action.
 
 - `track_pointer ROOT_X ROOT_Y` — Pass the pointer root coordinates for the current pointer action.
 
@@ -167,7 +167,9 @@ The following messages are handled:
 
 - `cycle_layout` — Cycle the layout of the current desktop.
 
-- `rotate clockwise|counter_clockwise|full_cycle` — Rotate the tree of the current desktop.
+- `rotate clockwise|counter_clockwise|full_cycle` — Rotate the window tree.
+
+- `flip horizontal|vertical` — Flip the window tree.
 
 - `rule PATTERN [DESKTOP_NAME] [floating]` — Create a new rule (`PATTERN` must match the class or instance name).
 
@@ -187,27 +189,23 @@ The following messages are handled:
 
 Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or *#RRGGBB*, booleans are *true* or *false*.
 
-- `focused_border_color` — Color of the main border of a focused window of a focused monitor.
+- `focused_border_color` — Color of the border of a focused window of a focused monitor.
 
-- `active_border_color` — Color of the main border of a focused window of an unfocused monitor.
+- `active_border_color` — Color of the border of a focused window of an unfocused monitor.
 
-- `normal_border_color` — Color of the main border of an unfocused window.
-
-- `inner_border_color` — Color of the inner border of a window.
-
-- `outer_border_color` — Color of the outer border of a window.
+- `normal_border_color` — Color of the border of an unfocused window.
 
 - `presel_border_color` — Color of the `presel` message feedback.
 
-- `focused_locked_border_color` — Color of the main border of a focused locked window of a focused monitor.
+- `focused_locked_border_color` — Color of the border of a focused locked window of a focused monitor.
 
-- `active_locked_border_color` — Color of the main border of a focused locked window of an unfocused monitor.
+- `active_locked_border_color` — Color of the border of a focused locked window of an unfocused monitor.
 
-- `normal_locked_border_color` — Color of the main border of an unfocused locked window.
+- `normal_locked_border_color` — Color of the border of an unfocused locked window.
 
 - `urgent_border_color` — Color of the border of an urgent window.
 
-- `{inner,main,outer}_border_width` — Width of the inner, main and outer borders.
+- `border_width` — Window border width.
 
 - `window_gap` — Value of the gap that separates windows.
 
@@ -231,7 +229,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 - Multiple monitors support (via *Xinerama*)
 - EWMH support (`tint2` works)
 - Automatic and manual modes
-- Triple window borders
 
 ## Panel
 
@@ -258,3 +255,7 @@ Multiple choices:
 ## Mailing List
 
 bspwm *at* librelist *dot* com.
+
+## License
+
+BSD.
