@@ -154,7 +154,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
-    uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
+    uint32_t values[] = {CLIENT_EVENT_MASK};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
@@ -411,27 +411,6 @@ void update_floating_rectangle(client_t *c)
     }
 }
 
-
-void save_pointer_position(xcb_point_t *pos)
-{
-    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-    if (qpr != NULL) {
-        *pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
-        free(qpr);
-    }
-}
-
-void get_pointed_window(xcb_window_t *win)
-{
-    window_lower(motion_recorder);
-    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-    if (qpr != NULL) {
-        *win = qpr->child;
-        free(qpr);
-    }
-    window_raise(motion_recorder);
-}
-
 void window_focus(xcb_window_t win)
 {
     window_location_t loc;
@@ -510,15 +489,4 @@ void toggle_visibility(void)
             window_set_visibility(n->client->window, visible);
     if (visible)
         update_current();
-}
-
-void enable_motion_recorder(void)
-{
-    window_raise(motion_recorder);
-    window_show(motion_recorder);
-}
-
-void disable_motion_recorder(void)
-{
-    window_hide(motion_recorder);
 }

@@ -34,12 +34,9 @@ void window_lower(xcb_window_t);
 void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
 void window_show(xcb_window_t);
-void enable_motion_recorder(void);
-void disable_motion_recorder(void);
 void toggle_visibility(void);
 uint32_t get_border_color(client_t *, bool, bool);
 void update_floating_rectangle(client_t *);
-void get_pointed_window(xcb_window_t *);
 void list_windows(char *);
 
 #endif

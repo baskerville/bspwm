@@ -217,8 +217,6 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `gapless_monocle` — Whether to remove gaps for tiled windows in monocle mode.
 
-- `focus_follows_pointer` — Wether to focus the window under the pointer.
-
 - `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.

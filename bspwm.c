@@ -62,11 +62,6 @@ void setup(void)
     screen_height = screen->height_in_pixels;
     root_depth = screen->root_depth;
 
-    uint32_t mask = XCB_CW_EVENT_MASK;
-    uint32_t values[] = {XCB_EVENT_MASK_POINTER_MOTION};
-    motion_recorder = xcb_generate_id(dpy);
-    xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder, root, 0, 0, screen_width, screen_height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, mask, values);
-
     xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
                               ewmh->_NET_DESKTOP_NAMES,
                               ewmh->_NET_NUMBER_OF_DESKTOPS,
@@ -243,7 +238,6 @@ int main(int argc, char *argv[])
     if (status_fifo != NULL)
         fclose(status_fifo);
     xcb_ewmh_connection_wipe(ewmh);
-    xcb_destroy_window(dpy, motion_recorder);
     free(ewmh);
     xcb_flush(dpy);
     xcb_disconnect(dpy);
