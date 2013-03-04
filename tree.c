@@ -386,6 +386,15 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 
+    if (focus_follows_pointer) {
+        xcb_window_t win = XCB_NONE;
+        get_pointed_window(&win);
+        if (win != n->client->window)
+            enable_motion_recorder();
+        else
+            disable_motion_recorder();
+    }
+
     if (!is_tiled(n->client)) {
         if (!adaptative_raise || !might_cover(d, n))
             window_raise(n->client->window);
@@ -940,7 +949,7 @@ void restore(char *file_path)
         for (monitor_t *m = mon_head; m != NULL; m = m->next)
             for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
                 for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n)) {
-                    uint32_t values[] = {CLIENT_EVENT_MASK};
+                    uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
                     xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
                     if (n->client->floating) {
                         n->vacant = true;

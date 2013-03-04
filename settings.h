@@ -22,6 +22,7 @@
 
 #define BORDERLESS_MONOCLE     false
 #define GAPLESS_MONOCLE        false
+#define FOCUS_FOLLOWS_POINTER  false
 #define ADAPTATIVE_RAISE       false
 #define APPLY_SHADOW_PROPERTY  false
 
@@ -48,6 +49,7 @@ int window_gap;
 
 bool borderless_monocle;
 bool gapless_monocle;
+bool focus_follows_pointer;
 bool adaptative_raise;
 bool apply_shadow_property;
 

@@ -491,6 +491,20 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             gapless_monocle = b;
+    } else if (strcmp(name, "focus_follows_pointer") == 0) {
+        bool b;
+        if (parse_bool(value, &b) && b != focus_follows_pointer) {
+            uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK : CLIENT_EVENT_MASK_FFP)};
+            for (monitor_t *m = mon_head; m != NULL; m = m->next)
+                for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+                    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+                        xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+            if (focus_follows_pointer)
+                disable_motion_recorder();
+            else
+                enable_motion_recorder();
+            focus_follows_pointer = b;
+        }
     } else if (strcmp(name, "adaptative_raise") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -548,6 +562,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(borderless_monocle));
     else if (strcmp(name, "gapless_monocle") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(gapless_monocle));
+    else if (strcmp(name, "focus_follows_pointer") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_pointer));
     else if (strcmp(name, "adaptative_raise") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "apply_shadow_property") == 0)
