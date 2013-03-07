@@ -429,7 +429,7 @@ void track_pointer(int root_x, int root_y)
                     free(qpr);
                     window_location_t loc;
                     if (locate_window(pwin, &loc) && is_tiled(loc.node->client)) {
-                        swap_nodes(n, loc.node);
+                        swap_nodes(d, n, loc.desktop, loc.node);
                         arrange(m, d);
                         if (m != loc.monitor) {
                             arrange(loc.monitor, loc.desktop);

@@ -125,7 +125,7 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                swap_nodes(mon->desk->focus, find_neighbor(mon->desk->focus, d));
+                swap_nodes(mon->desk, mon->desk->focus, mon->desk, find_neighbor(mon->desk->focus, d));
             }
         }
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
@@ -385,7 +385,7 @@ void process_message(char *msg, char *rsp)
                 remove_rule_by_uid(uid);
         return;
     } else if (strcmp(cmd, "swap") == 0) {
-        swap_nodes(mon->desk->focus, mon->desk->last_focus);
+        swap_nodes(mon->desk, mon->desk->focus, mon->desk, mon->desk->last_focus);
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, mon->desk->last_focus, true);
         return;
