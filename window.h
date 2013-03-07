@@ -39,7 +39,7 @@ void disable_motion_recorder(void);
 void toggle_visibility(void);
 uint32_t get_border_color(client_t *, bool, bool);
 void update_floating_rectangle(client_t *);
-void get_pointed_window(xcb_window_t *);
+void query_pointer(xcb_window_t *, xcb_point_t *);
 void list_windows(char *);
 
 #endif

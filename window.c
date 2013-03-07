@@ -412,12 +412,15 @@ void update_floating_rectangle(client_t *c)
 }
 
 
-void get_pointed_window(xcb_window_t *win)
+void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {
     window_lower(motion_recorder);
     xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
     if (qpr != NULL) {
-        *win = qpr->child;
+        if (win != NULL)
+            *win = qpr->child;
+        if (pt != NULL)
+            *pt = (xcb_point_t) {qpr->root_x, qpr->root_y};
         free(qpr);
     }
     window_raise(motion_recorder);

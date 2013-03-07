@@ -388,7 +388,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
 
     if (focus_follows_pointer) {
         xcb_window_t win = XCB_NONE;
-        get_pointed_window(&win);
+        query_pointer(&win, NULL);
         if (win != n->client->window)
             enable_motion_recorder();
         else

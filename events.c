@@ -247,7 +247,7 @@ void motion_notify(void)
     disable_motion_recorder();
 
     xcb_window_t win = XCB_NONE;
-    get_pointed_window(&win);
+    query_pointer(&win, NULL);
     if (win != XCB_NONE)
         window_focus(win);
 }
@@ -269,17 +269,13 @@ void grab_pointer(pointer_action_t pac)
 {
     PRINTF("grab pointer %u\n", pac);
 
-    xcb_window_t win;
+    xcb_window_t win = XCB_NONE;
     xcb_point_t pos;
 
-    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-    if (qpr != NULL) {
-        pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
-        win = qpr->child;
-        free(qpr);
-    } else {
+    query_pointer(&win, &pos);
+
+    if (win == XCB_NONE)
         return;
-    }
 
     window_location_t loc;
     if (locate_window(win, &loc)) {
@@ -423,10 +419,9 @@ void track_pointer(int root_x, int root_y)
     switch (pac) {
         case ACTION_MOVE:
             if (frozen_pointer->is_tiled) {
-                xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-                if (qpr != NULL) {
-                    xcb_window_t pwin = qpr->child;
-                    free(qpr);
+                xcb_window_t pwin = XCB_NONE;
+                query_pointer(&pwin, NULL);
+                if (pwin != XCB_NONE) {
                     window_location_t loc;
                     if (locate_window(pwin, &loc) && is_tiled(loc.node->client)) {
                         swap_nodes(d, n, loc.desktop, loc.node);
