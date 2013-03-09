@@ -423,14 +423,28 @@ void track_pointer(int root_x, int root_y)
                 query_pointer(&pwin, NULL);
                 if (pwin != XCB_NONE) {
                     window_location_t loc;
-                    if (locate_window(pwin, &loc) && is_tiled(loc.node->client)) {
+                    bool is_managed = locate_window(pwin, &loc);
+                    if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
                         swap_nodes(d, n, loc.desktop, loc.node);
                         arrange(m, d);
-                        if (m != loc.monitor) {
-                            arrange(loc.monitor, loc.desktop);
-                            frozen_pointer->monitor = loc.monitor;
-                            frozen_pointer->desktop = loc.desktop;
+                    } else {
+                        if (is_managed && !is_tiled(loc.node->client)) {
+                            return;
+                        } else if (!is_managed) {
+                            xcb_point_t pt = (xcb_point_t) {root_x, root_y};
+                            monitor_t *pmon = monitor_from_point(pt);
+                            if (pmon == NULL || pmon == m) {
+                                return;
+                            } else {
+                                loc.monitor = pmon;
+                                loc.desktop = pmon->desk;
+                            }
                         }
+                        transfer_node(m, d, loc.monitor, loc.desktop, n);
+                        arrange(m, d);
+                        arrange(loc.monitor, loc.desktop);
+                        frozen_pointer->monitor = loc.monitor;
+                        frozen_pointer->desktop = loc.desktop;
                     }
                 }
             } else {
@@ -533,11 +547,10 @@ void ungrab_pointer(void)
 {
     PUTS("ungrab pointer");
 
-    if (frozen_pointer->action == ACTION_NONE)
+    if (frozen_pointer->action == ACTION_NONE || frozen_pointer->is_tiled)
         return;
 
-    if (is_floating(frozen_pointer->client))
-        update_floating_rectangle(frozen_pointer->client);
+    update_floating_rectangle(frozen_pointer->client);
     monitor_t *m = underlying_monitor(frozen_pointer->client);
     if (m != NULL && m != frozen_pointer->monitor) {
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);

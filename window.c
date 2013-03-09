@@ -61,20 +61,25 @@ bool locate_desktop(char *name, desktop_location_t *loc)
     return false;
 }
 
-bool is_inside(monitor_t *m, xcb_point_t p)
+bool is_inside(monitor_t *m, xcb_point_t pt)
 {
     xcb_rectangle_t r = m->rectangle;
-    return (r.x <= p.x && p.x < (r.x + r.width)
-            && r.y <= p.y && p.y < (r.y + r.height));
+    return (r.x <= pt.x && pt.x < (r.x + r.width)
+            && r.y <= pt.y && pt.y < (r.y + r.height));
+}
+
+monitor_t *monitor_from_point(xcb_point_t pt)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (is_inside(m, pt))
+            return m;
+    return NULL;
 }
 
 monitor_t *underlying_monitor(client_t *c)
 {
-    xcb_point_t p = (xcb_point_t) {c->floating_rectangle.x, c->floating_rectangle.y};
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        if (is_inside(m, p))
-            return m;
-    return NULL;
+    xcb_point_t pt = (xcb_point_t) {c->floating_rectangle.x, c->floating_rectangle.y};
+    return monitor_from_point(pt);
 }
 
 void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
