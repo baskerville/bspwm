@@ -428,7 +428,7 @@ void track_pointer(int root_x, int root_y)
                         swap_nodes(d, n, loc.desktop, loc.node);
                         arrange(m, d);
                     } else {
-                        if (is_managed && !is_tiled(loc.node->client)) {
+                        if (is_managed && !is_tiled(loc.node->client) && loc.monitor == m) {
                             return;
                         } else if (!is_managed) {
                             xcb_point_t pt = (xcb_point_t) {root_x, root_y};
