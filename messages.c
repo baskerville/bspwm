@@ -76,6 +76,8 @@ void process_message(char *msg, char *rsp)
             if (parse_flip(flp, &f))
                 flip_tree(mon->desk->root, f);
         }
+    } else if (strcmp(cmd, "balance") == 0) {
+        balance_tree(mon->desk->root);
     } else if (strcmp(cmd, "grab_pointer") == 0) {
         char *pac = strtok(NULL, TOK_SEP);
         if (pac != NULL) {

@@ -186,6 +186,22 @@ void flip_tree(node_t *n, flip_t flp)
     flip_tree(n->second_child, flp);
 }
 
+int balance_tree(node_t *n)
+{
+    if (n == NULL || n->vacant) {
+        return 0;
+    } else if (is_leaf(n)) {
+        return 1;
+    } else {
+        int b1 = balance_tree(n->first_child);
+        int b2 = balance_tree(n->second_child);
+        int b = b1 + b2;
+        if (b1 > 0 && b2 > 0)
+            n->split_ratio = (double) b1 / b;
+        return b;
+    }
+}
+
 void arrange(monitor_t *m, desktop_t *d)
 {
     PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);

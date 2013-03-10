@@ -19,6 +19,7 @@ node_t *find_neighbor(node_t *, direction_t);
 void move_fence(node_t *, direction_t, fence_move_t);
 void rotate_tree(node_t *, rotate_t);
 void flip_tree(node_t *, flip_t);
+int balance_tree(node_t *);
 void arrange(monitor_t *, desktop_t *);
 void apply_layout(monitor_t *, desktop_t *, node_t *, xcb_rectangle_t, xcb_rectangle_t);
 void insert_node(monitor_t *, desktop_t *, node_t *);
