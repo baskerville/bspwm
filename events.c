@@ -421,31 +421,31 @@ void track_pointer(int root_x, int root_y)
             if (frozen_pointer->is_tiled) {
                 xcb_window_t pwin = XCB_NONE;
                 query_pointer(&pwin, NULL);
-                if (pwin != XCB_NONE) {
-                    window_location_t loc;
-                    bool is_managed = locate_window(pwin, &loc);
-                    if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
-                        swap_nodes(d, n, loc.desktop, loc.node);
-                        arrange(m, d);
-                    } else {
-                        if (is_managed && !is_tiled(loc.node->client) && loc.monitor == m) {
+                if (pwin == win)
+                    return;
+                window_location_t loc;
+                bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
+                if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
+                    swap_nodes(d, n, loc.desktop, loc.node);
+                    arrange(m, d);
+                } else {
+                    if (is_managed && loc.monitor == m) {
+                        return;
+                    } else if (!is_managed) {
+                        xcb_point_t pt = (xcb_point_t) {root_x, root_y};
+                        monitor_t *pmon = monitor_from_point(pt);
+                        if (pmon == NULL || pmon == m) {
                             return;
-                        } else if (!is_managed) {
-                            xcb_point_t pt = (xcb_point_t) {root_x, root_y};
-                            monitor_t *pmon = monitor_from_point(pt);
-                            if (pmon == NULL || pmon == m) {
-                                return;
-                            } else {
-                                loc.monitor = pmon;
-                                loc.desktop = pmon->desk;
-                            }
+                        } else {
+                            loc.monitor = pmon;
+                            loc.desktop = pmon->desk;
                         }
-                        transfer_node(m, d, loc.monitor, loc.desktop, n);
-                        arrange(m, d);
-                        arrange(loc.monitor, loc.desktop);
-                        frozen_pointer->monitor = loc.monitor;
-                        frozen_pointer->desktop = loc.desktop;
                     }
+                    transfer_node(m, d, loc.monitor, loc.desktop, n);
+                    arrange(m, d);
+                    arrange(loc.monitor, loc.desktop);
+                    frozen_pointer->monitor = loc.monitor;
+                    frozen_pointer->desktop = loc.desktop;
                 }
             } else {
                 x = rect.x + delta_x;
