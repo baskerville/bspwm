@@ -425,10 +425,6 @@ void process_message(char *msg, char *rsp)
             return;
     } else if (strcmp(cmd, "adopt_orphans") == 0) {
         adopt_orphans();
-    } else if (strcmp(cmd, "reload_autostart") == 0) {
-        run_autostart();
-    } else if (strcmp(cmd, "reload_settings") == 0) {
-        load_settings();
     } else if (strcmp(cmd, "restore") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
         restore(arg);

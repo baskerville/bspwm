@@ -179,10 +179,6 @@ The following messages are handled:
 
 - `adopt_orphans` — Manage all the unmanaged windows remaining from a previous session.
 
-- `reload_autostart` — Reload the autostart file.
-
-- `reload_settings` — Reload the default settings.
-
 - `restore FILE_PATH` — Restore the layout of each desktop from the content of `FILE_PATH`.
 
 - `quit [EXIT_STATUS]` — Quit.
