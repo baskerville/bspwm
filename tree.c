@@ -975,6 +975,8 @@ void restore(char *file_path)
         last_level = level;
     }
 
+    fclose(snapshot);
+
     if (!aborted) {
         client_uid = max_uid + 1;
         for (monitor_t *m = mon_head; m != NULL; m = m->next)
@@ -987,7 +989,6 @@ void restore(char *file_path)
                         update_vacant_state(n->parent);
                     }
                 }
+        ewmh_update_current_desktop();
     }
-
-    fclose(snapshot);
 }
