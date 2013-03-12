@@ -173,7 +173,7 @@ The following messages are handled:
 
 - `balance` — Adjust the split ratios so that all windows occupy the same area.
 
-- `rule PATTERN [DESKTOP_NAME] [floating]` — Create a new rule (`PATTERN` must match the class or instance name).
+- `rule PATTERN [DESKTOP_NAME] [floating] [follow]` — Create a new rule (`PATTERN` must match the class or instance name).
 
 - `remove_rule UID ...` — Remove the rules with the given UIDs.
 

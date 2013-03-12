@@ -367,6 +367,8 @@ void process_message(char *msg, char *rsp)
             while (arg != NULL) {
                 if (strcmp(arg, "floating") == 0) {
                     rule->effect.floating = true;
+                } else if (strcmp(arg, "follow") == 0) {
+                    rule->effect.follow = true;
                 } else {
                     desktop_location_t loc;
                     if (locate_desktop(arg, &loc)) {

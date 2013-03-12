@@ -60,7 +60,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *follow, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -113,6 +113,8 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
             rule_effect_t efc = rule->effect;
             if (efc.floating)
                 *floating = true;
+            if (efc.follow)
+                *follow = true;
             if (efc.monitor != NULL && efc.desktop != NULL) {
                 *m = efc.monitor;
                 *d = efc.desktop;
@@ -127,7 +129,7 @@ void list_rules(char *rsp)
     char line[MAXLEN];
 
     for (rule_t *r = rule_head; r != NULL; r = r->next) {
-        snprintf(line, sizeof(line), "%02X %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"));
+        snprintf(line, sizeof(line), "%2X %s %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"), (r->effect.follow ? "follow" : "\b"));
         strncat(rsp, line, REMLEN(rsp));
     }
 }

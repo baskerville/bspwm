@@ -96,9 +96,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool floating = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
+    bool floating = false, follow = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
 
-    handle_rules(win, &m, &d, &floating, &transient, &fullscreen, &takes_focus, &manage);
+    handle_rules(win, &m, &d, &floating, &follow, &transient, &fullscreen, &takes_focus, &manage);
 
     if (!manage) {
         disable_shadow(win);
@@ -161,6 +161,11 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
+
+    if (follow) {
+        select_monitor(m);
+        select_desktop(d);
+    }
 
     num_clients++;
     ewmh_set_wm_desktop(birth, d);

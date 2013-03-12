@@ -175,6 +175,7 @@ typedef struct {
 
 typedef struct {
     bool floating;
+    bool follow;
     monitor_t *monitor;
     desktop_t *desktop;
 } rule_effect_t;
