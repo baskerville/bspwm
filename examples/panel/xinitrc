@@ -1,0 +1,3 @@
+[ -e "$BSPWM_STATUS_FIFO" ] && rm "$BSPWM_STATUS_FIFO"
+mkfifo "$BSPWM_STATUS_FIFO"
+exec bspwm -s "$BSPWM_STATUS_FIFO"

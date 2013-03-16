@@ -1,0 +1,1 @@
+export BSPWM_STATUS_FIFO=/tmp/bspwm-fifo

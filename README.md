@@ -1,24 +1,26 @@
 ![logo](https://github.com/baskerville/bspwm/raw/master/logo/bspwm-logo.png)
 
+## Synopsis
+
+    bspwm [-v|-s STATUS_FIFO]
+
+    bspc MESSAGE [ARGUMENTS] [OPTIONS]
+
 ## Description
 
-`bspwm` is a tiling window manager based on binary space partitioning.
+`bspwm` is a tiling window manager where each window is represented as the leaf of a binary tree.
 
-The windows are represented as the leaves of a binary tree.
+It is controlled and configured via `bspc`.
 
 ## Configuration
 
 `bspwm` have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
 
-Those messages are sent via `bspc`.
-
-If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
+Its configuration file is `$XDG_CONFIG_HOME/bspwm/autostart`.
 
 The recommended way of defining keyboard shortcuts is to use [sxhkd](https://github.com/baskerville/sxhkd).
 
-The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
-
-Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [sxhkdrc](https://github.com/baskerville/dotfiles/blob/master/sxhkdrc).
+Example configuration files can be found in the `examples` directory.
 
 ## Splitting Modes
 
@@ -64,12 +66,6 @@ was sent beforehand:
         |            |     1      |         |     3      |     1      |
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
-
-## Synopsis
-
-    bspwm [-v|-s STATUS_FIFO]
-
-    bspc MESSAGE [ARGUMENTS] [OPTIONS]
 
 ## Messages
 
@@ -221,19 +217,22 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
 
+## Environment Variables
+
+- `BSPWM_SOCKET` — The path of the socket used for the communication between `bspc` and `bspwm`.
+
 ## Key Features
 
-- Configured and controlled through messages
-- Multiple monitors support (via *Xinerama*)
-- EWMH support (`tint2` works)
-- Automatic and manual modes
+- Configured and controlled through messages.
+- Multiple monitors support (via *Xinerama*).
+- EWMH support (`tint2` works).
+- Automatic and manual modes.
 
-## Panel
+## Panels
 
-Multiple choices:
-- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
-- A custom panel if the `-s` flag is used (have a look at the files in `examples/`).
 - Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
+- A custom panel if the `-s` flag is used (have a look at the files in `examples/panel`).
+- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
 
 ## Required Libraries:
 

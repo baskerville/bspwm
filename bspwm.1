@@ -10,7 +10,9 @@ bspwm \- Tiling window manager based on binary space partitioning
 .RI [ OPTIONS ]
 .SH DESCRIPTION
 .B bspwm
-is a tiling window manager where each window is represented as the leaf of a binary tree. It is controlled and configured via
+is a tiling window manager where each window is represented as the leaf of a binary tree.
+.P
+It is controlled and configured via
 .BR bspc .
 .SH CONFIGURATION
 .B bspwm
@@ -18,28 +20,15 @@ have only two sources of informations: the
 .B X
 events it receives and the messages it reads on a dedicated socket.
 .P
-Those messages are sent via
-.BR bspc .
-.P
-If the
-.I BSPWM_SOCKET
-environment variable is defined, it will be used as the socket path, otherwise
-.I /tmp/bspwm-socket
-is used.
+Its configuration file is
+.IR $XDG_CONFIG_HOME/bspwm/autostart .
 .P
 The recommended way of defining keyboard shortcuts is to use
 .BR sxhkd .
 .P
-The only way to configure
-.B bspwm
-is by sending
-.I set
-messages via the client, hence
-.BR bspwm \'s
-configuration file is an executable called
-.I autostart
-which lives in
-.IR $XDG_CONFIG_HOME/bspwm/ .
+Example configuration files can be found in the
+.I examples
+directory.
 .SH SPLITTING MODES
 There is only two splitting modes:
 .IR automatic " and " manual .
@@ -336,6 +325,11 @@ Prevent floating windows from being raised when they might cover other floating 
 Enable shadows for floating windows via the
 .B _COMPTON_SHADOW
 property.
+.SH ENVIRONMENT VARIABLES
+.TP
+.I BSPWM_SOCKET
+The path of the socket used for the communication between
+.BR bspc " and " bspwm .
 .SH AUTHOR
 .EX
 Bastien Dejean <baskerville at lavabit.com>
