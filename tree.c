@@ -664,7 +664,7 @@ void cycle_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, skip_desktop_t s
         f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 
     while (f != d) {
-        if (skip == DESKTOP_SKIP_NONE 
+        if (skip == DESKTOP_SKIP_NONE
                 || (skip == DESKTOP_SKIP_FREE && f->root != NULL)
                 || (skip == DESKTOP_SKIP_OCCUPIED && f->root == NULL)) {
             select_desktop(f);

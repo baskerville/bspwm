@@ -223,7 +223,7 @@ void process_message(char *msg, char *rsp)
                 if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
                     select_monitor(m);
             }
-        } 
+        }
     } else if (strcmp(cmd, "drop_to") == 0) {
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {

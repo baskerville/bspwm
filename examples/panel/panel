@@ -1,5 +1,5 @@
 #! /bin/sh
 
 xtitle -sf 'T%s' > "$BSPWM_STATUS_FIFO" &
-clock 'S%H:%M' 5 > "$BSPWM_STATUS_FIFO" & 
+clock 'S%H:%M' 5 > "$BSPWM_STATUS_FIFO" &
 cat "$BSPWM_STATUS_FIFO" | panel_bar | bar
