@@ -429,10 +429,12 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
 
 void update_current(void)
 {
-    if (mon->desk->focus == NULL)
+    if (mon->desk->focus == NULL) {
         ewmh_update_active_window();
-    else
+        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
+    } else {
         focus_node(mon, mon->desk, mon->desk->focus, true);
+    }
     put_status();
 }
 
