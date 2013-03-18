@@ -429,12 +429,10 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
 
 void update_current(void)
 {
-    if (mon->desk->focus == NULL) {
+    if (mon->desk->focus == NULL)
         ewmh_update_active_window();
-        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
-    } else {
+    else
         focus_node(mon, mon->desk, mon->desk->focus, true);
-    }
     put_status();
 }
 
@@ -626,6 +624,8 @@ void select_desktop(desktop_t *d)
         return;
 
     PRINTF("select desktop %s\n", d->name);
+
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
 
     if (visible) {
         node_t *n = first_extrema(d->root);
