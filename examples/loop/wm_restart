@@ -1,0 +1,4 @@
+#! /bin/sh
+
+bspc list_monitors > "$BSPWM_BACKUP"
+bspc quit
