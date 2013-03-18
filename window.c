@@ -508,6 +508,8 @@ void window_show(xcb_window_t win)
 
 void toggle_visibility(void)
 {
+    if (visible)
+        clear_input_focus();
     visible = !visible;
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n))
@@ -525,4 +527,9 @@ void enable_motion_recorder(void)
 void disable_motion_recorder(void)
 {
     window_hide(motion_recorder);
+}
+
+void clear_input_focus(void)
+{
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
 }

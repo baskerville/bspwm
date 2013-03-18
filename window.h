@@ -17,6 +17,10 @@ monitor_t *underlying_monitor(client_t *);
 void manage_window(monitor_t *, desktop_t *, xcb_window_t);
 void adopt_orphans(void);
 void window_draw_border(node_t *, bool, bool);
+uint32_t get_border_color(client_t *, bool, bool);
+void update_floating_rectangle(client_t *);
+void query_pointer(xcb_window_t *, xcb_point_t *);
+void list_windows(char *);
 void window_close(node_t *);
 void window_kill(desktop_t *, node_t *);
 void toggle_fullscreen(monitor_t *, client_t *);
@@ -35,12 +39,9 @@ void window_lower(xcb_window_t);
 void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
 void window_show(xcb_window_t);
+void toggle_visibility(void);
 void enable_motion_recorder(void);
 void disable_motion_recorder(void);
-void toggle_visibility(void);
-uint32_t get_border_color(client_t *, bool, bool);
-void update_floating_rectangle(client_t *);
-void query_pointer(xcb_window_t *, xcb_point_t *);
-void list_windows(char *);
+void clear_input_focus(void);
 
 #endif

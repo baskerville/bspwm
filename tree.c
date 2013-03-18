@@ -583,6 +583,8 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     ewmh_set_wm_desktop(n, dd);
 
     if (ds == ms->desk && dd != md->desk) {
+        if (n == ds->focus)
+            clear_input_focus();
         window_hide(n->client->window);
     }
 
@@ -625,7 +627,7 @@ void select_desktop(desktop_t *d)
 
     PRINTF("select desktop %s\n", d->name);
 
-    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
+    clear_input_focus();
 
     if (visible) {
         node_t *n = first_extrema(d->root);
