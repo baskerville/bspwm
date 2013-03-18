@@ -1,0 +1,8 @@
+#! /bin/sh
+
+if [ -e "$BSPWM_BACKUP" ] ; then
+    bspc restore "$BSPWM_BACKUP"
+    rm "$BSPWM_BACKUP"
+else
+    bspc adopt_orphans
+fi
