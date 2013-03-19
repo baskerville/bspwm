@@ -1,11 +1,11 @@
 bspc.o: bspc.c common.h helpers.h
 bspwm.o: bspwm.c bspwm.h common.h events.h ewmh.h helpers.h messages.h rules.h settings.h tree.h types.h window.h
-events.o: bspwm.h events.c events.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
-ewmh.o: bspwm.h ewmh.c ewmh.h helpers.h settings.h tree.h types.h
-helpers.o: bspwm.h helpers.c helpers.h types.h
-messages.o: bspwm.h common.h events.h ewmh.h helpers.h messages.c messages.h rules.h settings.h tree.h types.h window.h
-rules.o: bspwm.h ewmh.h helpers.h rules.c rules.h types.h
-settings.o: bspwm.h common.h helpers.h settings.c settings.h types.h
-tree.o: bspwm.h ewmh.h helpers.h settings.h tree.c tree.h types.h window.h
-types.o: bspwm.h ewmh.h helpers.h settings.h tree.h types.c types.h
-window.o: bspwm.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.c window.h
+events.o: events.c bspwm.h events.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
+ewmh.o: ewmh.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h
+helpers.o: helpers.c bspwm.h helpers.h types.h
+messages.o: messages.c bspwm.h common.h events.h ewmh.h helpers.h messages.h rules.h settings.h tree.h types.h window.h
+rules.o: rules.c bspwm.h ewmh.h helpers.h rules.h types.h
+settings.o: settings.c bspwm.h common.h helpers.h settings.h types.h
+tree.o: tree.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h window.h
+types.o: types.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h
+window.o: window.c bspwm.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
