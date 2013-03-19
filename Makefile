@@ -11,56 +11,45 @@ BINPREFIX = $(PREFIX)/bin
 MANPREFIX = $(PREFIX)/share/man
 
 WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
-CL_SRC = bspc.c helpers.c
-
+WM_HDR = $(WM_SRC:.c=.h) common.h
 WM_OBJ = $(WM_SRC:.c=.o)
+CL_SRC = bspc.c helpers.c
+CL_HDR = helpers.h common.h
 CL_OBJ = $(CL_SRC:.c=.o)
 
 all: CFLAGS += -Os
 all: LDFLAGS += -s
-all: options bspwm bspc
+all: bspwm bspc
 
 debug: CFLAGS += -O0 -g -DDEBUG
-debug: options bspwm bspc
+debug: bspwm bspc
 
-options:
-	@echo "bspwm build options:"
-	@echo "CC      = $(CC)"
-	@echo "CFLAGS  = $(CFLAGS)"
-	@echo "LDFLAGS = $(LDFLAGS)"
-	@echo "LIBS    = $(LIBS)"
-	@echo "PREFIX  = $(PREFIX)"
+$(WM_OBJ): $(WM_SRC) $(WM_HDR) Makefile
+
+$(CL_OBJ): $(CL_SRC) $(CL_HDR) Makefile
 
 .c.o:
-	@echo "CC $<"
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 bspwm: $(WM_OBJ)
-	@echo CC -o $@
-	@$(CC) -o $@ $(WM_OBJ) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(WM_OBJ) $(LDFLAGS) $(LIBS)
 
 bspc: $(CL_OBJ)
-	@echo CC -o $@
-	@$(CC) -o $@ $(CL_OBJ) $(LDFLAGS) $(LIBS)
-
-clean:
-	@echo "cleaning"
-	@rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}
+	$(CC) -o $@ $(CL_OBJ) $(LDFLAGS) $(LIBS)
 
 install:
-	@echo "installing executable files to $(DESTDIR)$(BINPREFIX)"
-	@mkdir -p "$(DESTDIR)$(BINPREFIX)"
-	@cp bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
-	@chmod 755 "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
-	@echo "installing manual page to $(DESTDIR)$(MANPREFIX)/man1"
-	@mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	@cp bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	@chmod 644 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	mkdir -p "$(DESTDIR)$(BINPREFIX)"
+	cp bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
+	chmod 755 "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
+	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
+	cp bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
+	chmod 644 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 
 uninstall:
-	@echo "removing executable files from $(DESTDIR)$(BINPREFIX)"
-	@rm -f "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
-	@echo "removing manual page from $(DESTDIR)$(MANPREFIX)/man1"
-	@rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	rm -f "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
+	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 
-.PHONY: all debug options clean install uninstall
+clean:
+	rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}
+
+.PHONY: all debug clean install uninstall
