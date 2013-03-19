@@ -26,7 +26,7 @@ include Incgraph
 
 $(WM_OBJ) $(CL_OBJ): Makefile
 
-%.o: %.c
+.c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 bspwm: $(WM_OBJ)
