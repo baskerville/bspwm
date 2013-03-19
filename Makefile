@@ -22,7 +22,7 @@ all: bspwm bspc
 debug: CFLAGS += -O0 -g -DDEBUG
 debug: bspwm bspc
 
-include Incgraph
+include Sourcedeps
 
 $(WM_OBJ) $(CL_OBJ): Makefile
 
