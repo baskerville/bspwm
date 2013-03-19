@@ -11,10 +11,8 @@ BINPREFIX = $(PREFIX)/bin
 MANPREFIX = $(PREFIX)/share/man
 
 WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
-WM_HDR = $(WM_SRC:.c=.h) common.h
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_SRC = bspc.c helpers.c
-CL_HDR = helpers.h common.h
 CL_OBJ = $(CL_SRC:.c=.o)
 
 all: CFLAGS += -Os
@@ -24,11 +22,11 @@ all: bspwm bspc
 debug: CFLAGS += -O0 -g -DDEBUG
 debug: bspwm bspc
 
-$(WM_OBJ): $(WM_SRC) $(WM_HDR) Makefile
+include Incgraph
 
-$(CL_OBJ): $(CL_SRC) $(CL_HDR) Makefile
+$(WM_OBJ) $(CL_OBJ): Makefile
 
-.c.o:
+%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 bspwm: $(WM_OBJ)
