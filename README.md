@@ -18,7 +18,7 @@ It is controlled and configured via `bspc`.
 
 Its configuration file is `$XDG_CONFIG_HOME/bspwm/autostart`.
 
-The recommended way of defining keyboard shortcuts is to use [sxhkd](https://github.com/baskerville/sxhkd).
+Keyboard and pointer bindings are defined through [sxhkd](https://github.com/baskerville/sxhkd).
 
 Example configuration files can be found in the `examples` directory.
 
