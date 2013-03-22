@@ -294,7 +294,7 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                if (loc.desktop == mon->desk) {
+                if (auto_alternate && loc.desktop == mon->desk) {
                     select_desktop(mon->last_desk);
                 } else {
                     select_monitor(loc.monitor);
@@ -513,6 +513,10 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             apply_shadow_property = b;
+    } else if (strcmp(name, "auto_alternate") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            auto_alternate = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
@@ -568,6 +572,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "apply_shadow_property") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(apply_shadow_property));
+    else if (strcmp(name, "auto_alternate") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_alternate));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else

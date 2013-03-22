@@ -64,4 +64,5 @@ void load_settings(void)
     focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
     adaptative_raise = ADAPTATIVE_RAISE;
     apply_shadow_property = APPLY_SHADOW_PROPERTY;
+    auto_alternate = AUTO_ALTERNATE;
 }

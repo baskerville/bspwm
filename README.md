@@ -217,6 +217,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
 
+- `auto_alternate` — Whether to interpret two consecutive identical `use` messages as an `alternate` message.
+
 ## Environment Variables
 
 - `BSPWM_SOCKET` — The path of the socket used for the communication between `bspc` and `bspwm`.
