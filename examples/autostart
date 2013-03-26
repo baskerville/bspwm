@@ -7,8 +7,8 @@ bspc add $REMAINING_DESKS
 
 bspc rule Gimp Eight floating
 
-bspc set border_width        1
-bspc set window_gap          0
+bspc set border_width        4
+bspc set window_gap          12
 bspc set borderless_monocle  true
 bspc set gapless_monocle     true
 bspc set adaptative_raise    true
