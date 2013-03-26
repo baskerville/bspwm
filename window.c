@@ -353,6 +353,16 @@ void toggle_locked(client_t *c)
     c->locked = !c->locked;
 }
 
+void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+    if (value && mon->desk->focus == n)
+        return;
+    n->client->urgent = value;
+    put_status();
+    if (m->desk == d)
+        arrange(m, d);
+}
+
 void set_shadow(xcb_window_t win, uint32_t value)
 {
     if (!apply_shadow_property)

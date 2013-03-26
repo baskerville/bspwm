@@ -181,17 +181,9 @@ void property_notify(xcb_generic_event_t *evt)
         return;
 
     window_location_t loc;
-    if (locate_window(e->window, &loc)) {
-        if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1) {
-            uint32_t urgent = xcb_icccm_wm_hints_get_urgency(&hints);
-            if (urgent != 0 && loc.node != mon->desk->focus) {
-                loc.node->client->urgent = urgent;
-                put_status();
-                if (loc.monitor->desk == loc.desktop)
-                    arrange(loc.monitor, loc.desktop);
-            }
-        }
-    }
+    if (locate_window(e->window, &loc)
+            && xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1)
+        set_urgency(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
 }
 
 void client_message(xcb_generic_event_t *evt)
@@ -262,6 +254,13 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
             toggle_fullscreen(m, n->client);
             arrange(m, d);
         }
+    } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
+        if (action == XCB_EWMH_WM_STATE_ADD)
+            set_urgency(m, d, n, true);
+        else if (action == XCB_EWMH_WM_STATE_REMOVE)
+            set_urgency(m, d, n, false);
+        else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+            set_urgency(m, d, n, !n->client->urgent);
     }
 }
 

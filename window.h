@@ -26,6 +26,7 @@ void window_kill(desktop_t *, node_t *);
 void toggle_fullscreen(monitor_t *, client_t *);
 void toggle_floating(node_t *);
 void toggle_locked(client_t *);
+void set_urgency(monitor_t *, desktop_t *, node_t *, bool);
 void set_shadow(xcb_window_t, uint32_t);
 void enable_shadow(xcb_window_t);
 void disable_shadow(xcb_window_t);
