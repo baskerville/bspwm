@@ -1,0 +1,7 @@
+#! /bin/sh
+
+BW=$(bspc get border_width)
+bspc set window_gap -$BW
+for m in $(bspc list_monitors --quiet | cut -d ' ' -f 1) ; do
+    bspc pad "$m" $BW $BW $BW $BW
+done
