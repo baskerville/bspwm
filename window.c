@@ -367,7 +367,7 @@ void set_shadow(xcb_window_t win, uint32_t value)
 {
     if (!apply_shadow_property)
         return;
-    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, compton_shadow, XCB_ATOM_CARDINAL, 32, sizeof(value), &value);
+    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, compton_shadow, XCB_ATOM_CARDINAL, 32, 1, &value);
 }
 
 void enable_shadow(xcb_window_t win)
