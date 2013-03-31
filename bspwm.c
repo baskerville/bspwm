@@ -148,8 +148,12 @@ int main(int argc, char *argv[])
     xcb_generic_event_t *event;
     char opt;
 
-    while ((opt = getopt(argc, argv, "vs:")) != -1) {
+    while ((opt = getopt(argc, argv, "hvs:")) != -1) {
         switch (opt) {
+            case 'h':
+                printf("bspwm [-h|-v|-s FIFO]\n");
+                exit(EXIT_SUCCESS);
+                break;
             case 'v':
                 printf("%s\n", VERSION);
                 exit(EXIT_SUCCESS);
