@@ -1,1 +1,1 @@
-PANEL_FIFO=/tmp/bspwm-fifo
+PANEL_FIFO=/tmp/panel-fifo
