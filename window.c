@@ -221,8 +221,14 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 
         xcb_rectangle_t *presel_rectangles;
 
+        uint8_t win_depth = root_depth;
+        xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
+        if (geo != NULL)
+            win_depth = geo->depth;
+        free(geo);
+
         xcb_pixmap_t pix = xcb_generate_id(dpy);
-        xcb_create_pixmap(dpy, root_depth, pix, win, full_width, full_height);
+        xcb_create_pixmap(dpy, win_depth, pix, win, full_width, full_height);
 
         xcb_gcontext_t gc = xcb_generate_id(dpy);
         xcb_create_gc(dpy, gc, pix, 0, NULL);
@@ -421,14 +427,14 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
 
 void update_floating_rectangle(client_t *c)
 {
-    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
+    xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
 
-    if (geom) {
-        c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
-        free(geom);
-    } else {
+    if (geo != NULL)
+        c->floating_rectangle = (xcb_rectangle_t) {geo->x, geo->y, geo->width, geo->height};
+    else
         c->floating_rectangle = (xcb_rectangle_t) {0, 0, 32, 24};
-    }
+
+    free(geo);
 }
 
 
