@@ -1,5 +1,17 @@
 #! /bin/sh
 
-xtitle -sf 'T%s' > "$BSPWM_STATUS_FIFO" &
-clock 'S%H:%M' 5 > "$BSPWM_STATUS_FIFO" &
-cat "$BSPWM_STATUS_FIFO" | panel_bar | bar
+flavor=${1:-bar}
+
+xtitle -sf 'T%s' > "$BSPWM_FIFO" &
+clock 'S%A %H:%M' 5 > "$BSPWM_FIFO" &
+case "$flavor" in
+    bar)
+        cat "$BSPWM_FIFO" | panel_bar | bar
+        ;;
+    dzen2)
+        . panel_colors
+        font_family='DejaVu Sans'
+        font_size=11
+        cat "$BSPWM_FIFO" | panel_dzen2 -f "$font_family" -s "$font_size" | dzen2 -h 24 -dock -ta l -title-name panel -fn "${font_family}:pixelsize=${font_size}" -fg "$COLOR_FOREGROUND" -bg "$COLOR_BACKGROUND"
+        ;;
+esac

@@ -1,0 +1,95 @@
+#! /bin/sh
+#
+# Example panel for dzen2
+
+font_family='sans-serif'
+font_size=11
+
+. panel_colors
+
+adaptive_centering=0
+screen_width=$(sres -W)
+NORMIFS=$IFS
+FIELDIFS=':'
+PADDING='  '
+
+while getopts 'af:s:' opt ; do
+    case "$opt" in
+        a)
+            adaptive_centering=1
+            ;;
+        f)
+            font_family=$OPTARG
+            ;;
+        s)
+            font_size=$OPTARG
+            ;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
+while read -r line ; do
+    case $line in
+        S*)
+            sys_infos="^fg($COLOR_STATUS_FG)^bg($COLOR_STATUS_BG)${PADDING}${line#?}${PADDING}^fg()^bg()${PADDING}"
+            ;;
+        T*)
+            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)${PADDING}${line#?}${PADDING}"
+            ;;
+        *)
+            wm_infos="$PADDING"
+            IFS=$FIELDIFS
+            set - $line
+            while [ $# -gt 0 ] ; do
+                item=$1
+                case $item in
+                    [d_]!*)
+                        # urgent desktop
+                        wm_infos="${wm_infos}^fg($COLOR_URGENT_FG)^bg($COLOR_URGENT_BG)${PADDING}${item#??}${PADDING}"
+                        ;;
+                    D*)
+                        # active desktop
+                        wm_infos="${wm_infos}^fg($COLOR_ACTIVE_FG)^bg($COLOR_ACTIVE_BG)${PADDING}${item#??}${PADDING}"
+                        ;;
+                    d*)
+                        # inactive desktop
+                        wm_infos="${wm_infos}^fg($COLOR_INACTIVE_FG)^bg($COLOR_INACTIVE_BG)${PADDING}${item#??}${PADDING}"
+                        ;;
+                    _*)
+                        # empty desktop
+                        wm_infos="${wm_infos}^fg($COLOR_EMPTY_FG)^bg($COLOR_EMPTY_BG)${PADDING}${item#??}${PADDING}"
+                        ;;
+                    L*)
+                        # layout
+                        layout=$(printf "%s" "${item#?}")
+                        case $layout in
+                            tiled)
+                                layout='◫'
+                                ;;
+                            monocle)
+                                layout='□'
+                                ;;
+                        esac
+                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^p(;-$((font_size / 11)))^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)${PADDING}$layout${PADDING}^p()"
+                        ;;
+                esac
+                shift
+            done
+            IFS=$NORMIFS
+            ;;
+    esac
+    set - $(printf '%s\0%s\0%s' "$wm_infos" "$title" "$sys_infos" | sed 's/\^[a-z]\+([^)]*)//g' | xargs -0 textwidth -f "$font_family" -s "$font_size")
+    left_width=$1
+    center_width=$2
+    right_width=$3
+    left_indent=0
+    right_indent=$((screen_width - right_width))
+    if [ $adaptive_centering -eq 1 ] ; then
+        available_space=$((screen_width - (left_width + right_width)))
+        center_indent=$((left_width + (available_space - center_width) / 2))
+    else
+        center_indent=$(( (screen_width - center_width) / 2 ))
+    fi
+    printf "%s\n" "^pa($center_indent)$title^pa($left_indent)$wm_infos^pa($right_indent)$sys_infos"
+done
