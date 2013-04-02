@@ -812,6 +812,8 @@ void put_status(void)
 {
     if (status_fifo == NULL)
         return;
+    if (status_prefix != NULL)
+        fprintf(status_fifo, "%s", status_prefix);
     bool urgent = false;
     for (monitor_t *m = mon_head; m != NULL; m = m->next) {
         fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);

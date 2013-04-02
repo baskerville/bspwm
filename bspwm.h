@@ -20,6 +20,7 @@ xcb_screen_t *screen;
 xcb_window_t root;
 uint8_t root_depth;
 FILE *status_fifo;
+char *status_prefix;
 
 split_mode_t split_mode;
 direction_t split_dir;
