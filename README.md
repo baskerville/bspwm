@@ -99,7 +99,7 @@ The following messages are handled:
 
 - `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-- `swap` — Swap the focused window with the last focused window.
+- `swap [biggest|smallest]` — Swap the focused window with the biggest/smallest window or with the last focused window if no arguments are given.
 
 - `push left|right|up|down` — Push the fence located in the given direction.
 

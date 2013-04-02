@@ -389,7 +389,16 @@ void process_message(char *msg, char *rsp)
                 remove_rule_by_uid(uid);
         return;
     } else if (strcmp(cmd, "swap") == 0) {
-        swap_nodes(mon->desk, mon->desk->focus, mon->desk, mon->desk->last_focus);
+        char *arg;
+        swap_arg_t a;
+        if ((arg = strtok(NULL, TOK_SEP)) != NULL) {
+            if (parse_swap_argument(arg, &a)) {
+                node_t *n = find_by_area(mon->desk, a);
+                swap_nodes(mon->desk, mon->desk->focus, mon->desk, n);
+            }
+        } else {
+            swap_nodes(mon->desk, mon->desk->focus, mon->desk, mon->desk->last_focus);
+        }
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, mon->desk->last_focus, true);
         return;
@@ -629,6 +638,18 @@ bool parse_nearest_argument(char *s, nearest_arg_t *a)
         return true;
     } else if (strcmp(s, "newer") == 0) {
         *a = NEAREST_NEWER;
+        return true;
+    }
+    return false;
+}
+
+bool parse_swap_argument(char *s, swap_arg_t *a)
+{
+    if (strcmp(s, "biggest") == 0) {
+        *a = SWAP_BIGGEST;
+        return true;
+    } else if (strcmp(s, "smallest") == 0) {
+        *a = SWAP_SMALLEST;
         return true;
     }
     return false;

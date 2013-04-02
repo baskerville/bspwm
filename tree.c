@@ -126,6 +126,37 @@ node_t *find_neighbor(node_t *n, direction_t dir)
     return NULL;
 }
 
+int tiled_area(node_t *n)
+{
+    if (n == NULL)
+        return -1;
+    xcb_rectangle_t rect = n->client->tiled_rectangle;
+    return rect.width * rect.height;
+}
+
+node_t *find_by_area(desktop_t *d, swap_arg_t a)
+{
+    if (d == NULL)
+        return NULL;
+
+    node_t *r = NULL;
+    int r_area = tiled_area(r);
+
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f)) {
+        int f_area = tiled_area(f);
+        if (r == NULL) {
+            r = f;
+            r_area = f_area;
+        } else if ((a == SWAP_BIGGEST && f_area > r_area)
+                || (a == SWAP_SMALLEST && f_area < r_area)) {
+            r = f;
+            r_area = f_area;
+        }
+    }
+
+    return r;
+}
+
 void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 {
     node_t *fence = find_fence(n, dir);
