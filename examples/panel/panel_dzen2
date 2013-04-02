@@ -37,10 +37,10 @@ while read -r line ; do
         T*)
             title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)${PADDING}${line#?}${PADDING}"
             ;;
-        *)
+        W*)
             wm_infos="$PADDING"
             IFS=$FIELDIFS
-            set - $line
+            set - ${line#?}
             while [ $# -gt 0 ] ; do
                 item=$1
                 case $item in

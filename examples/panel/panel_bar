@@ -10,14 +10,14 @@ while read -r line ; do
         T*)
             title="\\c${line#?}"
             ;;
-        *)
+        W*)
             wm_infos=""
             IFS=':'
-            set - $line
+            set - ${line#?}
             while [ $# -gt 0 ] ; do
                 item=$1
                 case $item in
-                    [Dd_]!*)
+                    [d_]!*)
                         # urgent desktop
                         wm_infos="$wm_infos \\b3\\f0${item#??}\\fr\\br"
                         ;;
