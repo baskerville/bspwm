@@ -62,16 +62,8 @@ while read -r line ; do
                         ;;
                     L*)
                         # layout
-                        layout=$(printf "%s" "${item#?}")
-                        case $layout in
-                            tiled)
-                                layout='◫'
-                                ;;
-                            monocle)
-                                layout='□'
-                                ;;
-                        esac
-                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^p(;-$((font_size / 11)))^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)${PADDING}$layout${PADDING}^p()"
+                        layout=$(printf "%s" "${item#?}" | sed 's/\(.\).*/\U\1/')
+                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)${PADDING}$layout${PADDING}"
                         ;;
                 esac
                 shift
