@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     while ((opt = getopt(argc, argv, "hvs:p:")) != -1) {
         switch (opt) {
             case 'h':
-                printf("bspwm [-h|-v|-s STATUS_FIFO|-p STATUS_PREFIX]\n");
+                printf("bspwm [-h|-v|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
                 exit(EXIT_SUCCESS);
                 break;
             case 'v':

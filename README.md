@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-    bspwm [-h|-v|-s STATUS_FIFO|-p STATUS_PREFIX]
+    bspwm [-h|-v|-s PANEL_FIFO|-p PANEL_PREFIX]
 
     bspc MESSAGE [ARGUMENTS] [OPTIONS]
 
