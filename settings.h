@@ -47,6 +47,7 @@ uint32_t urgent_border_color_pxl;
 
 unsigned int border_width;
 int window_gap;
+double split_ratio;
 
 bool borderless_monocle;
 bool gapless_monocle;

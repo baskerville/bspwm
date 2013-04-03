@@ -58,6 +58,7 @@ void load_settings(void)
 
     border_width = BORDER_WIDTH;
     window_gap = WINDOW_GAP;
+    split_ratio = SPLIT_RATIO;
 
     borderless_monocle = BORDERLESS_MONOCLE;
     gapless_monocle = GAPLESS_MONOCLE;

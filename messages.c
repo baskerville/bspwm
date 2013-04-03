@@ -460,6 +460,8 @@ void set_setting(char *name, char *value, char *rsp)
         sscanf(value, "%u", &border_width);
     } else if (strcmp(name, "window_gap") == 0) {
         sscanf(value, "%i", &window_gap);
+    } else if (strcmp(name, "split_ratio") == 0) {
+        sscanf(value, "%lf", &split_ratio);
     } else if (strcmp(name, "left_padding") == 0) {
         sscanf(value, "%i", &mon->left_padding);
     } else if (strcmp(name, "right_padding") == 0) {
@@ -547,6 +549,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%u", border_width);
     else if (strcmp(name, "window_gap") == 0)
         snprintf(rsp, BUFSIZ, "%i", window_gap);
+    else if (strcmp(name, "split_ratio") == 0)
+        snprintf(rsp, BUFSIZ, "%lf", split_ratio);
     else if (strcmp(name, "left_padding") == 0)
         snprintf(rsp, BUFSIZ, "%i", mon->left_padding);
     else if (strcmp(name, "right_padding") == 0)

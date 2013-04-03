@@ -203,6 +203,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `window_gap` — Value of the gap that separates windows.
 
+- `split_ratio` — Default split ratio.
+
 - `{top,right,bottom,left}_padding` — Padding space added at the sides of the current monitor.
 
 - `wm_name` — The value that shall be used for the `_NET_WM_NAME` property of the root window.

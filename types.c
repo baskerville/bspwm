@@ -12,7 +12,7 @@ node_t *make_node(void)
 {
     node_t *n = malloc(sizeof(node_t));
     n->parent = n->first_child = n->second_child = NULL;
-    n->split_ratio = SPLIT_RATIO;
+    n->split_ratio = split_ratio;
     n->split_type = TYPE_VERTICAL;
     n->client = NULL;
     n->vacant = false;

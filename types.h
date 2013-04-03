@@ -6,7 +6,6 @@
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
-#define SPLIT_RATIO  0.5
 #define DEFAULT_DESK_NAME    "Desktop"
 #define DEFAULT_MON_NAME     "Monitor"
 #define MISSING_VALUE        "N/A"
