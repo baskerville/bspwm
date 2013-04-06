@@ -77,11 +77,15 @@ while read -r line ; do
     right_width=$3
     left_indent=0
     right_indent=$((screen_width - right_width))
-    if [ $adaptive_centering -eq 1 ] ; then
-        available_space=$((screen_width - (left_width + right_width)))
-        center_indent=$((left_width + (available_space - center_width) / 2))
+    available_center=$((screen_width - (left_width + right_width)))
+    if [ $available_center -lt $center_width ] ; then
+        center_indent=$((left_indent + left_width))
     else
-        center_indent=$(( (screen_width - center_width) / 2 ))
+        if [ $adaptive_centering -eq 1 ] ; then
+            center_indent=$((left_width + (available_center - center_width) / 2))
+        else
+            center_indent=$(( (screen_width - center_width) / 2 ))
+        fi
     fi
     printf "%s\n" "^pa($center_indent)$title^pa($left_indent)$wm_infos^pa($right_indent)$sys_infos"
 done
