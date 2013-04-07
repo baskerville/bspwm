@@ -173,6 +173,8 @@ The following messages are handled:
 
 - `remove_rule UID ...` — Remove the rules with the given UIDs.
 
+- `put_status` — Output the current state to the panel fifo.
+
 - `adopt_orphans` — Manage all the unmanaged windows remaining from a previous session.
 
 - `restore FILE_PATH` — Restore the layout of each desktop from the content of `FILE_PATH`.
