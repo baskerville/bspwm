@@ -17,11 +17,11 @@ while read -r line ; do
             while [ $# -gt 0 ] ; do
                 item=$1
                 case $item in
-                    [d_]!*)
+                    u*)
                         # urgent desktop
                         wm_infos="$wm_infos \\b3\\f0${item#??}\\fr\\br"
                         ;;
-                    D*)
+                    [DU]*)
                         # active desktop
                         wm_infos="$wm_infos \\u5\\b2\\f9${item#??}\\fr\\br\\ur"
                         ;;
@@ -29,7 +29,7 @@ while read -r line ; do
                         # inactive but occupied desktop
                         wm_infos="$wm_infos \\f7${item#??}\\fr"
                         ;;
-                    _*)
+                    E*)
                         # inactive desktop
                         wm_infos="$wm_infos ${item#??}"
                         ;;

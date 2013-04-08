@@ -32,38 +32,52 @@ shift $((OPTIND - 1))
 while read -r line ; do
     case $line in
         S*)
-            sys_infos="^fg($COLOR_STATUS_FG)^bg($COLOR_STATUS_BG)${PADDING}${line#?}${PADDING}^fg()^bg()${PADDING}"
+            # system informations
+            sys_infos="^fg($COLOR_STATUS_FG)^bg($COLOR_STATUS_BG)^ca(1, bspc toggle_visibility)${PADDING}${line#?}${PADDING}^ca()^fg()^bg()${PADDING}"
             ;;
         T*)
-            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)${PADDING}${line#?}${PADDING}"
+            # focused window title
+            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)^ca(1, bspc toggle_floating)^ca(2, bspc toggle_locked)^ca(3, bspc close)${PADDING}${line#?}${PADDING}^ca()^ca()^ca()"
             ;;
         W*)
+            # window manager informations
             wm_infos="$PADDING"
             IFS=$FIELDIFS
             set - ${line#?}
             while [ $# -gt 0 ] ; do
                 item=$1
                 case $item in
-                    [d_]!*)
-                        # urgent desktop
-                        wm_infos="${wm_infos}^fg($COLOR_URGENT_FG)^bg($COLOR_URGENT_BG)${PADDING}${item#??}${PADDING}"
-                        ;;
-                    D*)
-                        # active desktop
-                        wm_infos="${wm_infos}^fg($COLOR_ACTIVE_FG)^bg($COLOR_ACTIVE_BG)${PADDING}${item#??}${PADDING}"
-                        ;;
-                    d*)
-                        # inactive desktop
-                        wm_infos="${wm_infos}^fg($COLOR_INACTIVE_FG)^bg($COLOR_INACTIVE_BG)${PADDING}${item#??}${PADDING}"
-                        ;;
-                    _*)
-                        # empty desktop
-                        wm_infos="${wm_infos}^fg($COLOR_EMPTY_FG)^bg($COLOR_EMPTY_BG)${PADDING}${item#??}${PADDING}"
+                    [DdEUu]*)
+                        # desktops
+                        name=${item#?}
+                        case $item in
+                            u*)
+                                # urgent (inactive) desktop
+                                FG=$COLOR_URGENT_FG
+                                BG=$COLOR_URGENT_BG
+                                ;;
+                            [DU]*)
+                                # active desktop
+                                FG=$COLOR_ACTIVE_FG
+                                BG=$COLOR_ACTIVE_BG
+                                ;;
+                            d*)
+                                # inactive desktop
+                                FG=$COLOR_INACTIVE_FG
+                                BG=$COLOR_INACTIVE_BG
+                                ;;
+                            E*)
+                                # empty desktop
+                                FG=$COLOR_EMPTY_FG
+                                BG=$COLOR_EMPTY_BG
+                                ;;
+                        esac
+                        wm_infos="${wm_infos}^fg(${FG})^bg(${BG})^ca(1, bspc use ${name})^ca(2, bspc send_to ${name})^ca(3, bspc send_to ${name} --follow)${PADDING}${name}${PADDING}^ca()^ca()^ca()"
                         ;;
                     L*)
                         # layout
-                        layout=$(printf "%s" "${item#?}" | sed 's/\(.\).*/\U\1/')
-                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)${PADDING}$layout${PADDING}"
+                        layout=$(printf "%s" "${item#?}" | sed 's/^\(.\).*/\U\1/')
+                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)^ca(1, bspc cycle_layout)^ca(2, bspc balance)${PADDING}$layout${PADDING}^ca()^ca()"
                         ;;
                 esac
                 shift
