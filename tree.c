@@ -820,10 +820,10 @@ void put_status(void)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
             for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
                 urgent |= n->client->urgent;
-            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
+            fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
         }
     }
-    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    fprintf(status_fifo, "L%s\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
     fflush(status_fifo);
 }
 
