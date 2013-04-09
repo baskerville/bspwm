@@ -455,7 +455,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     }
 
     ewmh_update_active_window();
-    put_status();
 }
 
 void update_current(void)
@@ -464,7 +463,6 @@ void update_current(void)
         ewmh_update_active_window();
     else
         focus_node(mon, mon->desk, mon->desk->focus, true);
-    put_status();
 }
 
 void unlink_node(desktop_t *d, node_t *n)
