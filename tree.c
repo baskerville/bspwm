@@ -404,6 +404,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         if (focus->vacant)
             update_vacant_state(fopar);
     }
+    put_status();
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
@@ -516,6 +517,7 @@ void unlink_node(desktop_t *d, node_t *n)
 
         update_vacant_state(b->parent);
     }
+    put_status();
 }
 
 void remove_node(desktop_t *d, node_t *n)
