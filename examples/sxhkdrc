@@ -72,4 +72,4 @@ super + space
 super + Escape
     pkill -USR1 -x sxhkd
 
- vim: set ft=sxhkdrc:
+# vim: set ft=sxhkdrc:
