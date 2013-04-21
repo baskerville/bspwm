@@ -117,4 +117,5 @@ void ewmh_update_client_list(void)
         return;
 
     xcb_ewmh_set_client_list(ewmh, default_screen, num_clients, wins);
+    xcb_ewmh_set_client_list_stacking(ewmh, default_screen, num_clients, wins);
 }

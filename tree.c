@@ -404,6 +404,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         if (focus->vacant)
             update_vacant_state(fopar);
     }
+    put_status();
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
@@ -455,7 +456,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     }
 
     ewmh_update_active_window();
-    put_status();
 }
 
 void update_current(void)
@@ -464,7 +464,6 @@ void update_current(void)
         ewmh_update_active_window();
     else
         focus_node(mon, mon->desk, mon->desk->focus, true);
-    put_status();
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -518,6 +517,7 @@ void unlink_node(desktop_t *d, node_t *n)
 
         update_vacant_state(b->parent);
     }
+    put_status();
 }
 
 void remove_node(desktop_t *d, node_t *n)
@@ -820,10 +820,10 @@ void put_status(void)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
             for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
                 urgent |= n->client->urgent;
-            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
+            fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
         }
     }
-    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    fprintf(status_fifo, "L%s\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
     fflush(status_fifo);
 }
 

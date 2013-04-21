@@ -2,8 +2,9 @@
 
 flavor=${1:-bar}
 
+bspc put_status
 xtitle -sf 'T%s' > "$PANEL_FIFO" &
-clock 'S%A %H:%M' 5 > "$PANEL_FIFO" &
+clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 case "$flavor" in
     bar)
         cat "$PANEL_FIFO" | panel_bar | bar

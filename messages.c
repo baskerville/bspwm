@@ -432,6 +432,8 @@ void process_message(char *msg, char *rsp)
         }
         if (mon->desk->layout == LAYOUT_TILED)
             return;
+    } else if (strcmp(cmd, "put_status") == 0) {
+        put_status();
     } else if (strcmp(cmd, "adopt_orphans") == 0) {
         adopt_orphans();
     } else if (strcmp(cmd, "restore") == 0) {
