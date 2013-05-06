@@ -1006,7 +1006,7 @@ void restore(char *file_path)
                 if (c->uid > max_uid)
                     max_uid = c->uid;
                 n->client = c;
-                if (len >= 2 && line[len -2] == '*')
+                if (len >= 2 && line[len - 2] == '*')
                     d->focus = n;
             }
         }
