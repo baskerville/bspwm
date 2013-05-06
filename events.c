@@ -181,17 +181,9 @@ void property_notify(xcb_generic_event_t *evt)
         return;
 
     window_location_t loc;
-    if (locate_window(e->window, &loc)) {
-        if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1) {
-            uint32_t urgent = xcb_icccm_wm_hints_get_urgency(&hints);
-            if (urgent != 0 && loc.node != mon->desk->focus) {
-                loc.node->client->urgent = urgent;
-                put_status();
-                if (loc.monitor->desk == loc.desktop)
-                    arrange(loc.monitor, loc.desktop);
-            }
-        }
-    }
+    if (locate_window(e->window, &loc)
+            && xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1)
+        set_urgency(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
 }
 
 void client_message(xcb_generic_event_t *evt)
@@ -247,7 +239,7 @@ void motion_notify(void)
     disable_motion_recorder();
 
     xcb_window_t win = XCB_NONE;
-    get_pointed_window(&win);
+    query_pointer(&win, NULL);
     if (win != XCB_NONE)
         window_focus(win);
 }
@@ -262,6 +254,13 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
             toggle_fullscreen(m, n->client);
             arrange(m, d);
         }
+    } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
+        if (action == XCB_EWMH_WM_STATE_ADD)
+            set_urgency(m, d, n, true);
+        else if (action == XCB_EWMH_WM_STATE_REMOVE)
+            set_urgency(m, d, n, false);
+        else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+            set_urgency(m, d, n, !n->client->urgent);
     }
 }
 
@@ -269,17 +268,13 @@ void grab_pointer(pointer_action_t pac)
 {
     PRINTF("grab pointer %u\n", pac);
 
-    xcb_window_t win;
+    xcb_window_t win = XCB_NONE;
     xcb_point_t pos;
 
-    xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-    if (qpr != NULL) {
-        pos = (xcb_point_t) {qpr->root_x, qpr->root_y};
-        win = qpr->child;
-        free(qpr);
-    } else {
+    query_pointer(&win, &pos);
+
+    if (win == XCB_NONE)
         return;
-    }
 
     window_location_t loc;
     if (locate_window(win, &loc)) {
@@ -423,20 +418,33 @@ void track_pointer(int root_x, int root_y)
     switch (pac) {
         case ACTION_MOVE:
             if (frozen_pointer->is_tiled) {
-                xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
-                if (qpr != NULL) {
-                    xcb_window_t pwin = qpr->child;
-                    free(qpr);
-                    window_location_t loc;
-                    if (locate_window(pwin, &loc) && is_tiled(loc.node->client)) {
-                        swap_nodes(n, loc.node);
-                        arrange(m, d);
-                        if (m != loc.monitor) {
-                            arrange(loc.monitor, loc.desktop);
-                            frozen_pointer->monitor = loc.monitor;
-                            frozen_pointer->desktop = loc.desktop;
+                xcb_window_t pwin = XCB_NONE;
+                query_pointer(&pwin, NULL);
+                if (pwin == win)
+                    return;
+                window_location_t loc;
+                bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
+                if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
+                    swap_nodes(n, loc.node);
+                    arrange(m, d);
+                } else {
+                    if (is_managed && loc.monitor == m) {
+                        return;
+                    } else if (!is_managed) {
+                        xcb_point_t pt = (xcb_point_t) {root_x, root_y};
+                        monitor_t *pmon = monitor_from_point(pt);
+                        if (pmon == NULL || pmon == m) {
+                            return;
+                        } else {
+                            loc.monitor = pmon;
+                            loc.desktop = pmon->desk;
                         }
                     }
+                    transfer_node(m, d, loc.monitor, loc.desktop, n);
+                    arrange(m, d);
+                    arrange(loc.monitor, loc.desktop);
+                    frozen_pointer->monitor = loc.monitor;
+                    frozen_pointer->desktop = loc.desktop;
                 }
             } else {
                 x = rect.x + delta_x;
@@ -538,11 +546,10 @@ void ungrab_pointer(void)
 {
     PUTS("ungrab pointer");
 
-    if (frozen_pointer->action == ACTION_NONE)
+    if (frozen_pointer->action == ACTION_NONE || frozen_pointer->is_tiled)
         return;
 
-    if (is_floating(frozen_pointer->client))
-        update_floating_rectangle(frozen_pointer->client);
+    update_floating_rectangle(frozen_pointer->client);
     monitor_t *m = underlying_monitor(frozen_pointer->client);
     if (m != NULL && m != frozen_pointer->monitor) {
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);

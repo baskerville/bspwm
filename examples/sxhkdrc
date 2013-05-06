@@ -1,0 +1,75 @@
+#
+# bspwm hotkeys
+#
+
+super + alt + Escape
+    bspc quit
+
+super + w
+    bspc close
+
+super + t
+    bspc cycle_layout
+
+super + {s,f}
+    bspc toggle_{floating,fullscreen}
+
+super + {grave,Tab}
+    bspc {alternate,alternate_desktop}
+
+super + {h,j,k,l}
+    bspc focus {left,down,up,right}
+
+super + shift + {h,j,k,l}
+    bspc shift {left,down,up,right}
+
+super + {c,shift + c}
+    bspc cycle {next,prev}
+
+super + bracket{left,right}
+    bspc cycle_desktop {prev,next}
+
+super + ctrl + {h,j,k,l}
+    bspc presel {left,down,up,right}
+
+super + alt + {h,j,k,l}
+    bspc push {left,down,up,right}
+
+super + alt + shift + {h,j,k,l}
+    bspc pull {right,up,down,left}
+
+super + ctrl + {1-9}
+    bspc ratio 0.{1-9}
+
+super + {1-9,0}
+    bspc use {One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten}
+
+super + shift + {1-9,0}
+    bspc send_to {One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten}
+
+super + button{1,2,3}
+    bspc grab_pointer {move,resize_side,resize_corner}
+
+super + !button{1,2,3}
+    bspc {track_pointer,track_pointer,track_pointer} %i %i
+
+super + @button{1,2,3}
+    bspc {ungrab_pointer,ungrab_pointer,ungrab_pointer}
+
+super + alt + button1
+    bspc grab_pointer focus
+
+#
+# wm independent hotkeys
+#
+
+super + Return
+    urxvt
+
+super + space
+    dmenu_run
+
+super + Escape
+    pkill -USR1 -x sxhkd
+
+# vim: set ft=sxhkdrc:

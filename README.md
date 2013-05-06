@@ -1,24 +1,26 @@
 ![logo](https://github.com/baskerville/bspwm/raw/master/logo/bspwm-logo.png)
 
+## Synopsis
+
+    bspwm [-h|-v|-s PANEL_FIFO|-p PANEL_PREFIX]
+
+    bspc MESSAGE [ARGUMENTS] [OPTIONS]
+
 ## Description
 
-`bspwm` is a tiling window manager based on binary space partitioning.
+`bspwm` is a tiling window manager where each window is represented as the leaf of a binary tree.
 
-The windows are represented as the leaves of a binary tree.
+It is controlled and configured via `bspc`.
 
 ## Configuration
 
 `bspwm` have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
 
-Those messages are sent via `bspc`.
+Its configuration file is `$XDG_CONFIG_HOME/bspwm/autostart`.
 
-If the `BSPWM_SOCKET` environment variable is defined, it will be used as the socket path, otherwise `/tmp/bspwm-socket` is used.
+Keyboard and pointer bindings are defined through [sxhkd](https://github.com/baskerville/sxhkd).
 
-The recommended way of defining keyboard shortcuts is to use [sxhkd](https://github.com/baskerville/sxhkd).
-
-The only way to configure `bspwm` is by sending *set* messages via the client, hence `bspwm`'s configuration file is an executable called `autostart` which lives in `$XDG_CONFIG_HOME/bspwm/`.
-
-Example configurations: [autostart](https://github.com/baskerville/bin/blob/master/bspwm_autostart) and [sxhkdrc](https://github.com/baskerville/dotfiles/blob/master/sxhkdrc).
+Example configuration files can be found in the `examples` directory.
 
 ## Splitting Modes
 
@@ -65,12 +67,6 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
-## Synopsis
-
-    bspwm [-v|-s STATUS_FIFO]
-
-    bspc MESSAGE [ARGUMENTS] [OPTIONS]
-
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
@@ -105,7 +101,7 @@ The following messages are handled:
 
 - `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-- `swap` — Swap the focused window with the last focused window.
+- `swap [biggest|smallest]` — Swap the focused window with the biggest/smallest window or with the last focused window if no arguments are given.
 
 - `push left|right|up|down` — Push the fence located in the given direction.
 
@@ -173,15 +169,15 @@ The following messages are handled:
 
 - `flip horizontal|vertical` — Flip the window tree.
 
-- `rule PATTERN [DESKTOP_NAME] [floating]` — Create a new rule (`PATTERN` must match the class or instance name).
+- `balance` — Adjust the split ratios so that all windows occupy the same area.
+
+- `rule PATTERN [DESKTOP_NAME] [floating] [follow]` — Create a new rule (`PATTERN` must match the class or instance name).
 
 - `remove_rule UID ...` — Remove the rules with the given UIDs.
 
+- `put_status` — Output the current state to the panel fifo.
+
 - `adopt_orphans` — Manage all the unmanaged windows remaining from a previous session.
-
-- `reload_autostart` — Reload the autostart file.
-
-- `reload_settings` — Reload the default settings.
 
 - `restore FILE_PATH` — Restore the layout of each desktop from the content of `FILE_PATH`.
 
@@ -211,6 +207,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `window_gap` — Value of the gap that separates windows.
 
+- `split_ratio` — Default split ratio.
+
 - `{top,right,bottom,left}_padding` — Padding space added at the sides of the current monitor.
 
 - `wm_name` — The value that shall be used for the `_NET_WM_NAME` property of the root window.
@@ -219,25 +217,30 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `gapless_monocle` — Whether to remove gaps for tiled windows in monocle mode.
 
-- `focus_follows_pointer` — Wether to focus the window under the pointer.
+- `focus_follows_pointer` — Whether to focus the window under the pointer.
 
 - `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
 
+- `auto_alternate` — Whether to interpret two consecutive identical `use` messages as an `alternate` message.
+
+## Environment Variables
+
+- `BSPWM_SOCKET` — The path of the socket used for the communication between `bspc` and `bspwm`.
+
 ## Key Features
 
-- Configured and controlled through messages
-- Multiple monitors support (via *Xinerama*)
-- EWMH support (`tint2` works)
-- Automatic and manual modes
+- Configured and controlled through messages.
+- Multiple monitors support (via *Xinerama*).
+- EWMH support (`tint2` works).
+- Automatic and manual modes.
 
-## Panel
+## Panels
 
-Multiple choices:
-- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
-- A custom panel if the `-s` flag is used (have a look at the files in `examples/`).
 - Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
+- A custom panel if the `-s` flag is used (have a look at the files in `examples/panel`).
+- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
 
 ## Required Libraries:
 
@@ -253,6 +256,8 @@ Multiple choices:
 ## Contributors
 
 - [Ivan Kanakarakis](https://github.com/c00kiemon5ter)
+
+- [Thomas Adam](https://github.com/ThomasAdam)
 
 ## Mailing List
 

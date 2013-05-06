@@ -76,6 +76,7 @@ void setup(void)
                               ewmh->_NET_WM_DESKTOP,
                               ewmh->_NET_WM_STATE,
                               ewmh->_NET_WM_STATE_FULLSCREEN,
+                              ewmh->_NET_WM_STATE_DEMANDS_ATTENTION,
                               ewmh->_NET_WM_WINDOW_TYPE,
                               ewmh->_NET_WM_WINDOW_TYPE_DOCK,
                               ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION,
@@ -139,6 +140,7 @@ int main(int argc, char *argv[])
     fd_set descriptors;
     char socket_path[MAXLEN];
     char *fifo_path = NULL;
+    status_prefix = NULL;
     int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
     size_t rsplen = 0;
@@ -147,14 +149,21 @@ int main(int argc, char *argv[])
     xcb_generic_event_t *event;
     char opt;
 
-    while ((opt = getopt(argc, argv, "vs:")) != -1) {
+    while ((opt = getopt(argc, argv, "hvs:p:")) != -1) {
         switch (opt) {
+            case 'h':
+                printf("bspwm [-h|-v|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
+                exit(EXIT_SUCCESS);
+                break;
             case 'v':
                 printf("%s\n", VERSION);
                 exit(EXIT_SUCCESS);
                 break;
             case 's':
                 fifo_path = optarg;
+                break;
+            case 'p':
+                status_prefix = optarg;
                 break;
         }
     }

@@ -6,7 +6,6 @@
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
-#define SPLIT_RATIO  0.5
 #define DEFAULT_DESK_NAME    "Desktop"
 #define DEFAULT_MON_NAME     "Monitor"
 #define MISSING_VALUE        "N/A"
@@ -69,6 +68,11 @@ typedef enum {
     NEAREST_OLDER,
     NEAREST_NEWER
 } nearest_arg_t;
+
+typedef enum {
+    SWAP_BIGGEST,
+    SWAP_SMALLEST
+} swap_arg_t;
 
 typedef enum {
     CIRCULATE_FORWARD,
@@ -187,6 +191,7 @@ typedef struct {
 
 typedef struct {
     bool floating;
+    bool follow;
     monitor_t *monitor;
     desktop_t *desktop;
 } rule_effect_t;

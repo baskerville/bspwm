@@ -126,6 +126,37 @@ node_t *find_neighbor(node_t *n, direction_t dir)
     return NULL;
 }
 
+int tiled_area(node_t *n)
+{
+    if (n == NULL)
+        return -1;
+    xcb_rectangle_t rect = n->client->tiled_rectangle;
+    return rect.width * rect.height;
+}
+
+node_t *find_by_area(desktop_t *d, swap_arg_t a)
+{
+    if (d == NULL)
+        return NULL;
+
+    node_t *r = NULL;
+    int r_area = tiled_area(r);
+
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f)) {
+        int f_area = tiled_area(f);
+        if (r == NULL) {
+            r = f;
+            r_area = f_area;
+        } else if ((a == SWAP_BIGGEST && f_area > r_area)
+                || (a == SWAP_SMALLEST && f_area < r_area)) {
+            r = f;
+            r_area = f_area;
+        }
+    }
+
+    return r;
+}
+
 void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 {
     node_t *fence = find_fence(n, dir);
@@ -192,6 +223,22 @@ void list_history(desktop_t *d, char *rsp)
     for (node_list_t *a = d->history->head; a != NULL; a = a->next) {
         snprintf(line, sizeof(line), "%s %X\n", a->node->client->class_name, a->node->client->window);
         strncat(rsp, line, REMLEN(rsp));
+    }
+}
+
+int balance_tree(node_t *n)
+{
+    if (n == NULL || n->vacant) {
+        return 0;
+    } else if (is_leaf(n)) {
+        return 1;
+    } else {
+        int b1 = balance_tree(n->first_child);
+        int b2 = balance_tree(n->second_child);
+        int b = b1 + b2;
+        if (b1 > 0 && b2 > 0)
+            n->split_ratio = (double) b1 / b;
+        return b;
     }
 }
 
@@ -366,6 +413,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         if (focus->vacant)
             update_vacant_state(fopar);
     }
+    put_status();
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
@@ -395,20 +443,20 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 
-    if (focus_follows_pointer) {
-        xcb_window_t win = XCB_NONE;
-        get_pointed_window(&win);
-        if (win != n->client->window)
-            enable_motion_recorder();
-        else
-            disable_motion_recorder();
-    }
-
     if (!is_tiled(n->client)) {
         if (!adaptative_raise || !might_cover(d, n))
             window_raise(n->client->window);
     } else {
         window_pseudo_raise(d, n->client->window);
+    }
+
+    if (focus_follows_pointer) {
+        xcb_window_t win = XCB_NONE;
+        query_pointer(&win, NULL);
+        if (win != n->client->window)
+            enable_motion_recorder();
+        else
+            disable_motion_recorder();
     }
 
     if (d->focus != n) {
@@ -417,7 +465,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     }
 
     ewmh_update_active_window();
-    put_status();
 }
 
 void update_current(void)
@@ -426,7 +473,6 @@ void update_current(void)
         ewmh_update_active_window();
     else
         focus_node(mon, mon->desk, mon->desk->focus, true);
-    put_status();
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -479,8 +525,8 @@ void unlink_node(desktop_t *d, node_t *n)
 
         update_vacant_state(b->parent);
     }
-
     history_remove(d->history, n);
+    put_status();
 }
 
 void remove_node(desktop_t *d, node_t *n)
@@ -548,6 +594,22 @@ void swap_nodes(node_t *n1, node_t *n2)
         update_vacant_state(n1->parent);
         update_vacant_state(n2->parent);
     }
+
+    /* If we ever need to generalize: */
+    /* if (d1 != d2) { */
+    /*     if (d1->root == n1) */
+    /*         d1->root = n2; */
+    /*     if (d1->focus == n1) */
+    /*         d1->focus = n2; */
+    /*     if (d1->last_focus == n1) */
+    /*         d1->last_focus = n2; */
+    /*     if (d2->root == n2) */
+    /*         d2->root = n1; */
+    /*     if (d2->focus == n2) */
+    /*         d2->focus = n1; */
+    /*     if (d2->last_focus == n2) */
+    /*         d2->last_focus = n1; */
+    /* } */
 }
 
 void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
@@ -562,6 +624,8 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     ewmh_set_wm_desktop(n, dd);
 
     if (ds == ms->desk && dd != md->desk) {
+        if (n == ds->focus)
+            clear_input_focus();
         window_hide(n->client->window);
     }
 
@@ -604,6 +668,8 @@ void select_desktop(desktop_t *d)
 
     PRINTF("select desktop %s\n", d->name);
 
+    clear_input_focus();
+
     if (visible) {
         node_t *n = first_extrema(d->root);
 
@@ -643,7 +709,7 @@ void cycle_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, skip_desktop_t s
         f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 
     while (f != d) {
-        if (skip == DESKTOP_SKIP_NONE 
+        if (skip == DESKTOP_SKIP_NONE
                 || (skip == DESKTOP_SKIP_FREE && f->root != NULL)
                 || (skip == DESKTOP_SKIP_OCCUPIED && f->root == NULL)) {
             select_desktop(f);
@@ -756,16 +822,18 @@ void put_status(void)
 {
     if (status_fifo == NULL)
         return;
+    if (status_prefix != NULL)
+        fprintf(status_fifo, "%s", status_prefix);
     bool urgent = false;
     for (monitor_t *m = mon_head; m != NULL; m = m->next) {
         fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
             for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
                 urgent |= n->client->urgent;
-            fprintf(status_fifo, "%c%c%s:", (m->desk == d ? 'D' : (d->root != NULL ? 'd' : '_')), (urgent ? '!' : '_'), d->name);
+            fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
         }
     }
-    fprintf(status_fifo, "L%s:W%X\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"), (mon->desk->focus == NULL ? 0 : mon->desk->focus->client->window));
+    fprintf(status_fifo, "L%s\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
     fflush(status_fifo);
 }
 
@@ -945,6 +1013,8 @@ void restore(char *file_path)
         last_level = level;
     }
 
+    fclose(snapshot);
+
     if (!aborted) {
         client_uid = max_uid + 1;
         for (monitor_t *m = mon_head; m != NULL; m = m->next)
@@ -957,7 +1027,6 @@ void restore(char *file_path)
                         update_vacant_state(n->parent);
                     }
                 }
+        ewmh_update_current_desktop();
     }
-
-    fclose(snapshot);
 }

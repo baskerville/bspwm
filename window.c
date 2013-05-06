@@ -61,20 +61,25 @@ bool locate_desktop(char *name, desktop_location_t *loc)
     return false;
 }
 
-bool is_inside(monitor_t *m, xcb_point_t p)
+bool is_inside(monitor_t *m, xcb_point_t pt)
 {
     xcb_rectangle_t r = m->rectangle;
-    return (r.x <= p.x && p.x < (r.x + r.width)
-            && r.y <= p.y && p.y < (r.y + r.height));
+    return (r.x <= pt.x && pt.x < (r.x + r.width)
+            && r.y <= pt.y && pt.y < (r.y + r.height));
+}
+
+monitor_t *monitor_from_point(xcb_point_t pt)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (is_inside(m, pt))
+            return m;
+    return NULL;
 }
 
 monitor_t *underlying_monitor(client_t *c)
 {
-    xcb_point_t p = (xcb_point_t) {c->floating_rectangle.x, c->floating_rectangle.y};
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        if (is_inside(m, p))
-            return m;
-    return NULL;
+    xcb_point_t pt = (xcb_point_t) {c->floating_rectangle.x, c->floating_rectangle.y};
+    return monitor_from_point(pt);
 }
 
 void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
@@ -91,9 +96,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool floating = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
+    bool floating = false, follow = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
 
-    handle_rules(win, &m, &d, &floating, &transient, &fullscreen, &takes_focus, &manage);
+    handle_rules(win, &m, &d, &floating, &follow, &transient, &fullscreen, &takes_focus, &manage);
 
     if (!manage) {
         disable_shadow(win);
@@ -157,6 +162,11 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
+    if (follow) {
+        select_monitor(m);
+        select_desktop(d);
+    }
+
     num_clients++;
     ewmh_set_wm_desktop(birth, d);
     ewmh_update_client_list();
@@ -211,8 +221,14 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 
         xcb_rectangle_t *presel_rectangles;
 
+        uint8_t win_depth = root_depth;
+        xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
+        if (geo != NULL)
+            win_depth = geo->depth;
+        free(geo);
+
         xcb_pixmap_t pix = xcb_generate_id(dpy);
-        xcb_create_pixmap(dpy, root_depth, pix, win, full_width, full_height);
+        xcb_create_pixmap(dpy, win_depth, pix, win, full_width, full_height);
 
         xcb_gcontext_t gc = xcb_generate_id(dpy);
         xcb_create_gc(dpy, gc, pix, 0, NULL);
@@ -343,11 +359,21 @@ void toggle_locked(client_t *c)
     c->locked = !c->locked;
 }
 
+void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+    if (value && mon->desk->focus == n)
+        return;
+    n->client->urgent = value;
+    put_status();
+    if (m->desk == d)
+        arrange(m, d);
+}
+
 void set_shadow(xcb_window_t win, uint32_t value)
 {
     if (!apply_shadow_property)
         return;
-    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, compton_shadow, XCB_ATOM_CARDINAL, 32, sizeof(value), &value);
+    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, compton_shadow, XCB_ATOM_CARDINAL, 32, 1, &value);
 }
 
 void enable_shadow(xcb_window_t win)
@@ -401,23 +427,26 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
 
 void update_floating_rectangle(client_t *c)
 {
-    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
+    xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, c->window), NULL);
 
-    if (geom) {
-        c->floating_rectangle = (xcb_rectangle_t) {geom->x, geom->y, geom->width, geom->height};
-        free(geom);
-    } else {
+    if (geo != NULL)
+        c->floating_rectangle = (xcb_rectangle_t) {geo->x, geo->y, geo->width, geo->height};
+    else
         c->floating_rectangle = (xcb_rectangle_t) {0, 0, 32, 24};
-    }
+
+    free(geo);
 }
 
 
-void get_pointed_window(xcb_window_t *win)
+void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {
     window_lower(motion_recorder);
     xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
     if (qpr != NULL) {
-        *win = qpr->child;
+        if (win != NULL)
+            *win = qpr->child;
+        if (pt != NULL)
+            *pt = (xcb_point_t) {qpr->root_x, qpr->root_y};
         free(qpr);
     }
     window_raise(motion_recorder);
@@ -495,6 +524,8 @@ void window_show(xcb_window_t win)
 
 void toggle_visibility(void)
 {
+    if (visible)
+        clear_input_focus();
     visible = !visible;
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n))
@@ -512,4 +543,9 @@ void enable_motion_recorder(void)
 void disable_motion_recorder(void)
 {
     window_hide(motion_recorder);
+}
+
+void clear_input_focus(void)
+{
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
 }

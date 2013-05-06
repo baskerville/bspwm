@@ -7,18 +7,21 @@ while read -r line ; do
         S*)
             sys_infos="\\r\\f5${line#?}\\fr"
             ;;
-        *)
+        T*)
+            title="\\c${line#?}"
+            ;;
+        W*)
             wm_infos=""
             IFS=':'
-            set - $line
+            set - ${line#?}
             while [ $# -gt 0 ] ; do
                 item=$1
                 case $item in
-                    [Dd_]!*)
+                    u*)
                         # urgent desktop
                         wm_infos="$wm_infos \\b3\\f0${item#??}\\fr\\br"
                         ;;
-                    D*)
+                    [DU]*)
                         # active desktop
                         wm_infos="$wm_infos \\u5\\b2\\f9${item#??}\\fr\\br\\ur"
                         ;;
@@ -26,7 +29,7 @@ while read -r line ; do
                         # inactive but occupied desktop
                         wm_infos="$wm_infos \\f7${item#??}\\fr"
                         ;;
-                    _*)
+                    E*)
                         # inactive desktop
                         wm_infos="$wm_infos ${item#??}"
                         ;;
@@ -35,15 +38,10 @@ while read -r line ; do
                         layout=$(printf "%s" "${item#?}" | sed 's/\(.\).*/\U\1/')
                         wm_infos="$wm_infos \\b4\\f0$layout\\br\\fr"
                         ;;
-                    W*)
-                        # window id
-                        wid=${item#?}
-                        [ $wid != 0 ] && wm_infos="$wm_infos\\c$(xdotool getwindowname 0x$wid)"
-                        ;;
                 esac
                 shift
             done
             ;;
     esac
-    printf "%s\n" "$wm_infos $sys_infos"
+    printf "%s\n" "$wm_infos $title $sys_infos"
 done
