@@ -9,6 +9,7 @@ LDFLAGS = -L$(PREFIX)/lib
 PREFIX    ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 MANPREFIX = $(PREFIX)/share/man
+CPLPREFIX = $(PREFIX)/usr/share/bash-completion/completions
 
 WM_SRC = bspwm.c events.c messages.c ewmh.c settings.c helpers.c tree.c types.c rules.c window.c
 WM_OBJ = $(WM_SRC:.c=.o)
@@ -40,10 +41,13 @@ install:
 	cp -p bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -p bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
+	mkdir -p "$(DESTDIR)$(CPLPREFIX)"
+	cp -p bash_completion "$(DESTDIR)$(CPLPREFIX)"/bspc
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	rm -f "$(DESTDIR)$(CPLPREFIX)"/bspc
 
 clean:
 	rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}

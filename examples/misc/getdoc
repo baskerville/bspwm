@@ -1,0 +1,14 @@
+#! /bin/sh
+
+case $1 in
+    messages)
+        secstart=Messages
+        secend=Settings
+        ;;
+    settings)
+        secstart=Settings
+        secend=Environment
+        ;;
+esac
+
+awk '/## '$secstart'/, /## '$secend'/ { if (match($0, /- `([^`]+)`/, grp)) print grp[1] }' README.md
