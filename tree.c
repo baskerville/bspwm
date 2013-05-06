@@ -443,11 +443,16 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 
+    if (d->focus != n) {
+        d->focus = n;
+        history_add(d->history, n);
+    }
+
     if (!is_tiled(n->client)) {
         if (!adaptative_raise || !might_cover(d, n))
             window_raise(n->client->window);
     } else {
-        window_pseudo_raise(d, n->client->window);
+        stack_tiled(d);
     }
 
     if (focus_follows_pointer) {
@@ -457,11 +462,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
             enable_motion_recorder();
         else
             disable_motion_recorder();
-    }
-
-    if (d->focus != n) {
-        d->focus = n;
-        history_add(d->history, n);
     }
 
     ewmh_update_active_window();

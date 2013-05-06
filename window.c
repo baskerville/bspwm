@@ -488,11 +488,11 @@ void window_raise(xcb_window_t win)
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }
 
-void window_pseudo_raise(desktop_t *d, xcb_window_t win)
+void stack_tiled(desktop_t *d)
 {
-    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
-        if (is_tiled(n->client) && n->client->window != win)
-            window_lower(n->client->window);
+    for (node_list_t *x = d->history->tail; x != NULL; x = x->prev)
+        if (x->latest && is_tiled(x->node->client))
+            window_lower(x->node->client->window);
 }
 
 void window_lower(xcb_window_t win)

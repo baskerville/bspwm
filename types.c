@@ -177,6 +177,7 @@ node_list_t *make_node_list(void)
     node_list_t *n = malloc(sizeof(node_list_t));
     n->node = NULL;
     n->prev = n->next = NULL;
+    n->latest = true;
     return n;
 }
 
@@ -187,6 +188,9 @@ void history_add(focus_history_t *f, node_t *n)
     if (f->head == NULL) {
         f->head = f->tail = a;
     } else if (f->tail->node != n) {
+        for (node_list_t *x = f->head; x != NULL; x = x->next)
+            if (x->node == n)
+                x->latest = false;
         f->tail->next = a;
         a->prev = f->tail;
         f->tail = a;
