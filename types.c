@@ -187,13 +187,13 @@ void history_add(focus_history_t *f, node_t *n)
     a->node = n;
     if (f->head == NULL) {
         f->head = f->tail = a;
-    } else if (f->tail->node != n) {
+    } else if (f->head->node != n) {
         for (node_list_t *x = f->head; x != NULL; x = x->next)
             if (x->node == n)
                 x->latest = false;
-        f->tail->next = a;
-        a->prev = f->tail;
-        f->tail = a;
+        f->head->prev = a;
+        a->next = f->head;
+        f->head = a;
     } else {
         free(a);
     }
@@ -243,9 +243,9 @@ void empty_history(focus_history_t *f)
 
 node_t *history_get(focus_history_t *f, int i)
 {
-    node_list_t *a = f->tail;
+    node_list_t *a = f->head;
     while (a != NULL && i > 0) {
-        a = a->prev;
+        a = a->next;
         i--;
     }
     if (a == NULL)
