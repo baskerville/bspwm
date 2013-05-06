@@ -37,11 +37,9 @@ bspc: $(CL_OBJ)
 
 install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
-	cp bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
-	chmod 755 "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
+	cp -p bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	cp bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	chmod 644 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	cp -p bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
