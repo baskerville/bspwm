@@ -30,7 +30,7 @@ void update_current(void);
 void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
 void destroy_tree(node_t *);
-void swap_nodes(desktop_t *, node_t *, desktop_t *, node_t *);
+void swap_nodes(node_t *, node_t *);
 void fit_monitor(monitor_t *, client_t *);
 void transfer_node(monitor_t *, desktop_t *, monitor_t *, desktop_t *, node_t *);
 void select_monitor(monitor_t *);

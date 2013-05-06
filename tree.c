@@ -551,7 +551,7 @@ void destroy_tree(node_t *n)
     destroy_tree(second_tree);
 }
 
-void swap_nodes(desktop_t *d1, node_t *n1, desktop_t *d2, node_t *n2)
+void swap_nodes(node_t *n1, node_t *n2)
 {
     if (n1 == NULL || n2 == NULL || n1 == n2)
         return;
@@ -586,20 +586,21 @@ void swap_nodes(desktop_t *d1, node_t *n1, desktop_t *d2, node_t *n2)
         update_vacant_state(n2->parent);
     }
 
-    if (d1 != d2) {
-        if (d1->root == n1)
-            d1->root = n2;
-        if (d1->focus == n1)
-            d1->focus = n2;
-        if (d1->last_focus == n1)
-            d1->last_focus = n2;
-        if (d2->root == n2)
-            d2->root = n1;
-        if (d2->focus == n2)
-            d2->focus = n1;
-        if (d2->last_focus == n2)
-            d2->last_focus = n1;
-    }
+    /* If we ever need to generalize: */
+    /* if (d1 != d2) { */
+    /*     if (d1->root == n1) */
+    /*         d1->root = n2; */
+    /*     if (d1->focus == n1) */
+    /*         d1->focus = n2; */
+    /*     if (d1->last_focus == n1) */
+    /*         d1->last_focus = n2; */
+    /*     if (d2->root == n2) */
+    /*         d2->root = n1; */
+    /*     if (d2->focus == n2) */
+    /*         d2->focus = n1; */
+    /*     if (d2->last_focus == n2) */
+    /*         d2->last_focus = n1; */
+    /* } */
 }
 
 void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
@@ -767,10 +768,10 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir) {
     bool focus_first_child = is_first_child(d->focus);
     if (dir == CIRCULATE_FORWARD)
         for (node_t *s = second_extrema(d->root), *f = prev_leaf(s); f != NULL; s = prev_leaf(f), f = prev_leaf(s))
-            swap_nodes(d, f, d, s);
+            swap_nodes(f, s);
     else
         for (node_t *f = first_extrema(d->root), *s = next_leaf(f); s != NULL; f = next_leaf(s), s = next_leaf(f))
-            swap_nodes(d, f, d, s);
+            swap_nodes(f, s);
     if (focus_first_child)
         focus_node(m, d, par->first_child, true);
     else
