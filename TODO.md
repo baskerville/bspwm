@@ -1,4 +1,4 @@
-- Rewrite `find_neighbor` based on the distances between the windows sides (more intuitive).
+- Add a `restore_history` message.
 - Handle monitors through RandR.
 - Use macros in `messages.c`.
 - Better handling of the floating window concept?
