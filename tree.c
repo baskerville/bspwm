@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <float.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "settings.h"
@@ -66,26 +67,26 @@ node_t *second_extrema(node_t *n)
         return second_extrema(n->second_child);
 }
 
-node_t *next_leaf(node_t *n)
+node_t *next_leaf(node_t *n, node_t *r)
 {
     if (n == NULL)
         return NULL;
     node_t *p = n;
-    while (is_second_child(p))
+    while (is_second_child(p) && p != r)
         p = p->parent;
-    if (p->parent == NULL)
+    if (p == r)
         return NULL;
     return first_extrema(p->parent->second_child);
 }
 
-node_t *prev_leaf(node_t *n)
+node_t *prev_leaf(node_t *n, node_t *r)
 {
     if (n == NULL)
         return NULL;
     node_t *p = n;
-    while (is_first_child(p))
+    while (is_first_child(p) && p != r)
         p = p->parent;
-    if (p->parent == NULL)
+    if (p == r)
         return NULL;
     return second_extrema(p->parent->first_child);
 }
@@ -126,6 +127,59 @@ node_t *find_neighbor(node_t *n, direction_t dir)
     return NULL;
 }
 
+void get_opposite(direction_t dir, direction_t* val)
+{
+    switch (dir) {
+        case DIR_RIGHT:
+            *val = DIR_LEFT;
+            break;
+        case DIR_DOWN:
+            *val = DIR_UP;
+            break;
+        case DIR_LEFT:
+            *val = DIR_RIGHT;
+            break;
+        case DIR_UP:
+            *val = DIR_DOWN;
+            break;
+    }
+}
+
+node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
+{
+    node_t *target = NULL;
+    if (is_tiled(n->client)) {
+        target = find_fence(n, dir);
+        if (target == NULL)
+            return NULL;
+        if (dir == DIR_UP || dir == DIR_LEFT)
+            target = target->first_child;
+        else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+            target = target->second_child;
+    } else {
+        target = d->root;
+    }
+    node_t *nearest = NULL;
+    direction_t dir2;
+    xcb_point_t pt;
+    xcb_point_t pt2;
+    get_side_handle(n->client, dir, &pt);
+    get_opposite(dir, &dir2);
+    double ds = DBL_MAX;
+    for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
+        if (is_tiled(a->client) != is_tiled(n->client) || a == n)
+            continue;
+        get_side_handle(a->client, dir2, &pt2);
+        double ds2 = distance(pt, pt2);
+        PRINTF("distance %X %g\n", a->client->window, ds2);
+        if (ds2 < ds) {
+            ds = ds2;
+            nearest = a;
+        }
+    }
+    return nearest;
+}
+
 int tiled_area(node_t *n)
 {
     if (n == NULL)
@@ -142,7 +196,7 @@ node_t *find_by_area(desktop_t *d, swap_arg_t a)
     node_t *r = NULL;
     int r_area = tiled_area(r);
 
-    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f)) {
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
         int f_area = tiled_area(f);
         if (r == NULL) {
             r = f;
@@ -675,14 +729,14 @@ void select_desktop(desktop_t *d)
 
         while (n != NULL) {
             window_show(n->client->window);
-            n = next_leaf(n);
+            n = next_leaf(n, d->root);
         }
 
         n = first_extrema(mon->desk->root);
 
         while (n != NULL) {
             window_hide(n->client->window);
-            n = next_leaf(n);
+            n = next_leaf(n, mon->desk->root);
         }
     }
 
@@ -728,7 +782,7 @@ void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_cli
 
     PUTS("cycle leaf");
 
-    node_t *f = (dir == CYCLE_PREV ? prev_leaf(n) : next_leaf(n));
+    node_t *f = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
     if (f == NULL)
         f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
 
@@ -740,7 +794,7 @@ void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_cli
             focus_node(m, d, f, true);
             return;
         }
-        f = (dir == CYCLE_PREV ? prev_leaf(f) : next_leaf(f));
+        f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
         if (f == NULL)
             f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
     }
@@ -755,7 +809,7 @@ void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip
 
     node_t *x = NULL;
 
-    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f))
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root))
         if (skip == CLIENT_SKIP_NONE || (skip == CLIENT_SKIP_TILED && !is_tiled(f->client)) || (skip == CLIENT_SKIP_FLOATING && is_tiled(f->client))
                 || (skip == CLIENT_SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
                 || (skip == CLIENT_SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0))
@@ -776,10 +830,10 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir) {
     node_t *par = d->focus->parent;
     bool focus_first_child = is_first_child(d->focus);
     if (dir == CIRCULATE_FORWARD)
-        for (node_t *s = second_extrema(d->root), *f = prev_leaf(s); f != NULL; s = prev_leaf(f), f = prev_leaf(s))
+        for (node_t *s = second_extrema(d->root), *f = prev_leaf(s, d->root); f != NULL; s = prev_leaf(f, d->root), f = prev_leaf(s, d->root))
             swap_nodes(f, s);
     else
-        for (node_t *f = first_extrema(d->root), *s = next_leaf(f); s != NULL; f = next_leaf(s), s = next_leaf(f))
+        for (node_t *f = first_extrema(d->root), *s = next_leaf(f, d->root); s != NULL; f = next_leaf(s, d->root), s = next_leaf(f, d->root))
             swap_nodes(f, s);
     if (focus_first_child)
         focus_node(m, d, par->first_child, true);
@@ -828,7 +882,7 @@ void put_status(void)
     for (monitor_t *m = mon_head; m != NULL; m = m->next) {
         fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n))
+            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
                 urgent |= n->client->urgent;
             fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
         }
@@ -1019,7 +1073,7 @@ void restore(char *file_path)
         client_uid = max_uid + 1;
         for (monitor_t *m = mon_head; m != NULL; m = m->next)
             for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-                for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n)) {
+                for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
                     uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
                     xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
                     if (n->client->floating) {

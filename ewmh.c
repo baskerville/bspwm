@@ -110,7 +110,7 @@ void ewmh_update_client_list(void)
 
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
                 wins[i++] = n->client->window;
 
     if (i != num_clients)

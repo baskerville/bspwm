@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
@@ -50,4 +51,9 @@ uint32_t get_color(char *col)
     }
 
     return pxl;
+}
+
+double distance(xcb_point_t a, xcb_point_t b)
+{
+    return hypot(a.x - b.x, a.y - b.y);
 }

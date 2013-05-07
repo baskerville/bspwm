@@ -26,6 +26,7 @@
 #define ADAPTATIVE_RAISE       false
 #define APPLY_SHADOW_PROPERTY  false
 #define AUTO_ALTERNATE         false
+#define FOCUS_BY_DISTANCE      false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -55,6 +56,7 @@ bool focus_follows_pointer;
 bool adaptative_raise;
 bool apply_shadow_property;
 bool auto_alternate;
+bool focus_by_distance;
 
 char wm_name[MAXLEN];
 

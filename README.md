@@ -225,6 +225,8 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `auto_alternate` — Whether to interpret two consecutive identical `use` messages as an `alternate` message.
 
+- `focus_by_distance` — Whether to use window or leaf distance for focus movement.
+
 ## Environment Variables
 
 - `BSPWM_SOCKET` — The path of the socket used for the communication between `bspc` and `bspwm`.

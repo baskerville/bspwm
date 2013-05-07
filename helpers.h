@@ -30,5 +30,6 @@ void warn(char *, ...);
 __attribute__((noreturn))
 void err(char *, ...);
 uint32_t get_color(char *);
+double distance(xcb_point_t, xcb_point_t);
 
 #endif

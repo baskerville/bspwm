@@ -29,7 +29,7 @@ bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
 
 bool might_cover(desktop_t *d, node_t *n)
 {
-    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f))
+    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root))
         if (f != n && is_floating(f->client) && contains(n->client->floating_rectangle, f->client->floating_rectangle))
             return true;
     return false;
@@ -39,7 +39,7 @@ bool locate_window(xcb_window_t win, window_location_t *loc)
 {
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
                 if (n->client->window == win) {
                     loc->monitor = m;
                     loc->desktop = d;
@@ -66,6 +66,29 @@ bool is_inside(monitor_t *m, xcb_point_t pt)
     xcb_rectangle_t r = m->rectangle;
     return (r.x <= pt.x && pt.x < (r.x + r.width)
             && r.y <= pt.y && pt.y < (r.y + r.height));
+}
+
+void get_side_handle(client_t *c, direction_t dir, xcb_point_t *pt)
+{
+    xcb_rectangle_t rect = (is_tiled(c) ? c->tiled_rectangle : c->floating_rectangle);
+    switch (dir) {
+        case DIR_RIGHT:
+            pt->x = rect.x + rect.width;
+            pt->y = rect.y + (rect.height / 2);
+            break;
+        case DIR_DOWN:
+            pt->x = rect.x + (rect.width / 2);
+            pt->y = rect.y + rect.height;
+            break;
+        case DIR_LEFT:
+            pt->x = rect.x;
+            pt->y = rect.y + (rect.height / 2);
+            break;
+        case DIR_UP:
+            pt->x = rect.x + (rect.width / 2);
+            pt->y = rect.y;
+            break;
+    }
 }
 
 monitor_t *monitor_from_point(xcb_point_t pt)
@@ -392,7 +415,7 @@ void list_windows(char *rsp)
 
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n)) {
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
                 snprintf(line, sizeof(line), "0x%X\n", n->client->window);
                 strncat(rsp, line, REMLEN(rsp));
             }
@@ -528,7 +551,7 @@ void toggle_visibility(void)
         clear_input_focus();
     visible = !visible;
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n))
+        for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root))
             window_set_visibility(n->client->window, visible);
     if (visible)
         update_current();

@@ -137,7 +137,7 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d))
-                swap_nodes(mon->desk->focus, find_neighbor(mon->desk->focus, d));
+                swap_nodes(mon->desk->focus, focus_by_distance ? nearest_neighbor(mon->desk, mon->desk->focus, d) : find_neighbor(mon->desk->focus, d));
         }
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
         if (mon->desk->focus != NULL)
@@ -435,7 +435,11 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                node_t *n = find_neighbor(mon->desk->focus, d);
+                node_t *n;
+                if (focus_by_distance)
+                    n = nearest_neighbor(mon->desk, mon->desk->focus, d);
+                else
+                    n = find_neighbor(mon->desk->focus, d);
                 focus_node(mon, mon->desk, n, true);
             }
         }
@@ -519,7 +523,7 @@ void set_setting(char *name, char *value, char *rsp)
             uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK : CLIENT_EVENT_MASK_FFP)};
             for (monitor_t *m = mon_head; m != NULL; m = m->next)
                 for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-                    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n))
+                    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
                         xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
             if (focus_follows_pointer)
                 disable_motion_recorder();
@@ -539,6 +543,10 @@ void set_setting(char *name, char *value, char *rsp)
         bool b;
         if (parse_bool(value, &b))
             auto_alternate = b;
+    } else if (strcmp(name, "focus_by_distance") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            focus_by_distance = b;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
@@ -598,6 +606,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(apply_shadow_property));
     else if (strcmp(name, "auto_alternate") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_alternate));
+    else if (strcmp(name, "focus_by_distance") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_by_distance));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else
