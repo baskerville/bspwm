@@ -547,11 +547,11 @@ void unlink_node(desktop_t *d, node_t *n)
         bool n_first_child = is_first_child(n);
         if (n_first_child) {
             b = p->second_child;
-            if (n->client->born_as == MODE_AUTOMATIC)
+            if (n->client->born_as == MODE_AUTOMATIC && !n->vacant)
                 rotate_tree(b, ROTATE_COUNTER_CLOCKWISE);
         } else {
             b = p->first_child;
-            if (n->client->born_as == MODE_AUTOMATIC)
+            if (n->client->born_as == MODE_AUTOMATIC && !n->vacant)
                 rotate_tree(b, ROTATE_CLOCKWISE);
         }
         b->parent = g;
