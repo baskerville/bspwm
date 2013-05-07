@@ -149,7 +149,7 @@ struct node_t {
 typedef struct node_list_t node_list_t;
 struct node_list_t {
     node_t *node;
-    bool latest;
+    bool latest;          /* used for z-ordering tiled windows */
     node_list_t *prev;
     node_list_t *next;
 };

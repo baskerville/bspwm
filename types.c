@@ -201,12 +201,15 @@ void history_add(focus_history_t *f, node_t *n)
 
 void history_remove(focus_history_t *f, node_t *n)
 {
+    /* in order to maintain the `latest` node list state,
+       we remove node lists from head to tail */
     node_list_t *b = f->head;
     while (b != NULL) {
         if (b->node == n) {
             node_list_t *a = b->prev;
             node_list_t *c = b->next;
             if (a != NULL) {
+                /* remove duplicate entries */
                 while (c != NULL && c->node == a->node) {
                     node_list_t *d = c->next;
                     if (f->tail == c)
