@@ -188,9 +188,9 @@ void history_add(focus_history_t *f, node_t *n)
     if (f->head == NULL) {
         f->head = f->tail = a;
     } else if (f->head->node != n) {
-        for (node_list_t *x = f->head; x != NULL; x = x->next)
-            if (x->node == n)
-                x->latest = false;
+        for (node_list_t *b = f->head; b != NULL; b = b->next)
+            if (b->node == n)
+                b->latest = false;
         f->head->prev = a;
         a->next = f->head;
         f->head = a;

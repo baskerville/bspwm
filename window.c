@@ -490,9 +490,9 @@ void window_raise(xcb_window_t win)
 
 void stack_tiled(desktop_t *d)
 {
-    for (node_list_t *x = d->history->head; x != NULL; x = x->next)
-        if (x->latest && is_tiled(x->node->client))
-            window_lower(x->node->client->window);
+    for (node_list_t *a = d->history->head; a != NULL; a = a->next)
+        if (a->latest && is_tiled(a->node->client))
+            window_lower(a->node->client->window);
 }
 
 void window_lower(xcb_window_t win)
