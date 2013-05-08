@@ -14,6 +14,7 @@ node_t *make_node(void)
     n->parent = n->first_child = n->second_child = NULL;
     n->split_ratio = split_ratio;
     n->split_type = TYPE_VERTICAL;
+    n->birth_rotation = ROTATE_IDENTITY;
     n->client = NULL;
     n->vacant = false;
     return n;

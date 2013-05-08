@@ -55,14 +55,7 @@ void process_message(char *msg, char *rsp)
         list_windows(rsp);
         return;
     } else if (strcmp(cmd, "list_history") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            desktop_location_t loc;
-            if (locate_desktop(name, &loc))
-                list_history(loc.desktop, rsp);
-        } else {
-            list_history(mon->desk, rsp);
-        }
+        list_history(rsp);
         return;
     } else if (strcmp(cmd, "list_rules") == 0) {
         list_rules(rsp);

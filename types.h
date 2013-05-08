@@ -80,6 +80,7 @@ typedef enum {
 } circulate_dir_t;
 
 typedef enum {
+    ROTATE_IDENTITY,
     ROTATE_CLOCKWISE,
     ROTATE_COUNTER_CLOCKWISE,
     ROTATE_FULL_CYCLE
@@ -137,7 +138,7 @@ typedef struct node_t node_t;
 struct node_t {
     split_type_t split_type;
     double split_ratio;
-    split_mode_t birth_mode;
+    rotate_t birth_rotation;
     xcb_rectangle_t rectangle;
     bool vacant;          /* vacant nodes only hold floating clients */
     node_t *first_child;

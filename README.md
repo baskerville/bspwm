@@ -83,7 +83,7 @@ The following messages are handled:
 
 - `list_monitors [--quiet]` — Perform a dump of each monitor.
 
-- `list_history [DESKTOP_NAME]` — Return the node focus history.
+- `list_history` — Return the node focus history of each desktop.
 
 - `list_windows` — Return the list of managed windows (i.e. their identifiers).
 

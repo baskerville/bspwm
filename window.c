@@ -144,9 +144,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     node_t *birth = make_node();
     birth->client = c;
 
-    if (floating)
-        split_mode = MODE_MANUAL;
-
     insert_node(m, d, birth);
 
     disable_shadow(c->window);
@@ -364,19 +361,14 @@ void toggle_floating(node_t *n)
     c->floating = !c->floating;
     n->vacant = !n->vacant;
     update_vacant_state(n->parent);
-    if (c->floating)
+    if (c->floating) {
         window_raise(c->window);
-    else if (is_tiled(c))
-        window_lower(c->window);
-    if (c->floating)
         enable_shadow(c->window);
-    else
+        unrotate_brother(n);
+    } else {
+        window_lower(c->window);
         disable_shadow(c->window);
-    if (n->parent != NULL && n->birth_mode == MODE_AUTOMATIC) {
-        if (is_first_child(n))
-            rotate_tree(n->parent->second_child, c->floating ? ROTATE_COUNTER_CLOCKWISE : ROTATE_CLOCKWISE);
-        else
-            rotate_tree(n->parent->first_child, c->floating ? ROTATE_CLOCKWISE : ROTATE_COUNTER_CLOCKWISE);
+        rotate_brother(n);
     }
     update_current();
 }

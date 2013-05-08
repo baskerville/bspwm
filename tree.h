@@ -22,6 +22,9 @@ int tiled_area(node_t *);
 node_t *find_by_area(desktop_t *, swap_arg_t);
 void move_fence(node_t *, direction_t, fence_move_t);
 void rotate_tree(node_t *, rotate_t);
+void rotate_brother(node_t *);
+void unrotate_tree(node_t *, rotate_t);
+void unrotate_brother(node_t *);
 void flip_tree(node_t *, flip_t);
 int balance_tree(node_t *);
 void arrange(monitor_t *, desktop_t *);
@@ -44,7 +47,7 @@ void nearest_leaf(monitor_t *, desktop_t *, node_t *, nearest_arg_t, skip_client
 void circulate_leaves(monitor_t *, desktop_t *, circulate_dir_t);
 void update_vacant_state(node_t *);
 void put_status(void);
-void list_history(desktop_t *, char *);
+void list_history(char *);
 void list_monitors(list_option_t, char *);
 void list_desktops(monitor_t *, list_option_t, unsigned int, char *);
 void list(desktop_t *, node_t *, char *, unsigned int);

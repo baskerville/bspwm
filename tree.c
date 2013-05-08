@@ -252,6 +252,41 @@ void rotate_tree(node_t *n, rotate_t rot)
     rotate_tree(n->second_child, rot);
 }
 
+void rotate_brother(node_t *n)
+{
+    if (n == NULL || n->parent == NULL)
+        return;
+    if (is_first_child(n))
+        rotate_tree(n->parent->second_child, n->birth_rotation);
+    else
+        rotate_tree(n->parent->first_child, n->birth_rotation);
+}
+
+void unrotate_tree(node_t *n, rotate_t rot)
+{
+    switch(rot) {
+        case ROTATE_CLOCKWISE:
+            rotate_tree(n, ROTATE_COUNTER_CLOCKWISE);
+            break;
+        case ROTATE_COUNTER_CLOCKWISE:
+            rotate_tree(n, ROTATE_CLOCKWISE);
+            break;
+        case ROTATE_IDENTITY:
+        case ROTATE_FULL_CYCLE:
+            break;
+    }
+}
+
+void unrotate_brother(node_t *n)
+{
+    if (n == NULL || n->parent == NULL)
+        return;
+    if (is_first_child(n))
+        unrotate_tree(n->parent->second_child, n->birth_rotation);
+    else
+        unrotate_tree(n->parent->first_child, n->birth_rotation);
+}
+
 void flip_tree(node_t *n, flip_t flp)
 {
     if (n == NULL || is_leaf(n))
@@ -271,13 +306,18 @@ void flip_tree(node_t *n, flip_t flp)
     flip_tree(n->second_child, flp);
 }
 
-void list_history(desktop_t *d, char *rsp)
+void list_history(char *rsp)
 {
     char line[MAXLEN];
-    for (node_list_t *a = d->history->head; a != NULL; a = a->next) {
-        snprintf(line, sizeof(line), "%s %X\n", a->node->client->class_name, a->node->client->window);
-        strncat(rsp, line, REMLEN(rsp));
-    }
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+            snprintf(line, sizeof(line), "%s\n", d->name);
+            strncat(rsp, line, REMLEN(rsp));
+            for (node_list_t *a = d->history->tail; a != NULL; a = a->prev) {
+                snprintf(line, sizeof(line), "  %X\n", a->node->client->window);
+                strncat(rsp, line, REMLEN(rsp));
+            }
+        }
 }
 
 int balance_tree(node_t *n)
@@ -383,7 +423,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
     PRINTF("insert node %X\n", n->client->window);
 
     node_t *focus = d->focus;
-    n->birth_mode = split_mode;
 
     if (focus == NULL) {
         d->root = n;
@@ -391,7 +430,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         node_t *dad = make_node();
         node_t *fopar = focus->parent;
         n->parent = dad;
-        dad->birth_mode = focus->birth_mode;
+        dad->birth_rotation = focus->birth_rotation;
         switch (split_mode) {
             case MODE_AUTOMATIC:
                 if (fopar == NULL) {
@@ -417,15 +456,18 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
                     dad->split_type = fopar->split_type;
                     dad->split_ratio = fopar->split_ratio;
                     fopar->parent = dad;
+                    rotate_t rot;
                     if (is_first_child(focus)) {
                         dad->first_child = n;
                         dad->second_child = fopar;
-                        rotate_tree(fopar, ROTATE_CLOCKWISE);
+                        rot = ROTATE_CLOCKWISE;
                     } else {
                         dad->first_child = fopar;
                         dad->second_child = n;
-                        rotate_tree(fopar, ROTATE_COUNTER_CLOCKWISE);
+                        rot = ROTATE_COUNTER_CLOCKWISE;
                     }
+                    rotate_tree(fopar, rot);
+                    n->birth_rotation = rot;
                 }
                 break;
             case MODE_MANUAL:
@@ -438,7 +480,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
                 dad->split_ratio = focus->split_ratio;
                 dad->parent = fopar;
                 focus->parent = dad;
-                focus->birth_mode = MODE_MANUAL;
+                focus->birth_rotation = ROTATE_IDENTITY;
                 switch (split_dir) {
                     case DIR_LEFT:
                         dad->split_type = TYPE_VERTICAL;
@@ -546,15 +588,14 @@ void unlink_node(desktop_t *d, node_t *n)
     } else {
         node_t *b;
         node_t *g = p->parent;
-        bool n_first_child = is_first_child(n);
-        if (n_first_child) {
+        if (is_first_child(n)) {
             b = p->second_child;
-            if (n->birth_mode == MODE_AUTOMATIC && !n->vacant)
-                rotate_tree(b, ROTATE_COUNTER_CLOCKWISE);
+            if (!n->vacant)
+                unrotate_tree(b, n->birth_rotation);
         } else {
             b = p->first_child;
-            if (n->birth_mode == MODE_AUTOMATIC && !n->vacant)
-                rotate_tree(b, ROTATE_CLOCKWISE);
+            if (!n->vacant)
+                unrotate_tree(b, n->birth_rotation);
         }
         b->parent = g;
         if (g != NULL) {
@@ -566,19 +607,12 @@ void unlink_node(desktop_t *d, node_t *n)
             d->root = b;
         }
 
-        b->birth_mode = p->birth_mode;
+        b->birth_rotation = p->birth_rotation;
         n->parent = NULL;
         free(p);
 
-        if (n == d->focus) {
-            node_t *last_focus = history_get(d->history, 1);
-            if (last_focus != NULL) {
-                d->focus = last_focus;
-            } else {
-                d->focus = (n_first_child ? first_extrema(b) : second_extrema(b));
-                history_add(d->history, d->focus);
-            }
-        }
+        if (n == d->focus)
+            d->focus = history_get(d->history, 1);
 
         update_vacant_state(b->parent);
     }
@@ -629,8 +663,8 @@ void swap_nodes(node_t *n1, node_t *n2)
     node_t *pn2 = n2->parent;
     bool n1_first_child = is_first_child(n1);
     bool n2_first_child = is_first_child(n2);
-    split_mode_t bm1 = n1->birth_mode;
-    split_mode_t bm2 = n2->birth_mode;
+    rotate_t br1 = n1->birth_rotation;
+    rotate_t br2 = n2->birth_rotation;
 
     if (pn1 != NULL) {
         if (n1_first_child)
@@ -648,8 +682,8 @@ void swap_nodes(node_t *n1, node_t *n2)
 
     n1->parent = pn2;
     n2->parent = pn1;
-    n1->birth_mode = bm2;
-    n2->birth_mode = bm1;
+    n1->birth_rotation = br2;
+    n2->birth_rotation = br1;
 
     if (n1->vacant != n2->vacant) {
         update_vacant_state(n1->parent);
@@ -946,9 +980,9 @@ void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 
     if (is_leaf(n)) {
         client_t *c = n->client;
-        snprintf(line, sizeof(line), "%c %s %X %u %u %ux%u%+i%+i %c%c%c%c%c", (n->birth_mode == MODE_AUTOMATIC ? 'a' : 'm'), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
+        snprintf(line, sizeof(line), "%c %s %X %u %u %ux%u%+i%+i %c%c%c%c%c", (n->birth_rotation == ROTATE_CLOCKWISE ? 'a' : (n->birth_rotation == ROTATE_COUNTER_CLOCKWISE ? 'c' : 'm')), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
     } else {
-        snprintf(line, sizeof(line), "%c %c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), (n->birth_mode == MODE_AUTOMATIC ? 'a' : 'm'), n->split_ratio);
+        snprintf(line, sizeof(line), "%c %c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), (n->birth_rotation == ROTATE_CLOCKWISE ? 'a' : (n->birth_rotation == ROTATE_COUNTER_CLOCKWISE ? 'c' : 'm')), n->split_ratio);
     }
 
     strncat(rsp, line, REMLEN(rsp));
@@ -1043,26 +1077,19 @@ void restore(char *file_path)
             }
             n = birth;
 
+            char br;
             if (isupper(line[level])) {
-                char st, bm;
-                sscanf(line + level, "%c %c %lf", &st, &bm, &n->split_ratio);
+                char st;
+                sscanf(line + level, "%c %c %lf", &st, &br, &n->split_ratio);
                 if (st == 'H')
                     n->split_type = TYPE_HORIZONTAL;
                 else if (st == 'V')
                     n->split_type = TYPE_VERTICAL;
-                if (bm == 'a')
-                    n->birth_mode = MODE_AUTOMATIC;
-                else if (bm == 'm')
-                    n->birth_mode = MODE_MANUAL;
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char bm, floating, transient, fullscreen, urgent, locked;
-                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c%c%c%c%c", &bm, c->class_name, &c->window, &c->uid, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
-                if (bm == 'a')
-                    n->birth_mode = MODE_AUTOMATIC;
-                else if (bm == 'm')
-                    n->birth_mode = MODE_MANUAL;
+                char floating, transient, fullscreen, urgent, locked;
+                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c%c%c%c%c", &br, c->class_name, &c->window, &c->uid, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
@@ -1074,6 +1101,12 @@ void restore(char *file_path)
                 if (len >= 2 && line[len - 2] == '*')
                     d->focus = n;
             }
+            if (br == 'a')
+                n->birth_rotation = ROTATE_CLOCKWISE;
+            else if (br == 'c')
+                n->birth_rotation = ROTATE_COUNTER_CLOCKWISE;
+            else if (br == 'm')
+                n->birth_rotation = ROTATE_IDENTITY;
         }
         last_level = level;
     }
