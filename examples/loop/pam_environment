@@ -1,1 +1,2 @@
-BSPWM_BACKUP=/tmp/bspwm-backup
+BSPWM_LAYOUT=/tmp/bspwm.layout
+BSPWM_HISTORY=/tmp/bspwm.history

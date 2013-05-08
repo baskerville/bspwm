@@ -1,8 +1,13 @@
 #! /bin/sh
 
-if [ -e "$BSPWM_BACKUP" ] ; then
-    bspc restore "$BSPWM_BACKUP"
-    rm "$BSPWM_BACKUP"
+if [ -e "$BSPWM_LAYOUT" ] ; then
+    bspc restore_layout "$BSPWM_LAYOUT"
+    rm "$BSPWM_LAYOUT"
 else
     bspc adopt_orphans
+fi
+
+if [ -e "$BSPWM_HISTORY" ] ; then
+    bspc restore_history "$BSPWM_HISTORY"
+    rm "$BSPWM_HISTORY"
 fi

@@ -51,6 +51,7 @@ void list_history(char *);
 void list_monitors(list_option_t, char *);
 void list_desktops(monitor_t *, list_option_t, unsigned int, char *);
 void list(desktop_t *, node_t *, char *, unsigned int);
-void restore(char *);
+void restore_layout(char *);
+void restore_history(char *);
 
 #endif

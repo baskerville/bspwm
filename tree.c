@@ -996,7 +996,7 @@ void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
     list(d, n->second_child, rsp, depth + 1);
 }
 
-void restore(char *file_path)
+void restore_layout(char *file_path)
 {
     if (file_path == NULL)
         return;
@@ -1127,4 +1127,44 @@ void restore(char *file_path)
                 }
         ewmh_update_current_desktop();
     }
+}
+
+void restore_history(char *file_path)
+{
+    if (file_path == NULL)
+        return;
+
+    FILE *snapshot = fopen(file_path, "r");
+    if (snapshot == NULL) {
+        warn("restore history: can't open file\n");
+        return;
+    }
+
+    char line[MAXLEN];
+    desktop_t *d = NULL;
+    unsigned int level;
+
+    while (fgets(line, sizeof(line), snapshot) != NULL) {
+        unsigned int i = strlen(line) - 1;
+        while (i > 0 && isspace(line[i]))
+            line[i--] = '\0';
+        level = 0;
+        while (level < strlen(line) && isspace(line[level]))
+            level++;
+        PRINTF("level %u: %s\n", level, line + level);
+        if (level == 0) {
+            desktop_location_t loc;
+            if (locate_desktop(line + level, &loc))
+                d = loc.desktop;
+        } else if (d != NULL) {
+            xcb_window_t win;
+            if (sscanf(line + level, "%X", &win) == 1) {
+                window_location_t loc;
+                if (locate_window(win, &loc))
+                    history_add(d->history, loc.node);
+            }
+        }
+    }
+
+    fclose(snapshot);
 }

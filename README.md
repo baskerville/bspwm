@@ -179,7 +179,9 @@ The following messages are handled:
 
 - `adopt_orphans` — Manage all the unmanaged windows remaining from a previous session.
 
-- `restore FILE_PATH` — Restore the layout of each desktop from the content of `FILE_PATH`.
+- `restore_layout FILE_PATH` — Restore the layout of each desktop from the content of `FILE_PATH`.
+
+- `restore_history FILE_PATH` — Restore the history of each desktop from the content of `FILE_PATH`.
 
 - `quit [EXIT_STATUS]` — Quit.
 

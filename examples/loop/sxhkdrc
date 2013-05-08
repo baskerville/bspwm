@@ -1,2 +1,2 @@
 super + alt + {Escape,shift + Escape}
-    {wm_restart,bspc quit 1}
+    {bspc list_monitors > "$BSPWM_LAYOUT"; bspc list_history > "$BSPWM_HISTORY"; bspc quit,bspc quit 1}

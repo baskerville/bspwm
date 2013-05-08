@@ -442,9 +442,12 @@ void process_message(char *msg, char *rsp)
         put_status();
     } else if (strcmp(cmd, "adopt_orphans") == 0) {
         adopt_orphans();
-    } else if (strcmp(cmd, "restore") == 0) {
+    } else if (strcmp(cmd, "restore_layout") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
-        restore(arg);
+        restore_layout(arg);
+    } else if (strcmp(cmd, "restore_history") == 0) {
+        char *arg = strtok(NULL, TOK_SEP);
+        restore_history(arg);
     } else if (strcmp(cmd, "quit") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
         if (arg != NULL)
