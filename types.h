@@ -123,7 +123,6 @@ typedef struct {
     xcb_window_t window;
     unsigned int uid;
     char class_name[MAXLEN];
-    split_mode_t born_as;
     unsigned int border_width;
     bool floating;
     bool transient;  /* transient window are always floating */
@@ -138,6 +137,7 @@ typedef struct node_t node_t;
 struct node_t {
     split_type_t split_type;
     double split_ratio;
+    split_mode_t birth_mode;
     xcb_rectangle_t rectangle;
     bool vacant;          /* vacant nodes only hold floating clients */
     node_t *first_child;

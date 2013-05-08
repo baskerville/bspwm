@@ -383,6 +383,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
     PRINTF("insert node %X\n", n->client->window);
 
     node_t *focus = d->focus;
+    n->birth_mode = split_mode;
 
     if (focus == NULL) {
         d->root = n;
@@ -390,7 +391,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         node_t *dad = make_node();
         node_t *fopar = focus->parent;
         n->parent = dad;
-        n->client->born_as = split_mode;
+        dad->birth_mode = focus->birth_mode;
         switch (split_mode) {
             case MODE_AUTOMATIC:
                 if (fopar == NULL) {
@@ -437,6 +438,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
                 dad->split_ratio = focus->split_ratio;
                 dad->parent = fopar;
                 focus->parent = dad;
+                focus->birth_mode = MODE_MANUAL;
                 switch (split_dir) {
                     case DIR_LEFT:
                         dad->split_type = TYPE_VERTICAL;
@@ -547,11 +549,11 @@ void unlink_node(desktop_t *d, node_t *n)
         bool n_first_child = is_first_child(n);
         if (n_first_child) {
             b = p->second_child;
-            if (n->client->born_as == MODE_AUTOMATIC && !n->vacant)
+            if (n->birth_mode == MODE_AUTOMATIC && !n->vacant)
                 rotate_tree(b, ROTATE_COUNTER_CLOCKWISE);
         } else {
             b = p->first_child;
-            if (n->client->born_as == MODE_AUTOMATIC && !n->vacant)
+            if (n->birth_mode == MODE_AUTOMATIC && !n->vacant)
                 rotate_tree(b, ROTATE_CLOCKWISE);
         }
         b->parent = g;
@@ -564,6 +566,7 @@ void unlink_node(desktop_t *d, node_t *n)
             d->root = b;
         }
 
+        b->birth_mode = p->birth_mode;
         n->parent = NULL;
         free(p);
 
@@ -626,6 +629,8 @@ void swap_nodes(node_t *n1, node_t *n2)
     node_t *pn2 = n2->parent;
     bool n1_first_child = is_first_child(n1);
     bool n2_first_child = is_first_child(n2);
+    split_mode_t bm1 = n1->birth_mode;
+    split_mode_t bm2 = n2->birth_mode;
 
     if (pn1 != NULL) {
         if (n1_first_child)
@@ -643,6 +648,8 @@ void swap_nodes(node_t *n1, node_t *n2)
 
     n1->parent = pn2;
     n2->parent = pn1;
+    n1->birth_mode = bm2;
+    n2->birth_mode = bm1;
 
     if (n1->vacant != n2->vacant) {
         update_vacant_state(n1->parent);
@@ -939,9 +946,9 @@ void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 
     if (is_leaf(n)) {
         client_t *c = n->client;
-        snprintf(line, sizeof(line), "%c %s %X %u %u %ux%u%+i%+i %c%c%c%c%c", (c->born_as == MODE_AUTOMATIC ? 'a' : 'm'), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
+        snprintf(line, sizeof(line), "%c %s %X %u %u %ux%u%+i%+i %c%c%c%c%c", (n->birth_mode == MODE_AUTOMATIC ? 'a' : 'm'), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
     } else {
-        snprintf(line, sizeof(line), "%c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), n->split_ratio);
+        snprintf(line, sizeof(line), "%c %c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), (n->birth_mode == MODE_AUTOMATIC ? 'a' : 'm'), n->split_ratio);
     }
 
     strncat(rsp, line, REMLEN(rsp));
@@ -1037,21 +1044,25 @@ void restore(char *file_path)
             n = birth;
 
             if (isupper(line[level])) {
-                char st;
-                sscanf(line + level, "%c %lf", &st, &n->split_ratio);
+                char st, bm;
+                sscanf(line + level, "%c %c %lf", &st, &bm, &n->split_ratio);
                 if (st == 'H')
                     n->split_type = TYPE_HORIZONTAL;
                 else if (st == 'V')
                     n->split_type = TYPE_VERTICAL;
+                if (bm == 'a')
+                    n->birth_mode = MODE_AUTOMATIC;
+                else if (bm == 'm')
+                    n->birth_mode = MODE_MANUAL;
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char ba, floating, transient, fullscreen, urgent, locked;
-                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c%c%c%c%c", &ba, c->class_name, &c->window, &c->uid, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
-                if (ba == 'a')
-                    c->born_as = MODE_AUTOMATIC;
-                else if (ba == 'm')
-                    c->born_as = MODE_MANUAL;
+                char bm, floating, transient, fullscreen, urgent, locked;
+                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c%c%c%c%c", &bm, c->class_name, &c->window, &c->uid, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
+                if (bm == 'a')
+                    n->birth_mode = MODE_AUTOMATIC;
+                else if (bm == 'm')
+                    n->birth_mode = MODE_MANUAL;
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
