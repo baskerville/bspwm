@@ -372,6 +372,12 @@ void toggle_floating(node_t *n)
         enable_shadow(c->window);
     else
         disable_shadow(c->window);
+    if (n->parent != NULL && n->birth_mode == MODE_AUTOMATIC) {
+        if (is_first_child(n))
+            rotate_tree(n->parent->second_child, c->floating ? ROTATE_COUNTER_CLOCKWISE : ROTATE_CLOCKWISE);
+        else
+            rotate_tree(n->parent->first_child, c->floating ? ROTATE_CLOCKWISE : ROTATE_COUNTER_CLOCKWISE);
+    }
     update_current();
 }
 
