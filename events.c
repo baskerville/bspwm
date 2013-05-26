@@ -292,7 +292,8 @@ void grab_pointer(pointer_action_t pac)
 
         switch (pac)  {
             case ACTION_FOCUS:
-                focus_node(loc.monitor, loc.desktop, loc.node, true);
+                if (loc.node != mon->desk->focus)
+                    focus_node(loc.monitor, loc.desktop, loc.node, true);
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:
