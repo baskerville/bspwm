@@ -12,7 +12,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_ewmh.h>
-#include <xcb/xinerama.h>
+#include <xcb/randr.h>
 #include "types.h"
 #include "settings.h"
 #include "messages.h"
@@ -49,8 +49,85 @@ void register_events(void)
     }
 }
 
+bool import_monitors(void)
+{
+    PUTS("import monitors");
+    xcb_randr_get_screen_resources_current_reply_t *sres = xcb_randr_get_screen_resources_current_reply(dpy, xcb_randr_get_screen_resources_current(dpy, root), NULL);
+    if (sres == NULL)
+        return false;
+
+    int len = xcb_randr_get_screen_resources_current_outputs_length(sres);
+    xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(sres);
+
+    xcb_randr_get_output_info_cookie_t cookies[len];
+    for (int i = 0; i < len; i++)
+        cookies[i] = xcb_randr_get_output_info(dpy, outputs[i], XCB_CURRENT_TIME);
+
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        m->wired = false;
+
+    monitor_t *mm = NULL;
+    unsigned int num = 0;
+
+    for (int i = 0; i < len; i++) {
+        xcb_randr_get_output_info_reply_t *info = xcb_randr_get_output_info_reply(dpy, cookies[i], NULL);
+        if (info != NULL && info->crtc != XCB_NONE) {
+
+            xcb_randr_get_crtc_info_reply_t *cir = xcb_randr_get_crtc_info_reply(dpy, xcb_randr_get_crtc_info(dpy, info->crtc, XCB_CURRENT_TIME), NULL);
+            if (cir != NULL) {
+                xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
+                mm = get_monitor_by_id(outputs[i]);
+                if (mm != NULL) {
+                    mm->rectangle = rect;
+                    arrange(mm, mm->desk);
+                    mm->wired = true;
+                    PRINTF("update monitor %s\n", mm->name);
+                } else {
+                    mm = add_monitor(&rect);
+                    char *name = (char *)xcb_randr_get_output_info_name(info);
+                    size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info));
+                    strncpy(mm->name, name, name_len);
+                    mm->name[name_len] = '\0';
+                    add_desktop(mm, NULL);
+                    PRINTF("add monitor %s\n", mm->name);
+                }
+                num++;
+            }
+            free(cir);
+        }
+        free(info);
+    }
+
+    monitor_t *m = mon_head;
+    while (m != NULL) {
+        monitor_t *next = m->next;
+        if (!m->wired) {
+            PRINTF("remove monitor %s\n", m->name);
+            transfer_desktops(mm, m);
+        }
+        m = next;
+    }
+
+    free(sres);
+    put_status();
+    return true;
+}
+
+void init(void)
+{
+    num_monitors = num_desktops = num_clients = 0;
+    monitor_uid = desktop_uid = client_uid = rule_uid = 0;
+    mon = last_mon = mon_head = mon_tail = NULL;
+    rule_head = rule_tail = NULL;
+    randr_base = 0;
+    split_mode = MODE_AUTOMATIC;
+    visible = true;
+    exit_status = 0;
+}
+
 void setup(void)
 {
+    init();
     ewmh_init();
     screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
     if (screen == NULL)
@@ -93,46 +170,21 @@ void setup(void)
         free(iar);
     }
 
-    monitor_uid = desktop_uid = client_uid = rule_uid = 0;
-    mon = last_mon = mon_head = mon_tail = NULL;
-
-    bool xinerama_is_active = false;
-
-    if (xcb_get_extension_data(dpy, &xcb_xinerama_id)->present) {
-        xcb_xinerama_is_active_reply_t *xia = xcb_xinerama_is_active_reply(dpy, xcb_xinerama_is_active(dpy), NULL);
-        if (xia != NULL) {
-            xinerama_is_active = xia->state;
-            free(xia);
-        }
-    }
-
-    if (xinerama_is_active) {
-        xcb_xinerama_query_screens_reply_t *xsq = xcb_xinerama_query_screens_reply(dpy, xcb_xinerama_query_screens(dpy), NULL);
-        xcb_xinerama_screen_info_t *xsi = xcb_xinerama_query_screens_screen_info(xsq);
-        int n = xcb_xinerama_query_screens_screen_info_length(xsq);
-        for (int i = 0; i < n; i++) {
-            xcb_xinerama_screen_info_t info = xsi[i];
-            xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
-            add_monitor(&rect);
-        }
-        free(xsq);
+    const xcb_query_extension_reply_t *qep = xcb_get_extension_data(dpy, &xcb_randr_id);
+    if (qep->present) {
+        randr_base = qep->first_event;
+        import_monitors();
+        xcb_randr_select_input(dpy, root, XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);
     } else {
-        warn("Xinerama is inactive.");
+        warn("RandR is not available.\n");
         xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
         add_monitor(&rect);
     }
 
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        add_desktop(m, NULL);
-
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
     ewmh_update_current_desktop();
-    rule_head = rule_tail = NULL;
     frozen_pointer = make_pointer_state();
-    split_mode = MODE_AUTOMATIC;
-    visible = true;
-    exit_status = 0;
 }
 
 int main(int argc, char *argv[])

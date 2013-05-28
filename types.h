@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
@@ -174,7 +175,9 @@ struct desktop_t {
 typedef struct monitor_t monitor_t;
 struct monitor_t {
     char name[MAXLEN];
+    xcb_randr_output_t id;
     xcb_rectangle_t rectangle;
+    bool wired;
     int top_padding;
     int right_padding;
     int bottom_padding;
@@ -244,8 +247,10 @@ typedef struct {
 node_t *make_node(void);
 monitor_t *make_monitor(xcb_rectangle_t *);
 monitor_t *find_monitor(char *);
-void add_monitor(xcb_rectangle_t *);
+monitor_t *get_monitor_by_id(xcb_randr_output_t);
+monitor_t *add_monitor(xcb_rectangle_t *);
 void remove_monitor(monitor_t *);
+void transfer_desktops(monitor_t *, monitor_t *);
 desktop_t *make_desktop(const char *);
 void add_desktop(monitor_t *, char *);
 void empty_desktop(desktop_t *);

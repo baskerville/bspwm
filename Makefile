@@ -1,7 +1,7 @@
 VERSION = 0.6
 
 CC      = gcc
-LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
+LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-randr
 CFLAGS  = -std=c99 -pedantic -Wall -Wextra -I$(PREFIX)/include
 CFLAGS  += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
 LDFLAGS = -L$(PREFIX)/lib

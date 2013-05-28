@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 #include "types.h"
@@ -16,7 +17,8 @@
 
 void handle_event(xcb_generic_event_t *evt)
 {
-    switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
+    uint8_t resp_type = XCB_EVENT_RESPONSE_TYPE(evt);
+    switch (resp_type) {
         case XCB_MAP_REQUEST:
             map_request(evt);
             break;
@@ -42,6 +44,8 @@ void handle_event(xcb_generic_event_t *evt)
             motion_notify();
             break;
         default:
+            if (resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
+                import_monitors();
             break;
     }
 }

@@ -31,6 +31,7 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
     else
         warn("no rectangle was given for monitor '%s'\n", m->name);
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
+    m->wired = true;
     return m;
 }
 
@@ -42,7 +43,15 @@ monitor_t *find_monitor(char *name)
     return NULL;
 }
 
-void add_monitor(xcb_rectangle_t *rect)
+monitor_t *get_monitor_by_id(xcb_randr_output_t id)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (m->id == id)
+            return m;
+    return NULL;
+}
+
+monitor_t *add_monitor(xcb_rectangle_t *rect)
 {
     monitor_t *m = make_monitor(rect);
     if (mon == NULL) {
@@ -55,6 +64,7 @@ void add_monitor(xcb_rectangle_t *rect)
         mon_tail = m;
     }
     num_monitors++;
+    return m;
 }
 
 void remove_monitor(monitor_t *m)
@@ -73,6 +83,17 @@ void remove_monitor(monitor_t *m)
         mon_tail = prev;
     free(m);
     num_monitors--;
+}
+
+void transfer_desktops(monitor_t *dst, monitor_t *src)
+{
+    if (dst == NULL || src == NULL)
+        return;
+    dst->desk_tail->next = src->desk_head;
+    src->desk_head->prev = dst->desk_tail;
+    dst->desk_tail = src->desk_tail;
+    src->desk = src->last_desk = src->desk_head = src->desk_tail = NULL;
+    remove_monitor(src);
 }
 
 desktop_t *make_desktop(const char *name)
