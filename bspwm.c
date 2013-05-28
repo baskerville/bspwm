@@ -81,15 +81,16 @@ bool import_monitors(void)
                     mm->rectangle = rect;
                     arrange(mm, mm->desk);
                     mm->wired = true;
-                    PRINTF("update monitor %s\n", mm->name);
+                    PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);
                 } else {
                     mm = add_monitor(&rect);
                     char *name = (char *)xcb_randr_get_output_info_name(info);
                     size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info));
                     strncpy(mm->name, name, name_len);
                     mm->name[name_len] = '\0';
+                    mm->id = outputs[i];
                     add_desktop(mm, NULL);
-                    PRINTF("add monitor %s\n", mm->name);
+                    PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
                 }
                 num++;
             }
@@ -102,7 +103,7 @@ bool import_monitors(void)
     while (m != NULL) {
         monitor_t *next = m->next;
         if (!m->wired) {
-            PRINTF("remove monitor %s\n", m->name);
+            PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
             transfer_desktops(mm, m);
         }
         m = next;
