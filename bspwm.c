@@ -110,7 +110,7 @@ bool import_monitors(void)
 
     free(sres);
     put_status();
-    return true;
+    return (num_monitors > 0);
 }
 
 void init(void)
@@ -171,14 +171,14 @@ void setup(void)
     }
 
     const xcb_query_extension_reply_t *qep = xcb_get_extension_data(dpy, &xcb_randr_id);
-    if (qep->present) {
+    if (qep->present && import_monitors()) {
         randr_base = qep->first_event;
-        import_monitors();
         xcb_randr_select_input(dpy, root, XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);
     } else {
-        warn("RandR is not available.\n");
+        warn("Couldn't retrieve monitors via RandR.\n");
         xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-        add_monitor(&rect);
+        monitor_t *m = add_monitor(&rect);
+        add_desktop(m, NULL);
     }
 
     ewmh_update_number_of_desktops();
