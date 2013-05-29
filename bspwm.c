@@ -79,6 +79,9 @@ bool import_monitors(void)
                 mm = get_monitor_by_id(outputs[i]);
                 if (mm != NULL) {
                     mm->rectangle = rect;
+                    for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
+                        for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+                            fit_monitor(mm, n->client);
                     arrange(mm, mm->desk);
                     mm->wired = true;
                     PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);
