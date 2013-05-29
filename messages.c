@@ -528,22 +528,27 @@ void set_setting(char *name, char *value, char *rsp)
                 enable_motion_recorder();
             focus_follows_pointer = b;
         }
+        return;
     } else if (strcmp(name, "adaptative_raise") == 0) {
         bool b;
         if (parse_bool(value, &b))
             adaptative_raise = b;
+        return;
     } else if (strcmp(name, "apply_shadow_property") == 0) {
         bool b;
         if (parse_bool(value, &b))
             apply_shadow_property = b;
+        return;
     } else if (strcmp(name, "auto_alternate") == 0) {
         bool b;
         if (parse_bool(value, &b))
             auto_alternate = b;
+        return;
     } else if (strcmp(name, "focus_by_distance") == 0) {
         bool b;
         if (parse_bool(value, &b))
             focus_by_distance = b;
+        return;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
