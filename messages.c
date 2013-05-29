@@ -288,8 +288,15 @@ void process_message(char *msg, char *rsp)
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
-            if (m != NULL)
-                select_monitor(m);
+            if (m != NULL) {
+                if (auto_alternate && m == mon && last_mon != NULL) {
+                    select_monitor(last_mon);
+                    select_desktop(last_mon->desk);
+                } else {
+                    select_monitor(m);
+                    select_desktop(m->desk);
+                }
+            }
         }
     } else if (strcmp(cmd, "use") == 0) {
         char *name = strtok(NULL, TOK_SEP);

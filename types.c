@@ -81,6 +81,8 @@ void remove_monitor(monitor_t *m)
         mon_head = next;
     if (m == mon_tail)
         mon_tail = prev;
+    if (m == last_mon)
+        last_mon = NULL;
     free(m);
     num_monitors--;
 }
