@@ -217,7 +217,7 @@ void client_message(xcb_generic_event_t *evt)
             toggle_fullscreen(loc.monitor, loc.desktop->focus->client);
         select_monitor(loc.monitor);
         select_desktop(loc.desktop);
-        focus_node(loc.monitor, loc.desktop, loc.node, true);
+        focus_node(loc.monitor, loc.desktop, loc.node);
         arrange(loc.monitor, loc.desktop);
     }
 }
@@ -297,7 +297,7 @@ void grab_pointer(pointer_action_t pac)
         switch (pac)  {
             case ACTION_FOCUS:
                 if (loc.node != mon->desk->focus)
-                    focus_node(loc.monitor, loc.desktop, loc.node, true);
+                    focus_node(loc.monitor, loc.desktop, loc.node);
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:

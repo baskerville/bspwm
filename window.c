@@ -163,7 +163,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     c->transient = transient;
 
     if (takes_focus)
-        focus_node(m, d, birth, false);
+        focus_node(m, d, birth);
 
     xcb_rectangle_t *frect = &birth->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
@@ -176,6 +176,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (d == m->desk && visible)
         window_show(c->window);
 
+    /* the same function is already called in `focus_node` but has no effects on unmapped windows */
     if (takes_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
@@ -481,7 +482,7 @@ void window_focus(xcb_window_t win)
             return;
         select_monitor(loc.monitor);
         select_desktop(loc.desktop);
-        focus_node(loc.monitor, loc.desktop, loc.node, true);
+        focus_node(loc.monitor, loc.desktop, loc.node);
     }
 }
 

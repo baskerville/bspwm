@@ -514,7 +514,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
     put_status();
 }
 
-void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
+void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
     if (n == NULL)
         return;
@@ -524,22 +524,22 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n, bool is_mapped)
     split_mode = MODE_AUTOMATIC;
     n->client->urgent = false;
 
-    if (is_mapped) {
-        if (mon != m) {
-            for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
-                window_draw_border(cd->focus, true, false);
-            for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next)
-                if (cd != d)
-                    window_draw_border(cd->focus, true, true);
-            if (d->focus == n)
-                window_draw_border(n, true, true);
-        }
-        if (d->focus != n) {
-            window_draw_border(d->focus, false, true);
+    if (mon != m) {
+        for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
+            window_draw_border(cd->focus, true, false);
+        for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next)
+            if (cd != d)
+                window_draw_border(cd->focus, true, true);
+        if (d->focus == n)
             window_draw_border(n, true, true);
-        }
-        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
+
+    if (d->focus != n) {
+        window_draw_border(d->focus, false, true);
+        window_draw_border(n, true, true);
+    }
+
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 
     if (d->focus != n) {
         d->focus = n;
@@ -570,7 +570,7 @@ void update_current(void)
     if (mon->desk->focus == NULL)
         ewmh_update_active_window();
     else
-        focus_node(mon, mon->desk, mon->desk->focus, true);
+        focus_node(mon, mon->desk, mon->desk->focus);
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -731,9 +731,9 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
 
     if (ds != ms->desk && dd == md->desk) {
         window_show(n->client->window);
-        focus_node(md, dd, n, true);
+        focus_node(md, dd, n);
     } else {
-        focus_node(md, dd, n, false);
+        focus_node(md, dd, n);
     }
 
     if (ds == ms->desk || dd == md->desk)
@@ -747,7 +747,7 @@ void select_monitor(monitor_t *m)
 
     PRINTF("select monitor %s\n", m->name);
 
-    focus_node(m, m->desk, m->desk->focus, true);
+    focus_node(m, m->desk, m->desk->focus);
 
     last_mon = mon;
     mon = m;
@@ -832,7 +832,7 @@ void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_cli
         if (skip == CLIENT_SKIP_NONE || (skip == CLIENT_SKIP_TILED && !tiled) || (skip == CLIENT_SKIP_FLOATING && tiled)
                 || (skip == CLIENT_SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
                 || (skip == CLIENT_SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0)) {
-            focus_node(m, d, f, true);
+            focus_node(m, d, f);
             return;
         }
         f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
@@ -862,7 +862,7 @@ void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip
                         && (x == NULL || f->client->uid < x->client->uid)))
                 x = f;
 
-    focus_node(m, d, x, true);
+    focus_node(m, d, x);
 }
 
 void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir) {
@@ -877,9 +877,9 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir) {
         for (node_t *f = first_extrema(d->root), *s = next_leaf(f, d->root); s != NULL; f = next_leaf(s, d->root), s = next_leaf(f, d->root))
             swap_nodes(f, s);
     if (focus_first_child)
-        focus_node(m, d, par->first_child, true);
+        focus_node(m, d, par->first_child);
     else
-        focus_node(m, d, par->second_child, true);
+        focus_node(m, d, par->second_child);
 }
 
 void update_vacant_state(node_t *n)

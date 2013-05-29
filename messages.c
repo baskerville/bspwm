@@ -409,7 +409,7 @@ void process_message(char *msg, char *rsp)
             swap_nodes(mon->desk->focus, history_get(mon->desk->history, 1));
         }
     } else if (strcmp(cmd, "alternate") == 0) {
-        focus_node(mon, mon->desk, history_get(mon->desk->history, 1), true);
+        focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
         return;
     } else if (strcmp(cmd, "alternate_desktop") == 0) {
         select_desktop(mon->last_desk);
@@ -440,7 +440,7 @@ void process_message(char *msg, char *rsp)
                     n = nearest_neighbor(mon->desk, mon->desk->focus, d);
                 else
                     n = find_neighbor(mon->desk->focus, d);
-                focus_node(mon, mon->desk, n, true);
+                focus_node(mon, mon->desk, n);
             }
         }
         if (mon->desk->layout == LAYOUT_TILED)
