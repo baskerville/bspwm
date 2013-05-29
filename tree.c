@@ -520,6 +520,9 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
+    if (n == NULL && d->root != NULL)
+        return;
+
     if (mon != m) {
         for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
             window_draw_border(cd->focus, true, false);
