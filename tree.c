@@ -515,8 +515,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         if (focus->vacant)
             update_vacant_state(fopar);
     }
-    d->focus = n;
-    history_add(d->history, n);
     put_status();
 }
 
@@ -738,6 +736,9 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
 
     if (ds != ms->desk && dd == md->desk)
         window_show(n->client->window);
+
+    dd->focus = n;
+    history_add(dd->history, n);
 
     if (ds == ms->desk || dd == md->desk)
         update_current();
