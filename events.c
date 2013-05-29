@@ -198,10 +198,8 @@ void client_message(xcb_generic_event_t *evt)
 
     if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
         desktop_location_t loc;
-        if (ewmh_locate_desktop(e->data.data32[0], &loc)) {
-            select_monitor(loc.monitor);
-            select_desktop(loc.desktop);
-        }
+        if (ewmh_locate_desktop(e->data.data32[0], &loc))
+            focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
         return;
     }
 
@@ -213,12 +211,11 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
-        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
+        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
             toggle_fullscreen(loc.monitor, loc.desktop->focus->client);
-        select_monitor(loc.monitor);
-        select_desktop(loc.desktop);
+            arrange(loc.monitor, loc.desktop);
+        }
         focus_node(loc.monitor, loc.desktop, loc.node);
-        arrange(loc.monitor, loc.desktop);
     }
 }
 
@@ -558,6 +555,6 @@ void ungrab_pointer(void)
     monitor_t *m = underlying_monitor(frozen_pointer->client);
     if (m != NULL && m != frozen_pointer->monitor) {
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
-        select_monitor(m);
+        focus_node(m, m->desk, m->desk->focus);
     }
 }

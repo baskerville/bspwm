@@ -43,7 +43,8 @@ bool is_second_child(node_t *n)
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
 
-void change_split_ratio(node_t *n, value_change_t chg) {
+void change_split_ratio(node_t *n, value_change_t chg)
+{
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
 }
 
@@ -147,6 +148,9 @@ void get_opposite(direction_t dir, direction_t* val)
 
 node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
 {
+    if (n == NULL)
+        return NULL;
+
     node_t *target = NULL;
     if (is_tiled(n->client)) {
         target = find_fence(n, dir);
@@ -516,14 +520,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-    if (n == NULL)
-        return;
-
-    PRINTF("focus node %X\n", n->client->window);
-
-    split_mode = MODE_AUTOMATIC;
-    n->client->urgent = false;
-
     if (mon != m) {
         for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
             window_draw_border(cd->focus, true, false);
@@ -538,6 +534,18 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
         window_draw_border(d->focus, false, true);
         window_draw_border(n, true, true);
     }
+
+    select_desktop(m, d);
+
+    if (n == NULL) {
+        ewmh_update_active_window();
+        return;
+    }
+
+    PRINTF("focus node %X\n", n->client->window);
+
+    split_mode = MODE_AUTOMATIC;
+    n->client->urgent = false;
 
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 
@@ -567,10 +575,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
 void update_current(void)
 {
-    if (mon->desk->focus == NULL)
-        ewmh_update_active_window();
-    else
-        focus_node(mon, mon->desk, mon->desk->focus);
+    focus_node(mon, mon->desk, mon->desk->focus);
 }
 
 void unlink_node(desktop_t *d, node_t *n)
@@ -729,12 +734,8 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     if (n->client->fullscreen)
         window_move_resize(n->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
 
-    if (ds != ms->desk && dd == md->desk) {
+    if (ds != ms->desk && dd == md->desk)
         window_show(n->client->window);
-        focus_node(md, dd, n);
-    } else {
-        focus_node(md, dd, n);
-    }
 
     if (ds == ms->desk || dd == md->desk)
         update_current();
@@ -742,12 +743,10 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
 
 void select_monitor(monitor_t *m)
 {
-    if (m == NULL || mon == m)
+    if (mon == m)
         return;
 
     PRINTF("select monitor %s\n", m->name);
-
-    focus_node(m, m->desk, m->desk->focus);
 
     last_mon = mon;
     mon = m;
@@ -756,9 +755,11 @@ void select_monitor(monitor_t *m)
     put_status();
 }
 
-void select_desktop(desktop_t *d)
+void select_desktop(monitor_t *m, desktop_t *d)
 {
-    if (d == NULL || d == mon->desk)
+    select_monitor(m);
+
+    if (d == mon->desk)
         return;
 
     PRINTF("select desktop %s\n", d->name);
@@ -784,17 +785,18 @@ void select_desktop(desktop_t *d)
     mon->last_desk = mon->desk;
     mon->desk = d;
 
-    update_current();
     ewmh_update_current_desktop();
     put_status();
 }
 
 void cycle_monitor(cycle_dir_t dir)
 {
+    monitor_t *m = NULL;
     if (dir == CYCLE_NEXT)
-        select_monitor((mon->next == NULL ? mon_head : mon->next));
+        m = (mon->next == NULL ? mon_head : mon->next);
     else if (dir == CYCLE_PREV)
-        select_monitor((mon->prev == NULL ? mon_tail : mon->prev));
+        m = (mon->prev == NULL ? mon_tail : mon->prev);
+    focus_node(m, m->desk, m->desk->focus);
 }
 
 void cycle_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, skip_desktop_t skip)
@@ -807,7 +809,7 @@ void cycle_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, skip_desktop_t s
         if (skip == DESKTOP_SKIP_NONE
                 || (skip == DESKTOP_SKIP_FREE && f->root != NULL)
                 || (skip == DESKTOP_SKIP_OCCUPIED && f->root == NULL)) {
-            select_desktop(f);
+            focus_node(m, f, f->focus);
             return;
         }
         f = (dir == CYCLE_PREV ? f->prev : f->next);
@@ -865,7 +867,8 @@ void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip
     focus_node(m, d, x);
 }
 
-void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir) {
+void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
+{
     if (d == NULL || d->root == NULL || is_leaf(d->root))
         return;
     node_t *par = d->focus->parent;

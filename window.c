@@ -162,7 +162,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     c->transient = transient;
 
-    if (takes_focus)
+    bool give_focus = takes_focus && (d == mon->desk || follow);
+
+    if (give_focus)
         focus_node(m, d, birth);
 
     xcb_rectangle_t *frect = &birth->client->floating_rectangle;
@@ -177,16 +179,11 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         window_show(c->window);
 
     /* the same function is already called in `focus_node` but has no effects on unmapped windows */
-    if (takes_focus)
+    if (give_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
     uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
-
-    if (follow) {
-        select_monitor(m);
-        select_desktop(d);
-    }
 
     num_clients++;
     ewmh_set_wm_desktop(birth, d);
@@ -480,8 +477,6 @@ void window_focus(xcb_window_t win)
     if (locate_window(win, &loc)) {
         if (loc.node == mon->desk->focus)
             return;
-        select_monitor(loc.monitor);
-        select_desktop(loc.desktop);
         focus_node(loc.monitor, loc.desktop, loc.node);
     }
 }
@@ -523,7 +518,8 @@ void window_lower(xcb_window_t win)
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }
 
-void window_set_visibility(xcb_window_t win, bool visible) {
+void window_set_visibility(xcb_window_t win, bool visible)
+{
     uint32_t values_off[] = {ROOT_EVENT_MASK & ~XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
     uint32_t values_on[] = {ROOT_EVENT_MASK};
     xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_off);

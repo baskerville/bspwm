@@ -210,7 +210,7 @@ void process_message(char *msg, char *rsp)
                 char *opt = strtok(NULL, TOK_SEP);
                 send_option_t o;
                 if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    select_monitor(m);
+                    focus_node(m, m->desk, m->desk->focus);
             }
         }
     } else if (strcmp(cmd, "send_to_monitor") == 0) {
@@ -223,7 +223,7 @@ void process_message(char *msg, char *rsp)
                 char *opt = strtok(NULL, TOK_SEP);
                 send_option_t o;
                 if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    select_monitor(m);
+                    focus_node(m, m->desk, m->desk->focus);
             }
         }
     } else if (strcmp(cmd, "drop_to") == 0) {
@@ -240,7 +240,7 @@ void process_message(char *msg, char *rsp)
                 char *opt = strtok(NULL, TOK_SEP);
                 send_option_t o;
                 if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    select_desktop(d);
+                    focus_node(mon, d, d->focus);
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
@@ -253,10 +253,8 @@ void process_message(char *msg, char *rsp)
                     arrange(loc.monitor, loc.desktop);
                 char *opt = strtok(NULL, TOK_SEP);
                 send_option_t o;
-                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW) {
-                    select_monitor(loc.monitor);
-                    select_desktop(loc.desktop);
-                }
+                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
+                    focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
             }
         }
     } else if (strcmp(cmd, "rename_monitor") == 0) {
@@ -289,13 +287,10 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
             if (m != NULL) {
-                if (auto_alternate && m == mon && last_mon != NULL) {
-                    select_monitor(last_mon);
-                    select_desktop(last_mon->desk);
-                } else {
-                    select_monitor(m);
-                    select_desktop(m->desk);
-                }
+                if (auto_alternate && m == mon && last_mon != NULL)
+                    focus_node(last_mon, last_mon->desk, last_mon->desk->focus);
+                else
+                    focus_node(m, m->desk, m->desk->focus);
             }
         }
     } else if (strcmp(cmd, "use") == 0) {
@@ -303,12 +298,10 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                if (auto_alternate && loc.desktop == mon->desk) {
-                    select_desktop(mon->last_desk);
-                } else {
-                    select_monitor(loc.monitor);
-                    select_desktop(loc.desktop);
-                }
+                if (auto_alternate && loc.desktop == mon->desk)
+                    focus_node(mon, mon->last_desk, mon->last_desk->focus);
+                else
+                    focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
             }
         }
     } else if (strcmp(cmd, "cycle_monitor") == 0) {
@@ -412,9 +405,10 @@ void process_message(char *msg, char *rsp)
         focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
         return;
     } else if (strcmp(cmd, "alternate_desktop") == 0) {
-        select_desktop(mon->last_desk);
+        focus_node(mon, mon->last_desk, mon->last_desk->focus);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {
-        select_monitor(last_mon);
+        if (last_mon != NULL)
+            focus_node(last_mon, last_mon->desk, last_mon->desk->focus);
     } else if (strcmp(cmd, "add_in") == 0) {
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {

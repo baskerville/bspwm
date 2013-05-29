@@ -39,7 +39,7 @@ void swap_nodes(node_t *, node_t *);
 void fit_monitor(monitor_t *, client_t *);
 void transfer_node(monitor_t *, desktop_t *, monitor_t *, desktop_t *, node_t *);
 void select_monitor(monitor_t *);
-void select_desktop(desktop_t *);
+void select_desktop(monitor_t *, desktop_t *);
 void cycle_monitor(cycle_dir_t);
 void cycle_desktop(monitor_t *, desktop_t *, cycle_dir_t, skip_desktop_t);
 void cycle_leaf(monitor_t *, desktop_t *, node_t *, cycle_dir_t, skip_client_t);
