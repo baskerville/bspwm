@@ -16,26 +16,27 @@ while read -r line ; do
             set - ${line#?}
             while [ $# -gt 0 ] ; do
                 item=$1
+                name=${item#?}
                 case $item in
                     u*)
                         # urgent desktop
-                        wm_infos="$wm_infos \\b3\\f0${item#??}\\fr\\br"
+                        wm_infos="$wm_infos \\b3\\f0${name}\\fr\\br"
                         ;;
                     [DU]*)
                         # active desktop
-                        wm_infos="$wm_infos \\u5\\b2\\f9${item#??}\\fr\\br\\ur"
+                        wm_infos="$wm_infos \\u5\\b2\\f9${name}\\fr\\br\\ur"
                         ;;
                     d*)
                         # inactive but occupied desktop
-                        wm_infos="$wm_infos \\f7${item#??}\\fr"
+                        wm_infos="$wm_infos \\f7${name}\\fr"
                         ;;
                     E*)
                         # inactive desktop
-                        wm_infos="$wm_infos ${item#??}"
+                        wm_infos="$wm_infos ${name}"
                         ;;
                     L*)
                         # layout
-                        layout=$(printf "%s" "${item#?}" | sed 's/\(.\).*/\U\1/')
+                        layout=$(printf "%s" "${name}" | sed 's/\(.\).*/\U\1/')
                         wm_infos="$wm_infos \\b4\\f0$layout\\br\\fr"
                         ;;
                 esac
