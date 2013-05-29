@@ -422,7 +422,7 @@ void process_message(char *msg, char *rsp)
             add_desktop(mon, name);
         return;
     } else if (strcmp(cmd, "focus") == 0) {
-        if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
+        if (mon->desk->focus == NULL || mon->desk->focus->client->fullscreen)
             return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
