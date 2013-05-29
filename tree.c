@@ -342,6 +342,9 @@ int balance_tree(node_t *n)
 
 void arrange(monitor_t *m, desktop_t *d)
 {
+    if (d->root == NULL)
+        return;
+
     PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
 
     xcb_rectangle_t rect = m->rectangle;
