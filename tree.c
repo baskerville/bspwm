@@ -429,7 +429,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
     node_t *focus = d->focus;
 
     if (focus == NULL) {
-        d->root = d->focus = n;
+        d->root = n;
     } else {
         node_t *dad = make_node();
         node_t *fopar = focus->parent;
@@ -515,6 +515,8 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
         if (focus->vacant)
             update_vacant_state(fopar);
     }
+    d->focus = n;
+    history_add(d->history, n);
     put_status();
 }
 
