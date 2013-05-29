@@ -1019,6 +1019,8 @@ void restore_layout(char *file_path)
         return;
     }
 
+    PUTS("restore layout");
+
     char line[MAXLEN];
     monitor_t *m = NULL;
     desktop_t *d = NULL;
@@ -1151,6 +1153,8 @@ void restore_history(char *file_path)
         warn("restore history: can't open file\n");
         return;
     }
+
+    PUTS("restore history");
 
     char line[MAXLEN];
     desktop_t *d = NULL;

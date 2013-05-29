@@ -195,6 +195,9 @@ void adopt_orphans(void)
     xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, root), NULL);
     if (qtr == NULL)
         return;
+
+    PUTS("adopt orphans");
+
     int len = xcb_query_tree_children_length(qtr);
     xcb_window_t *wins = xcb_query_tree_children(qtr);
     for (int i = 0; i < len; i++) {
