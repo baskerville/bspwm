@@ -1167,7 +1167,6 @@ void restore_history(char *file_path)
         level = 0;
         while (level < strlen(line) && isspace(line[level]))
             level++;
-        PRINTF("level %u: %s\n", level, line + level);
         if (level == 0) {
             desktop_location_t loc;
             if (locate_desktop(line + level, &loc))

@@ -437,18 +437,21 @@ void process_message(char *msg, char *rsp)
                 focus_node(mon, mon->desk, n);
             }
         }
-        if (mon->desk->layout == LAYOUT_TILED)
-            return;
+        return;
     } else if (strcmp(cmd, "put_status") == 0) {
         put_status();
+        return;
     } else if (strcmp(cmd, "adopt_orphans") == 0) {
         adopt_orphans();
+        return;
     } else if (strcmp(cmd, "restore_layout") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
         restore_layout(arg);
+        return;
     } else if (strcmp(cmd, "restore_history") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
         restore_history(arg);
+        return;
     } else if (strcmp(cmd, "quit") == 0) {
         char *arg = strtok(NULL, TOK_SEP);
         if (arg != NULL)
