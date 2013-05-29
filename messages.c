@@ -298,7 +298,7 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                if (auto_alternate && loc.desktop == mon->desk)
+                if (auto_alternate && loc.desktop == mon->desk && mon->last_desk != NULL)
                     focus_node(mon, mon->last_desk, mon->last_desk->focus);
                 else
                     focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
@@ -405,7 +405,8 @@ void process_message(char *msg, char *rsp)
         focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
         return;
     } else if (strcmp(cmd, "alternate_desktop") == 0) {
-        focus_node(mon, mon->last_desk, mon->last_desk->focus);
+        if (mon->last_desk != NULL)
+            focus_node(mon, mon->last_desk, mon->last_desk->focus);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {
         if (last_mon != NULL)
             focus_node(last_mon, last_mon->desk, last_mon->desk->focus);

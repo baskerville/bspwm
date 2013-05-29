@@ -91,8 +91,6 @@ void remove_monitor(monitor_t *m)
 
 void transfer_desktops(monitor_t *dst, monitor_t *src)
 {
-    if (dst == NULL || src == NULL)
-        return;
     dst->desk_tail->next = src->desk_head;
     src->desk_head->prev = dst->desk_tail;
     dst->desk_tail = src->desk_tail;
@@ -148,10 +146,14 @@ void remove_desktop(monitor_t *m, desktop_t *d)
         prev->next = next;
     if (next != NULL)
         next->prev = prev;
-    if (d == m->desk_head)
+    if (m->desk_head == d)
         m->desk_head = next;
-    if (d == m->desk_tail)
+    if (m->desk_tail == d)
         m->desk_tail = prev;
+    if (m->last_desk == d)
+        m->last_desk = NULL;
+    if (m->desk == d)
+        m->desk = (m->last_desk == NULL ? m->desk_head : m->last_desk);
     free(d);
     num_desktops--;
 }
