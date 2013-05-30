@@ -166,6 +166,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     if (give_focus)
         focus_node(m, d, birth);
+    else if (takes_focus)
+        pseudo_focus(d, birth);
 
     xcb_rectangle_t *frect = &birth->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)

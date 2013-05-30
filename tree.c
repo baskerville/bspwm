@@ -521,10 +521,21 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
     put_status();
 }
 
+void pseudo_focus(desktop_t *d, node_t *n)
+{
+    if (d->focus == n)
+        return;
+    d->focus = n;
+    history_add(d->history, n);
+}
+
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
     if (n == NULL && d->root != NULL)
         return;
+
+    if (mon->desk != d)
+        clear_input_focus();
 
     if (mon != m) {
         for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
@@ -553,12 +564,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     split_mode = MODE_AUTOMATIC;
     n->client->urgent = false;
 
+    pseudo_focus(d, n);
     xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
-
-    if (d->focus != n) {
-        d->focus = n;
-        history_add(d->history, n);
-    }
 
     if (!is_tiled(n->client)) {
         if (!adaptative_raise || !might_cover(d, n))
@@ -743,8 +750,7 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     if (ds != ms->desk && dd == md->desk)
         window_show(n->client->window);
 
-    dd->focus = n;
-    history_add(dd->history, n);
+    pseudo_focus(dd, n);
 
     if (ds == ms->desk || dd == md->desk)
         update_current();
@@ -772,8 +778,6 @@ void select_desktop(monitor_t *m, desktop_t *d)
         return;
 
     PRINTF("select desktop %s\n", d->name);
-
-    clear_input_focus();
 
     if (visible) {
         node_t *n = first_extrema(d->root);

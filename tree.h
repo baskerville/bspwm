@@ -30,6 +30,7 @@ int balance_tree(node_t *);
 void arrange(monitor_t *, desktop_t *);
 void apply_layout(monitor_t *, desktop_t *, node_t *, xcb_rectangle_t, xcb_rectangle_t);
 void insert_node(monitor_t *, desktop_t *, node_t *);
+void pseudo_focus(desktop_t *, node_t *);
 void focus_node(monitor_t *, desktop_t *, node_t *);
 void update_current(void);
 void unlink_node(desktop_t *, node_t *);
