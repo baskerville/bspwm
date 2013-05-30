@@ -354,6 +354,7 @@ void process_message(char *msg, char *rsp)
         node_t *n = find_biggest(mon->desk);
         if (n != NULL)
             snprintf(rsp, BUFSIZ, "0x%X", n->client->window);
+        return;
     } else if (strcmp(cmd, "circulate") == 0) {
         if (mon->desk->layout == LAYOUT_MONOCLE
                 || (mon->desk->focus != NULL && !is_tiled(mon->desk->focus->client)))
