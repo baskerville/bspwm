@@ -395,7 +395,12 @@ void process_message(char *msg, char *rsp)
                 remove_rule_by_uid(uid);
         return;
     } else if (strcmp(cmd, "swap") == 0) {
-        swap_nodes(mon->desk->focus, history_get(mon->desk->history, 1));
+        node_t *last_focus = history_get(mon->desk->history, 1);
+        swap_nodes(mon->desk->focus, last_focus);
+        char *opt = strtok(NULL, TOK_SEP);
+        swap_option_t o;
+        if (parse_swap_option(opt, &o) && o == SWAP_OPTION_SWAP_FOCUS)
+            focus_node(mon, mon->desk, last_focus);
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
         return;
@@ -748,6 +753,18 @@ bool parse_send_option(char *s, send_option_t *o)
         return true;
     } else if (strcmp(s, "--follow") == 0) {
         *o = SEND_OPTION_FOLLOW;
+        return true;
+    }
+    return false;
+}
+
+bool parse_swap_option(char *s, swap_option_t *o)
+{
+    if (s == NULL || strcmp(s, "--swap-focus") == 0) {
+        *o = SWAP_OPTION_SWAP_FOCUS;
+        return true;
+    } else if (strcmp(s, "--keep-focus") == 0) {
+        *o = SWAP_OPTION_KEEP_FOCUS;
         return true;
     }
     return false;

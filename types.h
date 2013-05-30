@@ -47,6 +47,11 @@ typedef enum {
 } send_option_t;
 
 typedef enum {
+    SWAP_OPTION_KEEP_FOCUS,
+    SWAP_OPTION_SWAP_FOCUS
+} swap_option_t;
+
+typedef enum {
     CLIENT_SKIP_NONE,
     CLIENT_SKIP_FLOATING,
     CLIENT_SKIP_TILED,
