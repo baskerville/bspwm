@@ -19,7 +19,7 @@ node_t *find_neighbor(node_t *, direction_t);
 void get_opposite(direction_t, direction_t*);
 node_t *nearest_neighbor(desktop_t *, node_t *, direction_t);
 int tiled_area(node_t *);
-node_t *find_by_area(desktop_t *, swap_arg_t);
+node_t *find_biggest(desktop_t *);
 void move_fence(node_t *, direction_t, fence_move_t);
 void rotate_tree(node_t *, rotate_t);
 void rotate_brother(node_t *);

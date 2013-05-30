@@ -101,7 +101,7 @@ The following messages are handled:
 
 - `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-- `swap [biggest|smallest]` — Swap the focused window with the biggest/smallest window or with the last focused window if no arguments are given.
+- `swap` — Swap the focused window the last focused window.
 
 - `push left|right|up|down` — Push the fence located in the given direction.
 
@@ -110,6 +110,8 @@ The following messages are handled:
 - `cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the next or previous window matching the given constraints.
 
 - `nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the nearest window matching the given constraints.
+
+- `biggest` — Return the ID of the biggest tiled window.
 
 - `circulate forward|backward` — Circulate the leaves in the given direction.
 

@@ -350,6 +350,10 @@ void process_message(char *msg, char *rsp)
             }
         }
         return;
+    } else if (strcmp(cmd, "biggest") == 0) {
+        node_t *n = find_biggest(mon->desk);
+        if (n != NULL)
+            snprintf(rsp, BUFSIZ, "0x%X", n->client->window);
     } else if (strcmp(cmd, "circulate") == 0) {
         if (mon->desk->layout == LAYOUT_MONOCLE
                 || (mon->desk->focus != NULL && !is_tiled(mon->desk->focus->client)))
@@ -391,16 +395,7 @@ void process_message(char *msg, char *rsp)
                 remove_rule_by_uid(uid);
         return;
     } else if (strcmp(cmd, "swap") == 0) {
-        char *arg;
-        swap_arg_t a;
-        if ((arg = strtok(NULL, TOK_SEP)) != NULL) {
-            if (parse_swap_argument(arg, &a)) {
-                node_t *n = find_by_area(mon->desk, a);
-                swap_nodes(mon->desk->focus, n);
-            }
-        } else {
-            swap_nodes(mon->desk->focus, history_get(mon->desk->history, 1));
-        }
+        swap_nodes(mon->desk->focus, history_get(mon->desk->history, 1));
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
         return;
@@ -669,18 +664,6 @@ bool parse_nearest_argument(char *s, nearest_arg_t *a)
         return true;
     } else if (strcmp(s, "newer") == 0) {
         *a = NEAREST_NEWER;
-        return true;
-    }
-    return false;
-}
-
-bool parse_swap_argument(char *s, swap_arg_t *a)
-{
-    if (strcmp(s, "biggest") == 0) {
-        *a = SWAP_BIGGEST;
-        return true;
-    } else if (strcmp(s, "smallest") == 0) {
-        *a = SWAP_SMALLEST;
         return true;
     }
     return false;

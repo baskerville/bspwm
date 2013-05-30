@@ -71,11 +71,6 @@ typedef enum {
 } nearest_arg_t;
 
 typedef enum {
-    SWAP_BIGGEST,
-    SWAP_SMALLEST
-} swap_arg_t;
-
-typedef enum {
     CIRCULATE_FORWARD,
     CIRCULATE_BACKWARD
 } circulate_dir_t;

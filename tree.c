@@ -128,20 +128,20 @@ node_t *find_neighbor(node_t *n, direction_t dir)
     return NULL;
 }
 
-void get_opposite(direction_t dir, direction_t* val)
+void get_opposite(direction_t src, direction_t* dst)
 {
-    switch (dir) {
+    switch (src) {
         case DIR_RIGHT:
-            *val = DIR_LEFT;
+            *dst = DIR_LEFT;
             break;
         case DIR_DOWN:
-            *val = DIR_UP;
+            *dst = DIR_UP;
             break;
         case DIR_LEFT:
-            *val = DIR_RIGHT;
+            *dst = DIR_RIGHT;
             break;
         case DIR_UP:
-            *val = DIR_DOWN;
+            *dst = DIR_DOWN;
             break;
     }
 }
@@ -192,7 +192,7 @@ int tiled_area(node_t *n)
     return rect.width * rect.height;
 }
 
-node_t *find_by_area(desktop_t *d, swap_arg_t a)
+node_t *find_biggest(desktop_t *d)
 {
     if (d == NULL)
         return NULL;
@@ -205,8 +205,7 @@ node_t *find_by_area(desktop_t *d, swap_arg_t a)
         if (r == NULL) {
             r = f;
             r_area = f_area;
-        } else if ((a == SWAP_BIGGEST && f_area > r_area)
-                || (a == SWAP_SMALLEST && f_area < r_area)) {
+        } else if (f_area > r_area) {
             r = f;
             r_area = f_area;
         }
