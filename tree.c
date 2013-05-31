@@ -726,7 +726,7 @@ void swap_nodes(node_t *n1, node_t *n2)
 
 void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
 {
-    if (n == NULL || ds == NULL || dd == NULL || ms == NULL || md == NULL || (ms == md && dd == ds))
+    if (n == NULL || (ms == md && dd == ds))
         return;
 
     PRINTF("transfer node %X\n", n->client->window);
@@ -935,7 +935,8 @@ void put_status(void)
             fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
         }
     }
-    fprintf(status_fifo, "L%s\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
+    if (mon != NULL && mon->desk != NULL)
+        fprintf(status_fifo, "L%s\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
     fflush(status_fifo);
 }
 

@@ -107,8 +107,7 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
     desktop_t *d = ms->desk_head;
     while (d != NULL) {
         desktop_t *next = d->next;
-        unlink_desktop(ms, d);
-        insert_desktop(md, d);
+        transfer_desktop(ms, md, d);
         d = next;
     }
 }
@@ -142,6 +141,8 @@ void insert_desktop(monitor_t *m, desktop_t *d)
 
 void add_desktop(monitor_t *m, desktop_t *d)
 {
+    PRINTF("add desktop %s\n", d->name);
+
     insert_desktop(m, d);
     num_desktops++;
     ewmh_update_number_of_desktops();
@@ -177,6 +178,8 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
 
 void remove_desktop(monitor_t *m, desktop_t *d)
 {
+    PRINTF("remove desktop %s\n", d->name);
+
     unlink_desktop(m, d);
     empty_desktop(d);
     free(d);
