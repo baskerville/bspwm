@@ -779,19 +779,11 @@ void select_desktop(monitor_t *m, desktop_t *d)
     PRINTF("select desktop %s\n", d->name);
 
     if (visible) {
-        node_t *n = first_extrema(d->root);
-
-        while (n != NULL) {
+        for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
             window_show(n->client->window);
-            n = next_leaf(n, d->root);
-        }
 
-        n = first_extrema(mon->desk->root);
-
-        while (n != NULL) {
+        for (node_t *n = first_extrema(mon->desk->root); n != NULL; n = next_leaf(n, mon->desk->root))
             window_hide(n->client->window);
-            n = next_leaf(n, mon->desk->root);
-        }
     }
 
     mon->last_desk = mon->desk;

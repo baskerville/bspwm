@@ -417,12 +417,12 @@ void process_message(char *msg, char *rsp)
             monitor_t *m = find_monitor(name);
             if (m != NULL)
                 for (name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
-                    add_desktop(m, name);
+                    add_desktop(m, make_desktop(name));
         }
         return;
     } else if (strcmp(cmd, "add") == 0) {
         for (char *name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
-            add_desktop(mon, name);
+            add_desktop(mon, make_desktop(name));
         return;
     } else if (strcmp(cmd, "focus") == 0) {
         if (mon->desk->focus == NULL || mon->desk->focus->client->fullscreen)

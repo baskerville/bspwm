@@ -92,7 +92,7 @@ bool import_monitors(void)
                     strncpy(mm->name, name, name_len);
                     mm->name[name_len] = '\0';
                     mm->id = outputs[i];
-                    add_desktop(mm, NULL);
+                    add_desktop(mm, make_desktop(NULL));
                     PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
                 }
                 num++;
@@ -107,7 +107,8 @@ bool import_monitors(void)
         monitor_t *next = m->next;
         if (!m->wired) {
             PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
-            transfer_desktops(mm, m);
+            merge_monitors(m, mm);
+            remove_monitor(m);
         }
         m = next;
     }
@@ -182,7 +183,7 @@ void setup(void)
         warn("Couldn't retrieve monitors via RandR.\n");
         xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
         monitor_t *m = add_monitor(&rect);
-        add_desktop(m, NULL);
+        add_desktop(m, make_desktop(NULL));
     }
 
     ewmh_update_number_of_desktops();

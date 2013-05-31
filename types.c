@@ -3,6 +3,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
+#include "window.h"
 #include "ewmh.h"
 #include "settings.h"
 #include "types.h"
@@ -89,13 +90,27 @@ void remove_monitor(monitor_t *m)
     num_monitors--;
 }
 
-void transfer_desktops(monitor_t *dst, monitor_t *src)
+void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
-    dst->desk_tail->next = src->desk_head;
-    src->desk_head->prev = dst->desk_tail;
-    dst->desk_tail = src->desk_tail;
-    src->desk = src->last_desk = src->desk_head = src->desk_tail = NULL;
-    remove_monitor(src);
+    unlink_desktop(ms, d);
+    insert_desktop(md, d);
+}
+
+void merge_monitors(monitor_t *ms, monitor_t *md)
+{
+    PRINTF("merge monitor %s into %s\n", ms->name, md->name);
+
+    if (visible) {
+        for (node_t *n = first_extrema(ms->desk->root); n != NULL; n = next_leaf(n, ms->desk->root))
+            window_hide(n->client->window);
+    }
+    desktop_t *d = ms->desk_head;
+    while (d != NULL) {
+        desktop_t *next = d->next;
+        unlink_desktop(ms, d);
+        insert_desktop(md, d);
+        d = next;
+    }
 }
 
 desktop_t *make_desktop(const char *name)
@@ -112,9 +127,8 @@ desktop_t *make_desktop(const char *name)
     return d;
 }
 
-void add_desktop(monitor_t *m, char *name)
+void insert_desktop(monitor_t *m, desktop_t *d)
 {
-    desktop_t *d = make_desktop(name);
     if (m->desk == NULL) {
         m->desk = d;
         m->desk_head = d;
@@ -124,6 +138,11 @@ void add_desktop(monitor_t *m, char *name)
         d->prev = m->desk_tail;
         m->desk_tail = d;
     }
+}
+
+void add_desktop(monitor_t *m, desktop_t *d)
+{
+    insert_desktop(m, d);
     num_desktops++;
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
@@ -137,9 +156,8 @@ void empty_desktop(desktop_t *d)
     empty_history(d->history);
 }
 
-void remove_desktop(monitor_t *m, desktop_t *d)
+void unlink_desktop(monitor_t *m, desktop_t *d)
 {
-    empty_desktop(d);
     desktop_t *prev = d->prev;
     desktop_t *next = d->next;
     if (prev != NULL)
@@ -154,8 +172,18 @@ void remove_desktop(monitor_t *m, desktop_t *d)
         m->last_desk = NULL;
     if (m->desk == d)
         m->desk = (m->last_desk == NULL ? m->desk_head : m->last_desk);
+    d->next = d->prev = NULL;
+}
+
+void remove_desktop(monitor_t *m, desktop_t *d)
+{
+    unlink_desktop(m, d);
+    empty_desktop(d);
     free(d);
     num_desktops--;
+    ewmh_update_number_of_desktops();
+    ewmh_update_desktop_names();
+    put_status();
 }
 
 client_t *make_client(xcb_window_t win)
