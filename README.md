@@ -159,6 +159,8 @@ The following messages are handled:
 
 - `rename CURRENT_NAME NEW_NAME` — Rename the desktop named `CURRENT_NAME` to `NEW_NAME`.
 
+- `remove_desktop DESKTOP_NAME ...` — Remove the given desktops.
+
 - `cycle_monitor next|prev` — Select the next or previous monitor.
 
 - `cycle_desktop next|prev [--skip-free|--skip-occupied]` — Select the next or previous desktop.

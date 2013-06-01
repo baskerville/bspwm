@@ -557,6 +557,18 @@ void toggle_visibility(void)
         update_current();
 }
 
+void desktop_show(desktop_t *d)
+{
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        window_show(n->client->window);
+}
+
+void desktop_hide(desktop_t *d)
+{
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        window_hide(n->client->window);
+}
+
 void enable_motion_recorder(void)
 {
     window_raise(motion_recorder);

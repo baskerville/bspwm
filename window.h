@@ -42,6 +42,8 @@ void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
 void window_show(xcb_window_t);
 void toggle_visibility(void);
+void desktop_show(desktop_t *);
+void desktop_hide(desktop_t *);
 void enable_motion_recorder(void);
 void disable_motion_recorder(void);
 void clear_input_focus(void);

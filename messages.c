@@ -424,6 +424,17 @@ void process_message(char *msg, char *rsp)
         for (char *name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
             add_desktop(mon, make_desktop(name));
         return;
+    } else if (strcmp(cmd, "remove_desktop") == 0) {
+        for (char *name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP)) {
+            desktop_location_t loc;
+            if (locate_desktop(name, &loc)) {
+                if (loc.desktop->root == NULL && loc.monitor->desk_head != loc.monitor->desk_tail)
+                    remove_desktop(loc.monitor, loc.desktop);
+            }
+        }
+        desktop_show(mon->desk);
+        update_current();
+        return;
     } else if (strcmp(cmd, "focus") == 0) {
         if (mon->desk->focus == NULL || mon->desk->focus->client->fullscreen)
             return;

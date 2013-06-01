@@ -4,6 +4,7 @@
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
 #include "window.h"
+#include "rules.h"
 #include "ewmh.h"
 #include "settings.h"
 #include "types.h"
@@ -173,13 +174,13 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
         m->last_desk = NULL;
     if (m->desk == d)
         m->desk = (m->last_desk == NULL ? m->desk_head : m->last_desk);
-    d->next = d->prev = NULL;
 }
 
 void remove_desktop(monitor_t *m, desktop_t *d)
 {
     PRINTF("remove desktop %s\n", d->name);
 
+    prune_rules(d);
     unlink_desktop(m, d);
     empty_desktop(d);
     free(d);

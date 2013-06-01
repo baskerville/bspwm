@@ -40,6 +40,17 @@ void remove_rule_by_uid(unsigned int uid)
     remove_rule(find_rule(uid));
 }
 
+void prune_rules(desktop_t *d)
+{
+    rule_t *r = rule_head;
+    while (r != NULL) {
+        rule_t *next = r->next;
+        if (r->effect.desktop == d)
+            remove_rule(r);
+        r = next;
+    }
+}
+
 rule_t *find_rule(unsigned int uid)
 {
     for (rule_t *r = rule_head; r != NULL; r = r->next)
