@@ -564,14 +564,9 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     n->client->urgent = false;
 
     pseudo_focus(d, n);
-    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+    stack(d, n);
 
-    if (!is_tiled(n->client)) {
-        if (!adaptative_raise || !might_cover(d, n))
-            window_raise(n->client->window);
-    } else {
-        stack_tiled(d);
-    }
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 
     if (focus_follows_pointer) {
         xcb_window_t win = XCB_NONE;
@@ -750,6 +745,9 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
         window_show(n->client->window);
 
     pseudo_focus(dd, n);
+
+    if (md->desk == dd)
+        stack(dd, n);
 
     if (ds == ms->desk || dd == md->desk)
         update_current();

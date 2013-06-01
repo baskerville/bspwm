@@ -517,6 +517,16 @@ void stack_tiled(desktop_t *d)
             window_lower(a->node->client->window);
 }
 
+void stack(desktop_t *d, node_t *n)
+{
+    if (!is_tiled(n->client)) {
+        if (!adaptative_raise || !might_cover(d, n))
+            window_raise(n->client->window);
+    } else {
+        stack_tiled(d);
+    }
+}
+
 void window_lower(xcb_window_t win)
 {
     uint32_t values[] = {XCB_STACK_MODE_BELOW};

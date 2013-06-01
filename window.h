@@ -37,6 +37,7 @@ void window_move_resize(xcb_window_t, int16_t, int16_t, uint16_t, uint16_t);
 void window_focus(xcb_window_t);
 void window_raise(xcb_window_t);
 void stack_tiled(desktop_t *);
+void stack(desktop_t *, node_t *);
 void window_lower(xcb_window_t);
 void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
