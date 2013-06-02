@@ -8,7 +8,7 @@
 
 ## Description
 
-`bspwm` is a tiling window manager where each window is represented as the leaf of a binary tree.
+`bspwm` is a tiling window manager that represents windows as the leaves of a full binary tree.
 
 It is controlled and configured via `bspc`.
 
@@ -18,7 +18,7 @@ It is controlled and configured via `bspc`.
 
 Its configuration file is `$XDG_CONFIG_HOME/bspwm/autostart`.
 
-Keyboard and pointer bindings are defined through [sxhkd](https://github.com/baskerville/sxhkd).
+Keyboard and pointer bindings are defined with [sxhkd](https://github.com/baskerville/sxhkd).
 
 Example configuration files can be found in the `examples` directory.
 
@@ -67,6 +67,12 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
+## Containers
+
+Each monitor contains at least one desktop.
+
+Each desktop contains at most one tree.
+
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
@@ -101,7 +107,7 @@ The following messages are handled:
 
 - `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-- `swap [--swap-focus|--keep-focus]` — Swap the focused window the last focused window.
+- `swap [--swap-focus|--keep-focus]` — Swap the focused window with the last focused window.
 
 - `push left|right|up|down` — Push the fence located in the given direction.
 
@@ -240,15 +246,14 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 ## Key Features
 
 - Configured and controlled through messages.
-- Multiple monitors support (via *Xinerama*).
+- Multiple monitors support (via *RandR*).
 - EWMH support (`tint2` works).
 - Automatic and manual modes.
 
 ## Panels
 
-- Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
+- Any EWMH compliant panel (e.g.: `tint2`, `bmpanel2`, etc.).
 - A custom panel if the `-s` flag is used (have a look at the files in `examples/panel`).
-- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
 
 ## Required Libraries:
 

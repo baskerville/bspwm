@@ -10,7 +10,7 @@ bspwm \- Tiling window manager based on binary space partitioning
 .RI [ OPTIONS ]
 .SH DESCRIPTION
 .B bspwm
-is a tiling window manager where each window is represented as the leaf of a binary tree.
+is a tiling window manager that represents windows as the leaves of a full binary tree.
 .P
 It is controlled and configured via
 .BR bspc .
@@ -23,7 +23,7 @@ events it receives and the messages it reads on a dedicated socket.
 Its configuration file is
 .IR $XDG_CONFIG_HOME/bspwm/autostart .
 .P
-Keyboard and pointer bindings are defined through
+Keyboard and pointer bindings are defined with
 .BR sxhkd .
 .P
 Example configuration files can be found in the
@@ -89,6 +89,11 @@ message was sent beforehand:
     +-------------------------+         +-------------------------+
 
 .EE
+.SH CONTAINERS
+.P
+Each monitor contains at least one desktop.
+.P
+Each desktop contains at most one tree.
 .SH MESSAGES
 .TP
 .BI get " SETTING"
