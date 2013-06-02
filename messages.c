@@ -785,7 +785,7 @@ bool parse_send_option(char *s, send_option_t *o)
 
 bool parse_swap_option(char *s, swap_option_t *o)
 {
-    if (s == NULL || strcmp(s, "--swap-focus") == 0) {
+    if (s == NULL) {
         *o = SWAP_OPTION_SWAP_FOCUS;
         return true;
     } else if (strcmp(s, "--keep-focus") == 0) {

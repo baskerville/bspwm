@@ -107,7 +107,7 @@ The following messages are handled:
 
 - `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-- `swap [--swap-focus|--keep-focus]` — Swap the focused window with the last focused window.
+- `swap [--keep-focus]` — Swap the focused window with the last focused window.
 
 - `push left|right|up|down` — Push the fence located in the given direction.
 
