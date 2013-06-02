@@ -442,6 +442,7 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
             if (m != NULL) {
+                desktop_hide(mon->desk);
                 transfer_desktop(mon, m, mon->desk);
                 desktop_show(mon->desk);
                 update_current();
