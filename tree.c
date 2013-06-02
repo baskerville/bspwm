@@ -533,6 +533,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     if (n == NULL && d->root != NULL)
         return;
 
+    split_mode = MODE_AUTOMATIC;
+
     if (mon->desk != d)
         clear_input_focus();
 
@@ -560,7 +562,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
     PRINTF("focus node %X\n", n->client->window);
 
-    split_mode = MODE_AUTOMATIC;
     n->client->urgent = false;
 
     pseudo_focus(d, n);
