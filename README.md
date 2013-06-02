@@ -167,6 +167,8 @@ The following messages are handled:
 
 - `remove_desktop DESKTOP_NAME ...` — Remove the given desktops.
 
+- `send_desktop_to MONITOR_NAME` — Send the current desktop to the given monitor.
+
 - `cycle_monitor next|prev` — Select the next or previous monitor.
 
 - `cycle_desktop next|prev [--skip-free|--skip-occupied]` — Select the next or previous desktop.

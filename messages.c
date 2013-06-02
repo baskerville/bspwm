@@ -435,6 +435,19 @@ void process_message(char *msg, char *rsp)
         desktop_show(mon->desk);
         update_current();
         return;
+    } else if (strcmp(cmd, "send_desktop_to") == 0) {
+        if (mon->desk_head == mon->desk_tail)
+            return;
+        char *name = strtok(NULL, TOK_SEP);
+        if (name != NULL) {
+            monitor_t *m = find_monitor(name);
+            if (m != NULL) {
+                transfer_desktop(mon, m, mon->desk);
+                desktop_show(mon->desk);
+                update_current();
+            }
+        }
+        return;
     } else if (strcmp(cmd, "focus") == 0) {
         if (mon->desk->focus == NULL || mon->desk->focus->client->fullscreen)
             return;
