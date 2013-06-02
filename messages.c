@@ -761,7 +761,7 @@ bool parse_skip_desktop(char *s, skip_desktop_t *k)
 
 bool parse_list_option(char *s, list_option_t *o)
 {
-    if (s == NULL || strcmp(s, "--verbose") == 0) {
+    if (s == NULL) {
         *o = LIST_OPTION_VERBOSE;
         return true;
     } else if (strcmp(s, "--quiet") == 0) {
