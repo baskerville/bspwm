@@ -115,6 +115,7 @@ bool import_monitors(void)
 
     free(sres);
     put_status();
+    update_motion_recorder();
     return (num_monitors > 0);
 }
 

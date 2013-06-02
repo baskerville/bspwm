@@ -498,6 +498,12 @@ void window_move(xcb_window_t win, int16_t x, int16_t y)
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_X_Y, values);
 }
 
+void window_resize(xcb_window_t win, uint16_t w, uint16_t h)
+{
+    uint32_t values[] = {w, h};
+    xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_WIDTH_HEIGHT, values);
+}
+
 void window_move_resize(xcb_window_t win, int16_t x, int16_t y, uint16_t w, uint16_t h)
 {
     uint32_t values[] = {x, y, w, h};
@@ -588,6 +594,16 @@ void enable_motion_recorder(void)
 void disable_motion_recorder(void)
 {
     window_hide(motion_recorder);
+}
+
+void update_motion_recorder(void)
+{
+    xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, root), NULL);
+
+    if (geo != NULL)
+        window_resize(motion_recorder, geo->width, geo->height);
+
+    free(geo);
 }
 
 void clear_input_focus(void)

@@ -33,6 +33,7 @@ void enable_shadow(xcb_window_t);
 void disable_shadow(xcb_window_t);
 void window_border_width(xcb_window_t, uint32_t);
 void window_move(xcb_window_t, int16_t, int16_t);
+void window_resize(xcb_window_t, uint16_t, uint16_t);
 void window_move_resize(xcb_window_t, int16_t, int16_t, uint16_t, uint16_t);
 void window_focus(xcb_window_t);
 void window_raise(xcb_window_t);
@@ -47,6 +48,7 @@ void desktop_show(desktop_t *);
 void desktop_hide(desktop_t *);
 void enable_motion_recorder(void);
 void disable_motion_recorder(void);
+void update_motion_recorder(void);
 void clear_input_focus(void);
 
 #endif
