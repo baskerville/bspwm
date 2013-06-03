@@ -174,6 +174,7 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
         m->last_desk = NULL;
     if (m->desk == d)
         m->desk = (m->last_desk == NULL ? m->desk_head : m->last_desk);
+    d->prev = d->next = NULL;
 }
 
 void remove_desktop(monitor_t *m, desktop_t *d)
