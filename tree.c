@@ -175,7 +175,6 @@ node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
             continue;
         get_side_handle(a->client, dir2, &pt2);
         double ds2 = distance(pt, pt2);
-        PRINTF("distance %X %g\n", a->client->window, ds2);
         if (ds2 < ds) {
             ds = ds2;
             nearest = a;
