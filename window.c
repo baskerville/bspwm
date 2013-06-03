@@ -587,12 +587,14 @@ void desktop_hide(desktop_t *d)
 
 void enable_motion_recorder(void)
 {
+    PUTS("enable motion recorder");
     window_raise(motion_recorder);
     window_show(motion_recorder);
 }
 
 void disable_motion_recorder(void)
 {
+    PUTS("disable motion recorder");
     window_hide(motion_recorder);
 }
 
@@ -600,8 +602,10 @@ void update_motion_recorder(void)
 {
     xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, root), NULL);
 
-    if (geo != NULL)
+    if (geo != NULL) {
         window_resize(motion_recorder, geo->width, geo->height);
+        PRINTF("update motion recorder size: %ux%u\n", geo->width, geo->height);
+    }
 
     free(geo);
 }
