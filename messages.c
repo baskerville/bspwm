@@ -441,11 +441,17 @@ void process_message(char *msg, char *rsp)
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
-            if (m != NULL) {
-                desktop_hide(mon->desk);
-                transfer_desktop(mon, m, mon->desk);
+            if (m != NULL && m != mon) {
+                desktop_t *d = mon->desk;
+                desktop_hide(d);
+                transfer_desktop(mon, m, d);
                 desktop_show(mon->desk);
-                update_current();
+                char *opt = strtok(NULL, TOK_SEP);
+                send_option_t o;
+                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
+                    focus_node(m, d, d->focus);
+                else
+                    update_current();
             }
         }
         return;
