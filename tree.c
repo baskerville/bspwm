@@ -229,7 +229,7 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 
 void rotate_tree(node_t *n, rotate_t rot)
 {
-    if (n == NULL || is_leaf(n))
+    if (n == NULL || is_leaf(n) || rot == ROTATE_IDENTITY)
         return;
 
     node_t *tmp;
