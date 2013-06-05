@@ -571,6 +571,11 @@ void set_setting(char *name, char *value, char *rsp)
             focus_follows_pointer = b;
         }
         return;
+    } else if (strcmp(name, "pointer_follows_monitor") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            pointer_follows_monitor = b;
+        return;
     } else if (strcmp(name, "adaptative_raise") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -644,6 +649,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(gapless_monocle));
     else if (strcmp(name, "focus_follows_pointer") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_pointer));
+    else if (strcmp(name, "pointer_follows_monitor") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(pointer_follows_monitor));
     else if (strcmp(name, "adaptative_raise") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "apply_shadow_property") == 0)

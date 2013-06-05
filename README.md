@@ -201,6 +201,8 @@ The following messages are handled:
 
 Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or *#RRGGBB*, booleans are *true* or *false*.
 
+All the boolean settings are *false* by default.
+
 - `focused_border_color` — Color of the border of a focused window of a focused monitor.
 
 - `active_border_color` — Color of the border of a focused window of an unfocused monitor.
@@ -227,19 +229,21 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `wm_name` — The value that shall be used for the `_NET_WM_NAME` property of the root window.
 
-- `borderless_monocle` — Whether to remove borders for tiled windows in monocle mode.
+- `borderless_monocle` — Remove borders for tiled windows in monocle mode.
 
-- `gapless_monocle` — Whether to remove gaps for tiled windows in monocle mode.
+- `gapless_monocle` — Remove gaps for tiled windows in monocle mode.
 
-- `focus_follows_pointer` — Whether to focus the window under the pointer.
+- `focus_follows_pointer` — Focus the window under the pointer.
+
+- `pointer_follows_monitor` — When focusing a monitor, put the pointer at its center.
 
 - `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
 
-- `auto_alternate` — Whether to interpret two consecutive identical `use` messages as an `alternate` message.
+- `auto_alternate` — Interpret two consecutive identical `use` messages as an `alternate` message.
 
-- `focus_by_distance` — Whether to use window or leaf distance for focus movement.
+- `focus_by_distance` — Use window or leaf distance for focus movement.
 
 ## Environment Variables
 

@@ -50,5 +50,6 @@ void enable_motion_recorder(void);
 void disable_motion_recorder(void);
 void update_motion_recorder(void);
 void clear_input_focus(void);
+void center_pointer(monitor_t *);
 
 #endif

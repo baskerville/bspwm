@@ -275,6 +275,7 @@ Restore the history of each desktop from the content of FILE_PATH.
 .BI quit " [EXIT_STATUS]"
 Quit.
 .SH SETTINGS
+.P
 Colors are either
 .B X
 color names (cf.
@@ -285,6 +286,10 @@ or
 .I #RRGGBB
 , booleans are
 .IR "true " "or " false .
+.P
+All the boolean settings are
+.I false
+by default.
 .TP
 .I focused_border_color
 Color of the border of a focused window of a focused monitor.
@@ -336,13 +341,16 @@ The value that shall be used for the
 property of the root window.
 .TP
 .I borderless_monocle
-Whether to remove borders for tiled windows in monocle mode.
+Remove borders for tiled windows in monocle mode.
 .TP
 .I gapless_monocle
-Whether to remove gaps for tiled windows in monocle mode.
+Remove gaps for tiled windows in monocle mode.
 .TP
 .I focus_follows_pointer
-Whether to focus the window under the pointer.
+Focus the window under the pointer.
+.TP
+.I pointer_follows_monitor
+When focusing a monitor, put the pointer at its center.
 .TP
 .I adaptative_raise
 Prevent floating windows from being raised when they might cover other floating windows.
@@ -353,14 +361,14 @@ Enable shadows for floating windows via the
 property.
 .TP
 .I auto_alernate
-Whether to interpret two consecutive identical
+Interpret two consecutive identical
 .B use
 messages as an
 .B alternate
 message.
 .TP
 .I focus_by_distance
-Whether to use window or leaf distance for focus movement.
+Use window or leaf distance for focus movement.
 .SH ENVIRONMENT VARIABLES
 .TP
 .I BSPWM_SOCKET
