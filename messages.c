@@ -448,10 +448,15 @@ void process_message(char *msg, char *rsp)
                 desktop_show(mon->desk);
                 char *opt = strtok(NULL, TOK_SEP);
                 send_option_t o;
-                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    focus_node(m, d, d->focus);
-                else
-                    update_current();
+                if (parse_send_option(opt, &o)) {
+                    if (o == SEND_OPTION_FOLLOW) {
+                        arrange(m, d);
+                        focus_node(m, d, d->focus);
+                    } else if (o == SEND_OPTION_DONT_FOLLOW) {
+                        update_current();
+                    }
+                }
+
             }
         }
         return;
