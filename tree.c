@@ -552,7 +552,10 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
         window_draw_border(n, true, true);
     }
 
-    select_desktop(m, d);
+    if (mon != m || m->desk != d) {
+        select_desktop(m, d);
+        put_status();
+    }
 
     if (n == NULL) {
         ewmh_update_active_window();
@@ -764,7 +767,6 @@ void select_monitor(monitor_t *m)
     mon = m;
 
     ewmh_update_current_desktop();
-    put_status();
 }
 
 void select_desktop(monitor_t *m, desktop_t *d)
@@ -785,7 +787,6 @@ void select_desktop(monitor_t *m, desktop_t *d)
     mon->desk = d;
 
     ewmh_update_current_desktop();
-    put_status();
 }
 
 void cycle_monitor(cycle_dir_t dir)

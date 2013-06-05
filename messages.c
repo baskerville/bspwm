@@ -293,6 +293,7 @@ void process_message(char *msg, char *rsp)
                     focus_node(m, m->desk, m->desk->focus);
             }
         }
+        return;
     } else if (strcmp(cmd, "use") == 0) {
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
@@ -304,6 +305,7 @@ void process_message(char *msg, char *rsp)
                     focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
             }
         }
+        return;
     } else if (strcmp(cmd, "cycle_monitor") == 0) {
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
@@ -442,21 +444,20 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
             if (m != NULL && m != mon) {
+                char *opt = strtok(NULL, TOK_SEP);
+                send_option_t o;
+                if (!parse_send_option(opt, &o))
+                    return;
                 desktop_t *d = mon->desk;
                 desktop_hide(d);
                 transfer_desktop(mon, m, d);
                 desktop_show(mon->desk);
-                char *opt = strtok(NULL, TOK_SEP);
-                send_option_t o;
-                if (parse_send_option(opt, &o)) {
-                    if (o == SEND_OPTION_FOLLOW) {
-                        arrange(m, d);
-                        focus_node(m, d, d->focus);
-                    } else if (o == SEND_OPTION_DONT_FOLLOW) {
-                        update_current();
-                    }
+                if (o == SEND_OPTION_FOLLOW) {
+                    arrange(m, d);
+                    focus_node(m, d, d->focus);
+                } else if (o == SEND_OPTION_DONT_FOLLOW) {
+                    update_current();
                 }
-
             }
         }
         return;
