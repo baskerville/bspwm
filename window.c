@@ -68,9 +68,17 @@ bool is_inside(monitor_t *m, xcb_point_t pt)
             && r.y <= pt.y && pt.y < (r.y + r.height));
 }
 
+xcb_rectangle_t get_rectangle(client_t *c)
+{
+    if (is_tiled(c))
+        return c->tiled_rectangle;
+    else
+        return c->floating_rectangle;
+}
+
 void get_side_handle(client_t *c, direction_t dir, xcb_point_t *pt)
 {
-    xcb_rectangle_t rect = (is_tiled(c) ? c->tiled_rectangle : c->floating_rectangle);
+    xcb_rectangle_t rect = get_rectangle(c);
     switch (dir) {
         case DIR_RIGHT:
             pt->x = rect.x + rect.width;
@@ -141,21 +149,21 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (c->transient)
         floating = true;
 
-    node_t *birth = make_node();
-    birth->client = c;
+    node_t *n = make_node();
+    n->client = c;
 
-    insert_node(m, d, birth);
+    insert_node(m, d, n);
 
     disable_shadow(c->window);
 
     if (floating)
-        toggle_floating(birth);
+        toggle_floating(d, n);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
-        toggle_fullscreen(m, d->focus->client);
+        toggle_fullscreen(m, d, d->focus);
 
     if (fullscreen)
-        toggle_fullscreen(m, birth->client);
+        toggle_fullscreen(m, d, n);
 
     if (is_tiled(c))
         window_lower(c->window);
@@ -165,15 +173,15 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     bool give_focus = takes_focus && (d == mon->desk || follow);
 
     if (give_focus)
-        focus_node(m, d, birth);
+        focus_node(m, d, n);
     else if (takes_focus)
-        pseudo_focus(d, birth);
+        pseudo_focus(d, n);
 
-    xcb_rectangle_t *frect = &birth->client->floating_rectangle;
+    xcb_rectangle_t *frect = &n->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
         center(m->rectangle, frect);
 
-    fit_monitor(m, birth->client);
+    fit_monitor(m, n->client);
 
     arrange(m, d);
 
@@ -188,7 +196,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     num_clients++;
-    ewmh_set_wm_desktop(birth, d);
+    ewmh_set_wm_desktop(n, d);
     ewmh_update_client_list();
 }
 
@@ -228,7 +236,7 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
     if (split_mode == MODE_AUTOMATIC || !focused_monitor || !focused_window) {
         xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXEL, &border_color_pxl);
     } else {
-        xcb_rectangle_t actual_rectangle = (is_tiled(n->client) ? n->client->tiled_rectangle : n->client->floating_rectangle);
+        xcb_rectangle_t actual_rectangle = get_rectangle(n->client);
 
         uint16_t width = actual_rectangle.width;
         uint16_t height = actual_rectangle.height;
@@ -325,62 +333,69 @@ void window_kill(desktop_t *d, node_t *n)
     if (n == NULL)
         return;
 
-    PRINTF("kill window %X\n", n->client->window);
+    xcb_window_t win = n->client->window;
+    PRINTF("kill window %X\n", win);
 
-    xcb_kill_client(dpy, n->client->window);
+    xcb_kill_client(dpy, win);
     remove_node(d, n);
 }
 
-void toggle_fullscreen(monitor_t *m, client_t *c)
+void toggle_fullscreen(monitor_t *m, desktop_t *d, node_t *n)
 {
+    client_t *c = n->client;
+
     PRINTF("toggle fullscreen %X\n", c->window);
 
     if (c->fullscreen) {
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        if (is_tiled(c))
-            window_lower(c->window);
+        xcb_rectangle_t rect = get_rectangle(c);
+        window_border_width(c->window, c->border_width);
+        window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
+        window_draw_border(n, d->focus == n, mon == m);
+        stack(d, n);
     } else {
         c->fullscreen = true;
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         window_raise(c->window);
         window_border_width(c->window, 0);
-        xcb_rectangle_t r = m->rectangle;
-        window_move_resize(c->window, r.x, r.y, r.width, r.height);
+        xcb_rectangle_t rect = m->rectangle;
+        window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
     }
-    update_current();
 }
 
-void toggle_floating(node_t *n)
+void toggle_floating(desktop_t *d, node_t *n)
 {
     if (n == NULL || n->client->transient || n->client->fullscreen)
         return;
 
     PRINTF("toggle floating %X\n", n->client->window);
 
+    split_mode = MODE_AUTOMATIC;
     client_t *c = n->client;
     c->floating = !c->floating;
     n->vacant = !n->vacant;
     update_vacant_state(n->parent);
     if (c->floating) {
-        window_raise(c->window);
         enable_shadow(c->window);
         unrotate_brother(n);
     } else {
-        window_lower(c->window);
         disable_shadow(c->window);
         rotate_brother(n);
     }
-    update_current();
+    stack(d, n);
 }
 
-void toggle_locked(client_t *c)
+void toggle_locked(monitor_t *m, desktop_t *d, node_t *n)
 {
+    client_t *c = n->client;
+
     PRINTF("toggle locked %X\n", c->window);
 
     c->locked = !c->locked;
+    window_draw_border(n, d->focus == n, m == mon);
 }
 
 void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)

@@ -552,10 +552,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
         window_draw_border(n, true, true);
     }
 
-    if (mon != m || m->desk != d) {
-        select_desktop(m, d);
-        put_status();
-    }
+    select_desktop(m, d);
 
     if (n == NULL) {
         ewmh_update_active_window();
@@ -637,7 +634,7 @@ void unlink_node(desktop_t *d, node_t *n)
 
 void remove_node(desktop_t *d, node_t *n)
 {
-    if (d == NULL || n == NULL)
+    if (n == NULL)
         return;
 
     PRINTF("remove node %X\n", n->client->window);
@@ -724,7 +721,7 @@ void swap_nodes(node_t *n1, node_t *n2)
 
 void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
 {
-    if (n == NULL || (ms == md && dd == ds))
+    if (n == NULL || dd == ds)
         return;
 
     PRINTF("transfer node %X\n", n->client->window);
@@ -752,6 +749,9 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     if (md->desk == dd)
         stack(dd, n);
 
+    arrange(ms, ds);
+    arrange(md, dd);
+
     if (ds == ms->desk || dd == md->desk)
         update_current();
 }
@@ -770,6 +770,7 @@ void select_monitor(monitor_t *m)
         center_pointer(m);
 
     ewmh_update_current_desktop();
+    put_status();
 }
 
 void select_desktop(monitor_t *m, desktop_t *d)
@@ -790,6 +791,7 @@ void select_desktop(monitor_t *m, desktop_t *d)
     mon->desk = d;
 
     ewmh_update_current_desktop();
+    put_status();
 }
 
 void cycle_monitor(cycle_dir_t dir)

@@ -211,10 +211,8 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
-        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
-            toggle_fullscreen(loc.monitor, loc.desktop->focus->client);
-            arrange(loc.monitor, loc.desktop);
-        }
+        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
+            toggle_fullscreen(loc.monitor, loc.desktop, loc.desktop->focus);
         focus_node(loc.monitor, loc.desktop, loc.node);
     }
 }
@@ -251,10 +249,8 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
         bool fs = n->client->fullscreen;
         if (action == XCB_EWMH_WM_STATE_TOGGLE
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
-            toggle_fullscreen(m, n->client);
-            arrange(m, d);
-        }
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD))
+            toggle_fullscreen(m, d, n);
     } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
         if (action == XCB_EWMH_WM_STATE_ADD)
             set_urgency(m, d, n, true);
@@ -443,8 +439,6 @@ void track_pointer(int root_x, int root_y)
                         }
                     }
                     transfer_node(m, d, loc.monitor, loc.desktop, n);
-                    arrange(m, d);
-                    arrange(loc.monitor, loc.desktop);
                     frozen_pointer->monitor = loc.monitor;
                     frozen_pointer->desktop = loc.desktop;
                 }
@@ -553,8 +547,6 @@ void ungrab_pointer(void)
 
     update_floating_rectangle(frozen_pointer->client);
     monitor_t *m = underlying_monitor(frozen_pointer->client);
-    if (m != NULL && m != frozen_pointer->monitor) {
+    if (m != NULL && m != frozen_pointer->monitor)
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
-        focus_node(m, m->desk, m->desk->focus);
-    }
 }
