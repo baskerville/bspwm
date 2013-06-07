@@ -3,6 +3,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 #include "bspwm.h"
+#include "window.h"
+#include "rules.h"
 #include "ewmh.h"
 #include "settings.h"
 #include "types.h"
@@ -31,6 +33,7 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
     else
         warn("no rectangle was given for monitor '%s'\n", m->name);
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
+    m->wired = true;
     return m;
 }
 
@@ -42,7 +45,15 @@ monitor_t *find_monitor(char *name)
     return NULL;
 }
 
-void add_monitor(xcb_rectangle_t *rect)
+monitor_t *get_monitor_by_id(xcb_randr_output_t id)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (m->id == id)
+            return m;
+    return NULL;
+}
+
+monitor_t *add_monitor(xcb_rectangle_t *rect)
 {
     monitor_t *m = make_monitor(rect);
     if (mon == NULL) {
@@ -55,6 +66,7 @@ void add_monitor(xcb_rectangle_t *rect)
         mon_tail = m;
     }
     num_monitors++;
+    return m;
 }
 
 void remove_monitor(monitor_t *m)
@@ -67,12 +79,54 @@ void remove_monitor(monitor_t *m)
         prev->next = next;
     if (next != NULL)
         next->prev = prev;
-    if (m == mon_head)
+    if (mon_head == m)
         mon_head = next;
-    if (m == mon_tail)
+    if (mon_tail == m)
         mon_tail = prev;
+    if (last_mon == m)
+        last_mon = NULL;
+    if (mon == m)
+        mon = (last_mon == NULL ? mon_head : last_mon);
     free(m);
     num_monitors--;
+}
+
+void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
+{
+    desktop_t *dd = ms->desk;
+    unlink_desktop(ms, d);
+    insert_desktop(md, d);
+    if (d == dd) {
+        desktop_show(ms->desk);
+        if (md->desk != d)
+            desktop_hide(d);
+    }
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        fit_monitor(md, n->client);
+    if (d->focus != NULL && d->focus->client->fullscreen)
+        window_move_resize(d->focus->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
+    arrange(md, d);
+    if (d != dd && md->desk == d) {
+        desktop_show(d);
+    }
+    put_status();
+    ewmh_update_desktop_names();
+}
+
+void merge_monitors(monitor_t *ms, monitor_t *md)
+{
+    PRINTF("merge monitor %s into %s\n", ms->name, md->name);
+
+    if (visible) {
+        for (node_t *n = first_extrema(ms->desk->root); n != NULL; n = next_leaf(n, ms->desk->root))
+            window_hide(n->client->window);
+    }
+    desktop_t *d = ms->desk_head;
+    while (d != NULL) {
+        desktop_t *next = d->next;
+        transfer_desktop(ms, md, d);
+        d = next;
+    }
 }
 
 desktop_t *make_desktop(const char *name)
@@ -89,9 +143,8 @@ desktop_t *make_desktop(const char *name)
     return d;
 }
 
-void add_desktop(monitor_t *m, char *name)
+void insert_desktop(monitor_t *m, desktop_t *d)
 {
-    desktop_t *d = make_desktop(name);
     if (m->desk == NULL) {
         m->desk = d;
         m->desk_head = d;
@@ -101,6 +154,13 @@ void add_desktop(monitor_t *m, char *name)
         d->prev = m->desk_tail;
         m->desk_tail = d;
     }
+}
+
+void add_desktop(monitor_t *m, desktop_t *d)
+{
+    PRINTF("add desktop %s\n", d->name);
+
+    insert_desktop(m, d);
     num_desktops++;
     ewmh_update_number_of_desktops();
     ewmh_update_desktop_names();
@@ -114,21 +174,37 @@ void empty_desktop(desktop_t *d)
     empty_history(d->history);
 }
 
-void remove_desktop(monitor_t *m, desktop_t *d)
+void unlink_desktop(monitor_t *m, desktop_t *d)
 {
-    empty_desktop(d);
     desktop_t *prev = d->prev;
     desktop_t *next = d->next;
     if (prev != NULL)
         prev->next = next;
     if (next != NULL)
         next->prev = prev;
-    if (d == m->desk_head)
+    if (m->desk_head == d)
         m->desk_head = next;
-    if (d == m->desk_tail)
+    if (m->desk_tail == d)
         m->desk_tail = prev;
+    if (m->last_desk == d)
+        m->last_desk = NULL;
+    if (m->desk == d)
+        m->desk = (m->last_desk == NULL ? (prev == NULL ? next : prev) : m->last_desk);
+    d->prev = d->next = NULL;
+}
+
+void remove_desktop(monitor_t *m, desktop_t *d)
+{
+    PRINTF("remove desktop %s\n", d->name);
+
+    prune_rules(d);
+    unlink_desktop(m, d);
+    empty_desktop(d);
     free(d);
     num_desktops--;
+    ewmh_update_number_of_desktops();
+    ewmh_update_desktop_names();
+    put_status();
 }
 
 client_t *make_client(xcb_window_t win)

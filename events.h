@@ -4,6 +4,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 
+uint8_t randr_base;
+
 void handle_event(xcb_generic_event_t *);
 void map_request(xcb_generic_event_t *);
 void destroy_notify(xcb_generic_event_t *);

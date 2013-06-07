@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 #include "types.h"
@@ -16,7 +17,8 @@
 
 void handle_event(xcb_generic_event_t *evt)
 {
-    switch (XCB_EVENT_RESPONSE_TYPE(evt)) {
+    uint8_t resp_type = XCB_EVENT_RESPONSE_TYPE(evt);
+    switch (resp_type) {
         case XCB_MAP_REQUEST:
             map_request(evt);
             break;
@@ -42,6 +44,8 @@ void handle_event(xcb_generic_event_t *evt)
             motion_notify();
             break;
         default:
+            if (resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
+                import_monitors();
             break;
     }
 }
@@ -194,10 +198,8 @@ void client_message(xcb_generic_event_t *evt)
 
     if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
         desktop_location_t loc;
-        if (ewmh_locate_desktop(e->data.data32[0], &loc)) {
-            select_monitor(loc.monitor);
-            select_desktop(loc.desktop);
-        }
+        if (ewmh_locate_desktop(e->data.data32[0], &loc))
+            focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
         return;
     }
 
@@ -210,11 +212,8 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
-            toggle_fullscreen(loc.monitor, loc.desktop->focus->client);
-        select_monitor(loc.monitor);
-        select_desktop(loc.desktop);
-        focus_node(loc.monitor, loc.desktop, loc.node, true);
-        arrange(loc.monitor, loc.desktop);
+            toggle_fullscreen(loc.monitor, loc.desktop, loc.desktop->focus);
+        focus_node(loc.monitor, loc.desktop, loc.node);
     }
 }
 
@@ -250,10 +249,8 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
         bool fs = n->client->fullscreen;
         if (action == XCB_EWMH_WM_STATE_TOGGLE
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
-            toggle_fullscreen(m, n->client);
-            arrange(m, d);
-        }
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD))
+            toggle_fullscreen(m, d, n);
     } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
         if (action == XCB_EWMH_WM_STATE_ADD)
             set_urgency(m, d, n, true);
@@ -293,7 +290,7 @@ void grab_pointer(pointer_action_t pac)
         switch (pac)  {
             case ACTION_FOCUS:
                 if (loc.node != mon->desk->focus)
-                    focus_node(loc.monitor, loc.desktop, loc.node, true);
+                    focus_node(loc.monitor, loc.desktop, loc.node);
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:
@@ -442,8 +439,6 @@ void track_pointer(int root_x, int root_y)
                         }
                     }
                     transfer_node(m, d, loc.monitor, loc.desktop, n);
-                    arrange(m, d);
-                    arrange(loc.monitor, loc.desktop);
                     frozen_pointer->monitor = loc.monitor;
                     frozen_pointer->desktop = loc.desktop;
                 }
@@ -552,8 +547,6 @@ void ungrab_pointer(void)
 
     update_floating_rectangle(frozen_pointer->client);
     monitor_t *m = underlying_monitor(frozen_pointer->client);
-    if (m != NULL && m != frozen_pointer->monitor) {
+    if (m != NULL && m != frozen_pointer->monitor)
         transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
-        select_monitor(m);
-    }
 }

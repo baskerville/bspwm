@@ -10,7 +10,7 @@ bspwm \- Tiling window manager based on binary space partitioning
 .RI [ OPTIONS ]
 .SH DESCRIPTION
 .B bspwm
-is a tiling window manager where each window is represented as the leaf of a binary tree.
+is a tiling window manager that represents windows as the leaves of a full binary tree.
 .P
 It is controlled and configured via
 .BR bspc .
@@ -23,7 +23,7 @@ events it receives and the messages it reads on a dedicated socket.
 Its configuration file is
 .IR $XDG_CONFIG_HOME/bspwm/autostart .
 .P
-Keyboard and pointer bindings are defined through
+Keyboard and pointer bindings are defined with
 .BR sxhkd .
 .P
 Example configuration files can be found in the
@@ -89,6 +89,11 @@ message was sent beforehand:
     +-------------------------+         +-------------------------+
 
 .EE
+.SH CONTAINERS
+.P
+Each monitor contains at least one desktop.
+.P
+Each desktop contains at most one tree.
 .SH MESSAGES
 .TP
 .BI get " SETTING"
@@ -133,8 +138,8 @@ Focus the neighbor window situated in the given direction.
 .BI shift " left|right|up|down"
 Exchange the current window with the given neighbor.
 .TP
-.BI swap " [biggest|smallest]"
-Swap the focused window with the biggest/smallest window or with the last focused window if no arguments are given.
+.BI swap " [--keep-focus]"
+Swap the focused window with the last focused window.
 .TP
 .BI push " left|right|up|down"
 Push the fence located in the given direction.
@@ -147,6 +152,9 @@ Focus the next or previous window matching the given constraints.
 .TP
 .BI nearest " older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]"
 Focus the nearest window matching the given constraints.
+.TP
+.BI biggest
+Return the ID of the biggest tiled window.
 .TP
 .BI circulate " forward|backward"
 Circulate the leaves in the given direction.
@@ -219,6 +227,12 @@ Rename the monitor named CURRENT_NAME to NEW_NAME.
 .BI rename " CURRENT_NAME NEW_NAME"
 Rename the desktop named CURRENT_NAME to NEW_NAME.
 .TP
+.BI remove_desktop " DESKTOP_NAME ..."
+Remove the given desktops.
+.TP
+.BI send_desktop_to " MONITOR_NAME [--follow]"
+Send the current desktop to the given monitor.
+.TP
 .BI cycle_monitor " next|prev"
 Select the next or previous monitor.
 .TP
@@ -261,6 +275,7 @@ Restore the history of each desktop from the content of FILE_PATH.
 .BI quit " [EXIT_STATUS]"
 Quit.
 .SH SETTINGS
+.P
 Colors are either
 .B X
 color names (cf.
@@ -271,6 +286,10 @@ or
 .I #RRGGBB
 , booleans are
 .IR "true " "or " false .
+.P
+All the boolean settings are
+.I false
+by default.
 .TP
 .I focused_border_color
 Color of the border of a focused window of a focused monitor.
@@ -322,13 +341,16 @@ The value that shall be used for the
 property of the root window.
 .TP
 .I borderless_monocle
-Whether to remove borders for tiled windows in monocle mode.
+Remove borders for tiled windows in monocle mode.
 .TP
 .I gapless_monocle
-Whether to remove gaps for tiled windows in monocle mode.
+Remove gaps for tiled windows in monocle mode.
 .TP
 .I focus_follows_pointer
-Whether to focus the window under the pointer.
+Focus the window under the pointer.
+.TP
+.I pointer_follows_monitor
+When focusing a monitor, put the pointer at its center.
 .TP
 .I adaptative_raise
 Prevent floating windows from being raised when they might cover other floating windows.
@@ -339,14 +361,14 @@ Enable shadows for floating windows via the
 property.
 .TP
 .I auto_alernate
-Whether to interpret two consecutive identical
+Interpret two consecutive identical
 .B use
 messages as an
 .B alternate
 message.
 .TP
 .I focus_by_distance
-Whether to use window or leaf distance for focus movement.
+Use window or leaf distance for focus movement.
 .SH ENVIRONMENT VARIABLES
 .TP
 .I BSPWM_SOCKET

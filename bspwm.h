@@ -41,6 +41,8 @@ bool visible;
 bool running;
 
 void register_events(void);
+bool import_monitors(void);
+void init(void);
 void setup(void);
 void cleanup(void);
 void quit(void);

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
@@ -46,6 +47,11 @@ typedef enum {
 } send_option_t;
 
 typedef enum {
+    SWAP_OPTION_KEEP_FOCUS,
+    SWAP_OPTION_SWAP_FOCUS
+} swap_option_t;
+
+typedef enum {
     CLIENT_SKIP_NONE,
     CLIENT_SKIP_FLOATING,
     CLIENT_SKIP_TILED,
@@ -68,11 +74,6 @@ typedef enum {
     NEAREST_OLDER,
     NEAREST_NEWER
 } nearest_arg_t;
-
-typedef enum {
-    SWAP_BIGGEST,
-    SWAP_SMALLEST
-} swap_arg_t;
 
 typedef enum {
     CIRCULATE_FORWARD,
@@ -174,7 +175,9 @@ struct desktop_t {
 typedef struct monitor_t monitor_t;
 struct monitor_t {
     char name[MAXLEN];
+    xcb_randr_output_t id;
     xcb_rectangle_t rectangle;
+    bool wired;
     int top_padding;
     int right_padding;
     int bottom_padding;
@@ -244,12 +247,17 @@ typedef struct {
 node_t *make_node(void);
 monitor_t *make_monitor(xcb_rectangle_t *);
 monitor_t *find_monitor(char *);
-void add_monitor(xcb_rectangle_t *);
+monitor_t *get_monitor_by_id(xcb_randr_output_t);
+monitor_t *add_monitor(xcb_rectangle_t *);
 void remove_monitor(monitor_t *);
+void merge_monitors(monitor_t *, monitor_t *);
 desktop_t *make_desktop(const char *);
-void add_desktop(monitor_t *, char *);
+void insert_desktop(monitor_t *, desktop_t *);
+void add_desktop(monitor_t *, desktop_t *);
 void empty_desktop(desktop_t *);
+void unlink_desktop(monitor_t *, desktop_t *);
 void remove_desktop(monitor_t *, desktop_t *);
+void transfer_desktop(monitor_t *, monitor_t *, desktop_t *);
 rule_t *make_rule(void);
 pointer_state_t *make_pointer_state(void);
 client_t *make_client(xcb_window_t);

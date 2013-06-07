@@ -8,7 +8,7 @@
 
 ## Description
 
-`bspwm` is a tiling window manager where each window is represented as the leaf of a binary tree.
+`bspwm` is a tiling window manager that represents windows as the leaves of a full binary tree.
 
 It is controlled and configured via `bspc`.
 
@@ -18,7 +18,7 @@ It is controlled and configured via `bspc`.
 
 Its configuration file is `$XDG_CONFIG_HOME/bspwm/autostart`.
 
-Keyboard and pointer bindings are defined through [sxhkd](https://github.com/baskerville/sxhkd).
+Keyboard and pointer bindings are defined with [sxhkd](https://github.com/baskerville/sxhkd).
 
 Example configuration files can be found in the `examples` directory.
 
@@ -67,6 +67,12 @@ was sent beforehand:
         |            |            |         |            |            |
         +-------------------------+         +-------------------------+
 
+## Containers
+
+Each monitor contains at least one desktop.
+
+Each desktop contains at most one tree.
+
 ## Messages
 
 The syntax for the client is `bspc MESSAGE [ARGUMENTS ...]`.
@@ -101,7 +107,7 @@ The following messages are handled:
 
 - `shift left|right|up|down` — Exchange the current window with the given neighbor.
 
-- `swap [biggest|smallest]` — Swap the focused window with the biggest/smallest window or with the last focused window if no arguments are given.
+- `swap [--keep-focus]` — Swap the focused window with the last focused window.
 
 - `push left|right|up|down` — Push the fence located in the given direction.
 
@@ -110,6 +116,8 @@ The following messages are handled:
 - `cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the next or previous window matching the given constraints.
 
 - `nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the nearest window matching the given constraints.
+
+- `biggest` — Return the ID of the biggest tiled window.
 
 - `circulate forward|backward` — Circulate the leaves in the given direction.
 
@@ -157,6 +165,10 @@ The following messages are handled:
 
 - `rename CURRENT_NAME NEW_NAME` — Rename the desktop named `CURRENT_NAME` to `NEW_NAME`.
 
+- `remove_desktop DESKTOP_NAME ...` — Remove the given desktops.
+
+- `send_desktop_to MONITOR_NAME [--follow]` — Send the current desktop to the given monitor.
+
 - `cycle_monitor next|prev` — Select the next or previous monitor.
 
 - `cycle_desktop next|prev [--skip-free|--skip-occupied]` — Select the next or previous desktop.
@@ -189,6 +201,8 @@ The following messages are handled:
 
 Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) or *#RRGGBB*, booleans are *true* or *false*.
 
+All the boolean settings are *false* by default.
+
 - `focused_border_color` — Color of the border of a focused window of a focused monitor.
 
 - `active_border_color` — Color of the border of a focused window of an unfocused monitor.
@@ -215,19 +229,21 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 
 - `wm_name` — The value that shall be used for the `_NET_WM_NAME` property of the root window.
 
-- `borderless_monocle` — Whether to remove borders for tiled windows in monocle mode.
+- `borderless_monocle` — Remove borders for tiled windows in monocle mode.
 
-- `gapless_monocle` — Whether to remove gaps for tiled windows in monocle mode.
+- `gapless_monocle` — Remove gaps for tiled windows in monocle mode.
 
-- `focus_follows_pointer` — Whether to focus the window under the pointer.
+- `focus_follows_pointer` — Focus the window under the pointer.
+
+- `pointer_follows_monitor` — When focusing a monitor, put the pointer at its center.
 
 - `adaptative_raise` — Prevent floating windows from being raised when they might cover other floating windows.
 
 - `apply_shadow_property` — Enable shadows for floating windows via the `_COMPTON_SHADOW` property.
 
-- `auto_alternate` — Whether to interpret two consecutive identical `use` messages as an `alternate` message.
+- `auto_alternate` — Interpret two consecutive identical `use` messages as an `alternate` message.
 
-- `focus_by_distance` — Whether to use window or leaf distance for focus movement.
+- `focus_by_distance` — Use window or leaf distance for focus movement.
 
 ## Environment Variables
 
@@ -236,15 +252,14 @@ Colors are either [X color names](http://en.wikipedia.org/wiki/X11_color_names) 
 ## Key Features
 
 - Configured and controlled through messages.
-- Multiple monitors support (via *Xinerama*).
+- Multiple monitors support (via *RandR*).
 - EWMH support (`tint2` works).
 - Automatic and manual modes.
 
 ## Panels
 
-- Any EWMH compliant panel (e.g. `tint2`, `bmpanel2`, etc.).
+- Any EWMH compliant panel (e.g.: `tint2`, `bmpanel2`, etc.).
 - A custom panel if the `-s` flag is used (have a look at the files in `examples/panel`).
-- `dzen2` fed with the output of `ewmhstatus`. Example: [launchpanel](https://github.com/baskerville/bin/blob/master/launchpanel).
 
 ## Required Libraries:
 

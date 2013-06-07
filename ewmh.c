@@ -70,29 +70,20 @@ void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
 void ewmh_update_desktop_names(void)
 {
     char names[MAXLEN];
-    monitor_t *m = mon_head;
     unsigned int pos, i;
     pos = i = 0;
 
-    while (m != NULL) {
-        desktop_t *d = m->desk_head;
-
-        while (d != NULL && i < num_desktops) {
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL && i < num_desktops; d = d->next) {
             for (unsigned int j = 0; j < strlen(d->name); j++)
                 names[pos + j] = d->name[j];
             pos += strlen(d->name);
             names[pos] = '\0';
-            pos++;
-            d = d->next;
-            i++;
+            pos++, i++;
         }
-
-        m = m->next;
-    }
 
     if (i != num_desktops)
         return;
-
     pos--;
 
     xcb_ewmh_set_desktop_names(ewmh, default_screen, pos, names);

@@ -1,7 +1,7 @@
 VERSION = 0.6
 
 CC      = gcc
-LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-xinerama
+LIBS    = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-randr
 CFLAGS  = -std=c99 -pedantic -Wall -Wextra -I$(PREFIX)/include
 CFLAGS  += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
 LDFLAGS = -L$(PREFIX)/lib
@@ -40,13 +40,13 @@ install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
 	cp -p bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -p bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
+	cp -Pp bsp{wm,c}.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	mkdir -p "$(DESTDIR)$(CPLPREFIX)"
 	cp -p bash_completion "$(DESTDIR)$(CPLPREFIX)"/bspc
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bsp{wm,c}
-	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bsp{wm,c}.1
 	rm -f "$(DESTDIR)$(CPLPREFIX)"/bspc
 
 clean:
