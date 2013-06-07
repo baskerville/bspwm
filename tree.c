@@ -471,7 +471,8 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n)
                         dad->second_child = n;
                         rot = ROTATE_COUNTER_CLOCKWISE;
                     }
-                    rotate_tree(fopar, rot);
+                    if (!is_floating(n->client))
+                        rotate_tree(fopar, rot);
                     n->birth_rotation = rot;
                 }
                 break;
