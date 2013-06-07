@@ -780,10 +780,8 @@ void select_desktop(monitor_t *m, desktop_t *d)
 
     PRINTF("select desktop %s\n", d->name);
 
-    if (visible) {
-        desktop_show(d);
-        desktop_hide(mon->desk);
-    }
+    desktop_show(d);
+    desktop_hide(mon->desk);
 
     mon->last_desk = mon->desk;
     mon->desk = d;

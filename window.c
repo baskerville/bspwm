@@ -590,12 +590,16 @@ void toggle_visibility(void)
 
 void desktop_show(desktop_t *d)
 {
+    if (!visible)
+        return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
         window_show(n->client->window);
 }
 
 void desktop_hide(desktop_t *d)
 {
+    if (!visible)
+        return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
         window_hide(n->client->window);
 }

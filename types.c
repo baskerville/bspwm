@@ -115,12 +115,8 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
 void merge_monitors(monitor_t *ms, monitor_t *md)
 {
-    PRINTF("merge monitor %s into %s\n", ms->name, md->name);
+    PRINTF("merge %s into %s\n", ms->name, md->name);
 
-    if (visible) {
-        for (node_t *n = first_extrema(ms->desk->root); n != NULL; n = next_leaf(n, ms->desk->root))
-            window_hide(n->client->window);
-    }
     desktop_t *d = ms->desk_head;
     while (d != NULL) {
         desktop_t *next = d->next;
