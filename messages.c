@@ -290,9 +290,10 @@ void process_message(char *msg, char *rsp)
             monitor_t *m = find_monitor(name);
             if (m != NULL) {
                 if (auto_alternate && m == mon && last_mon != NULL)
-                    focus_node(last_mon, last_mon->desk, last_mon->desk->focus);
-                else
-                    focus_node(m, m->desk, m->desk->focus);
+                    m = last_mon;
+                if (pointer_follows_monitor && m != mon)
+                    center_pointer(m);
+                focus_node(m, m->desk, m->desk->focus);
             }
         }
         return;
@@ -301,10 +302,13 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                if (auto_alternate && loc.desktop == mon->desk && mon->last_desk != NULL)
+                if (auto_alternate && loc.desktop == mon->desk && mon->last_desk != NULL) {
                     focus_node(mon, mon->last_desk, mon->last_desk->focus);
-                else
+                } else {
+                    if (pointer_follows_monitor && loc.monitor != mon)
+                        center_pointer(loc.monitor);
                     focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
+                }
             }
         }
         return;

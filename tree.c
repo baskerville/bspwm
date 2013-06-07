@@ -767,9 +767,6 @@ void select_monitor(monitor_t *m)
     last_mon = mon;
     mon = m;
 
-    if (pointer_follows_monitor)
-        center_pointer(m);
-
     ewmh_update_current_desktop();
     put_status();
 }
