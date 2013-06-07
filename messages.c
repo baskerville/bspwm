@@ -451,16 +451,11 @@ void process_message(char *msg, char *rsp)
                 if (!parse_send_option(opt, &o))
                     return;
                 desktop_t *d = mon->desk;
-                desktop_hide(d);
                 transfer_desktop(mon, m, d);
-                desktop_show(mon->desk);
-                arrange(m, d);
-                if (o == SEND_OPTION_FOLLOW) {
+                if (o == SEND_OPTION_FOLLOW)
                     focus_node(m, d, d->focus);
-                } else if (o == SEND_OPTION_DONT_FOLLOW) {
+                else if (o == SEND_OPTION_DONT_FOLLOW)
                     update_current();
-                    put_status();
-                }
             }
         }
         return;

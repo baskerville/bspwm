@@ -93,8 +93,24 @@ void remove_monitor(monitor_t *m)
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
+    desktop_t *dd = ms->desk;
     unlink_desktop(ms, d);
     insert_desktop(md, d);
+    if (d == dd) {
+        desktop_show(ms->desk);
+        if (md->desk != d)
+            desktop_hide(d);
+    }
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        fit_monitor(md, n->client);
+    if (d->focus != NULL && d->focus->client->fullscreen)
+        window_move_resize(d->focus->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
+    arrange(md, d);
+    if (d != dd && md->desk == d) {
+        desktop_show(d);
+    }
+    put_status();
+    ewmh_update_desktop_names();
 }
 
 void merge_monitors(monitor_t *ms, monitor_t *md)
