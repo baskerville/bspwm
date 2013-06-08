@@ -291,8 +291,6 @@ void process_message(char *msg, char *rsp)
             if (m != NULL) {
                 if (auto_alternate && m == mon && last_mon != NULL)
                     m = last_mon;
-                if (pointer_follows_monitor && m != mon)
-                    center_pointer(m);
                 focus_node(m, m->desk, m->desk->focus);
             }
         }
@@ -302,13 +300,10 @@ void process_message(char *msg, char *rsp)
         if (name != NULL) {
             desktop_location_t loc;
             if (locate_desktop(name, &loc)) {
-                if (auto_alternate && loc.desktop == mon->desk && mon->last_desk != NULL) {
+                if (auto_alternate && loc.desktop == mon->desk && mon->last_desk != NULL)
                     focus_node(mon, mon->last_desk, mon->last_desk->focus);
-                } else {
-                    if (pointer_follows_monitor && loc.monitor != mon)
-                        center_pointer(loc.monitor);
+                else
                     focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
-                }
             }
         }
         return;
@@ -417,11 +412,8 @@ void process_message(char *msg, char *rsp)
         if (mon->last_desk != NULL)
             focus_node(mon, mon->last_desk, mon->last_desk->focus);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {
-        if (last_mon != NULL) {
-            if (pointer_follows_monitor)
-                center_pointer(last_mon);
+        if (last_mon != NULL)
             focus_node(last_mon, last_mon->desk, last_mon->desk->focus);
-        }
     } else if (strcmp(cmd, "add_in") == 0) {
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {

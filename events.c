@@ -239,8 +239,12 @@ void motion_notify(void)
 
     xcb_window_t win = XCB_NONE;
     query_pointer(&win, NULL);
-    if (win != XCB_NONE)
+    if (win != XCB_NONE) {
+        bool backup = pointer_follows_monitor;
+        pointer_follows_monitor = false;
         window_focus(win);
+        pointer_follows_monitor = backup;
+    }
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
@@ -289,8 +293,12 @@ void grab_pointer(pointer_action_t pac)
 
         switch (pac)  {
             case ACTION_FOCUS:
-                if (loc.node != mon->desk->focus)
+                if (loc.node != mon->desk->focus) {
+                    bool backup = pointer_follows_monitor;
+                    pointer_follows_monitor = false;
                     focus_node(loc.monitor, loc.desktop, loc.node);
+                    pointer_follows_monitor = backup;
+                }
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:

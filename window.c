@@ -638,5 +638,7 @@ void center_pointer(monitor_t *m)
 {
     int16_t cx = m->rectangle.x + m->rectangle.width / 2;
     int16_t cy = m->rectangle.y + m->rectangle.height / 2;
+    window_lower(motion_recorder);
     xcb_warp_pointer(dpy, XCB_NONE, root, 0, 0, 0, 0, cx, cy);
+    window_raise(motion_recorder);
 }
