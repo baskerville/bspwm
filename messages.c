@@ -374,11 +374,14 @@ void process_message(char *msg, char *rsp)
             if (sscanf(arg, "%X", &uid) > 0)
                 remove_rule_by_uid(uid);
     } else if (strcmp(cmd, "swap") == 0) {
-        node_t *last_focus = history_get(mon->desk->history, 1);
-        swap_nodes(mon->desk->focus, last_focus);
         char *opt = strtok(NULL, TOK_SEP);
         swap_option_t o;
-        if (parse_swap_option(opt, &o) && o == SWAP_OPTION_SWAP_FOCUS)
+        if (!parse_swap_option(opt, &o))
+            return;
+        node_t *last_focus = history_get(mon->desk->history, 1);
+        swap_nodes(mon->desk->focus, last_focus);
+        arrange(mon, mon->desk);
+        if (o == SWAP_OPTION_SWAP_FOCUS)
             focus_node(mon, mon->desk, last_focus);
     } else if (strcmp(cmd, "alternate") == 0) {
         focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
