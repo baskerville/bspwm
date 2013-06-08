@@ -131,6 +131,7 @@ void process_message(char *msg, char *rsp)
             toggle_fullscreen(mon, mon->desk, mon->desk->focus);
     } else if (strcmp(cmd, "toggle_floating") == 0) {
         toggle_floating(mon->desk, mon->desk->focus);
+        arrange(mon, mon->desk);
     } else if (strcmp(cmd, "toggle_locked") == 0) {
         if (mon->desk->focus != NULL)
             toggle_locked(mon, mon->desk, mon->desk->focus);
