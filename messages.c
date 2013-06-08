@@ -417,8 +417,11 @@ void process_message(char *msg, char *rsp)
         if (mon->last_desk != NULL)
             focus_node(mon, mon->last_desk, mon->last_desk->focus);
     } else if (strcmp(cmd, "alternate_monitor") == 0) {
-        if (last_mon != NULL)
+        if (last_mon != NULL) {
+            if (pointer_follows_monitor)
+                center_pointer(last_mon);
             focus_node(last_mon, last_mon->desk, last_mon->desk->focus);
+        }
     } else if (strcmp(cmd, "add_in") == 0) {
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
