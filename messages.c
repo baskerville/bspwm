@@ -95,29 +95,25 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "layout") == 0) {
         char *lyt = strtok(NULL, TOK_SEP);
         if (lyt != NULL) {
-            layout_t y;
-            if (parse_layout(lyt, &y)) {
+            layout_t l;
+            if (parse_layout(lyt, &l)) {
                 char *name = strtok(NULL, TOK_SEP);
                 if (name == NULL) {
-                    mon->desk->layout = y;
+                    change_layout(mon, mon->desk, l);
                 } else {
                     desktop_location_t loc;
                     do {
                         if (locate_desktop(name, &loc))
-                            loc.desktop->layout = y;
+                            change_layout(loc.monitor, loc.desktop, l);
                     } while ((name = strtok(NULL, TOK_SEP)) != NULL);
                 }
             }
         }
-        put_status();
-        arrange(mon, mon->desk);
     } else if (strcmp(cmd, "cycle_layout") == 0) {
         if (mon->desk->layout == LAYOUT_MONOCLE)
-            mon->desk->layout = LAYOUT_TILED;
+            change_layout(mon, mon->desk, LAYOUT_TILED);
         else
-            mon->desk->layout = LAYOUT_MONOCLE;
-        put_status();
-        arrange(mon, mon->desk);
+            change_layout(mon, mon->desk, LAYOUT_MONOCLE);
     } else if (strcmp(cmd, "shift") == 0) {
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
@@ -127,14 +123,13 @@ void process_message(char *msg, char *rsp)
         }
         arrange(mon, mon->desk);
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
-        if (mon->desk->focus != NULL)
-            toggle_fullscreen(mon, mon->desk, mon->desk->focus);
+        toggle_fullscreen(mon->desk, mon->desk->focus);
+        arrange(mon, mon->desk);
     } else if (strcmp(cmd, "toggle_floating") == 0) {
         toggle_floating(mon->desk, mon->desk->focus);
         arrange(mon, mon->desk);
     } else if (strcmp(cmd, "toggle_locked") == 0) {
-        if (mon->desk->focus != NULL)
-            toggle_locked(mon, mon->desk, mon->desk->focus);
+        toggle_locked(mon, mon->desk, mon->desk->focus);
     } else if (strcmp(cmd, "toggle_visibility") == 0) {
         toggle_visibility();
     } else if (strcmp(cmd, "pad") == 0) {

@@ -10,6 +10,7 @@ bool is_floating(client_t *);
 bool is_first_child(node_t *);
 bool is_second_child(node_t *);
 void change_split_ratio(node_t *, value_change_t);
+void change_layout(monitor_t *, desktop_t *, layout_t);
 node_t *first_extrema(node_t *);
 node_t *second_extrema(node_t *);
 node_t *next_leaf(node_t *, node_t *);

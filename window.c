@@ -160,10 +160,10 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         toggle_floating(d, n);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
-        toggle_fullscreen(m, d, d->focus);
+        toggle_fullscreen(d, d->focus);
 
     if (fullscreen)
-        toggle_fullscreen(m, d, n);
+        toggle_fullscreen(d, n);
 
     if (is_tiled(c))
         window_lower(c->window);
@@ -340,8 +340,11 @@ void window_kill(desktop_t *d, node_t *n)
     remove_node(d, n);
 }
 
-void toggle_fullscreen(monitor_t *m, desktop_t *d, node_t *n)
+void toggle_fullscreen(desktop_t *d, node_t *n)
 {
+    if (n == NULL)
+        return;
+
     client_t *c = n->client;
 
     PRINTF("toggle fullscreen %X\n", c->window);
@@ -350,19 +353,12 @@ void toggle_fullscreen(monitor_t *m, desktop_t *d, node_t *n)
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        xcb_rectangle_t rect = get_rectangle(c);
-        window_border_width(c->window, c->border_width);
-        window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
-        window_draw_border(n, d->focus == n, mon == m);
         stack(d, n);
     } else {
         c->fullscreen = true;
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         window_raise(c->window);
-        window_border_width(c->window, 0);
-        xcb_rectangle_t rect = m->rectangle;
-        window_move_resize(c->window, rect.x, rect.y, rect.width, rect.height);
     }
 }
 
@@ -390,6 +386,9 @@ void toggle_floating(desktop_t *d, node_t *n)
 
 void toggle_locked(monitor_t *m, desktop_t *d, node_t *n)
 {
+    if (n == NULL)
+        return;
+
     client_t *c = n->client;
 
     PRINTF("toggle locked %X\n", c->window);
@@ -403,9 +402,8 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
     if (value && mon->desk->focus == n)
         return;
     n->client->urgent = value;
+    window_draw_border(n, d->focus == n, m == mon);
     put_status();
-    if (m->desk == d)
-        arrange(m, d);
 }
 
 void set_shadow(xcb_window_t win, uint32_t value)

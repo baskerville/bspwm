@@ -211,8 +211,10 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
-        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node)
-            toggle_fullscreen(loc.monitor, loc.desktop, loc.desktop->focus);
+        if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
+            toggle_fullscreen(loc.desktop, loc.desktop->focus);
+            arrange(loc.monitor, loc.desktop);
+        }
         focus_node(loc.monitor, loc.desktop, loc.node);
     }
 }
@@ -253,8 +255,10 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
         bool fs = n->client->fullscreen;
         if (action == XCB_EWMH_WM_STATE_TOGGLE
                 || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD))
-            toggle_fullscreen(m, d, n);
+                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
+            toggle_fullscreen(d, n);
+            arrange(m, d);
+        }
     } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
         if (action == XCB_EWMH_WM_STATE_ADD)
             set_urgency(m, d, n, true);

@@ -25,7 +25,7 @@ void query_pointer(xcb_window_t *, xcb_point_t *);
 void list_windows(char *);
 void window_close(node_t *);
 void window_kill(desktop_t *, node_t *);
-void toggle_fullscreen(monitor_t *, desktop_t *, node_t *);
+void toggle_fullscreen(desktop_t *, node_t *);
 void toggle_floating(desktop_t *, node_t *);
 void toggle_locked(monitor_t *, desktop_t *, node_t *);
 void set_urgency(monitor_t *, desktop_t *, node_t *, bool);

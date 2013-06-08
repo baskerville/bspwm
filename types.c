@@ -103,8 +103,6 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
     }
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
         fit_monitor(md, n->client);
-    if (d->focus != NULL && d->focus->client->fullscreen)
-        window_move_resize(d->focus->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
     arrange(md, d);
     if (d != dd && md->desk == d) {
         desktop_show(d);

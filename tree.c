@@ -23,7 +23,7 @@ bool is_tiled(client_t *c)
 {
     if (c == NULL)
         return false;
-    return (!c->floating && !c->transient && !c->fullscreen);
+    return (!c->floating && !c->fullscreen);
 }
 
 bool is_floating(client_t *c)
@@ -46,6 +46,14 @@ bool is_second_child(node_t *n)
 void change_split_ratio(node_t *n, value_change_t chg)
 {
     n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
+}
+
+void change_layout(monitor_t *m, desktop_t *d, layout_t l)
+{
+    d->layout = l;
+    arrange(m, d);
+    if (d == mon->desk)
+        put_status();
 }
 
 node_t *first_extrema(node_t *n)
@@ -362,8 +370,6 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
     n->rectangle = rect;
 
     if (is_leaf(n)) {
-        if (n->client->fullscreen)
-            return;
 
         if (is_floating(n->client) && n->client->border_width != border_width) {
             int ds = 2 * (border_width - n->client->border_width);
@@ -371,24 +377,32 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
             n->client->floating_rectangle.height += ds;
         }
 
-        if (borderless_monocle && is_tiled(n->client) && d->layout == LAYOUT_MONOCLE)
+        if ((borderless_monocle && is_tiled(n->client) && d->layout == LAYOUT_MONOCLE) ||
+                n->client->fullscreen)
             n->client->border_width = 0;
         else
             n->client->border_width = border_width;
 
         xcb_rectangle_t r;
-        if (is_tiled(n->client)) {
-            if (d->layout == LAYOUT_TILED)
-                r = rect;
-            else if (d->layout == LAYOUT_MONOCLE)
-                r = root_rect;
-            int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
-            int bleed = wg + 2 * n->client->border_width;
-            r.width = (bleed < r.width ? r.width - bleed : 1);
-            r.height = (bleed < r.height ? r.height - bleed : 1);
-            n->client->tiled_rectangle = r;
+        if (!n->client->fullscreen) {
+            if (!n->client->floating) {
+                /* tiled clients */
+                if (d->layout == LAYOUT_TILED)
+                    r = rect;
+                else if (d->layout == LAYOUT_MONOCLE)
+                    r = root_rect;
+                int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
+                int bleed = wg + 2 * n->client->border_width;
+                r.width = (bleed < r.width ? r.width - bleed : 1);
+                r.height = (bleed < r.height ? r.height - bleed : 1);
+                n->client->tiled_rectangle = r;
+            } else {
+                /* floating clients */
+                r = n->client->floating_rectangle;
+            }
         } else {
-            r = n->client->floating_rectangle;
+            /* fullscreen clients */
+            r = m->rectangle;
         }
 
         window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
@@ -738,9 +752,6 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     }
 
     fit_monitor(md, n->client);
-
-    if (n->client->fullscreen)
-        window_move_resize(n->client->window, md->rectangle.x, md->rectangle.y, md->rectangle.width, md->rectangle.height);
 
     if (ds != ms->desk && dd == md->desk)
         window_show(n->client->window);
