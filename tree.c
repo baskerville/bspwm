@@ -947,7 +947,8 @@ void put_status(void)
         }
     }
     if (mon != NULL && mon->desk != NULL)
-        fprintf(status_fifo, "L%s\n", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
+        fprintf(status_fifo, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
+    fprintf(status_fifo, "\n");
     fflush(status_fifo);
 }
 
