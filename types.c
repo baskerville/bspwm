@@ -85,8 +85,15 @@ void remove_monitor(monitor_t *m)
         mon_tail = prev;
     if (last_mon == m)
         last_mon = NULL;
-    if (mon == m)
-        mon = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
+    if (mon == m) {
+        monitor_t *mm = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
+        if (mm != NULL) {
+            focus_node(mm, mm->desk, mm->desk->focus);
+            last_mon = NULL;
+        } else {
+            mon = NULL;
+        }
+    }
     free(m);
     num_monitors--;
     put_status();
