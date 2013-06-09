@@ -86,7 +86,7 @@ void remove_monitor(monitor_t *m)
     if (last_mon == m)
         last_mon = NULL;
     if (mon == m)
-        mon = (last_mon == NULL ? mon_head : last_mon);
+        mon = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
     free(m);
     num_monitors--;
     put_status();
