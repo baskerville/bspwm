@@ -89,6 +89,7 @@ void remove_monitor(monitor_t *m)
         mon = (last_mon == NULL ? mon_head : last_mon);
     free(m);
     num_monitors--;
+    put_status();
 }
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
@@ -97,7 +98,8 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
     unlink_desktop(ms, d);
     insert_desktop(md, d);
     if (d == dd) {
-        desktop_show(ms->desk);
+        if (ms->desk != NULL)
+            desktop_show(ms->desk);
         if (md->desk != d)
             desktop_hide(d);
     }
