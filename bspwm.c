@@ -177,9 +177,11 @@ void setup(void)
 
     const xcb_query_extension_reply_t *qep = xcb_get_extension_data(dpy, &xcb_randr_id);
     if (qep->present && import_monitors()) {
+        randr = true;
         randr_base = qep->first_event;
         xcb_randr_select_input(dpy, root, XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);
     } else {
+        randr = false;
         warn("Couldn't retrieve monitors via RandR.\n");
         xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
         monitor_t *m = add_monitor(&rect);

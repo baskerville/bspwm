@@ -39,6 +39,7 @@ int exit_status;
 
 bool visible;
 bool running;
+bool randr;
 
 void register_events(void);
 bool import_monitors(void);
