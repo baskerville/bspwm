@@ -1,14 +1,15 @@
 #! /bin/sh
 
-FIRST_DESK=One
-REMAINING_DESKS='Two Three Four Five Six Seven Eight Nine Ten'
+FIRST_DESK=1
+REMAINING_DESKS="$(seq 2 9) 0"
 bspc rename Desktop01 $FIRST_DESK
 bspc add $REMAINING_DESKS
 
 bspc rule Gimp Eight floating
 
-bspc set border_width        4
+bspc set split_ratio         0.52
+bspc set border_width        2
 bspc set window_gap          12
 bspc set borderless_monocle  true
 bspc set gapless_monocle     true
-bspc set adaptative_raise    true
+bspc set focus_by_distance   true
