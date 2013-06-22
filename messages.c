@@ -178,10 +178,22 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             fence_move_t m;
             direction_t d;
-            if (parse_fence_move(cmd, &m) && parse_direction(dir, &d))
+            if (parse_fence_move(cmd, &m) && parse_direction(dir, &d)) {
                 move_fence(mon->desk->focus, d, m);
+                arrange(mon, mon->desk);
+            }
         }
-        arrange(mon, mon->desk);
+    } else if (strcmp(cmd, "fence_ratio") == 0) {
+        char *dir = strtok(NULL, TOK_SEP);
+        if (dir != NULL) {
+            direction_t d;
+            node_t *n;
+            if (parse_direction(dir, &d) && (n = find_fence(mon->desk->focus, d)) != NULL) {
+                char *value = strtok(NULL, TOK_SEP);
+                if (sscanf(value, "%lf", &n->split_ratio) == 1)
+                    arrange(mon, mon->desk);
+            }
+        }
     } else if (strcmp(cmd, "drop_to_monitor") == 0) {
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {

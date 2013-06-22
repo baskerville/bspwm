@@ -113,6 +113,8 @@ The following messages are handled:
 
 - `pull left|right|up|down` — Pull the fence located in the given direction.
 
+- `fence_ratio left|right|up|down VALUE` — Set the splitting ratio of the fence located in the given direction.
+
 - `cycle next|prev [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the next or previous window matching the given constraints.
 
 - `nearest older|newer [--skip-floating|--skip-tiled|--skip-class-equal|--skip-class-differ]` — Focus the nearest window matching the given constraints.
