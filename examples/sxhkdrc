@@ -27,11 +27,8 @@ super + m
     wid=$(bspc biggest); \
     [ -n "$wid" ] && xdo activate $wid && bspc swap
 
-super + {h,j,k,l}
-    bspc focus {left,down,up,right}
-
-super + shift + {h,j,k,l}
-    bspc shift {left,down,up,right}
+super + {_,shift + }{h,j,k,l}
+    bspc {focus,shift} {left,down,up,right}
 
 super + {c,shift + c}
     bspc cycle {next,prev}
@@ -45,20 +42,17 @@ super + bracket{left,right}
 super + ctrl + {h,j,k,l}
     bspc presel {left,down,up,right}
 
-super + alt + {h,j,k,l}
-    bspc push {left,down,up,right}
-
-super + alt + shift + {h,j,k,l}
-    bspc pull {right,up,down,left}
+super + alt + {_,shift + }{h,j,k,l}
+    bspc {push,pull} {left,down,up,right}
 
 super + ctrl + {1-9}
     bspc ratio 0.{1-9}
 
-super + {1-9,0}
-    bspc use {1-9,0}
+super + {_,shift + }{1-9,0}
+    bspc {use,send_to} {1-9,0}
 
-super + shift + {1-9,0}
-    bspc send_to {1-9,0}
+:button1
+    bspc grab_pointer focus
 
 super + button{1-3}
     bspc grab_pointer {move,resize_side,resize_corner}
@@ -68,9 +62,6 @@ super + !button{1-3}
 
 super + @button{1-3}
     bspc ungrab_pointer
-
-super + alt + button1
-    bspc grab_pointer focus
 
 #
 # wm independent hotkeys
