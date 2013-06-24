@@ -445,17 +445,23 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "focus") == 0) {
-        if (mon->desk->focus == NULL || mon->desk->focus->client->fullscreen)
+        node_t *f = mon->desk->focus;
+        if (f == NULL || f->client->fullscreen)
             return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                node_t *n;
-                if (focus_by_distance)
-                    n = nearest_neighbor(mon->desk, mon->desk->focus, d);
-                else
-                    n = find_neighbor(mon->desk->focus, d);
+                node_t *n = NULL;
+                if (history_aware_focus)
+                    n = nearest_from_history(mon->desk->history, f, d);
+                if (n == NULL) {
+                    if (focus_by_distance) {
+                        n = nearest_neighbor(mon->desk, f, d);
+                    } else {
+                        n = find_neighbor(f, d);
+                    }
+                }
                 focus_node(mon, mon->desk, n);
             }
         }
@@ -570,6 +576,11 @@ void set_setting(char *name, char *value, char *rsp)
         if (parse_bool(value, &b))
             focus_by_distance = b;
         return;
+    } else if (strcmp(name, "history_aware_focus") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            history_aware_focus = b;
+        return;
     } else if (strcmp(name, "wm_name") == 0) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
@@ -635,6 +646,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_alternate));
     else if (strcmp(name, "focus_by_distance") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_by_distance));
+    else if (strcmp(name, "history_aware_focus") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(history_aware_focus));
     else if (strcmp(name, "wm_name") == 0)
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else

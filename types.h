@@ -267,5 +267,6 @@ void history_add(focus_history_t *, node_t *);
 void history_remove(focus_history_t *, node_t *);
 void empty_history(focus_history_t *);
 node_t *history_get(focus_history_t *, int);
+int history_rank(focus_history_t *, node_t *);
 
 #endif

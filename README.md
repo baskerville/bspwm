@@ -247,6 +247,8 @@ All the boolean settings are *false* by default.
 
 - `focus_by_distance` — Use window or leaf distance for focus movement.
 
+- `history_aware_focus` — Give priority to the focus history when focusing nodes.
+
 ## Environment Variables
 
 - `BSPWM_SOCKET` — The path of the socket used for the communication between `bspc` and `bspwm`.

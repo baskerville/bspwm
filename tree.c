@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
 #include <float.h>
 #include <xcb/xcb.h>
@@ -100,6 +101,19 @@ node_t *prev_leaf(node_t *n, node_t *r)
     return second_extrema(p->parent->first_child);
 }
 
+bool is_adjacent(node_t *a, node_t *r)
+{
+    node_t *f = r->parent;
+    node_t *p = a;
+    bool first_child = is_first_child(r);
+    while (p != r) {
+        if (p->parent->split_type == f->split_type && is_first_child(p) == first_child)
+            return false;
+        p = p->parent;
+    }
+    return true;
+}
+
 node_t *find_fence(node_t *n, direction_t dir)
 {
     node_t *p;
@@ -123,20 +137,97 @@ node_t *find_fence(node_t *n, direction_t dir)
 
 node_t *find_neighbor(node_t *n, direction_t dir)
 {
+    if (n == NULL)
+        return NULL;
+
     node_t *fence = find_fence(n, dir);
 
     if (fence == NULL)
         return NULL;
 
-    if (dir == DIR_UP || dir == DIR_LEFT)
-        return second_extrema(fence->first_child);
-    else if (dir == DIR_DOWN || dir == DIR_RIGHT)
-        return first_extrema(fence->second_child);
+    node_t *nearest = NULL;
 
-    return NULL;
+    if (dir == DIR_UP || dir == DIR_LEFT)
+        nearest = second_extrema(fence->first_child);
+    else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+        nearest = first_extrema(fence->second_child);
+
+    return nearest;
 }
 
-void get_opposite(direction_t src, direction_t* dst)
+node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir)
+{
+    if (n == NULL || !is_tiled(n->client))
+        return NULL;
+
+    node_t *target = find_fence(n, dir);
+    if (target == NULL)
+        return NULL;
+    if (dir == DIR_UP || dir == DIR_LEFT)
+        target = target->first_child;
+    else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+        target = target->second_child;
+
+    node_t *nearest = NULL;
+    int min_rank = INT_MAX;
+
+    for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
+        if (!is_tiled(a->client) || !is_adjacent(a, target) || a == n)
+            continue;
+        int rank = history_rank(f, a);
+        if (rank >= 0 && rank < min_rank) {
+            nearest = a;
+            min_rank = rank;
+        }
+    }
+
+    return nearest;
+}
+
+node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
+{
+    if (n == NULL)
+        return NULL;
+
+    node_t *target = NULL;
+
+    if (is_tiled(n->client)) {
+        target = find_fence(n, dir);
+        if (target == NULL)
+            return NULL;
+        if (dir == DIR_UP || dir == DIR_LEFT)
+            target = target->first_child;
+        else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+            target = target->second_child;
+    } else {
+        target = d->root;
+    }
+
+    node_t *nearest = NULL;
+    direction_t dir2;
+    xcb_point_t pt;
+    xcb_point_t pt2;
+    get_side_handle(n->client, dir, &pt);
+    get_opposite(dir, &dir2);
+    double ds = DBL_MAX;
+
+    for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
+        if (is_tiled(a->client) != is_tiled(n->client)
+                || (is_tiled(a->client) && !is_adjacent(a, target))
+                || a == n)
+            continue;
+        get_side_handle(a->client, dir2, &pt2);
+        double ds2 = distance(pt, pt2);
+        if (ds2 < ds) {
+            ds = ds2;
+            nearest = a;
+        }
+    }
+
+    return nearest;
+}
+
+void get_opposite(direction_t src, direction_t *dst)
 {
     switch (src) {
         case DIR_RIGHT:
@@ -152,43 +243,6 @@ void get_opposite(direction_t src, direction_t* dst)
             *dst = DIR_DOWN;
             break;
     }
-}
-
-node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
-{
-    if (n == NULL)
-        return NULL;
-
-    node_t *target = NULL;
-    if (is_tiled(n->client)) {
-        target = find_fence(n, dir);
-        if (target == NULL)
-            return NULL;
-        if (dir == DIR_UP || dir == DIR_LEFT)
-            target = target->first_child;
-        else if (dir == DIR_DOWN || dir == DIR_RIGHT)
-            target = target->second_child;
-    } else {
-        target = d->root;
-    }
-    node_t *nearest = NULL;
-    direction_t dir2;
-    xcb_point_t pt;
-    xcb_point_t pt2;
-    get_side_handle(n->client, dir, &pt);
-    get_opposite(dir, &dir2);
-    double ds = DBL_MAX;
-    for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-        if (is_tiled(a->client) != is_tiled(n->client) || a == n)
-            continue;
-        get_side_handle(a->client, dir2, &pt2);
-        double ds2 = distance(pt, pt2);
-        if (ds2 < ds) {
-            ds = ds2;
-            nearest = a;
-        }
-    }
-    return nearest;
 }
 
 int tiled_area(node_t *n)

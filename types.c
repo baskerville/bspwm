@@ -336,3 +336,17 @@ node_t *history_get(focus_history_t *f, int i)
     else
         return a->node;
 }
+
+int history_rank(focus_history_t *f, node_t *n)
+{
+    int i = 0;
+    node_list_t *a = f->head;
+    while (a != NULL && (!a->latest || a->node != n)) {
+        a = a->next;
+        i++;
+    }
+    if (a == NULL)
+        return -1;
+    else
+        return i;
+}
