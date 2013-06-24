@@ -1,3 +1,4 @@
+NAME = bspwm
 VERSION = 0.7
 
 CC      = gcc
@@ -49,7 +50,12 @@ uninstall:
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bsp{wm,c}.1
 	rm -f "$(DESTDIR)$(CPLPREFIX)"/bspc
 
+doc:
+	pandoc --no-wrap -t json doc/README.md | runhaskell doc/man_filter.hs | pandoc --no-wrap -f json -t man --template doc/man.template -V name=$(NAME) -o $(NAME).1
+	pandoc --no-wrap -f markdown -t asciidoc doc/README.md -o README.asciidoc
+	patch -p 1 -i doc/quirks.patch
+
 clean:
 	rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}
 
-.PHONY: all debug clean install uninstall
+.PHONY: all debug install uninstall doc clean 

@@ -1,0 +1,42 @@
+diff -ru a/README.asciidoc b/README.asciidoc
+--- a/README.asciidoc	2013-06-24 22:46:06.915021108 +0200
++++ b/README.asciidoc	2013-06-24 22:48:26.871141944 +0200
+@@ -6,7 +6,7 @@
+ 
+ *bspwm* [*-h*|*-v*|*-s* _PANEL_FIFO_|*-p* _PANEL_PREFIX_]
+ 
+-*bspc* _MESSAGE_ [_ARGUMENTS_][*OPTIONS*]
++*bspc* _MESSAGE_ [_ARGUMENTS_] [_OPTIONS_]
+ 
+ [[description]]
+ Description
+@@ -195,7 +195,7 @@
+   Flip the window tree.
+ *balance*::
+   Adjust the split ratios so that all windows occupy the same area.
+-*rule* _PATTERN_ [_DESKTOP_NAME_][*floating*] [_follow_]::
++*rule* _PATTERN_ [_DESKTOP_NAME_] [_floating_] [_follow_]::
+   Create a new rule (_PATTERN_ must match the class or instance name).
+ *remove_rule* _UID_ ...::
+   Remove the rules with the given _UID_s.
+diff -ru a/bspwm.1 b/bspwm.1
+--- a/bspwm.1	2013-06-24 22:46:06.915021108 +0200
++++ b/bspwm.1	2013-06-24 22:47:12.031433820 +0200
+@@ -6,7 +6,7 @@
+ .PP
+ \f[B]bspwm\f[] [\f[B]\-h\f[]|\f[B]\-v\f[]|\f[B]\-s\f[] \f[I]PANEL_FIFO\f[]|\f[B]\-p\f[] \f[I]PANEL_PREFIX\f[]]
+ .PP
+-\f[B]bspc\f[] \f[I]MESSAGE\f[] [\f[I]ARGUMENTS\f[]][*OPTIONS*]
++\f[B]bspc\f[] \f[I]MESSAGE\f[] [\f[I]ARGUMENTS\f[]] [\f[I]OPTIONS\[]]
+ .SH DESCRIPTION
+ .PP
+ \f[B]bspwm\f[] is a tiling window manager that represents windows as the leaves of a full binary tree.
+@@ -345,7 +345,7 @@
+ .RS
+ .RE
+ .TP
+-.B \f[B]rule\f[] \f[I]PATTERN\f[] [\f[I]DESKTOP_NAME\f[]][*floating*] [\f[I]follow\f[]]
++.B \f[B]rule\f[] \f[I]PATTERN\f[] [\f[I]DESKTOP_NAME\f[]] [\f[I]floating\f[]] [\f[I]follow\f[]]
+ Create a new rule (\f[I]PATTERN\f[] must match the class or instance name).
+ .RS
+ .RE

@@ -1,0 +1,12 @@
+.TH "$name$" 1 "$date$" "$title$"
+.SH NAME
+$name$ - Tiling window manager based on binary space partitioning
+$body$
+.SH AUTHOR
+.MT baskerville@lavabit.com
+$author$
+.ME
+.SH LINKS
+.UR https://github.com/baskerville/$name$
+Homepage
+.UE
