@@ -42,8 +42,11 @@ super + bracket{left,right}
 super + ctrl + {h,j,k,l}
     bspc presel {left,down,up,right}
 
-super + alt + {_,shift + }{h,j,k,l}
-    bspc {push,pull} {left,down,up,right}
+super + alt + {h,j,k,l}
+    bspc push {left,down,up,right}
+
+super + alt + shift + {h,j,k,l}
+    bspc pull {right,up,down,left}
 
 super + ctrl + {1-9}
     bspc ratio 0.{1-9}
