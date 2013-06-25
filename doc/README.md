@@ -348,18 +348,6 @@ All the boolean settings are *false* by default.
 - EWMH support (**tint2** works).
 - Automatic and manual modes.
 
-# Required Libraries:
-
-- libxcb
-- xcb-util
-- xcb-util-wm
-
 # Mailing List
 
-bspwm *at* librelist *dot* com.
-
-# Contributors
-
-- [Ivan Kanakarakis](https://github.com/c00kiemon5ter)
-
-- [Thomas Adam](https://github.com/ThomasAdam)
+bspwm at librelist.com

@@ -2,11 +2,12 @@
 .SH NAME
 $name$ - Tiling window manager based on binary space partitioning
 $body$
+.SH CONTRIBUTORS
+.IP \[bu] 2
+Ivan Kanakarakis <ivan.kanak at gmail.com>
+.IP \[bu] 2
+Thomas Adam <thomas at xteddy.org>
 .SH AUTHOR
-.MT baskerville@lavabit.com
-$author$
-.ME
-.SH LINKS
-.UR https://github.com/baskerville/$name$
-Homepage
-.UE
+$author$ <baskerville at lavabit.com>
+.SH HOMEPAGE
+https://github.com/baskerville/$name$

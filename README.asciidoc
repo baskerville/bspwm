@@ -286,24 +286,8 @@ Key Features
 * EWMH support (*tint2* works).
 * Automatic and manual modes.
 
-[[required-libraries]]
-Required Libraries:
--------------------
-
-* libxcb
-* xcb-util
-* xcb-util-wm
-
 [[mailing-list]]
 Mailing List
 ------------
 
-bspwm _at_ librelist _dot_ com.
-
-[[contributors]]
-Contributors
-------------
-
-* https://github.com/c00kiemon5ter[Ivan Kanakarakis]
-* https://github.com/ThomasAdam[Thomas Adam]
-
+bspwm at librelist.com
