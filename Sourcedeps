@@ -7,5 +7,5 @@ messages.o: messages.c bspwm.h common.h events.h ewmh.h helpers.h messages.h rul
 rules.o: rules.c bspwm.h ewmh.h helpers.h rules.h types.h
 settings.o: settings.c bspwm.h common.h helpers.h settings.h types.h
 tree.o: tree.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h window.h
-types.o: types.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h
+types.o: types.c bspwm.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
 window.o: window.c bspwm.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
