@@ -115,13 +115,18 @@ void process_message(char *msg, char *rsp)
         else
             change_layout(mon, mon->desk, LAYOUT_MONOCLE);
     } else if (strcmp(cmd, "shift") == 0) {
+        node_t *f = mon->desk->focus;
+        if (f == NULL)
+            return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
-            if (parse_direction(dir, &d))
-                swap_nodes(mon->desk->focus, focus_by_distance ? nearest_neighbor(mon->desk, mon->desk->focus, d) : find_neighbor(mon->desk->focus, d));
+            if (parse_direction(dir, &d)) {
+                node_t *n = nearest_neighbor(mon->desk, f, d);
+                swap_nodes(f, n);
+                arrange(mon, mon->desk);
+            }
         }
-        arrange(mon, mon->desk);
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
         toggle_fullscreen(mon->desk, mon->desk->focus);
         arrange(mon, mon->desk);
@@ -452,16 +457,7 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                node_t *n = NULL;
-                if (history_aware_focus)
-                    n = nearest_from_history(mon->desk->history, f, d);
-                if (n == NULL) {
-                    if (focus_by_distance) {
-                        n = nearest_neighbor(mon->desk, f, d);
-                    } else {
-                        n = find_neighbor(f, d);
-                    }
-                }
+                node_t *n = nearest_neighbor(mon->desk, f, d);
                 focus_node(mon, mon->desk, n);
             }
         }

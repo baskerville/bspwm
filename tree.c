@@ -135,7 +135,23 @@ node_t *find_fence(node_t *n, direction_t dir)
     return NULL;
 }
 
-node_t *find_neighbor(node_t *n, direction_t dir)
+
+node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
+{
+    node_t *nearest = NULL;
+    if (history_aware_focus)
+        nearest = nearest_from_history(d->history, n, dir);
+    if (nearest == NULL) {
+        if (focus_by_distance) {
+            nearest = nearest_from_distance(d, n, dir);
+        } else {
+            nearest = nearest_from_tree(n, dir);
+        }
+    }
+    return nearest;
+}
+
+node_t *nearest_from_tree(node_t *n, direction_t dir)
 {
     if (n == NULL)
         return NULL;
@@ -184,7 +200,7 @@ node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir)
     return nearest;
 }
 
-node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
+node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir)
 {
     if (n == NULL)
         return NULL;
