@@ -85,7 +85,7 @@ while read -r line ; do
             IFS=$NORMIFS
             ;;
     esac
-    set - $(printf '%s\0%s\0%s' "$wm_infos" "$title" "$sys_infos" | sed 's/\^[a-z]\+([^)]*)//g' | xargs -0 textwidth -f "$font_family" -s "$font_size")
+    set - $(printf '%s\0%s\0%s' "$wm_infos" "$title" "$sys_infos" | sed 's/\^[a-z]\+([^)]*)//g' | xargs -0 txtw -f "$font_family" -s "$font_size")
     left_width=$1
     center_width=$2
     right_width=$3
