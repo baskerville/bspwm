@@ -1,5 +1,3 @@
-image:https://github.com/baskerville/bspwm/raw/master/logo/bspwm-logo.png[logo]
-
 :man source:   Bspwm
 :man version:  {revnumber}
 :man manual:   Bspwm Manual

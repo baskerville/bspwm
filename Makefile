@@ -1,4 +1,3 @@
-NAME = bspwm
 VERSION = 0.7
 
 CC      = gcc
@@ -41,7 +40,7 @@ install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
 	cp -p bsp{wm,c} "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -Pp bsp{wm,c}.1 "$(DESTDIR)$(MANPREFIX)"/man1
+	cp -Pp doc/bsp{wm,c}.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	mkdir -p "$(DESTDIR)$(CPLPREFIX)"
 	cp -p bash_completion "$(DESTDIR)$(CPLPREFIX)"/bspc
 
@@ -51,9 +50,8 @@ uninstall:
 	rm -f "$(DESTDIR)$(CPLPREFIX)"/bspc
 
 doc:
-	pandoc --no-wrap -t json doc/README.md | runhaskell doc/man_filter.hs | pandoc --no-wrap -f json -t man --template doc/man.template -V name=$(NAME) -o $(NAME).1
-	pandoc --no-wrap -f markdown -t asciidoc doc/README.md -o README.asciidoc
-	patch -p 1 -i doc/quirks.patch
+	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt
+	cat doc/header.txt doc/bspwm.1.txt > README.asciidoc
 
 clean:
 	rm -f $(WM_OBJ) $(CL_OBJ) bsp{wm,c}

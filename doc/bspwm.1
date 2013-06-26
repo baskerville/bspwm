@@ -1,0 +1,664 @@
+'\" t
+.\"     Title: bspwm
+.\"    Author: [see the "Author" section]
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 06/26/2013
+.\"    Manual: Bspwm Manual
+.\"    Source: Bspwm 0.7
+.\"  Language: English
+.\"
+.TH "BSPWM" "1" "06/26/2013" "Bspwm 0\&.7" "Bspwm Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+bspwm \- Tiling window manager based on binary space partitioning
+.SH "SYNOPSIS"
+.sp
+\fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-s\fR \fIPANEL_FIFO\fR|\fB\-p\fR \fIPANEL_PREFIX\fR]
+.sp
+\fBbspc\fR \fIMESSAGE\fR [\fIARGUMENTS\fR] [\fIOPTIONS\fR]
+.SH "DESCRIPTION"
+.sp
+\fBbspwm\fR is a tiling window manager that represents windows as the leaves of a full binary tree\&.
+.sp
+It is controlled and configured via \fBbspc\fR\&.
+.SH "CONFIGURATION"
+.sp
+\fBbspwm\fR have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket\&.
+.sp
+Its configuration file is \fI$XDG_CONFIG_HOME/bspwm/autostart\fR\&.
+.sp
+Keyboard and pointer bindings are defined with sxhkd\&.
+.sp
+Example configuration files can be found in the \fBexamples\fR directory\&.
+.SH "SPLITTING MODES"
+.sp
+There is only two splitting modes: \fIautomatic\fR and \fImanual\fR\&.
+.sp
+The default mode is \fIautomatic\fR\&. The \fImanual\fR mode is entered by sending a \fBpresel\fR message\&.
+.sp
+Example: insertion of a new node (number 4) into the given tree in \fIautomatic\fR mode:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+              b                                   c
+             / \e                                 / \e
+            3   a              \-\->              4   b
+            ^  / \e                              ^  / \e
+              2   1                               3   a
+                                                     / \e
+                                                    2   1
+ +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+ |            |            |         |            |            |
+ |            |     2      |         |            |     3      |
+ |            |            |         |            |            |
+ |     3      |\-\-\-\-\-\-\-\-\-\-\-\-|   \-\->   |     4      |\-\-\-\-\-\-\-\-\-\-\-\-|
+ |     ^      |            |         |     ^      |     |      |
+ |            |     1      |         |            |  1  |  2   |
+ |            |            |         |            |     |      |
+ +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Same departure, but the mode is \fImanual\fR, and a \fBpresel\fR \fIup\fR message was sent beforehand:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+             b                                   b
+            / \e                                 / \e
+           3   a              \-\->              c   a
+           ^  / \e                             / \e / \e
+             2   1                           4  3 2  1
+                                             ^
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|            |            |         |            |            |
+|            |     2      |         |     4      |     2      |
+|            |            |         |     ^      |            |
+|     3      |\-\-\-\-\-\-\-\-\-\-\-\-|   \-\->   |\-\-\-\-\-\-\-\-\-\-\-\-|\-\-\-\-\-\-\-\-\-\-\-\-|
+|     ^      |            |         |            |            |
+|            |     1      |         |     3      |     1      |
+|            |            |         |            |            |
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.SH "CONTAINERS"
+.sp
+Each monitor contains at least one desktop\&.
+.sp
+Each desktop contains at most one tree\&.
+.SH "MESSAGES"
+.PP
+\fBget\fR \fISETTING\fR
+.RS 4
+Return the value of the given setting\&.
+.RE
+.PP
+\fBset\fR \fISETTING\fR \fIVALUE\fR
+.RS 4
+Set the value of the given setting\&.
+.RE
+.PP
+\fBlist\fR [\fIDESKTOP_NAME\fR]
+.RS 4
+Output the internal representation of the window tree\&.
+.RE
+.PP
+\fBlist_desktops\fR [\fB\-\-quiet\fR]
+.RS 4
+Perform a dump of each desktop for the current monitor\&.
+.RE
+.PP
+\fBlist_monitors\fR [\fB\-\-quiet\fR]
+.RS 4
+Perform a dump of each monitor\&.
+.RE
+.PP
+\fBlist_history\fR
+.RS 4
+Return the node focus history of each desktop\&.
+.RE
+.PP
+\fBlist_windows\fR
+.RS 4
+Return the list of managed windows (i\&.e\&. their identifiers)\&.
+.RE
+.PP
+\fBlist_rules\fR
+.RS 4
+Return the list of rules\&.
+.RE
+.PP
+\fBpresel\fR \fIleft\fR|\fIright\fR|\fIup\fR|\fIdown\fR [\fISPLIT_RATIO\fR]
+.RS 4
+Switch to manual mode and select the splitting direction\&.
+.RE
+.PP
+\fBcancel\fR
+.RS 4
+Switch to automatic mode\&.
+.RE
+.PP
+\fBratio\fR \fIVALUE\fR
+.RS 4
+Set the splitting ratio of the focused window\&.
+.RE
+.PP
+\fBpad\fR \fIMONITOR_NAME\fR [\fITOP_PADDING\fR [\fIRIGHT_PADDING\fR [\fIBOTTOM_PADDING\fR [\fILEFT_PADDING\fR]]]]
+.RS 4
+Set the padding of the given monitor\&.
+.RE
+.PP
+\fBfocus\fR \fIleft\fR|\fIright\fR|\fIup\fR|\fIdown\fR
+.RS 4
+Focus the neighbor window situated in the given direction\&.
+.RE
+.PP
+\fBshift\fR \fIleft\fR|\fIright\fR|\fIup\fR|\fIdown\fR
+.RS 4
+Exchange the current window with the given neighbor\&.
+.RE
+.PP
+\fBswap\fR [\fB\-\-keep\-focus\fR]
+.RS 4
+Swap the focused window with the last focused window\&.
+.RE
+.PP
+\fBpush\fR \fIleft\fR|\fIright\fR|\fIup\fR|\fIdown\fR
+.RS 4
+Push the fence located in the given direction\&.
+.RE
+.PP
+\fBpull\fR \fIleft\fR|\fIright\fR|\fIup\fR|\fIdown\fR
+.RS 4
+Pull the fence located in the given direction\&.
+.RE
+.PP
+\fBfence_ratio\fR \fIleft\fR|\fIright\fR|\fIup\fR|\fIdown\fR
+.RS 4
+Set the splitting ratio of the fence located in the given direction\&.
+.RE
+.PP
+\fBcycle\fR \fInext\fR|\fIprev\fR [\fB\-\-skip\-floating\fR|\fB\-\-skip\-tiled\fR|\fB\-\-skip\-class\-equal\fR|\fB\-\-skip\-class\-differ\fR]
+.RS 4
+Focus the next or previous window matching the given constraints\&.
+.RE
+.PP
+\fBnearest\fR \fIolder\fR|\fInewer\fR [\fB\-\-skip\-floating\fR|\fB\-\-skip\-tiled\fR|\fB\-\-skip\-class\-equal\fR|\fB\-\-skip\-class\-differ\fR]
+.RS 4
+Focus the nearest window matching the given constraints\&.
+.RE
+.PP
+\fBbiggest\fR
+.RS 4
+Return the ID of the biggest tiled window\&.
+.RE
+.PP
+\fBcirculate\fR \fIforward\fR|\fIbackward\fR
+.RS 4
+Circulate the leaves in the given direction\&.
+.RE
+.PP
+\fBgrab_pointer\fR \fIfocus\fR|\fImove\fR|\fIresize_side\fR|\fIresize_corner\fR
+.RS 4
+Begin the specified pointer action\&.
+.RE
+.PP
+\fBtrack_pointer\fR \fIROOT_X\fR \fIROOT_Y\fR
+.RS 4
+Pass the pointer root coordinates for the current pointer action\&.
+.RE
+.PP
+\fBungrab_pointer\fR
+.RS 4
+End the current pointer action\&.
+.RE
+.PP
+\fBtoggle_fullscreen\fR
+.RS 4
+Toggle the fullscreen state of the current window\&.
+.RE
+.PP
+\fBtoggle_floating\fR
+.RS 4
+Toggle the floating state of the current window\&.
+.RE
+.PP
+\fBtoggle_locked\fR
+.RS 4
+Toggle the locked state of the current window (locked windows will not respond to the
+\fBclose\fR
+message)\&.
+.RE
+.PP
+\fBtoggle_visibility\fR
+.RS 4
+Toggle the visibility of all the managed windows\&.
+.RE
+.PP
+\fBclose\fR
+.RS 4
+Close the focused window\&.
+.RE
+.PP
+\fBkill\fR
+.RS 4
+Kill the focused window\&.
+.RE
+.PP
+\fBsend_to\fR \fIDESKTOP_NAME\fR [\fB\-\-follow\fR]
+.RS 4
+Send the focused window to the given desktop\&.
+.RE
+.PP
+\fBdrop_to\fR \fInext\fR|\fIprev\fR [\fB\-\-follow\fR]
+.RS 4
+Send the focused window to the next or previous desktop\&.
+.RE
+.PP
+\fBsend_to_monitor\fR \fIMONITOR_NAME\fR [\fB\-\-follow\fR]
+.RS 4
+Send the focused window to the given monitor\&.
+.RE
+.PP
+\fBdrop_to_monitor\fR \fInext\fR|\fIprev\fR [\fB\-\-follow\fR]
+.RS 4
+Send the focused window to the next or previous monitor\&.
+.RE
+.PP
+\fBuse\fR \fIDESKTOP_NAME\fR
+.RS 4
+Select the given desktop\&.
+.RE
+.PP
+\fBuse_monitor\fR \fIMONITOR_NAME\fR
+.RS 4
+Select the given monitor\&.
+.RE
+.PP
+\fBalternate\fR
+.RS 4
+Alternate between the current and the last focused window\&.
+.RE
+.PP
+\fBalternate_desktop\fR
+.RS 4
+Alternate between the current and the last focused desktop\&.
+.RE
+.PP
+\fBalternate_monitor\fR
+.RS 4
+Alternate between the current and the last focused monitor\&.
+.RE
+.PP
+\fBadd\fR \fIDESKTOP_NAME\fR \&...
+.RS 4
+Make new desktops with the given names\&.
+.RE
+.PP
+\fBadd_in\fR \fIMONITOR_NAME\fR \fIDESKTOP_NAME\fR \&...
+.RS 4
+Make new desktops with the given names in the given monitor\&.
+.RE
+.PP
+\fBrename_monitor\fR \fICURRENT_NAME\fR \fINEW_NAME\fR
+.RS 4
+Rename the monitor named
+\fICURRENT_NAME\fR
+to
+\fINEW_NAME\fR\&.
+.RE
+.PP
+\fBrename\fR \fICURRENT_NAME\fR \fINEW_NAME\fR
+.RS 4
+Rename the desktop named
+\fICURRENT_NAME\fR
+to
+\fINEW_NAME\fR\&.
+.RE
+.PP
+\fBremove_desktop\fR \fIDESKTOP_NAME\fR \&...
+.RS 4
+Remove the given desktops\&.
+.RE
+.PP
+\fBsend_desktop_to\fR \fIMONITOR_NAME\fR [\fB\-\-follow\fR]
+.RS 4
+Send the current desktop to the given monitor\&.
+.RE
+.PP
+\fBcycle_monitor\fR \fInext\fR|\fIprev\fR
+.RS 4
+Select the next or previous monitor\&.
+.RE
+.PP
+\fBcycle_desktop\fR \fInext\fR|\fIprev\fR [\fB\-\-skip\-free\fR|\fB\-\-skip\-occupied\fR]
+.RS 4
+Select the next or previous desktop\&.
+.RE
+.PP
+\fBlayout\fR \fImonocle\fR|\fItiled\fR [\fIDESKTOP_NAME\fR \&...]
+.RS 4
+Set the layout of the given desktops (current if none given)\&.
+.RE
+.PP
+\fBcycle_layout\fR
+.RS 4
+Cycle the layout of the current desktop\&.
+.RE
+.PP
+\fBrotate\fR \fIclockwise\fR|\fIcounter_clockwise\fR|\fIfull_cycle\fR
+.RS 4
+Rotate the window tree\&.
+.RE
+.PP
+\fBflip\fR \fIhorizontal\fR|\fIvertical\fR
+.RS 4
+Flip the window tree\&.
+.RE
+.PP
+\fBbalance\fR
+.RS 4
+Adjust the split ratios so that all windows occupy the same area\&.
+.RE
+.PP
+\fBrule\fR \fIPATTERN\fR [\fIDESKTOP_NAME\fR] [\fIfloating\fR] [\fIfollow\fR]
+.RS 4
+Create a new rule (\fIPATTERN\fR
+must match the class or instance name)\&.
+.RE
+.PP
+\fBremove_rule\fR \fIUID\fR \&...
+.RS 4
+Remove the rules with the given
+\fIUIDs\fR\&.
+.RE
+.PP
+\fBput_status\fR
+.RS 4
+Output the current state to the panel fifo\&.
+.RE
+.PP
+\fBadopt_orphans\fR
+.RS 4
+Manage all the unmanaged windows remaining from a previous session\&.
+.RE
+.PP
+\fBrestore_layout\fR \fIFILE_PATH\fR
+.RS 4
+Restore the layout of each desktop from the content of
+\fIFILE_PATH\fR\&.
+.RE
+.PP
+\fBrestore_history\fR \fIFILE_PATH\fR
+.RS 4
+Restore the history of each desktop from the content of
+\fIFILE_PATH\fR\&.
+.RE
+.PP
+\fBquit\fR [\fIEXIT_STATUS\fR]
+.RS 4
+Quit\&.
+.RE
+.SH "SETTINGS"
+.sp
+Colors are either X color names or \fI#RRGGBB\fR, booleans are \fItrue\fR or \fIfalse\fR\&.
+.sp
+All the boolean settings are \fIfalse\fR by default\&.
+.PP
+\fIfocused_border_color\fR
+.RS 4
+Color of the border of a focused window of a focused monitor\&.
+.RE
+.PP
+\fIactive_border_color\fR
+.RS 4
+Color of the border of a focused window of an unfocused monitor\&.
+.RE
+.PP
+\fInormal_border_color\fR
+.RS 4
+Color of the border of an unfocused window\&.
+.RE
+.PP
+\fIpresel_border_color\fR
+.RS 4
+Color of the
+\fBpresel\fR
+message feedback\&.
+.RE
+.PP
+\fIfocused_locked_border_color\fR
+.RS 4
+Color of the border of a focused locked window of a focused monitor\&.
+.RE
+.PP
+\fIactive_locked_border_color\fR
+.RS 4
+Color of the border of a focused locked window of an unfocused monitor\&.
+.RE
+.PP
+\fInormal_locked_border_color\fR
+.RS 4
+Color of the border of an unfocused locked window\&.
+.RE
+.PP
+\fIurgent_border_color\fR
+.RS 4
+Color of the border of an urgent window\&.
+.RE
+.PP
+\fIborder_width\fR
+.RS 4
+Window border width\&.
+.RE
+.PP
+\fIwindow_gap\fR
+.RS 4
+Value of the gap that separates windows\&.
+.RE
+.PP
+\fIsplit_ratio\fR
+.RS 4
+Default split ratio\&.
+.RE
+.PP
+\fItop_padding\fR, \fIright_padding\fR, \fIbottom_padding\fR, \fIleft_padding\fR
+.RS 4
+Padding space added at the sides of the current monitor\&.
+.RE
+.PP
+\fIwm_name\fR
+.RS 4
+The value that shall be used for the
+\fI_NET_WM_NAME\fR
+property of the root window\&.
+.RE
+.PP
+\fIborderless_monocle\fR
+.RS 4
+Remove borders for tiled windows in monocle mode\&.
+.RE
+.PP
+\fIgapless_monocle\fR
+.RS 4
+Remove gaps for tiled windows in monocle mode\&.
+.RE
+.PP
+\fIfocus_follows_pointer\fR
+.RS 4
+Focus the window under the pointer\&.
+.RE
+.PP
+\fIpointer_follows_monitor\fR
+.RS 4
+When focusing a monitor, put the pointer at its center\&.
+.RE
+.PP
+\fIadaptative_raise\fR
+.RS 4
+Prevent floating windows from being raised when they might cover other floating windows\&.
+.RE
+.PP
+\fIapply_shadow_property\fR
+.RS 4
+Enable shadows for floating windows via the
+\fI_COMPTON_SHADOW\fR
+property\&.
+.RE
+.PP
+\fIauto_alternate\fR
+.RS 4
+Interpret two consecutive identical
+\fBuse\fR
+messages as an
+\fBalternate\fR
+message\&.
+.RE
+.PP
+\fIfocus_by_distance\fR
+.RS 4
+Use window or leaf distance for focus movement\&.
+.RE
+.PP
+\fIhistory_aware_focus\fR
+.RS 4
+Give priority to the focus history when focusing nodes\&.
+.RE
+.SH "ENVIRONMENT VARIABLES"
+.PP
+\fIBSPWM_SOCKET\fR
+.RS 4
+The path of the socket used for the communication between
+\fBbspc\fR
+and
+\fBbspwm\fR\&.
+.RE
+.SH "PANELS"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Any EWMH compliant panel (e\&.g\&.:
+\fItint2\fR,
+\fIbmpanel2\fR, etc\&.)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+A custom panel if the
+\fI\-s\fR
+flag is used (have a look at the files in
+\fIexamples/panel\fR)\&.
+.RE
+.SH "KEY FEATURES"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Configured and controlled through messages\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Multiple monitors support (via
+\fIRandR\fR)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+EWMH support (\fBtint2\fR
+works)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Automatic and manual modes\&.
+.RE
+.SH "CONTRIBUTORS"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Ivan Kanakarakis <ivan\&.kanak at gmail\&.com>
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Thomas Adam <thomas at xteddy\&.org>
+.RE
+.SH "AUTHOR"
+.sp
+Bastien Dejean <baskerville at lavabit\&.com>
+.SH "MAILING LIST"
+.sp
+bspwm at librelist\&.com
