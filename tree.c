@@ -504,102 +504,106 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
     }
 }
 
-void insert_node(monitor_t *m, desktop_t *d, node_t *n)
+void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 {
     if (d == NULL || n == NULL)
         return;
 
     PRINTF("insert node %X\n", n->client->window);
 
-    node_t *focus = d->focus;
+    /* n: new leaf node */
+    /* c: new container node */
+    /* f: focus or anchor */
+    /* p: parent of focus */
+    /* g: grand parent of focus */
 
-    if (focus == NULL) {
+    if (f == NULL) {
         d->root = n;
     } else {
-        node_t *dad = make_node();
-        node_t *fopar = focus->parent;
-        n->parent = dad;
-        dad->birth_rotation = focus->birth_rotation;
+        node_t *c = make_node();
+        node_t *p = f->parent;
+        n->parent = c;
+        c->birth_rotation = f->birth_rotation;
         switch (split_mode) {
             case MODE_AUTOMATIC:
-                if (fopar == NULL) {
-                    dad->first_child = n;
-                    dad->second_child = focus;
+                if (p == NULL) {
+                    c->first_child = n;
+                    c->second_child = f;
                     if (m->rectangle.width > m->rectangle.height)
-                        dad->split_type = TYPE_VERTICAL;
+                        c->split_type = TYPE_VERTICAL;
                     else
-                        dad->split_type = TYPE_HORIZONTAL;
-                    focus->parent = dad;
-                    d->root = dad;
+                        c->split_type = TYPE_HORIZONTAL;
+                    f->parent = c;
+                    d->root = c;
                 } else {
-                    node_t *grandpa = fopar->parent;
-                    dad->parent = grandpa;
-                    if (grandpa != NULL) {
-                        if (is_first_child(fopar))
-                            grandpa->first_child = dad;
+                    node_t *g = p->parent;
+                    c->parent = g;
+                    if (g != NULL) {
+                        if (is_first_child(p))
+                            g->first_child = c;
                         else
-                            grandpa->second_child = dad;
+                            g->second_child = c;
                     } else {
-                        d->root = dad;
+                        d->root = c;
                     }
-                    dad->split_type = fopar->split_type;
-                    dad->split_ratio = fopar->split_ratio;
-                    fopar->parent = dad;
+                    c->split_type = p->split_type;
+                    c->split_ratio = p->split_ratio;
+                    p->parent = c;
                     rotate_t rot;
-                    if (is_first_child(focus)) {
-                        dad->first_child = n;
-                        dad->second_child = fopar;
+                    if (is_first_child(f)) {
+                        c->first_child = n;
+                        c->second_child = p;
                         rot = ROTATE_CLOCKWISE;
                     } else {
-                        dad->first_child = fopar;
-                        dad->second_child = n;
+                        c->first_child = p;
+                        c->second_child = n;
                         rot = ROTATE_COUNTER_CLOCKWISE;
                     }
                     if (!is_floating(n->client))
-                        rotate_tree(fopar, rot);
+                        rotate_tree(p, rot);
                     n->birth_rotation = rot;
                 }
                 break;
             case MODE_MANUAL:
-                if (fopar != NULL) {
-                    if (is_first_child(focus))
-                        fopar->first_child = dad;
+                if (p != NULL) {
+                    if (is_first_child(f))
+                        p->first_child = c;
                     else
-                        fopar->second_child = dad;
+                        p->second_child = c;
                 }
-                dad->split_ratio = focus->split_ratio;
-                dad->parent = fopar;
-                focus->parent = dad;
-                focus->birth_rotation = ROTATE_IDENTITY;
+                c->split_ratio = f->split_ratio;
+                c->parent = p;
+                f->parent = c;
+                f->birth_rotation = ROTATE_IDENTITY;
                 switch (split_dir) {
                     case DIR_LEFT:
-                        dad->split_type = TYPE_VERTICAL;
-                        dad->first_child = n;
-                        dad->second_child = focus;
+                        c->split_type = TYPE_VERTICAL;
+                        c->first_child = n;
+                        c->second_child = f;
                         break;
                     case DIR_RIGHT:
-                        dad->split_type = TYPE_VERTICAL;
-                        dad->first_child = focus;
-                        dad->second_child = n;
+                        c->split_type = TYPE_VERTICAL;
+                        c->first_child = f;
+                        c->second_child = n;
                         break;
                     case DIR_UP:
-                        dad->split_type = TYPE_HORIZONTAL;
-                        dad->first_child = n;
-                        dad->second_child = focus;
+                        c->split_type = TYPE_HORIZONTAL;
+                        c->first_child = n;
+                        c->second_child = f;
                         break;
                     case DIR_DOWN:
-                        dad->split_type = TYPE_HORIZONTAL;
-                        dad->first_child = focus;
-                        dad->second_child = n;
+                        c->split_type = TYPE_HORIZONTAL;
+                        c->first_child = f;
+                        c->second_child = n;
                         break;
                 }
-                if (d->root == focus)
-                    d->root = dad;
+                if (d->root == f)
+                    d->root = c;
                 split_mode = MODE_AUTOMATIC;
                 break;
         }
-        if (focus->vacant)
-            update_vacant_state(fopar);
+        if (f->vacant)
+            update_vacant_state(p);
     }
     put_status();
 }
@@ -812,7 +816,7 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     PRINTF("transfer node %X\n", n->client->window);
 
     unlink_node(ds, n);
-    insert_node(md, dd, n);
+    insert_node(md, dd, n, dd->focus);
     ewmh_set_wm_desktop(n, dd);
 
     if (ds == ms->desk && dd != md->desk) {

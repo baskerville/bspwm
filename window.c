@@ -152,7 +152,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     node_t *n = make_node();
     n->client = c;
 
-    insert_node(m, d, n);
+    insert_node(m, d, n, d->focus);
 
     disable_shadow(c->window);
 
