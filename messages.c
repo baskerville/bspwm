@@ -123,8 +123,13 @@ void process_message(char *msg, char *rsp)
             direction_t d;
             if (parse_direction(dir, &d)) {
                 node_t *n = nearest_neighbor(mon->desk, f, d);
-                swap_nodes(f, n);
-                arrange(mon, mon->desk);
+                if (n != NULL) {
+                    if (n->split_mode == MODE_MANUAL)
+                        transplant_node(mon, mon->desk, f, n);
+                    else
+                        swap_nodes(f, n);
+                    arrange(mon, mon->desk);
+                }
             }
         }
     } else if (strcmp(cmd, "toggle_fullscreen") == 0) {

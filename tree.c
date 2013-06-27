@@ -853,6 +853,13 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
         update_current();
 }
 
+void transplant_node(monitor_t *m, desktop_t *d, node_t *n1, node_t *n2)
+{
+    unlink_node(d, n1);
+    insert_node(m, d, n1, n2);
+    pseudo_focus(d, n1);
+}
+
 void select_monitor(monitor_t *m)
 {
     if (mon == m)
