@@ -291,6 +291,8 @@ node_t *find_biggest(desktop_t *d)
     int r_area = tiled_area(r);
 
     for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
+        if (!is_tiled(f->client))
+            continue;
         int f_area = tiled_area(f);
         if (r == NULL) {
             r = f;
