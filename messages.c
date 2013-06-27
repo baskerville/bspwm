@@ -163,8 +163,10 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "cancel") == 0) {
         if (mon->desk->focus == NULL)
             return;
-        mon->desk->focus->split_mode = MODE_AUTOMATIC;
-        window_draw_border(mon->desk->focus, true, true);
+        char *opt = strtok(NULL, TOK_SEP);
+        cancel_option_t o;
+        if (parse_cancel_option(opt, &o))
+            reset_mode(mon->desk, mon->desk->focus, o);
     } else if (strcmp(cmd, "presel") == 0) {
         if (mon->desk->focus == NULL || !is_tiled(mon->desk->focus->client) || mon->desk->layout != LAYOUT_TILED)
             return;
@@ -797,6 +799,18 @@ bool parse_swap_option(char *s, swap_option_t *o)
         return true;
     } else if (strcmp(s, "--keep-focus") == 0) {
         *o = SWAP_OPTION_KEEP_FOCUS;
+        return true;
+    }
+    return false;
+}
+
+bool parse_cancel_option(char *s, cancel_option_t *o)
+{
+    if (s == NULL) {
+        *o = CANCEL_OPTION_FOCUSED;
+        return true;
+    } else if (strcmp(s, "--all") == 0) {
+        *o = CANCEL_OPTION_ALL;
         return true;
     }
     return false;

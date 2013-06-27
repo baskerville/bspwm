@@ -17,6 +17,7 @@ bool parse_circulate_direction(char *, circulate_dir_t *);
 bool parse_list_option(char *, list_option_t *);
 bool parse_send_option(char *, send_option_t *);
 bool parse_swap_option(char *, swap_option_t *);
+bool parse_cancel_option(char *, cancel_option_t *);
 bool parse_skip_client(char *, skip_client_t *);
 bool parse_skip_desktop(char *, skip_desktop_t *);
 bool parse_rotate(char *, rotate_t *);

@@ -57,6 +57,19 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l)
         put_status();
 }
 
+void reset_mode(desktop_t *d, node_t *n, cancel_option_t c)
+{
+    if (c == CANCEL_OPTION_FOCUSED) {
+        n->split_mode = MODE_AUTOMATIC;
+        window_draw_border(mon->desk->focus, d->focus == n, true);
+    } else if (c == CANCEL_OPTION_ALL) {
+        for (node_t *a = first_extrema(d->root); a != NULL; a = next_leaf(a, d->root)) {
+            a->split_mode = MODE_AUTOMATIC;
+            window_draw_border(a, d->focus == a, true);
+        }
+    }
+}
+
 node_t *first_extrema(node_t *n)
 {
     if (n == NULL)

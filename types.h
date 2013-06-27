@@ -52,6 +52,11 @@ typedef enum {
 } swap_option_t;
 
 typedef enum {
+    CANCEL_OPTION_FOCUSED,
+    CANCEL_OPTION_ALL
+} cancel_option_t;
+
+typedef enum {
     CLIENT_SKIP_NONE,
     CLIENT_SKIP_FLOATING,
     CLIENT_SKIP_TILED,

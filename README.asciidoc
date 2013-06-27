@@ -123,7 +123,7 @@ Messages
 *presel* _left_|_right_|_up_|_down_ [_SPLIT_RATIO_]::
     Switch to manual mode and select the splitting direction.
 
-*cancel*::
+*cancel* [*--all*]::
     Switch to automatic mode.
 
 *ratio* _VALUE_::
