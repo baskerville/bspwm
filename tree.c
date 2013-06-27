@@ -513,7 +513,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
     /* n: new leaf node */
     /* c: new container node */
-    /* f: focus or anchor */
+    /* f: focus or insertion anchor */
     /* p: parent of focus */
     /* g: grand parent of focus */
 
@@ -524,7 +524,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
         node_t *p = f->parent;
         n->parent = c;
         c->birth_rotation = f->birth_rotation;
-        switch (split_mode) {
+        switch (f->split_mode) {
             case MODE_AUTOMATIC:
                 if (p == NULL) {
                     c->first_child = n;
@@ -575,7 +575,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
                 c->parent = p;
                 f->parent = c;
                 f->birth_rotation = ROTATE_IDENTITY;
-                switch (split_dir) {
+                switch (f->split_dir) {
                     case DIR_LEFT:
                         c->split_type = TYPE_VERTICAL;
                         c->first_child = n;
@@ -599,7 +599,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
                 }
                 if (d->root == f)
                     d->root = c;
-                split_mode = MODE_AUTOMATIC;
+                f->split_mode = MODE_AUTOMATIC;
                 break;
         }
         if (f->vacant)
@@ -620,8 +620,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
     if (n == NULL && d->root != NULL)
         return;
-
-    split_mode = MODE_AUTOMATIC;
 
     if (mon->desk != d)
         clear_input_focus();

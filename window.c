@@ -233,7 +233,7 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
     xcb_window_t win = n->client->window;
     uint32_t border_color_pxl = get_border_color(n->client, focused_window, focused_monitor);
 
-    if (split_mode == MODE_AUTOMATIC || !focused_monitor || !focused_window) {
+    if (n->split_mode == MODE_AUTOMATIC) {
         xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXEL, &border_color_pxl);
     } else {
         xcb_rectangle_t actual_rectangle = get_rectangle(n->client);
@@ -267,9 +267,9 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
         xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &border_color_pxl);
         xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(border_rectangles), border_rectangles);
 
-        uint16_t fence = (int16_t) (n->split_ratio * ((split_dir == DIR_UP || split_dir == DIR_DOWN) ? height : width));
+        uint16_t fence = (int16_t) (n->split_ratio * ((n->split_dir == DIR_UP || n->split_dir == DIR_DOWN) ? height : width));
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
-        switch (split_dir) {
+        switch (n->split_dir) {
             case DIR_UP:
                 presel_rectangles[0] = (xcb_rectangle_t) {width, 0, 2 * border_width, fence};
                 presel_rectangles[1] = (xcb_rectangle_t) {0, height + border_width, full_width, border_width};
@@ -369,7 +369,7 @@ void toggle_floating(desktop_t *d, node_t *n)
 
     PRINTF("toggle floating %X\n", n->client->window);
 
-    split_mode = MODE_AUTOMATIC;
+    n->split_mode = MODE_AUTOMATIC;
     client_t *c = n->client;
     c->floating = !c->floating;
     n->vacant = !n->vacant;

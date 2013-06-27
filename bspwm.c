@@ -125,7 +125,6 @@ void init(void)
     mon = last_mon = mon_head = mon_tail = NULL;
     rule_head = rule_tail = NULL;
     randr_base = 0;
-    split_mode = MODE_AUTOMATIC;
     visible = true;
     exit_status = 0;
 }

@@ -139,6 +139,8 @@ typedef struct node_t node_t;
 struct node_t {
     split_type_t split_type;
     double split_ratio;
+    split_mode_t split_mode;
+    direction_t split_dir;
     rotate_t birth_rotation;
     xcb_rectangle_t rectangle;
     bool vacant;          /* vacant nodes only hold floating clients */

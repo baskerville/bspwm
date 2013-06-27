@@ -15,6 +15,7 @@ node_t *make_node(void)
     node_t *n = malloc(sizeof(node_t));
     n->parent = n->first_child = n->second_child = NULL;
     n->split_ratio = split_ratio;
+    n->split_mode = MODE_AUTOMATIC;
     n->split_type = TYPE_VERTICAL;
     n->birth_rotation = ROTATE_IDENTITY;
     n->client = NULL;

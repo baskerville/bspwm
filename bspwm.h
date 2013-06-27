@@ -22,8 +22,6 @@ uint8_t root_depth;
 FILE *status_fifo;
 char *status_prefix;
 
-split_mode_t split_mode;
-direction_t split_dir;
 monitor_t *mon;
 monitor_t *last_mon;
 monitor_t *mon_head;
