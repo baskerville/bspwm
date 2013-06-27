@@ -44,7 +44,7 @@ The default mode is _automatic_. The _manual_ mode is entered by sending a *pres
 
 Example: insertion of a new node (number 4) into the given tree in _automatic_ mode:
 
-----------------------------------------------------------------
+----
               b                                   c
              / \                                 / \
             3   a              -->              4   b
@@ -61,11 +61,11 @@ Example: insertion of a new node (number 4) into the given tree in _automatic_ m
  |            |     1      |         |            |  1  |  2   |
  |            |            |         |            |     |      |
  +-------------------------+         +-------------------------+
-----------------------------------------------------------------
+----
 
 Same departure, but the mode is _manual_, and a *presel* _up_ message was sent beforehand:
 
----------------------------------------------------------------
+----
              b                                   b
             / \                                 / \
            3   a              -->              c   a
@@ -81,7 +81,7 @@ Same departure, but the mode is _manual_, and a *presel* _up_ message was sent b
 |            |     1      |         |     3      |     1      |
 |            |            |         |            |            |
 +-------------------------+         +-------------------------+
----------------------------------------------------------------
+----
 
 Containers
 ----------
