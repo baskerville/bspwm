@@ -335,6 +335,9 @@ _focus_follows_pointer_::
 _pointer_follows_monitor_::
     When focusing a monitor, put the pointer at its center.
 
+_monitor_focus_fallback_::
+    If the focus message fails, try to focus the nearest monitor in the same direction.
+
 _adaptative_raise_::
     Prevent floating windows from being raised when they might cover other floating windows.
 

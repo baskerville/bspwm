@@ -474,7 +474,13 @@ void process_message(char *msg, char *rsp)
             direction_t d;
             if (parse_direction(dir, &d)) {
                 node_t *n = nearest_neighbor(mon->desk, f, d);
-                focus_node(mon, mon->desk, n);
+                if (n == NULL && monitor_focus_fallback) {
+                    monitor_t *m = nearest_monitor(d);
+                    if (m != NULL)
+                        focus_node(m, m->desk, m->desk->focus);
+                } else {
+                    focus_node(mon, mon->desk, n);
+                }
             }
         }
     } else if (strcmp(cmd, "put_status") == 0) {
@@ -568,6 +574,11 @@ void set_setting(char *name, char *value, char *rsp)
         if (parse_bool(value, &b))
             pointer_follows_monitor = b;
         return;
+    } else if (strcmp(name, "monitor_focus_fallback") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            monitor_focus_fallback = b;
+        return;
     } else if (strcmp(name, "adaptative_raise") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -650,6 +661,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_pointer));
     else if (strcmp(name, "pointer_follows_monitor") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(pointer_follows_monitor));
+    else if (strcmp(name, "monitor_focus_fallback") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(monitor_focus_fallback));
     else if (strcmp(name, "adaptative_raise") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
     else if (strcmp(name, "apply_shadow_property") == 0)
