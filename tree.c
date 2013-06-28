@@ -772,6 +772,11 @@ void swap_nodes(node_t *n1, node_t *n2)
 
     PUTS("swap nodes");
 
+    if (n2->split_mode == MODE_MANUAL) {
+        transplant_node(mon, mon->desk, n1, n2);
+        return;
+    }
+
     /* (n1 and n2 are leaves) */
     node_t *pn1 = n1->parent;
     node_t *pn2 = n2->parent;
@@ -980,7 +985,7 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
 {
     if (d == NULL || d->root == NULL || is_leaf(d->root))
         return;
-    node_t *par = d->focus->parent;
+    node_t *p = d->focus->parent;
     bool focus_first_child = is_first_child(d->focus);
     if (dir == CIRCULATE_FORWARD)
         for (node_t *s = second_extrema(d->root), *f = prev_leaf(s, d->root); f != NULL; s = prev_leaf(f, d->root), f = prev_leaf(s, d->root))
@@ -988,10 +993,12 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
     else
         for (node_t *f = first_extrema(d->root), *s = next_leaf(f, d->root); s != NULL; f = next_leaf(s, d->root), s = next_leaf(f, d->root))
             swap_nodes(f, s);
+    /* if a transplantation occurred while swapping, the children of `p` might not be leaves anymore, */
+    /* hence we have to call the {first,second}_extrema functions to prevent a crash */
     if (focus_first_child)
-        focus_node(m, d, par->first_child);
+        focus_node(m, d, first_extrema(p->first_child));
     else
-        focus_node(m, d, par->second_child);
+        focus_node(m, d, second_extrema(p->second_child));
 }
 
 void update_vacant_state(node_t *n)

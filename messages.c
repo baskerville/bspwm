@@ -124,10 +124,7 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 node_t *n = nearest_neighbor(mon->desk, f, d);
                 if (n != NULL) {
-                    if (n->split_mode == MODE_MANUAL)
-                        transplant_node(mon, mon->desk, f, n);
-                    else
-                        swap_nodes(f, n);
+                    swap_nodes(f, n);
                     arrange(mon, mon->desk);
                 }
             }
