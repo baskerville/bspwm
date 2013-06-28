@@ -884,6 +884,30 @@ void select_monitor(monitor_t *m)
     put_status();
 }
 
+monitor_t *nearest_monitor(direction_t dir)
+{
+    int dmin = INT_MAX;
+    monitor_t *nearest = NULL;
+    xcb_rectangle_t rect = mon->rectangle;
+    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+        if (m == mon)
+            continue;
+        xcb_rectangle_t r = m->rectangle;
+        if ((dir == DIR_LEFT && r.x < rect.x) ||
+                (dir == DIR_RIGHT && r.x >= (rect.x + rect.width)) ||
+                (dir == DIR_UP && r.y < rect.y) ||
+                (dir == DIR_DOWN && r.y >= (rect.y + rect.height))) {
+            int d = ABS((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
+                ABS((r.y + r.height / 2) - (rect.y + rect.height / 2));
+            if (d < dmin) {
+                dmin = d;
+                nearest = m;
+            }
+        }
+    }
+    return nearest;
+}
+
 void select_desktop(monitor_t *m, desktop_t *d)
 {
     select_monitor(m);

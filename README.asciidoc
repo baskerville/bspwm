@@ -207,6 +207,9 @@ Messages
 *use_monitor* _MONITOR_NAME_::
     Select the given monitor.
 
+*focus_monitor* _left_|_right_|_up_|_down_::
+    Focus the nearest monitor in the given direction.
+
 *alternate*::
     Alternate between the current and the last focused window.
 

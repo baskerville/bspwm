@@ -298,6 +298,16 @@ void process_message(char *msg, char *rsp)
                 focus_node(m, m->desk, m->desk->focus);
             }
         }
+    } else if (strcmp(cmd, "focus_monitor") == 0) {
+        char *dir = strtok(NULL, TOK_SEP);
+        if (dir != NULL) {
+            direction_t d;
+            if (parse_direction(dir, &d)) {
+                monitor_t *m = nearest_monitor(d);
+                if (m != NULL)
+                    focus_node(m, m->desk, m->desk->focus);
+            }
+        }
     } else if (strcmp(cmd, "use") == 0) {
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
