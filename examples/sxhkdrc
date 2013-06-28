@@ -24,8 +24,10 @@ super + apostrophe
     bspc swap
 
 super + m
+    cur=$(xdo id); \
     wid=$(bspc biggest); \
-    [ -n "$wid" ] && xdo activate $wid && bspc swap
+    [ -n "$wid" -a "$cur" != "$wid" ] && \
+    xdo activate $wid && bspc swap
 
 super + {_,shift + }{h,j,k,l}
     bspc {focus,shift} {left,down,up,right}
@@ -41,6 +43,9 @@ super + bracket{left,right}
 
 super + ctrl + {h,j,k,l}
     bspc presel {left,down,up,right}
+
+super + ctrl + {_,shift + }space
+    bspc cancel{_, --all }
 
 super + alt + {h,j,k,l}
     bspc push {left,down,up,right}
