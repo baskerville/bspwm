@@ -151,6 +151,10 @@ node_t *find_fence(node_t *n, direction_t dir)
 
 node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
 {
+    if (n == NULL || n->client->fullscreen
+            || (d->layout == LAYOUT_MONOCLE && is_tiled(n->client)))
+        return NULL;
+
     node_t *nearest = NULL;
     if (history_aware_focus)
         nearest = nearest_from_history(d->history, n, dir);

@@ -115,17 +115,18 @@ void process_message(char *msg, char *rsp)
         else
             change_layout(mon, mon->desk, LAYOUT_MONOCLE);
     } else if (strcmp(cmd, "shift") == 0) {
-        node_t *f = mon->desk->focus;
-        if (f == NULL)
-            return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                node_t *n = nearest_neighbor(mon->desk, f, d);
+                node_t *n = nearest_neighbor(mon->desk, mon->desk->focus, d);
                 if (n != NULL) {
-                    swap_nodes(f, n);
+                    swap_nodes(mon->desk->focus, n);
                     arrange(mon, mon->desk);
+                } else if (monitor_focus_fallback) {
+                    monitor_t *m = nearest_monitor(d);
+                    if (m != NULL)
+                        transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
                 }
             }
         }
@@ -466,20 +467,17 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "focus") == 0) {
-        node_t *f = mon->desk->focus;
-        if (f == NULL || f->client->fullscreen)
-            return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                node_t *n = nearest_neighbor(mon->desk, f, d);
-                if (n == NULL && monitor_focus_fallback) {
+                node_t *n = nearest_neighbor(mon->desk, mon->desk->focus, d);
+                if (n != NULL) {
+                    focus_node(mon, mon->desk, n);
+                } else if (monitor_focus_fallback) {
                     monitor_t *m = nearest_monitor(d);
                     if (m != NULL)
                         focus_node(m, m->desk, m->desk->focus);
-                } else {
-                    focus_node(mon, mon->desk, n);
                 }
             }
         }
