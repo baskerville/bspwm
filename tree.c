@@ -639,6 +639,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
     if ((n == NULL && d->root != NULL)
             || n == mon->desk->focus)
+        return;
 
     if (mon->desk != d)
         clear_input_focus();
