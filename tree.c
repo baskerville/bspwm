@@ -637,8 +637,8 @@ void pseudo_focus(desktop_t *d, node_t *n)
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-    if (n == NULL && d->root != NULL)
-        return;
+    if ((n == NULL && d->root != NULL)
+            || n == mon->desk->focus)
 
     if (mon->desk != d)
         clear_input_focus();
