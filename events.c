@@ -294,14 +294,15 @@ void grab_pointer(pointer_action_t pac)
         frozen_pointer->window = c->window;
         frozen_pointer->horizontal_fence = NULL;
         frozen_pointer->vertical_fence = NULL;
-        bool backup;
 
         switch (pac)  {
             case ACTION_FOCUS:
-                backup = pointer_follows_monitor;
-                pointer_follows_monitor = false;
-                focus_node(loc.monitor, loc.desktop, loc.node);
-                pointer_follows_monitor = backup;
+                if (loc.node != mon->desk->focus) {
+                    bool backup = pointer_follows_monitor;
+                    pointer_follows_monitor = false;
+                    focus_node(loc.monitor, loc.desktop, loc.node);
+                    pointer_follows_monitor = backup;
+                }
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:
