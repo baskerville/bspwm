@@ -211,6 +211,8 @@ void client_message(xcb_generic_event_t *evt)
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
         handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
     } else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
+        if (loc.node == mon->desk->focus)
+            return;
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
             toggle_fullscreen(loc.desktop, loc.desktop->focus);
             arrange(loc.monitor, loc.desktop);
