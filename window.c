@@ -583,7 +583,7 @@ void toggle_visibility(void)
         for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root))
             window_set_visibility(n->client->window, visible);
     if (visible)
-        update_current();
+        update_input_focus();
 }
 
 void desktop_show(desktop_t *d)
@@ -625,6 +625,18 @@ void update_motion_recorder(void)
     }
 
     free(geo);
+}
+
+void update_input_focus(void)
+{
+    set_input_focus(mon->desk->focus);
+}
+
+void set_input_focus(node_t *n)
+{
+    if (n == NULL)
+        return;
+    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 }
 
 void clear_input_focus(void)

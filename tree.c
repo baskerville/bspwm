@@ -672,7 +672,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     pseudo_focus(d, n);
     stack(d, n);
 
-    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+    set_input_focus(n);
 
     if (focus_follows_pointer) {
         xcb_window_t win = XCB_NONE;
