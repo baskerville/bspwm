@@ -202,7 +202,7 @@ void process_message(char *msg, char *rsp)
             node_t *n;
             if (parse_direction(dir, &d) && (n = find_fence(mon->desk->focus, d)) != NULL) {
                 char *value = strtok(NULL, TOK_SEP);
-                if (sscanf(value, "%lf", &n->split_ratio) == 1)
+                if (value != NULL && sscanf(value, "%lf", &n->split_ratio) == 1)
                     arrange(mon, mon->desk);
             }
         }
