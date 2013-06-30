@@ -55,7 +55,7 @@ void process_message(char *msg, char *rsp)
     } else if (strcmp(cmd, "close") == 0) {
         window_close(mon->desk->focus);
     } else if (strcmp(cmd, "kill") == 0) {
-        window_kill(mon->desk, mon->desk->focus);
+        window_kill(mon, mon->desk, mon->desk->focus);
     } else if (strcmp(cmd, "rotate") == 0) {
         char *deg = strtok(NULL, TOK_SEP);
         if (deg != NULL) {
