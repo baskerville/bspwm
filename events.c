@@ -218,6 +218,10 @@ void client_message(xcb_generic_event_t *evt)
             arrange(loc.monitor, loc.desktop);
         }
         focus_node(loc.monitor, loc.desktop, loc.node);
+    } else if (e->type == ewmh->_NET_WM_DESKTOP) {
+        desktop_location_t dloc;
+        if (ewmh_locate_desktop(e->data.data32[0], &dloc))
+            transfer_node(loc.monitor, loc.desktop, dloc.monitor, dloc.desktop, loc.node);
     }
 }
 
