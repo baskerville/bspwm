@@ -328,7 +328,7 @@ void window_close(node_t *n)
     xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
 }
 
-void window_kill(desktop_t *d, node_t *n)
+void window_kill(monitor_t *m, desktop_t *d, node_t *n)
 {
     if (n == NULL)
         return;
@@ -338,6 +338,7 @@ void window_kill(desktop_t *d, node_t *n)
 
     xcb_kill_client(dpy, win);
     remove_node(d, n);
+    arrange(m, d);
 }
 
 void toggle_fullscreen(desktop_t *d, node_t *n)
