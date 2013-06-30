@@ -147,7 +147,7 @@ Messages
 *pull* _left_|_right_|_up_|_down_::
     Pull the fence located in the given direction.
 
-*fence_ratio* _left_|_right_|_up_|_down_::
+*fence_ratio* _left_|_right_|_up_|_down_ _RATIO_::
     Set the splitting ratio of the fence located in the given direction.
 
 *cycle* _next_|_prev_ [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
