@@ -124,6 +124,7 @@ void init(void)
     monitor_uid = desktop_uid = client_uid = rule_uid = 0;
     mon = last_mon = mon_head = mon_tail = NULL;
     rule_head = rule_tail = NULL;
+    status_fifo = NULL;
     randr_base = 0;
     visible = true;
     exit_status = 0;
