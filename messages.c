@@ -121,7 +121,7 @@ void process_message(char *msg, char *rsp)
             if (parse_direction(dir, &d)) {
                 node_t *n = nearest_neighbor(mon->desk, mon->desk->focus, d);
                 if (n != NULL) {
-                    swap_nodes(mon->desk->focus, n);
+                    swap_nodes(mon->desk->focus, n, true);
                     arrange(mon, mon->desk);
                 } else if (monitor_focus_fallback) {
                     monitor_t *m = nearest_monitor(d);
@@ -413,7 +413,7 @@ void process_message(char *msg, char *rsp)
         if (!parse_swap_option(opt, &o))
             return;
         node_t *last_focus = history_get(mon->desk->history, 1);
-        swap_nodes(mon->desk->focus, last_focus);
+        swap_nodes(mon->desk->focus, last_focus, true);
         arrange(mon, mon->desk);
         if (o == SWAP_OPTION_SWAP_FOCUS)
             focus_node(mon, mon->desk, last_focus);
