@@ -376,8 +376,9 @@ Key Features
 Contributors
 ------------
 
-* Ivan Kanakarakis <ivan.kanak at gmail.com>
+* Steven Allen <steven at stebalien.com>
 * Thomas Adam <thomas at xteddy.org>
+* Ivan Kanakarakis <ivan.kanak at gmail.com>
 
 Author
 ------
