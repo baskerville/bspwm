@@ -68,9 +68,6 @@ super + button{1-3}
 super + !button{1-3}
     bspc track_pointer %i %i
 
-super + @button{1-3}
-    bspc ungrab_pointer
-
 #
 # wm independent hotkeys
 #

@@ -90,8 +90,6 @@ void process_message(char *msg, char *rsp)
         int root_x, root_y;
         if (sscanf(arg1, "%i", &root_x) == 1 && sscanf(arg2, "%i", &root_y) == 1)
             track_pointer(root_x, root_y);
-    } else if (strcmp(cmd, "ungrab_pointer") == 0) {
-        ungrab_pointer();
     } else if (strcmp(cmd, "layout") == 0) {
         char *lyt = strtok(NULL, TOK_SEP);
         if (lyt != NULL) {

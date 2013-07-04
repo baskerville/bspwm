@@ -464,6 +464,15 @@ void track_pointer(int root_x, int root_y)
                 x = rect.x + delta_x;
                 y = rect.y + delta_y;
                 window_move(win, x, y);
+                c->floating_rectangle.x = x;
+                c->floating_rectangle.y = y;
+                xcb_point_t pt = (xcb_point_t) {root_x, root_y};
+                monitor_t *pmon = monitor_from_point(pt);
+                if (pmon == NULL || pmon == m)
+                    return;
+                transfer_node(m, d, pmon, pmon->desk, n);
+                frozen_pointer->monitor = pmon;
+                frozen_pointer->desktop = pmon->desk;
             }
             break;
         case ACTION_RESIZE_SIDE:
@@ -554,17 +563,4 @@ void track_pointer(int root_x, int root_y)
         case ACTION_NONE:
             break;
     }
-}
-
-void ungrab_pointer(void)
-{
-    PUTS("ungrab pointer");
-
-    if (frozen_pointer->action == ACTION_NONE || frozen_pointer->is_tiled)
-        return;
-
-    update_floating_rectangle(frozen_pointer->client);
-    monitor_t *m = underlying_monitor(frozen_pointer->client);
-    if (m != NULL && m != frozen_pointer->monitor)
-        transfer_node(frozen_pointer->monitor, frozen_pointer->desktop, m, m->desk, frozen_pointer->node);
 }

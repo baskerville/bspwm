@@ -18,6 +18,5 @@ void motion_notify(void);
 void handle_state(monitor_t *, desktop_t *, node_t *, xcb_atom_t, unsigned int);
 void grab_pointer(pointer_action_t);
 void track_pointer(int, int);
-void ungrab_pointer(void);
 
 #endif

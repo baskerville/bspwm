@@ -168,9 +168,6 @@ Messages
 *track_pointer* _ROOT_X_ _ROOT_Y_::
     Pass the pointer root coordinates for the current pointer action.
 
-*ungrab_pointer*::
-    End the current pointer action.
-
 *toggle_fullscreen*::
     Toggle the fullscreen state of the current window.
 
