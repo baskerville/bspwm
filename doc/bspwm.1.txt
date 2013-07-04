@@ -344,6 +344,9 @@ _apply_shadow_property_::
 _auto_alternate_::
     Interpret two consecutive identical *use* messages as an *alternate* message.
 
+_auto_cancel_::
+    Interpret two consecutive identical *presel* messages as a *cancel* message.
+
 _focus_by_distance_::
     Use window or leaf distance for focus movement.
 

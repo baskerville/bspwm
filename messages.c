@@ -175,11 +175,19 @@ void process_message(char *msg, char *rsp)
         if (dir != NULL) {
             direction_t d;
             if (parse_direction(dir, &d)) {
-                mon->desk->focus->split_mode = MODE_MANUAL;
-                mon->desk->focus->split_dir = d;
                 char *rat = strtok(NULL, TOK_SEP);
+                double r = mon->desk->focus->split_ratio;
                 if (rat != NULL)
-                    sscanf(rat, "%lf", &mon->desk->focus->split_ratio);
+                    sscanf(rat, "%lf", &r);
+                if (auto_cancel && mon->desk->focus->split_mode == MODE_MANUAL
+                        && d == mon->desk->focus->split_dir
+                        && r == mon->desk->focus->split_ratio) {
+                    reset_mode(mon->desk, mon->desk->focus, CANCEL_OPTION_FOCUSED);
+                } else {
+                    mon->desk->focus->split_mode = MODE_MANUAL;
+                    mon->desk->focus->split_dir = d;
+                    mon->desk->focus->split_ratio = r;
+                }
                 window_draw_border(mon->desk->focus, true, true);
             }
         }
@@ -590,6 +598,11 @@ void set_setting(char *name, char *value, char *rsp)
         if (parse_bool(value, &b))
             auto_alternate = b;
         return;
+    } else if (strcmp(name, "auto_cancel") == 0) {
+        bool b;
+        if (parse_bool(value, &b))
+            auto_cancel = b;
+        return;
     } else if (strcmp(name, "focus_by_distance") == 0) {
         bool b;
         if (parse_bool(value, &b))
@@ -665,6 +678,8 @@ void get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(apply_shadow_property));
     else if (strcmp(name, "auto_alternate") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_alternate));
+    else if (strcmp(name, "auto_cancel") == 0)
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_cancel));
     else if (strcmp(name, "focus_by_distance") == 0)
         snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_by_distance));
     else if (strcmp(name, "history_aware_focus") == 0)

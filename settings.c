@@ -68,6 +68,7 @@ void load_settings(void)
     adaptative_raise = ADAPTATIVE_RAISE;
     apply_shadow_property = APPLY_SHADOW_PROPERTY;
     auto_alternate = AUTO_ALTERNATE;
+    auto_cancel = AUTO_CANCEL;
     focus_by_distance = FOCUS_BY_DISTANCE;
     history_aware_focus = HISTORY_AWARE_FOCUS;
 }
