@@ -213,6 +213,8 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "drop_to_monitor") == 0) {
+        if (mon->desk->focus == NULL)
+            return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             cycle_dir_t d;
@@ -230,6 +232,8 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "send_to_monitor") == 0) {
+        if (mon->desk->focus == NULL)
+            return;
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             monitor_t *m = find_monitor(name);
@@ -242,6 +246,8 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "drop_to") == 0) {
+        if (mon->desk->focus == NULL)
+            return;
         char *dir = strtok(NULL, TOK_SEP);
         if (dir != NULL) {
             cycle_dir_t c;
@@ -259,6 +265,8 @@ void process_message(char *msg, char *rsp)
             }
         }
     } else if (strcmp(cmd, "send_to") == 0) {
+        if (mon->desk->focus == NULL)
+            return;
         char *name = strtok(NULL, TOK_SEP);
         if (name != NULL) {
             desktop_location_t loc;
