@@ -1,3 +1,2 @@
-- Extend focusing to the *neighboring* monitors.
+- Externalize rules?
 - Use macros in `messages.c`.
-- Better handling of the floating window concept?
