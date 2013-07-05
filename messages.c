@@ -123,8 +123,10 @@ void process_message(char *msg, char *rsp)
                     arrange(mon, mon->desk);
                 } else if (monitor_focus_fallback) {
                     monitor_t *m = nearest_monitor(d);
-                    if (m != NULL)
+                    if (m != NULL) {
                         transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
+                        focus_node(m, m->desk, m->desk->focus);
+                    }
                 }
             }
         }
