@@ -13,9 +13,9 @@ bspwm - Tiling window manager based on binary space partitioning
 Synopsis
 --------
 
-*bspwm* [*-h*|*-v*|*-s* _PANEL_FIFO_|*-p* _PANEL_PREFIX_]
+*bspwm* [*-h*|*-v*|*-s* 'PANEL_FIFO'|*-p* 'PANEL_PREFIX']
 
-*bspc* _MESSAGE_ [_ARGUMENTS_] [_OPTIONS_]
+*bspc* 'MESSAGE' ['ARGUMENTS'] ['OPTIONS']
 
 Description
 -----------
@@ -29,7 +29,7 @@ Configuration
 
 *bspwm* have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
 
-Its configuration file is _$XDG_CONFIG_HOME/bspwm/autostart_.
+Its configuration file is '$XDG_CONFIG_HOME/bspwm/autostart'.
 
 Keyboard and pointer bindings are defined with https://github.com/baskerville/sxhkd[sxhkd].
 
@@ -38,11 +38,11 @@ Example configuration files can be found in the *examples* directory.
 Splitting Modes
 ---------------
 
-There is only two splitting modes: _automatic_ and _manual_.
+There is only two splitting modes: 'automatic' and 'manual'.
 
-The default mode is _automatic_. The _manual_ mode is entered by sending a *presel* message.
+The default mode is 'automatic'. The 'manual' mode is entered by sending a *presel* message.
 
-Example: insertion of a new node (number 4) into the given tree in _automatic_ mode:
+Example: insertion of a new node (number 4) into the given tree in 'automatic' mode:
 
 ----
               b                                   c
@@ -63,7 +63,7 @@ Example: insertion of a new node (number 4) into the given tree in _automatic_ m
  +-------------------------+         +-------------------------+
 ----
 
-Same departure, but the mode is _manual_, and a *presel* _up_ message was sent beforehand:
+Same departure, but the mode is 'manual', and a *presel* 'up' message was sent beforehand:
 
 ----
              b                                   b
@@ -94,13 +94,13 @@ Messages
 --------
 
 
-*get* _SETTING_::
+*get* 'SETTING'::
     Return the value of the given setting.
 
-*set* _SETTING_ _VALUE_::
+*set* 'SETTING' 'VALUE'::
     Set the value of the given setting.
 
-*list* [_DESKTOP_NAME_]::
+*list* ['DESKTOP_NAME']::
     Output the internal representation of the window tree.
 
 *list_desktops* [*--quiet*]::
@@ -118,52 +118,52 @@ Messages
 *list_rules*::
     Return the list of rules.
 
-*presel* _left_|_right_|_up_|_down_ [_SPLIT_RATIO_]::
+*presel* 'left'|'right'|'up'|'down' ['SPLIT_RATIO']::
     Switch to manual mode and select the splitting direction.
 
 *cancel* [*--all*]::
     Switch to automatic mode.
 
-*ratio* _VALUE_::
+*ratio* 'VALUE'::
     Set the splitting ratio of the focused window.
 
-*pad* _MONITOR_NAME_ [_TOP_PADDING_ [_RIGHT_PADDING_ [_BOTTOM_PADDING_ [_LEFT_PADDING_]]]]::
+*pad* 'MONITOR_NAME' ['TOP_PADDING' ['RIGHT_PADDING' ['BOTTOM_PADDING' ['LEFT_PADDING']]]]::
     Set the padding of the given monitor.
 
-*focus* _left_|_right_|_up_|_down_::
+*focus* 'left'|'right'|'up'|'down'::
     Focus the neighbor window situated in the given direction.
 
-*shift* _left_|_right_|_up_|_down_::
+*shift* 'left'|'right'|'up'|'down'::
     Exchange the current window with the given neighbor.
 
 *swap* [*--keep-focus*]::
     Swap the focused window with the last focused window.
 
-*push* _left_|_right_|_up_|_down_::
+*push* 'left'|'right'|'up'|'down'::
     Push the fence located in the given direction.
 
-*pull* _left_|_right_|_up_|_down_::
+*pull* 'left'|'right'|'up'|'down'::
     Pull the fence located in the given direction.
 
-*fence_ratio* _left_|_right_|_up_|_down_ _RATIO_::
+*fence_ratio* 'left'|'right'|'up'|'down' 'RATIO'::
     Set the splitting ratio of the fence located in the given direction.
 
-*cycle* _next_|_prev_ [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
+*cycle* 'next'|'prev' [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
     Focus the next or previous window matching the given constraints.
 
-*nearest* _older_|_newer_ [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
+*nearest* 'older'|'newer' [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
     Focus the nearest window matching the given constraints.
 
 *biggest*::
     Return the ID of the biggest tiled window.
 
-*circulate* _forward_|_backward_::
+*circulate* 'forward'|'backward'::
     Circulate the leaves in the given direction.
 
-*grab_pointer* _focus_|_move_|_resize_side_|_resize_corner_::
+*grab_pointer* 'focus'|'move'|'resize_side'|'resize_corner'::
     Begin the specified pointer action.
 
-*track_pointer* _ROOT_X_ _ROOT_Y_::
+*track_pointer* 'ROOT_X' 'ROOT_Y'::
     Pass the pointer root coordinates for the current pointer action.
 
 *toggle_fullscreen*::
@@ -184,25 +184,25 @@ Messages
 *kill*::
     Kill the focused window.
 
-*send_to* _DESKTOP_NAME_ [*--follow*]::
+*send_to* 'DESKTOP_NAME' [*--follow*]::
     Send the focused window to the given desktop.
 
-*drop_to* _next_|_prev_ [*--follow*]::
+*drop_to* 'next'|'prev' [*--follow*]::
     Send the focused window to the next or previous desktop.
 
-*send_to_monitor* _MONITOR_NAME_ [*--follow*]::
+*send_to_monitor* 'MONITOR_NAME' [*--follow*]::
     Send the focused window to the given monitor.
 
-*drop_to_monitor* _next_|_prev_ [*--follow*]::
+*drop_to_monitor* 'next'|'prev' [*--follow*]::
     Send the focused window to the next or previous monitor.
 
-*use* _DESKTOP_NAME_::
+*use* 'DESKTOP_NAME'::
     Select the given desktop.
 
-*use_monitor* _MONITOR_NAME_::
+*use_monitor* 'MONITOR_NAME'::
     Select the given monitor.
 
-*focus_monitor* _left_|_right_|_up_|_down_::
+*focus_monitor* 'left'|'right'|'up'|'down'::
     Focus the nearest monitor in the given direction.
 
 *alternate*::
@@ -214,50 +214,50 @@ Messages
 *alternate_monitor*::
     Alternate between the current and the last focused monitor.
 
-*add* _DESKTOP_NAME_ ...::
+*add* 'DESKTOP_NAME' ...::
     Make new desktops with the given names.
 
-*add_in* _MONITOR_NAME_ _DESKTOP_NAME_ ...::
+*add_in* 'MONITOR_NAME' 'DESKTOP_NAME' ...::
     Make new desktops with the given names in the given monitor.
 
-*rename_monitor* _CURRENT_NAME_ _NEW_NAME_::
-    Rename the monitor named _CURRENT_NAME_ to _NEW_NAME_.
+*rename_monitor* 'CURRENT_NAME' 'NEW_NAME'::
+    Rename the monitor named 'CURRENT_NAME' to 'NEW_NAME'.
 
-*rename* _CURRENT_NAME_ _NEW_NAME_::
-    Rename the desktop named _CURRENT_NAME_ to _NEW_NAME_.
+*rename* 'CURRENT_NAME' 'NEW_NAME'::
+    Rename the desktop named 'CURRENT_NAME' to 'NEW_NAME'.
 
-*remove_desktop* _DESKTOP_NAME_ ...::
+*remove_desktop* 'DESKTOP_NAME' ...::
     Remove the given desktops.
 
-*send_desktop_to* _MONITOR_NAME_ [*--follow*]::
+*send_desktop_to* 'MONITOR_NAME' [*--follow*]::
     Send the current desktop to the given monitor.
 
-*cycle_monitor* _next_|_prev_::
+*cycle_monitor* 'next'|'prev'::
     Select the next or previous monitor.
 
-*cycle_desktop* _next_|_prev_ [*--skip-free*|*--skip-occupied*]::
+*cycle_desktop* 'next'|'prev' [*--skip-free*|*--skip-occupied*]::
     Select the next or previous desktop.
 
-*layout* _monocle_|_tiled_ [_DESKTOP_NAME_ ...]::
+*layout* 'monocle'|'tiled' ['DESKTOP_NAME' ...]::
     Set the layout of the given desktops (current if none given).
 
 *cycle_layout*::
     Cycle the layout of the current desktop.
 
-*rotate* _clockwise_|_counter_clockwise_|_full_cycle_::
+*rotate* 'clockwise'|'counter_clockwise'|'full_cycle'::
     Rotate the window tree.
 
-*flip* _horizontal_|_vertical_::
+*flip* 'horizontal'|'vertical'::
     Flip the window tree.
 
 *balance*::
     Adjust the split ratios so that all windows occupy the same area.
 
-*rule* _PATTERN_ [_DESKTOP_NAME_] [_floating_] [_follow_]::
-    Create a new rule (_PATTERN_ must match the class or instance name).
+*rule* 'PATTERN' ['DESKTOP_NAME'] ['floating'] ['follow']::
+    Create a new rule ('PATTERN' must match the class or instance name).
 
-*remove_rule* _UID_ ...::
-    Remove the rules with the given _UIDs_.
+*remove_rule* 'UID' ...::
+    Remove the rules with the given 'UIDs'.
 
 *put_status*::
     Output the current state to the panel fifo.
@@ -265,111 +265,114 @@ Messages
 *adopt_orphans*::
     Manage all the unmanaged windows remaining from a previous session.
 
-*restore_layout* _FILE_PATH_::
-    Restore the layout of each desktop from the content of _FILE_PATH_.
+*restore_layout* 'FILE_PATH'::
+    Restore the layout of each desktop from the content of 'FILE_PATH'.
 
-*restore_history* _FILE_PATH_::
-    Restore the history of each desktop from the content of _FILE_PATH_.
+*restore_history* 'FILE_PATH'::
+    Restore the history of each desktop from the content of 'FILE_PATH'.
 
-*quit* [_EXIT_STATUS_]::
+*quit* ['EXIT_STATUS']::
     Quit.
 
 Settings
 --------
-Colors are either http://en.wikipedia.org/wiki/X11_color_names[X color names] or _#RRGGBB_, booleans are _true_ or _false_.
+Colors are either http://en.wikipedia.org/wiki/X11_color_names[X color names] or '#RRGGBB', booleans are 'true' or 'false'.
 
-All the boolean settings are _false_ by default.
+All the boolean settings are 'false' by default.
 
 
-_focused_border_color_::
+'focused_border_color'::
     Color of the border of a focused window of a focused monitor.
 
-_active_border_color_::
+'active_border_color'::
     Color of the border of a focused window of an unfocused monitor.
 
-_normal_border_color_::
+'normal_border_color'::
     Color of the border of an unfocused window.
 
-_presel_border_color_::
+'presel_border_color'::
     Color of the *presel* message feedback.
 
-_focused_locked_border_color_::
+'focused_locked_border_color'::
     Color of the border of a focused locked window of a focused monitor.
 
-_active_locked_border_color_::
+'active_locked_border_color'::
     Color of the border of a focused locked window of an unfocused monitor.
 
-_normal_locked_border_color_::
+'normal_locked_border_color'::
     Color of the border of an unfocused locked window.
 
-_urgent_border_color_::
+'urgent_border_color'::
     Color of the border of an urgent window.
 
-_border_width_::
+'border_width'::
     Window border width.
 
-_window_gap_::
+'window_gap'::
     Value of the gap that separates windows.
 
-_split_ratio_::
+'split_ratio'::
     Default split ratio.
 
-_top_padding_, _right_padding_, _bottom_padding_, _left_padding_::
+'top_padding'::
+'right_padding'::
+'bottom_padding'::
+'left_padding'::
     Padding space added at the sides of the current monitor.
 
-_wm_name_::
+'wm_name'::
     The value that shall be used for the '_NET_WM_NAME' property of the root window.
 
-_borderless_monocle_::
+'borderless_monocle'::
     Remove borders for tiled windows in monocle mode.
 
-_gapless_monocle_::
+'gapless_monocle'::
     Remove gaps for tiled windows in monocle mode.
 
-_focus_follows_pointer_::
+'focus_follows_pointer'::
     Focus the window under the pointer.
 
-_pointer_follows_monitor_::
+'pointer_follows_monitor'::
     When focusing a monitor, put the pointer at its center.
 
-_monitor_focus_fallback_::
+'monitor_focus_fallback'::
     If the focus message fails, try to focus the nearest monitor in the same direction.
 
-_adaptative_raise_::
+'adaptative_raise'::
     Prevent floating windows from being raised when they might cover other floating windows.
 
-_apply_shadow_property_::
+'apply_shadow_property'::
     Enable shadows for floating windows via the '_COMPTON_SHADOW' property.
 
-_auto_alternate_::
+'auto_alternate'::
     Interpret two consecutive identical *use* messages as an *alternate* message.
 
-_auto_cancel_::
+'auto_cancel'::
     Interpret two consecutive identical *presel* messages as a *cancel* message.
 
-_focus_by_distance_::
+'focus_by_distance'::
     Use window or leaf distance for focus movement.
 
-_history_aware_focus_::
+'history_aware_focus'::
     Give priority to the focus history when focusing nodes.
 
 Environment Variables
 ---------------------
 
-_BSPWM_SOCKET_::
+'BSPWM_SOCKET'::
   The path of the socket used for the communication between *bspc* and *bspwm*.
 
 Panels
 ------
 
-* Any EWMH compliant panel (e.g.: _tint2_, _bmpanel2_, etc.).
-* A custom panel if the _-s_ flag is used (have a look at the files in _examples/panel_).
+* Any EWMH compliant panel (e.g.: 'tint2', 'bmpanel2', etc.).
+* A custom panel if the '-s' flag is used (have a look at the files in 'examples/panel').
 
 Key Features
 ------------
 
 * Configured and controlled through messages.
-* Multiple monitors support (via _RandR_).
+* Multiple monitors support (via 'RandR').
 * EWMH support (*tint2* works).
 * Automatic and manual modes.
 
