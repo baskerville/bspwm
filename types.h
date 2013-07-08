@@ -37,38 +37,33 @@ typedef enum {
 } value_change_t;
 
 typedef enum {
-    LIST_OPTION_VERBOSE,
-    LIST_OPTION_QUIET
-} list_option_t;
+    CLIENT_TYPE_ALL,
+    CLIENT_TYPE_FLOATING,
+    CLIENT_TYPE_TILED
+} client_type_t;
 
 typedef enum {
-    SEND_OPTION_FOLLOW,
-    SEND_OPTION_DONT_FOLLOW
-} send_option_t;
+    CLIENT_CLASS_ALL,
+    CLIENT_CLASS_EQUAL,
+    CLIENT_CLASS_DIFFER
+} client_class_t;
+
+typedef struct {
+    client_type_t type;
+    client_class_t class;
+} client_select_t;
 
 typedef enum {
-    SWAP_OPTION_KEEP_FOCUS,
-    SWAP_OPTION_SWAP_FOCUS
-} swap_option_t;
+    ALTER_NONE,
+    ALTER_TOGGLE,
+    ALTER_SET
+} state_alter_t;
 
 typedef enum {
-    CANCEL_OPTION_FOCUSED,
-    CANCEL_OPTION_ALL
-} cancel_option_t;
-
-typedef enum {
-    CLIENT_SKIP_NONE,
-    CLIENT_SKIP_FLOATING,
-    CLIENT_SKIP_TILED,
-    CLIENT_SKIP_CLASS_EQUAL,
-    CLIENT_SKIP_CLASS_DIFFER
-} skip_client_t;
-
-typedef enum {
-    DESKTOP_SKIP_NONE,
-    DESKTOP_SKIP_FREE,
-    DESKTOP_SKIP_OCCUPIED
-} skip_desktop_t;
+    DESKTOP_ALL,
+    DESKTOP_FREE,
+    DESKTOP_OCCUPIED
+} desktop_select_t;
 
 typedef enum {
     CYCLE_NEXT,
@@ -76,21 +71,9 @@ typedef enum {
 } cycle_dir_t;
 
 typedef enum {
-    NEAREST_OLDER,
-    NEAREST_NEWER
-} nearest_arg_t;
-
-typedef enum {
     CIRCULATE_FORWARD,
     CIRCULATE_BACKWARD
 } circulate_dir_t;
-
-typedef enum {
-    ROTATE_IDENTITY,
-    ROTATE_CLOCKWISE,
-    ROTATE_COUNTER_CLOCKWISE,
-    ROTATE_FULL_CYCLE
-} rotate_t;
 
 typedef enum {
     FLIP_HORIZONTAL,
@@ -98,17 +81,17 @@ typedef enum {
 } flip_t;
 
 typedef enum {
-    DIR_LEFT,
     DIR_RIGHT,
-    DIR_UP,
-    DIR_DOWN
+    DIR_DOWN,
+    DIR_LEFT,
+    DIR_UP
 } direction_t;
 
 typedef enum {
     CORNER_TOP_LEFT,
     CORNER_TOP_RIGHT,
-    CORNER_BOTTOM_LEFT,
-    CORNER_BOTTOM_RIGHT
+    CORNER_BOTTOM_RIGHT,
+    CORNER_BOTTOM_LEFT
 } corner_t;
 
 typedef enum {
@@ -128,7 +111,6 @@ typedef enum {
 
 typedef struct {
     xcb_window_t window;
-    unsigned int uid;
     char class_name[MAXLEN];
     unsigned int border_width;
     bool floating;
@@ -146,7 +128,7 @@ struct node_t {
     double split_ratio;
     split_mode_t split_mode;
     direction_t split_dir;
-    rotate_t birth_rotation;
+    int birth_rotation;
     xcb_rectangle_t rectangle;
     bool vacant;          /* vacant nodes only hold floating clients */
     node_t *first_child;
@@ -198,14 +180,19 @@ struct monitor_t {
 };
 
 typedef struct {
+    monitor_t *monitor;
+    desktop_t *desktop;
+    node_t *node;
+} coordinates_t;
+
+typedef struct {
     char name[MAXLEN];
 } rule_cause_t;
 
 typedef struct {
     bool floating;
     bool follow;
-    monitor_t *monitor;
-    desktop_t *desktop;
+    char desc[MAXLEN];
 } rule_effect_t;
 
 typedef struct rule_t rule_t;
@@ -216,17 +203,6 @@ struct rule_t {
     rule_t *prev;
     rule_t *next;
 };
-
-typedef struct {
-    node_t *node;
-    desktop_t *desktop;
-    monitor_t *monitor;
-} window_location_t;
-
-typedef struct {
-    desktop_t *desktop;
-    monitor_t *monitor;
-} desktop_location_t;
 
 typedef struct {
     xcb_point_t position;

@@ -17,7 +17,7 @@ node_t *make_node(void)
     n->split_ratio = split_ratio;
     n->split_mode = MODE_AUTOMATIC;
     n->split_type = TYPE_VERTICAL;
-    n->birth_rotation = ROTATE_IDENTITY;
+    n->birth_rotation = 0;
     n->client = NULL;
     n->vacant = false;
     return n;
@@ -41,7 +41,7 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
 monitor_t *find_monitor(char *name)
 {
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        if (strcmp(m->name, name) == 0)
+        if (streq(m->name, name))
             return m;
     return NULL;
 }
@@ -102,6 +102,8 @@ void remove_monitor(monitor_t *m)
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
+    if (ms == md)
+        return;
     desktop_t *dd = ms->desk;
     unlink_desktop(ms, d);
     insert_desktop(md, d);
@@ -201,7 +203,6 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 {
     PRINTF("remove desktop %s\n", d->name);
 
-    prune_rules(d);
     unlink_desktop(m, d);
     empty_desktop(d);
     free(d);
@@ -215,7 +216,6 @@ client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
     strncpy(c->class_name, MISSING_VALUE, sizeof(c->class_name));
-    c->uid = ++client_uid;
     c->border_width = border_width;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;
@@ -228,8 +228,7 @@ rule_t *make_rule(void)
     r->uid = ++rule_uid;
     r->effect.floating = false;
     r->effect.follow = false;
-    r->effect.monitor = NULL;
-    r->effect.desktop = NULL;
+    r->effect.desc[0] = '\0';
     r->prev = NULL;
     r->next = NULL;
     return r;

@@ -1,2 +1,1 @@
 - Externalize rules?
-- Use macros in `messages.c`.

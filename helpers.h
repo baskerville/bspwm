@@ -4,6 +4,7 @@
 #include <xcb/xcb.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #define LENGTH(x)         (sizeof(x) / sizeof(*x))
@@ -15,9 +16,12 @@
 #define XCB_CONFIG_WINDOW_X_Y               XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y
 #define XCB_CONFIG_WINDOW_WIDTH_HEIGHT      XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT
 #define XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT  XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT
-#define MAXLEN 256
+
+#define MAXLEN    256
+#define INIT_CAP    8
 
 #define REMLEN(x)         (BUFSIZ - strlen(x) - 1)
+#define streq(s1, s2)     (strcmp((s1), (s2)) == 0)
 
 #ifdef DEBUG
 #  define PUTS(x)         puts(x)
@@ -30,7 +34,7 @@
 void warn(char *, ...);
 __attribute__((noreturn))
 void err(char *, ...);
-uint32_t get_color(char *);
+bool get_color(char *, uint32_t *);
 double distance(xcb_point_t, xcb_point_t);
 
 #endif

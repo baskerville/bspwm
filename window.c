@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "ewmh.h"
 #include "rules.h"
+#include "query.h"
 #include "window.h"
 
 void center(xcb_rectangle_t a, xcb_rectangle_t *b)
@@ -32,32 +33,6 @@ bool might_cover(desktop_t *d, node_t *n)
     for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root))
         if (f != n && is_floating(f->client) && contains(n->client->floating_rectangle, f->client->floating_rectangle))
             return true;
-    return false;
-}
-
-bool locate_window(xcb_window_t win, window_location_t *loc)
-{
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-                if (n->client->window == win) {
-                    loc->monitor = m;
-                    loc->desktop = d;
-                    loc->node = n;
-                    return true;
-                }
-    return false;
-}
-
-bool locate_desktop(char *name, desktop_location_t *loc)
-{
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-            if (strcmp(d->name, name) == 0) {
-                loc->monitor = m;
-                loc->desktop = d;
-                return true;
-            }
     return false;
 }
 
@@ -115,7 +90,7 @@ monitor_t *underlying_monitor(client_t *c)
 
 void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 {
-    window_location_t loc;
+    coordinates_t loc;
     xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
     uint8_t override_redirect = 0;
 
@@ -157,13 +132,13 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     disable_shadow(c->window);
 
     if (floating)
-        toggle_floating(d, n);
+        set_floating(d, n, true);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
-        toggle_fullscreen(d, d->focus);
+        set_fullscreen(d, d->focus, false);
 
     if (fullscreen)
-        toggle_fullscreen(d, n);
+        set_fullscreen(d, n, true);
 
     if (is_tiled(c))
         window_lower(c->window);
@@ -215,7 +190,7 @@ void adopt_orphans(void)
         xcb_window_t win = wins[i];
         window_hide(win);
         if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
-            desktop_location_t loc;
+            coordinates_t loc;
             if (ewmh_locate_desktop(idx, &loc))
                 manage_window(loc.monitor, loc.desktop, win);
             else
@@ -328,7 +303,7 @@ void window_close(node_t *n)
     xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
 }
 
-void window_kill(monitor_t *m, desktop_t *d, node_t *n)
+void window_kill(desktop_t *d, node_t *n)
 {
     if (n == NULL)
         return;
@@ -338,44 +313,42 @@ void window_kill(monitor_t *m, desktop_t *d, node_t *n)
 
     xcb_kill_client(dpy, win);
     remove_node(d, n);
-    arrange(m, d);
 }
 
-void toggle_fullscreen(desktop_t *d, node_t *n)
+void set_fullscreen(desktop_t *d, node_t *n, bool value)
 {
-    if (n == NULL)
+    if (n == NULL || n->client->fullscreen == value)
         return;
 
     client_t *c = n->client;
 
-    PRINTF("toggle fullscreen %X\n", c->window);
+    PRINTF("fullscreen %X: %s\n", c->window, BOOLSTR(value));
 
-    if (c->fullscreen) {
-        c->fullscreen = false;
-        xcb_atom_t values[] = {XCB_NONE};
-        xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        stack(d, n);
-    } else {
+    if (value) {
         c->fullscreen = true;
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
         window_raise(c->window);
+    } else {
+        c->fullscreen = false;
+        xcb_atom_t values[] = {XCB_NONE};
+        xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
+        stack(d, n);
     }
 }
 
-void toggle_floating(desktop_t *d, node_t *n)
+void set_floating(desktop_t *d, node_t *n, bool value)
 {
-    if (n == NULL || n->client->transient || n->client->fullscreen)
+    if (n == NULL || n->client->transient || n->client->fullscreen || n->client->floating == value)
         return;
 
-    PRINTF("toggle floating %X\n", n->client->window);
+    PRINTF("floating %X: %s\n", n->client->window, BOOLSTR(value));
 
     n->split_mode = MODE_AUTOMATIC;
     client_t *c = n->client;
-    c->floating = !c->floating;
-    n->vacant = !n->vacant;
+    c->floating = n->vacant = value;
     update_vacant_state(n->parent);
-    if (c->floating) {
+    if (value) {
         enable_shadow(c->window);
         unrotate_brother(n);
     } else {
@@ -385,16 +358,16 @@ void toggle_floating(desktop_t *d, node_t *n)
     stack(d, n);
 }
 
-void toggle_locked(monitor_t *m, desktop_t *d, node_t *n)
+void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
-    if (n == NULL)
+    if (n == NULL || n->client->locked == value)
         return;
 
     client_t *c = n->client;
 
-    PRINTF("toggle locked %X\n", c->window);
+    PRINTF("set locked %X: %s\n", c->window, BOOLSTR(value));
 
-    c->locked = !c->locked;
+    c->locked = value;
     window_draw_border(n, d->focus == n, m == mon);
 }
 
@@ -422,18 +395,6 @@ void enable_shadow(xcb_window_t win)
 void disable_shadow(xcb_window_t win)
 {
     set_shadow(win, 0);
-}
-
-void list_windows(char *rsp)
-{
-    char line[MAXLEN];
-
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-                snprintf(line, sizeof(line), "0x%X\n", n->client->window);
-                strncat(rsp, line, REMLEN(rsp));
-            }
 }
 
 uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor)
@@ -492,7 +453,7 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 
 void window_focus(xcb_window_t win)
 {
-    window_location_t loc;
+    coordinates_t loc;
     if (locate_window(win, &loc)) {
         if (loc.node == mon->desk->focus)
             return;
@@ -577,9 +538,9 @@ void window_show(xcb_window_t win)
 
 void toggle_visibility(void)
 {
-    if (visible)
-        clear_input_focus();
     visible = !visible;
+    if (!visible)
+        clear_input_focus();
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root))
             window_set_visibility(n->client->window, visible);

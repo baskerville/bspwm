@@ -6,67 +6,64 @@ super + alt + Escape
     bspc quit
 
 super + w
-    bspc close
+    bspc window -c
 
 super + t
-    bspc cycle_layout
+    bspc desktop -l next
 
 super + b
-    bspc balance
+    bspc desktop -B
 
 super + {s,f}
-    bspc toggle_{floating,fullscreen}
+    bspc window -t {floating,fullscreen}
 
 super + {grave,Tab}
-    bspc {alternate,alternate_desktop}
+    bspc {window,desktop} -f last
 
 super + apostrophe
-    bspc swap
+    bspc window -s last
 
 super + m
-    cur=$(xdo id); \
-    wid=$(bspc biggest); \
-    [ -n "$wid" -a "$cur" != "$wid" ] && \
-    xdo activate $wid && bspc swap
+    bspc window -s biggest
 
 super + {_,shift + }{h,j,k,l}
-    bspc {focus,shift} {left,down,up,right}
+    bspc window -{f,s} {left,down,up,right}
 
-super + {c,shift + c}
-    bspc cycle {next,prev}
+super + {_,shift + }c
+    bspc window -f {next,prev}
 
 super + {comma,period}
-    bspc circulate {backward,forward}
+    bspc desktop -C {backward,forward}
 
 super + bracket{left,right}
-    bspc cycle_desktop {prev,next}
+    bspc desktop -f {prev,next}
 
 super + ctrl + {h,j,k,l}
-    bspc presel {left,down,up,right}
+    bspc window -p {left,down,up,right}
 
 super + ctrl + {_,shift + }space
-    bspc cancel{_, --all }
+    bspc {window -p cancel,desktop -c}
 
 super + alt + {h,j,k,l}
-    bspc push {left,down,up,right}
+    bspc window -e {left,down,up,right} push
 
 super + alt + shift + {h,j,k,l}
-    bspc pull {right,up,down,left}
+    bspc window -e {right,up,down,left} pull
 
 super + ctrl + {1-9}
-    bspc ratio 0.{1-9}
+    bspc window -r 0.{1-9}
 
 super + {_,shift + }{1-9,0}
-    bspc {use,send_to} {1-9,0}
+    bspc {desktop -f,window -d} {1-9,0}
 
 :button1
-    bspc grab_pointer focus
+    bspc pointer -g focus
 
 super + button{1-3}
-    bspc grab_pointer {move,resize_side,resize_corner}
+    bspc pointer -g {move,resize_side,resize_corner}
 
 super + !button{1-3}
-    bspc track_pointer %i %i
+    bspc pointer -t %i %i
 
 #
 # wm independent hotkeys

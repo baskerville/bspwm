@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "settings.h"
 #include "messages.h"
+#include "query.h"
+#include "restore.h"
 #include "common.h"
 #include "types.h"
 #include "bspwm.h"
@@ -13,562 +16,658 @@
 #include "tree.h"
 #include "rules.h"
 
-void process_message(char *msg, char *rsp)
+bool cmd_window(char **args, int num)
 {
-    char *cmd = strtok(msg, TOK_SEP);
+    coordinates_t ref = {mon, mon->desk, mon->desk->focus};
+    coordinates_t trg = ref;
 
-    if (cmd == NULL)
-        return;
-
-    if (strcmp(cmd, "get") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        get_setting(name, rsp);
-    } else if (strcmp(cmd, "set") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        char *value = strtok(NULL, TOK_SEP);
-        set_setting(name, value, rsp);
-    } else if (strcmp(cmd, "list") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            desktop_location_t loc;
-            if (locate_desktop(name, &loc))
-                list(loc.desktop, loc.desktop->root, rsp, 0);
-        } else {
-            list(mon->desk, mon->desk->root, rsp, 0);
-        }
-    } else if (strcmp(cmd, "list_monitors") == 0) {
-        char *arg = strtok(NULL, TOK_SEP);
-        list_option_t opt;
-        if (parse_list_option(arg, &opt))
-            list_monitors(opt, rsp);
-    } else if (strcmp(cmd, "list_desktops") == 0) {
-        char *arg = strtok(NULL, TOK_SEP);
-        list_option_t opt;
-        if (parse_list_option(arg, &opt))
-            list_desktops(mon, opt, 0, rsp);
-    } else if (strcmp(cmd, "list_windows") == 0) {
-        list_windows(rsp);
-    } else if (strcmp(cmd, "list_history") == 0) {
-        list_history(rsp);
-    } else if (strcmp(cmd, "list_rules") == 0) {
-        list_rules(rsp);
-    } else if (strcmp(cmd, "close") == 0) {
-        window_close(mon->desk->focus);
-    } else if (strcmp(cmd, "kill") == 0) {
-        window_kill(mon, mon->desk, mon->desk->focus);
-    } else if (strcmp(cmd, "rotate") == 0) {
-        char *deg = strtok(NULL, TOK_SEP);
-        if (deg != NULL) {
-            rotate_t r;
-            if (parse_rotate(deg, &r))
-                rotate_tree(mon->desk->root, r);
-        }
-        arrange(mon, mon->desk);
-    } else if (strcmp(cmd, "flip") == 0) {
-        char *flp = strtok(NULL, TOK_SEP);
-        if (flp != NULL) {
-            flip_t f;
-            if (parse_flip(flp, &f))
-                flip_tree(mon->desk->root, f);
-        }
-        arrange(mon, mon->desk);
-    } else if (strcmp(cmd, "balance") == 0) {
-        balance_tree(mon->desk->root);
-        arrange(mon, mon->desk);
-    } else if (strcmp(cmd, "grab_pointer") == 0) {
-        char *pac = strtok(NULL, TOK_SEP);
-        if (pac != NULL) {
-            pointer_action_t a;
-            if (parse_pointer_action(pac, &a))
-                grab_pointer(a);
-        }
-    } else if (strcmp(cmd, "track_pointer") == 0) {
-        char *arg1 = strtok(NULL, TOK_SEP);
-        char *arg2 = strtok(NULL, TOK_SEP);
-        if (arg1 == NULL || arg2 == NULL)
-            return;
-        int root_x, root_y;
-        if (sscanf(arg1, "%i", &root_x) == 1 && sscanf(arg2, "%i", &root_y) == 1)
-            track_pointer(root_x, root_y);
-    } else if (strcmp(cmd, "layout") == 0) {
-        char *lyt = strtok(NULL, TOK_SEP);
-        if (lyt != NULL) {
-            layout_t l;
-            if (parse_layout(lyt, &l)) {
-                char *name = strtok(NULL, TOK_SEP);
-                if (name == NULL) {
-                    change_layout(mon, mon->desk, l);
-                } else {
-                    desktop_location_t loc;
-                    do {
-                        if (locate_desktop(name, &loc))
-                            change_layout(loc.monitor, loc.desktop, l);
-                    } while ((name = strtok(NULL, TOK_SEP)) != NULL);
-                }
-            }
-        }
-    } else if (strcmp(cmd, "cycle_layout") == 0) {
-        if (mon->desk->layout == LAYOUT_MONOCLE)
-            change_layout(mon, mon->desk, LAYOUT_TILED);
+    if (*args[0] != OPT_CHR) {
+        if (node_from_desc(*args, &ref, &trg))
+            num--, args++;
         else
-            change_layout(mon, mon->desk, LAYOUT_MONOCLE);
-    } else if (strcmp(cmd, "shift") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            direction_t d;
-            if (parse_direction(dir, &d)) {
-                node_t *n = nearest_neighbor(mon->desk, mon->desk->focus, d);
-                if (n != NULL) {
-                    swap_nodes(mon->desk->focus, n, true);
-                    arrange(mon, mon->desk);
-                } else if (monitor_focus_fallback) {
-                    monitor_t *m = nearest_monitor(d);
-                    if (m != NULL) {
-                        transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
-                        focus_node(m, m->desk, m->desk->focus);
-                    }
-                }
-            }
-        }
-    } else if (strcmp(cmd, "toggle_fullscreen") == 0) {
-        toggle_fullscreen(mon->desk, mon->desk->focus);
-        arrange(mon, mon->desk);
-    } else if (strcmp(cmd, "toggle_floating") == 0) {
-        toggle_floating(mon->desk, mon->desk->focus);
-        arrange(mon, mon->desk);
-    } else if (strcmp(cmd, "toggle_locked") == 0) {
-        toggle_locked(mon, mon->desk, mon->desk->focus);
-    } else if (strcmp(cmd, "toggle_visibility") == 0) {
-        toggle_visibility();
-    } else if (strcmp(cmd, "pad") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            monitor_t *m = find_monitor(name);
-            if (m != NULL) {
-                char args[BUFSIZ] = {0}, *s;
-                while ((s = strtok(NULL, TOK_SEP)) != NULL) {
-                    strncat(args, s, REMLEN(args));
-                    strncat(args, TOK_SEP, REMLEN(args));
-                }
-                if (strlen(args) > 0) {
-                    sscanf(args, "%i %i %i %i", &m->top_padding, &m->right_padding, &m->bottom_padding, &m->left_padding);
-                    arrange(m, m->desk);
-                } else {
-                    snprintf(rsp, BUFSIZ, "%i %i %i %i\n", m->top_padding, m->right_padding, m->bottom_padding, m->left_padding);
-                }
-            }
-        }
-    } else if (strcmp(cmd, "ratio") == 0) {
-        char *value;
-        if (mon->desk->focus != NULL && (value = strtok(NULL, TOK_SEP)) != NULL &&
-                sscanf(value, "%lf", &mon->desk->focus->split_ratio) == 1)
-            window_draw_border(mon->desk->focus, true, true);
-    } else if (strcmp(cmd, "cancel") == 0) {
-        if (mon->desk->focus == NULL)
-            return;
-        char *opt = strtok(NULL, TOK_SEP);
-        cancel_option_t o;
-        if (parse_cancel_option(opt, &o))
-            reset_mode(mon->desk, mon->desk->focus, o);
-    } else if (strcmp(cmd, "presel") == 0) {
-        if (mon->desk->focus == NULL || !is_tiled(mon->desk->focus->client) || mon->desk->layout != LAYOUT_TILED)
-            return;
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            direction_t d;
-            if (parse_direction(dir, &d)) {
-                char *rat = strtok(NULL, TOK_SEP);
-                double r = mon->desk->focus->split_ratio;
-                if (rat != NULL)
-                    sscanf(rat, "%lf", &r);
-                if (auto_cancel && mon->desk->focus->split_mode == MODE_MANUAL
-                        && d == mon->desk->focus->split_dir
-                        && r == mon->desk->focus->split_ratio) {
-                    reset_mode(mon->desk, mon->desk->focus, CANCEL_OPTION_FOCUSED);
-                } else {
-                    mon->desk->focus->split_mode = MODE_MANUAL;
-                    mon->desk->focus->split_dir = d;
-                    mon->desk->focus->split_ratio = r;
-                }
-                window_draw_border(mon->desk->focus, true, true);
-            }
-        }
-    } else if (strcmp(cmd, "push") == 0 || strcmp(cmd, "pull") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            fence_move_t m;
-            direction_t d;
-            if (parse_fence_move(cmd, &m) && parse_direction(dir, &d)) {
-                move_fence(mon->desk->focus, d, m);
-                arrange(mon, mon->desk);
-            }
-        }
-    } else if (strcmp(cmd, "fence_ratio") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            direction_t d;
-            node_t *n;
-            if (parse_direction(dir, &d) && (n = find_fence(mon->desk->focus, d)) != NULL) {
-                char *value = strtok(NULL, TOK_SEP);
-                if (value != NULL && sscanf(value, "%lf", &n->split_ratio) == 1)
-                    arrange(mon, mon->desk);
-            }
-        }
-    } else if (strcmp(cmd, "drop_to_monitor") == 0) {
-        if (mon->desk->focus == NULL)
-            return;
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            cycle_dir_t d;
-            if (parse_cycle_direction(dir, &d)) {
-                monitor_t *m;
-                if (d == CYCLE_NEXT)
-                    m = ((mon->next == NULL ? mon_head : mon->next));
-                else
-                    m = ((mon->prev == NULL ? mon_tail : mon->prev));
-                transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
-                char *opt = strtok(NULL, TOK_SEP);
-                send_option_t o;
-                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    focus_node(m, m->desk, m->desk->focus);
-            }
-        }
-    } else if (strcmp(cmd, "send_to_monitor") == 0) {
-        if (mon->desk->focus == NULL)
-            return;
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            monitor_t *m = find_monitor(name);
-            if (m != NULL && m != mon) {
-                transfer_node(mon, mon->desk, m, m->desk, mon->desk->focus);
-                char *opt = strtok(NULL, TOK_SEP);
-                send_option_t o;
-                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    focus_node(m, m->desk, m->desk->focus);
-            }
-        }
-    } else if (strcmp(cmd, "drop_to") == 0) {
-        if (mon->desk->focus == NULL)
-            return;
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            cycle_dir_t c;
-            if (parse_cycle_direction(dir, &c)) {
-                desktop_t *d;
-                if (c == CYCLE_NEXT)
-                    d = ((mon->desk->next == NULL ? mon->desk_head : mon->desk->next));
-                else
-                    d = ((mon->desk->prev == NULL ? mon->desk_tail : mon->desk->prev));
-                transfer_node(mon, mon->desk, mon, d, mon->desk->focus);
-                char *opt = strtok(NULL, TOK_SEP);
-                send_option_t o;
-                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    focus_node(mon, d, d->focus);
-            }
-        }
-    } else if (strcmp(cmd, "send_to") == 0) {
-        if (mon->desk->focus == NULL)
-            return;
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            desktop_location_t loc;
-            if (locate_desktop(name, &loc)) {
-                transfer_node(mon, mon->desk, loc.monitor, loc.desktop, mon->desk->focus);
-                char *opt = strtok(NULL, TOK_SEP);
-                send_option_t o;
-                if (parse_send_option(opt, &o) && o == SEND_OPTION_FOLLOW)
-                    focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
-            }
-        }
-    } else if (strcmp(cmd, "rename_monitor") == 0) {
-        char *cur_name = strtok(NULL, TOK_SEP);
-        if (cur_name != NULL) {
-            monitor_t *m = find_monitor(cur_name);
-            if (m != NULL) {
-                char *new_name = strtok(NULL, TOK_SEP);
-                if (new_name != NULL) {
-                    strncpy(m->name, new_name, sizeof(m->name));
-                    put_status();
-                }
-            }
-        }
-    } else if (strcmp(cmd, "rename") == 0) {
-        char *cur_name = strtok(NULL, TOK_SEP);
-        if (cur_name != NULL) {
-            desktop_location_t loc;
-            if (locate_desktop(cur_name, &loc)) {
-                char *new_name = strtok(NULL, TOK_SEP);
-                if (new_name != NULL) {
-                    strncpy(loc.desktop->name, new_name, sizeof(loc.desktop->name));
-                    ewmh_update_desktop_names();
-                    put_status();
-                }
-            }
-        }
-    } else if (strcmp(cmd, "use_monitor") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            monitor_t *m = find_monitor(name);
-            if (m != NULL) {
-                if (auto_alternate && m == mon && last_mon != NULL)
-                    m = last_mon;
-                focus_node(m, m->desk, m->desk->focus);
-            }
-        }
-    } else if (strcmp(cmd, "focus_monitor") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            direction_t d;
-            if (parse_direction(dir, &d)) {
-                monitor_t *m = nearest_monitor(d);
-                if (m != NULL)
-                    focus_node(m, m->desk, m->desk->focus);
-            }
-        }
-    } else if (strcmp(cmd, "use") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            desktop_location_t loc;
-            if (locate_desktop(name, &loc)) {
-                if (auto_alternate && loc.desktop == mon->desk && mon->last_desk != NULL)
-                    focus_node(mon, mon->last_desk, mon->last_desk->focus);
-                else
-                    focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
-            }
-        }
-    } else if (strcmp(cmd, "cycle_monitor") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            cycle_dir_t d;
-            if (parse_cycle_direction(dir, &d))
-                cycle_monitor(d);
-        }
-    } else if (strcmp(cmd, "cycle_desktop") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            cycle_dir_t d;
-            if (parse_cycle_direction(dir, &d)) {
-                skip_desktop_t k;
-                char *skip = strtok(NULL, TOK_SEP);
-                if (parse_skip_desktop(skip, &k))
-                    cycle_desktop(mon, mon->desk, d, k);
-            }
-        }
-    } else if (strcmp(cmd, "cycle") == 0) {
-        if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
-            return;
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            cycle_dir_t d;
-            if (parse_cycle_direction(dir, &d)) {
-                skip_client_t k;
-                char *skip = strtok(NULL, TOK_SEP);
-                if (parse_skip_client(skip, &k))
-                    cycle_leaf(mon, mon->desk, mon->desk->focus, d, k);
-            }
-        }
-    } else if (strcmp(cmd, "nearest") == 0) {
-        if (mon->desk->focus != NULL && mon->desk->focus->client->fullscreen)
-            return;
-        char *arg = strtok(NULL, TOK_SEP);
-        if (arg != NULL) {
-            nearest_arg_t a;
-            if (parse_nearest_argument(arg, &a)) {
-                skip_client_t k;
-                char *skip = strtok(NULL, TOK_SEP);
-                if (parse_skip_client(skip, &k))
-                    nearest_leaf(mon, mon->desk, mon->desk->focus, a, k);
-            }
-        }
-    } else if (strcmp(cmd, "biggest") == 0) {
-        node_t *n = find_biggest(mon->desk);
-        if (n != NULL)
-            snprintf(rsp, BUFSIZ, "0x%X", n->client->window);
-    } else if (strcmp(cmd, "circulate") == 0) {
-        if (mon->desk->layout == LAYOUT_MONOCLE
-                || (mon->desk->focus != NULL && !is_tiled(mon->desk->focus->client)))
-            return;
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            circulate_dir_t d;
-            if (parse_circulate_direction(dir, &d))
-                circulate_leaves(mon, mon->desk, d);
-        }
-        arrange(mon, mon->desk);
-    } else if (strcmp(cmd, "rule") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            rule_t *rule = make_rule();
-            strncpy(rule->cause.name, name, sizeof(rule->cause.name));
-            char *arg = strtok(NULL, TOK_SEP);
-            while (arg != NULL) {
-                if (strcmp(arg, "floating") == 0) {
-                    rule->effect.floating = true;
-                } else if (strcmp(arg, "follow") == 0) {
-                    rule->effect.follow = true;
-                } else {
-                    desktop_location_t loc;
-                    if (locate_desktop(arg, &loc)) {
-                        rule->effect.monitor = loc.monitor;
-                        rule->effect.desktop = loc.desktop;
-                    }
-                }
-                arg = strtok(NULL, TOK_SEP);
-            }
-            add_rule(rule);
-        }
-    } else if (strcmp(cmd, "remove_rule") == 0) {
-        char *arg;
-        unsigned int uid;
-        while ((arg = strtok(NULL, TOK_SEP)) != NULL)
-            if (sscanf(arg, "%X", &uid) > 0)
-                remove_rule_by_uid(uid);
-    } else if (strcmp(cmd, "swap") == 0) {
-        char *opt = strtok(NULL, TOK_SEP);
-        swap_option_t o;
-        if (!parse_swap_option(opt, &o))
-            return;
-        node_t *last_focus = history_get(mon->desk->history, 1);
-        swap_nodes(mon->desk->focus, last_focus, true);
-        arrange(mon, mon->desk);
-        if (o == SWAP_OPTION_SWAP_FOCUS)
-            focus_node(mon, mon->desk, last_focus);
-    } else if (strcmp(cmd, "alternate") == 0) {
-        focus_node(mon, mon->desk, history_get(mon->desk->history, 1));
-    } else if (strcmp(cmd, "alternate_desktop") == 0) {
-        if (mon->last_desk != NULL)
-            focus_node(mon, mon->last_desk, mon->last_desk->focus);
-    } else if (strcmp(cmd, "alternate_monitor") == 0) {
-        if (last_mon != NULL)
-            focus_node(last_mon, last_mon->desk, last_mon->desk->focus);
-    } else if (strcmp(cmd, "add_in") == 0) {
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            monitor_t *m = find_monitor(name);
-            if (m != NULL)
-                for (name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
-                    add_desktop(m, make_desktop(name));
-        }
-    } else if (strcmp(cmd, "add") == 0) {
-        for (char *name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP))
-            add_desktop(mon, make_desktop(name));
-    } else if (strcmp(cmd, "remove_desktop") == 0) {
-        for (char *name = strtok(NULL, TOK_SEP); name != NULL; name = strtok(NULL, TOK_SEP)) {
-            desktop_location_t loc;
-            if (locate_desktop(name, &loc)) {
-                if (loc.desktop->root == NULL && loc.monitor->desk_head != loc.monitor->desk_tail) {
-                    remove_desktop(loc.monitor, loc.desktop);
-                    desktop_show(loc.monitor->desk);
-                }
-            }
-        }
-        update_current();
-    } else if (strcmp(cmd, "send_desktop_to") == 0) {
-        if (mon->desk_head == mon->desk_tail)
-            return;
-        char *name = strtok(NULL, TOK_SEP);
-        if (name != NULL) {
-            monitor_t *m = find_monitor(name);
-            if (m != NULL && m != mon) {
-                char *opt = strtok(NULL, TOK_SEP);
-                send_option_t o;
-                if (!parse_send_option(opt, &o))
-                    return;
-                desktop_t *d = mon->desk;
-                transfer_desktop(mon, m, d);
-                if (o == SEND_OPTION_FOLLOW)
-                    focus_node(m, d, d->focus);
-                else if (o == SEND_OPTION_DONT_FOLLOW)
-                    update_current();
-            }
-        }
-    } else if (strcmp(cmd, "focus") == 0) {
-        char *dir = strtok(NULL, TOK_SEP);
-        if (dir != NULL) {
-            direction_t d;
-            if (parse_direction(dir, &d)) {
-                node_t *n = nearest_neighbor(mon->desk, mon->desk->focus, d);
-                if (n != NULL) {
-                    focus_node(mon, mon->desk, n);
-                } else if (monitor_focus_fallback) {
-                    monitor_t *m = nearest_monitor(d);
-                    if (m != NULL)
-                        focus_node(m, m->desk, m->desk->focus);
-                }
-            }
-        }
-    } else if (strcmp(cmd, "put_status") == 0) {
-        put_status();
-    } else if (strcmp(cmd, "adopt_orphans") == 0) {
-        adopt_orphans();
-    } else if (strcmp(cmd, "restore_layout") == 0) {
-        char *arg = strtok(NULL, TOK_SEP);
-        restore_layout(arg);
-    } else if (strcmp(cmd, "restore_history") == 0) {
-        char *arg = strtok(NULL, TOK_SEP);
-        restore_history(arg);
-    } else if (strcmp(cmd, "quit") == 0) {
-        char *arg = strtok(NULL, TOK_SEP);
-        if (arg != NULL)
-            sscanf(arg, "%i", &exit_status);
-        quit();
-    } else {
-        snprintf(rsp, BUFSIZ, "unknown command: %s", cmd);
+            return false;
     }
+
+    if (trg.node == NULL)
+        return false;
+
+    bool dirty = false;
+
+    while (num > 0) {
+        if (streq("-f", *args) || streq("--focus", *args)) {
+            coordinates_t dst = trg;
+            if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                num--, args++;
+                if (!node_from_desc(*args, &trg, &dst))
+                    return false;
+            }
+            focus_node(dst.monitor, dst.desktop, dst.node);
+        } else if (streq("-d", *args) || streq("--to-desktop", *args)) {
+            num--, args++;
+            coordinates_t dst;
+            if (desktop_from_desc(*args, &trg, &dst)) {
+                transfer_node(trg.monitor, trg.desktop, dst.monitor, dst.desktop, trg.node);
+                trg.monitor = dst.monitor;
+                trg.desktop = dst.desktop;
+            } else {
+                return false;
+            }
+        } else if (streq("-m", *args) || streq("--to-monitor", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            coordinates_t dst;
+            if (monitor_from_desc(*args, &trg, &dst)) {
+                transfer_node(trg.monitor, trg.desktop, dst.monitor, dst.monitor->desk, trg.node);
+                trg.monitor = dst.monitor;
+                trg.desktop = dst.monitor->desk;
+            } else {
+                return false;
+            }
+        } else if (streq("-w", *args) || streq("--to-window", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            coordinates_t dst;
+            if (node_from_desc(*args, &trg, &dst))
+                transplant_node(trg.monitor, trg.desktop, trg.node, dst.node);
+            else
+                return false;
+            dirty = true;
+        } else if (streq("-s", *args) || streq("--swap", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            coordinates_t dst;
+            if (node_from_desc(*args, &trg, &dst))
+                swap_nodes(trg.node, dst.node, true);
+            else
+                return false;
+            dirty = true;
+        } else if (streq("-t", *args) || streq("--toggle", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            char *key = strtok(*args, EQL_TOK);
+            char *val = strtok(NULL, EQL_TOK);
+            state_alter_t a = ALTER_NONE;
+            bool b;
+            if (val == NULL) {
+                a = ALTER_TOGGLE;
+            } else {
+                if (parse_bool(val, &b))
+                    a = ALTER_SET;
+                else
+                    return false;
+            }
+            if (streq("fullscreen", key)) {
+                set_fullscreen(trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->fullscreen));
+                dirty = true;
+            } else if (streq("floating", key)) {
+                set_floating(trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->floating));
+                dirty = true;
+            } else if (streq("locked", key)) {
+                set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->locked));
+            }
+        } else if (streq("-p", *args) || streq("--presel", *args)) {
+            num--, args++;
+            if (num < 1 || !is_tiled(trg.node->client)
+                    || trg.desktop->layout != LAYOUT_TILED)
+                return false;
+            if (streq("cancel", *args)) {
+                reset_mode(&trg);
+            } else {
+                direction_t dir;
+                if (parse_direction(*args, &dir)) {
+                    double rat = trg.node->split_ratio;
+                    if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                        num--, args++;
+                        if (sscanf(*args, "%lf", &rat) != 1)
+                            return false;
+                    }
+                    if (auto_cancel && trg.node->split_mode == MODE_MANUAL
+                            && dir == trg.node->split_dir
+                            && rat == trg.node->split_ratio) {
+                        reset_mode(&trg);
+                    } else {
+                        trg.node->split_mode = MODE_MANUAL;
+                        trg.node->split_dir = dir;
+                        trg.node->split_ratio = rat;
+                    }
+                    window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
+                } else {
+                    return false;
+                }
+            }
+        } else if (streq("-e", *args) || streq("--edge", *args)) {
+            num--, args++;
+            if (num < 2)
+                return false;
+            direction_t dir;
+            if (!parse_direction(*args, &dir))
+                return false;
+            num--, args++;
+            fence_move_t fmo;
+            if (parse_fence_move(*args, &fmo)) {
+                move_fence(trg.node, dir, fmo);
+            } else {
+                node_t *n = find_fence(trg.node, dir);
+                if (n == NULL || sscanf(*args, "%lf", &n->split_ratio) != 1)
+                    return false;
+            }
+            dirty = true;
+        } else if (streq("-r", *args) || streq("--ratio", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            if (sscanf(*args, "%lf", &trg.node->split_ratio) == 1)
+                window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
+            else
+                return false;
+        } else if (streq("-c", *args) || streq("--close", *args)) {
+            if (num > 1)
+                return false;
+            window_close(trg.node);
+        } else if (streq("-k", *args) || streq("--kill", *args)) {
+            if (num > 1)
+                return false;
+            window_kill(trg.desktop, trg.node);
+            dirty = true;
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    if (dirty)
+        arrange(trg.monitor, trg.desktop);
+
+    return true;
 }
 
-void set_setting(char *name, char *value, char *rsp)
+bool cmd_desktop(char **args, int num)
 {
-    if (name == NULL || value == NULL)
-        return;
+    coordinates_t ref = {mon, mon->desk, NULL};
+    coordinates_t trg = ref;
 
-    if (strcmp(name, "border_width") == 0) {
-        sscanf(value, "%u", &border_width);
-    } else if (strcmp(name, "window_gap") == 0) {
-        sscanf(value, "%i", &window_gap);
-    } else if (strcmp(name, "split_ratio") == 0) {
-        sscanf(value, "%lf", &split_ratio);
-    } else if (strcmp(name, "left_padding") == 0) {
-        sscanf(value, "%i", &mon->left_padding);
-    } else if (strcmp(name, "right_padding") == 0) {
-        sscanf(value, "%i", &mon->right_padding);
-    } else if (strcmp(name, "top_padding") == 0) {
-        sscanf(value, "%i", &mon->top_padding);
-    } else if (strcmp(name, "bottom_padding") == 0) {
-        sscanf(value, "%i", &mon->bottom_padding);
-    } else if (strcmp(name, "focused_border_color") == 0) {
-        strncpy(focused_border_color, value, sizeof(focused_border_color));
-        focused_border_color_pxl = get_color(focused_border_color);
-    } else if (strcmp(name, "active_border_color") == 0) {
-        strncpy(active_border_color, value, sizeof(active_border_color));
-        active_border_color_pxl = get_color(active_border_color);
-    } else if (strcmp(name, "normal_border_color") == 0) {
-        strncpy(normal_border_color, value, sizeof(normal_border_color));
-        normal_border_color_pxl = get_color(normal_border_color);
-    } else if (strcmp(name, "presel_border_color") == 0) {
-        strncpy(presel_border_color, value, sizeof(presel_border_color));
-        presel_border_color_pxl = get_color(presel_border_color);
-    } else if (strcmp(name, "focused_locked_border_color") == 0) {
-        strncpy(focused_locked_border_color, value, sizeof(focused_locked_border_color));
-        focused_locked_border_color_pxl = get_color(focused_locked_border_color);
-    } else if (strcmp(name, "active_locked_border_color") == 0) {
-        strncpy(active_locked_border_color, value, sizeof(active_locked_border_color));
-        active_locked_border_color_pxl = get_color(active_locked_border_color);
-    } else if (strcmp(name, "normal_locked_border_color") == 0) {
-        strncpy(normal_locked_border_color, value, sizeof(normal_locked_border_color));
-        normal_locked_border_color_pxl = get_color(normal_locked_border_color);
-    } else if (strcmp(name, "urgent_border_color") == 0) {
-        strncpy(urgent_border_color, value, sizeof(urgent_border_color));
-        urgent_border_color_pxl = get_color(urgent_border_color);
-    } else if (strcmp(name, "borderless_monocle") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            borderless_monocle = b;
-    } else if (strcmp(name, "gapless_monocle") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            gapless_monocle = b;
-    } else if (strcmp(name, "focus_follows_pointer") == 0) {
+    if (*args[0] != OPT_CHR) {
+        if (desktop_from_desc(*args, &ref, &trg))
+            num--, args++;
+        else
+            return false;
+    }
+
+    bool dirty = false;
+
+    while (num > 0) {
+        if (streq("-f", *args) || streq("--focus", *args)) {
+            coordinates_t dst = trg;
+            if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                num--, args++;
+                if (!desktop_from_desc(*args, &trg, &dst))
+                    return false;
+            }
+            if (auto_alternate && dst.desktop == dst.monitor->desk && dst.monitor->last_desk != NULL)
+                dst.desktop = dst.monitor->last_desk;
+            focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
+        } else if (streq("-m", *args) || streq("--to-monitor", *args)) {
+            num--, args++;
+            if (num < 1 || trg.monitor->desk_head == trg.monitor->desk_tail)
+                return false;
+            coordinates_t dst;
+            if (monitor_from_desc(*args, &trg, &dst)) {
+                transfer_desktop(trg.monitor, dst.monitor, dst.desktop);
+                trg.monitor = dst.monitor;
+                update_current();
+            } else {
+                return false;
+            }
+        } else if (streq("-l", *args) || streq("--layout", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            layout_t lyt;
+            cycle_dir_t cyc;
+            if (parse_cycle_direction(*args, &cyc))
+                change_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
+            else if (parse_layout(*args, &lyt))
+                change_layout(trg.monitor, trg.desktop, lyt);
+            else
+                return false;
+        } else if (streq("-n", *args) || streq("--rename", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            strncpy(trg.desktop->name, *args, sizeof(trg.desktop->name));
+            ewmh_update_desktop_names();
+            put_status();
+        } else if (streq("-r", *args) || streq("--rm", *args)) {
+            if (trg.desktop->root == NULL
+                    && trg.monitor->desk_head != trg.monitor->desk_tail) {
+                remove_desktop(trg.monitor, trg.desktop);
+                desktop_show(trg.monitor->desk);
+                update_current();
+                return true;
+            } else {
+                return false;
+            }
+        } else if (streq("-c", *args) || streq("--cancel-presel", *args)) {
+            reset_mode(&trg);
+        } else if (streq("-F", *args) || streq("--flip", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            flip_t flp;
+            if (parse_flip(*args, &flp)) {
+                flip_tree(trg.desktop->root, flp);
+                dirty = true;
+            }
+        } else if (streq("-R", *args) || streq("--rotate", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            int rot = atoi(*args);
+            while (rot < 0)
+                rot += 360;
+            while (rot > 359)
+                rot -= 360;
+            if ((rot % 90) != 0) {
+                return false;
+            } else {
+                rotate_tree(trg.desktop->root, rot);
+                dirty = true;
+            }
+        } else if (streq("-B", *args) || streq("--balance", *args)) {
+            balance_tree(trg.desktop->root);
+            dirty = true;
+        } else if (streq("-C", *args) || streq("--circulate", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            circulate_dir_t cir;
+            if (parse_circulate_direction(*args, &cir)) {
+                circulate_leaves(trg.monitor, trg.desktop, cir);
+                dirty = true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    if (dirty)
+        arrange(trg.monitor, trg.desktop);
+
+    return true;
+}
+
+bool cmd_monitor(char **args, int num)
+{
+    coordinates_t ref = {mon, NULL, NULL};
+    coordinates_t trg = ref;
+
+    if (*args[0] != OPT_CHR) {
+        if (monitor_from_desc(*args, &ref, &trg))
+            num--, args++;
+        else
+            return false;
+    }
+
+    while (num > 0) {
+        if (streq("-f", *args) || streq("--focus", *args)) {
+            coordinates_t dst = trg;
+            if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                num--, args++;
+                if (!desktop_from_desc(*args, &trg, &dst))
+                    return false;
+            }
+            if (auto_alternate && dst.monitor == mon && last_mon != NULL)
+                dst.monitor = last_mon;
+            focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
+        } else if (streq("-a", *args) || streq("--add-desktops", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            while (num > 0) {
+                add_desktop(trg.monitor, make_desktop(*args));
+                num--, args++;
+            }
+        } else if (streq("-r", *args) || streq("--remove-desktops", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            while (num > 0) {
+                coordinates_t dst;
+                if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail) {
+                    remove_desktop(dst.monitor, dst.desktop);
+                    desktop_show(dst.monitor->desk);
+                }
+                num--, args++;
+            }
+        } else if (streq("-p", *args) || streq("--pad", *args)) {
+            num--, args++;
+            if (num < 4)
+                return false;
+            char values[MAXLEN];
+            snprintf(values, sizeof(values), "%s %s %s %s", args[0], args[1], args[2], args[3]);
+            if (sscanf(values, "%i %i %i %i", &trg.monitor->top_padding, &trg.monitor->right_padding, &trg.monitor->bottom_padding, &trg.monitor->left_padding) == 4)
+                for (desktop_t *d = trg.monitor->desk_head; d != NULL; d = d->next)
+                    arrange(trg.monitor, d);
+            else
+                return false;
+        } else if (streq("-n", *args) || streq("--rename", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            strncpy(trg.monitor->name, *args, sizeof(trg.monitor->name));
+            put_status();
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    return true;
+}
+
+bool cmd_query(char **args, int num, char *rsp) {
+    coordinates_t ref = {mon, mon->desk, mon->desk->focus};
+    coordinates_t trg = {NULL, NULL, NULL};
+    domain_t dom = DOMAIN_TREE;
+    int d = 0, t = 0;
+
+    while (num > 0) {
+        if (streq("-T", *args) || streq("--tree", *args)) {
+            dom = DOMAIN_TREE, d++;
+        } else if (streq("-M", *args) || streq("--monitors", *args)) {
+            dom = DOMAIN_MONITOR, d++;
+        } else if (streq("-D", *args) || streq("--desktops", *args)) {
+            dom = DOMAIN_DESKTOP, d++;
+        } else if (streq("-W", *args) || streq("--windows", *args)) {
+            dom = DOMAIN_WINDOW, d++;
+        } else if (streq("-H", *args) || streq("--history", *args)) {
+            dom = DOMAIN_HISTORY, d++;
+        } else if (streq("-m", *args) || streq("--monitor", *args)) {
+            trg.monitor = ref.monitor;
+            if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                num--, args++;
+                if (!monitor_from_desc(*args, &ref, &trg))
+                    return false;
+            }
+            t++;
+        } else if (streq("-d", *args) || streq("--desktop", *args)) {
+            trg.monitor = ref.monitor;
+            trg.desktop = ref.desktop;
+            if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                num--, args++;
+                if (!desktop_from_desc(*args, &ref, &trg))
+                    return false;
+            }
+            t++;
+        } else if (streq("-w", *args) || streq("--window", *args)) {
+            trg = ref;
+            if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+                num--, args++;
+                if (!node_from_desc(*args, &ref, &trg))
+                    return false;
+            }
+            t++;
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    if (d != 1 || t > 1)
+        return false;
+
+    if (dom == DOMAIN_HISTORY)
+        query_history(trg, rsp);
+    else if (dom == DOMAIN_WINDOW)
+        query_windows(trg, rsp);
+    else
+        query_monitors(trg, dom, rsp);
+
+    return true;
+}
+
+bool cmd_rule(char **args, int num, char *rsp) {
+    while (num > 0) {
+        if (streq("-a", *args) || streq("--add", *args)) {
+            num--, args++;
+            if (num < 2)
+                return false;
+            rule_t *rule = make_rule();
+            strncpy(rule->cause.name, *args, sizeof(rule->cause.name));
+            num--, args++;
+            while (num > 0) {
+                if (streq("--floating", *args)) {
+                    rule->effect.floating = true;
+                } else if (streq("--follow", *args)) {
+                    rule->effect.follow = true;
+                } else if (streq("-d", *args) || streq("--desktop", *args)) {
+                    num--, args++;
+                    if (num < 1) {
+                        free(rule);
+                        return false;
+                    }
+                    strncpy(rule->effect.desc, *args, sizeof(rule->effect.desc));
+                } else {
+                    free(rule);
+                    return false;
+                }
+                num--, args++;
+            }
+            add_rule(rule);
+        } else if (streq("-r", *args) || streq("--rm", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            unsigned int uid;
+            while (num > 0) {
+                if (sscanf(*args, "%X", &uid) == 1)
+                    remove_rule_by_uid(uid);
+                else
+                    return false;
+                num--, args++;
+            }
+        } else if (streq("-l", *args) || streq("--list", *args)) {
+            num--, args++;
+            list_rules(num > 0 ? *args : NULL, rsp);
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    return true;
+}
+
+bool cmd_pointer(char **args, int num) {
+    while (num > 0) {
+        if (streq("-t", *args) || streq("--track", *args)) {
+            num--, args++;
+            if (num < 2)
+                return false;
+            int x, y;
+            if (sscanf(*args, "%i", &x) == 1 && sscanf(*(args + 1), "%i", &y) == 1)
+                track_pointer(x, y);
+            else
+                return false;
+        } else if (streq("-g", *args) || streq("--grab", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            pointer_action_t pac;
+            if (parse_pointer_action(*args, &pac))
+                grab_pointer(pac);
+            else
+                return false;
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    return true;
+}
+
+bool cmd_restore(char **args, int num) {
+    while (num > 0) {
+        if (streq("-T", *args) || streq("--tree", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            restore_tree(*args);
+        } else if (streq("-H", *args) || streq("--history", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            restore_history(*args);
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    return true;
+}
+
+bool cmd_control(char **args, int num) {
+    while (num > 0) {
+        if (streq("--adopt-orphans", *args)) {
+            adopt_orphans();
+        } else if (streq("--put-status", *args)) {
+            put_status();
+        } else if (streq("--toggle-visibility", *args)) {
+            toggle_visibility();
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    return true;
+}
+
+bool cmd_config(char **args, int num, char *rsp) {
+    if (num == 2)
+        return set_setting(*args, *(args + 1));
+    else if (num == 1)
+        return get_setting(*args, rsp);
+    else
+        return false;
+}
+
+bool cmd_quit(char **args, int num) {
+    if (num > 0 && sscanf(*args, "%i", &exit_status) != 1)
+        return false;
+    quit();
+    return true;
+}
+
+bool handle_message(char *msg, int msg_len, char *rsp)
+{
+    int cap = INIT_CAP;
+    int num = 0;
+    char **args = malloc(cap * sizeof(char *));
+    if (args == NULL)
+        return false;
+
+    for (int i = 0, j = 0; i < msg_len; i++) {
+        if (msg[i] == 0) {
+            args[num++] = msg + j;
+            j = i + 1;
+        }
+        if (num >= cap) {
+            cap *= 2;
+            char **new = realloc(args, cap * sizeof(char *));
+            if (new == NULL) {
+                free(args);
+                return false;
+            } else {
+                args = new;
+            }
+        }
+    }
+
+    if (num < 1)
+        return false;
+
+    char **args_orig = args;
+    bool ret = process_message(args, num, rsp);
+    free(args_orig);
+    return ret;
+}
+
+bool process_message(char **args, int num, char *rsp)
+{
+    if (streq("window", *args)) {
+        return cmd_window(++args, --num);
+    } else if (streq("desktop", *args)) {
+        return cmd_desktop(++args, --num);
+    } else if (streq("monitor", *args)) {
+        return cmd_monitor(++args, --num);
+    } else if (streq("query", *args)) {
+        return cmd_query(++args, --num, rsp);
+    } else if (streq("restore", *args)) {
+        return cmd_restore(++args, --num);
+    } else if (streq("control", *args)) {
+        return cmd_control(++args, --num);
+    } else if (streq("rule", *args)) {
+        return cmd_rule(++args, --num, rsp);
+    } else if (streq("pointer", *args)) {
+        return cmd_pointer(++args, --num);
+    } else if (streq("config", *args)) {
+        return cmd_config(++args, --num, rsp);
+    } else if (streq("quit", *args)) {
+        return cmd_quit(++args, --num);
+    }
+
+    return false;
+}
+
+bool set_setting(char *name, char *value)
+{
+    if (streq("border_width", name)) {
+        if (sscanf(value, "%u", &border_width) != 1)
+            return false;
+    } else if (streq("window_gap", name)) {
+        if (sscanf(value, "%i", &window_gap) != 1)
+            return false;
+    } else if (streq("split_ratio", name)) {
+        if (sscanf(value, "%lf", &split_ratio) != 1)
+            return false;
+    } else if (streq("left_padding", name)) {
+        if (sscanf(value, "%i", &mon->left_padding) != 1)
+            return false;
+    } else if (streq("right_padding", name)) {
+        if (sscanf(value, "%i", &mon->right_padding) != 1)
+            return false;
+    } else if (streq("top_padding", name)) {
+        if (sscanf(value, "%i", &mon->top_padding) != 1)
+            return false;
+    } else if (streq("bottom_padding", name)) {
+        if (sscanf(value, "%i", &mon->bottom_padding) != 1)
+            return false;
+#define SETCOLOR(s) \
+    } else if (streq(#s, name)) { \
+        if (get_color(value, &s ## _pxl)) \
+            strncpy(s, value, sizeof(s)); \
+        else \
+            return false;
+    SETCOLOR(focused_border_color)
+    SETCOLOR(active_border_color)
+    SETCOLOR(normal_border_color)
+    SETCOLOR(presel_border_color)
+    SETCOLOR(focused_locked_border_color)
+    SETCOLOR(active_locked_border_color)
+    SETCOLOR(normal_locked_border_color)
+    SETCOLOR(urgent_border_color)
+#undef SETCOLOR
+    } else if (streq("focus_follows_pointer", name)) {
         bool b;
         if (parse_bool(value, &b) && b != focus_follows_pointer) {
             uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK : CLIENT_EVENT_MASK_FFP)};
@@ -581,131 +680,96 @@ void set_setting(char *name, char *value, char *rsp)
             else
                 enable_motion_recorder();
             focus_follows_pointer = b;
+            return true;
+        } else {
+            return false;
         }
-        return;
-    } else if (strcmp(name, "pointer_follows_monitor") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            pointer_follows_monitor = b;
-        return;
-    } else if (strcmp(name, "monitor_focus_fallback") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            monitor_focus_fallback = b;
-        return;
-    } else if (strcmp(name, "adaptative_raise") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            adaptative_raise = b;
-        return;
-    } else if (strcmp(name, "apply_shadow_property") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            apply_shadow_property = b;
-        return;
-    } else if (strcmp(name, "auto_alternate") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            auto_alternate = b;
-        return;
-    } else if (strcmp(name, "auto_cancel") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            auto_cancel = b;
-        return;
-    } else if (strcmp(name, "focus_by_distance") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            focus_by_distance = b;
-        return;
-    } else if (strcmp(name, "history_aware_focus") == 0) {
-        bool b;
-        if (parse_bool(value, &b))
-            history_aware_focus = b;
-        return;
-    } else if (strcmp(name, "wm_name") == 0) {
+#define SETBOOL(s) \
+    } else if (streq(#s, name)) { \
+        if (!parse_bool(value, &s)) \
+            return false;
+        SETBOOL(borderless_monocle)
+        SETBOOL(gapless_monocle)
+        SETBOOL(pointer_follows_monitor)
+        SETBOOL(monitor_focus_fallback)
+        SETBOOL(adaptative_raise)
+        SETBOOL(apply_shadow_property)
+        SETBOOL(auto_alternate)
+        SETBOOL(auto_cancel)
+        SETBOOL(focus_by_distance)
+        SETBOOL(history_aware_focus)
+#undef SETBOOL
+    } else if (streq("wm_name", name)) {
         strncpy(wm_name, value, sizeof(wm_name));
         ewmh_update_wm_name();
-        return;
+        return true;
     } else {
-        snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
-        return;
+        return false;
     }
 
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
             arrange(m, d);
+
+    return true;
 }
 
-void get_setting(char *name, char* rsp)
+bool get_setting(char *name, char* rsp)
 {
-    if (name == NULL)
-        return;
-
-    if (strcmp(name, "border_width") == 0)
+    if (streq("border_width", name))
         snprintf(rsp, BUFSIZ, "%u", border_width);
-    else if (strcmp(name, "window_gap") == 0)
-        snprintf(rsp, BUFSIZ, "%i", window_gap);
-    else if (strcmp(name, "split_ratio") == 0)
+    else if (streq("split_ratio", name))
         snprintf(rsp, BUFSIZ, "%lf", split_ratio);
-    else if (strcmp(name, "left_padding") == 0)
+    else if (streq("window_gap", name))
+        snprintf(rsp, BUFSIZ, "%i", window_gap);
+    else if (streq("left_padding", name))
         snprintf(rsp, BUFSIZ, "%i", mon->left_padding);
-    else if (strcmp(name, "right_padding") == 0)
+    else if (streq("right_padding", name))
         snprintf(rsp, BUFSIZ, "%i", mon->right_padding);
-    else if (strcmp(name, "top_padding") == 0)
+    else if (streq("top_padding", name))
         snprintf(rsp, BUFSIZ, "%i", mon->top_padding);
-    else if (strcmp(name, "bottom_padding") == 0)
+    else if (streq("bottom_padding", name))
         snprintf(rsp, BUFSIZ, "%i", mon->bottom_padding);
-    else if (strcmp(name, "focused_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", focused_border_color, focused_border_color_pxl);
-    else if (strcmp(name, "active_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", active_border_color, active_border_color_pxl);
-    else if (strcmp(name, "normal_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", normal_border_color, normal_border_color_pxl);
-    else if (strcmp(name, "presel_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", presel_border_color, presel_border_color_pxl);
-    else if (strcmp(name, "focused_locked_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", focused_locked_border_color, focused_locked_border_color_pxl);
-    else if (strcmp(name, "active_locked_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", active_locked_border_color, active_locked_border_color_pxl);
-    else if (strcmp(name, "normal_locked_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", normal_locked_border_color, normal_locked_border_color_pxl);
-    else if (strcmp(name, "urgent_border_color") == 0)
-        snprintf(rsp, BUFSIZ, "%s (%06X)", urgent_border_color, urgent_border_color_pxl);
-    else if (strcmp(name, "borderless_monocle") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(borderless_monocle));
-    else if (strcmp(name, "gapless_monocle") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(gapless_monocle));
-    else if (strcmp(name, "focus_follows_pointer") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_follows_pointer));
-    else if (strcmp(name, "pointer_follows_monitor") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(pointer_follows_monitor));
-    else if (strcmp(name, "monitor_focus_fallback") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(monitor_focus_fallback));
-    else if (strcmp(name, "adaptative_raise") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(adaptative_raise));
-    else if (strcmp(name, "apply_shadow_property") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(apply_shadow_property));
-    else if (strcmp(name, "auto_alternate") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_alternate));
-    else if (strcmp(name, "auto_cancel") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(auto_cancel));
-    else if (strcmp(name, "focus_by_distance") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(focus_by_distance));
-    else if (strcmp(name, "history_aware_focus") == 0)
-        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(history_aware_focus));
-    else if (strcmp(name, "wm_name") == 0)
+#define GETCOLOR(s) \
+    else if (streq(#s, name)) \
+        snprintf(rsp, BUFSIZ, "%s (%06X)", s, s##_pxl);
+    GETCOLOR(focused_border_color)
+    GETCOLOR(active_border_color)
+    GETCOLOR(normal_border_color)
+    GETCOLOR(presel_border_color)
+    GETCOLOR(focused_locked_border_color)
+    GETCOLOR(active_locked_border_color)
+    GETCOLOR(normal_locked_border_color)
+    GETCOLOR(urgent_border_color)
+#undef GETCOLOR
+#define GETBOOL(s) \
+    else if (streq(#s, name)) \
+        snprintf(rsp, BUFSIZ, "%s", BOOLSTR(s));
+    GETBOOL(borderless_monocle)
+    GETBOOL(gapless_monocle)
+    GETBOOL(focus_follows_pointer)
+    GETBOOL(pointer_follows_monitor)
+    GETBOOL(monitor_focus_fallback)
+    GETBOOL(adaptative_raise)
+    GETBOOL(apply_shadow_property)
+    GETBOOL(auto_alternate)
+    GETBOOL(auto_cancel)
+    GETBOOL(focus_by_distance)
+    GETBOOL(history_aware_focus)
+#undef GETBOOL
+    else if (streq("wm_name", name))
         snprintf(rsp, BUFSIZ, "%s", wm_name);
     else
-        snprintf(rsp, BUFSIZ, "unknown setting: %s", name);
+        return false;
+    return true;
 }
 
 bool parse_bool(char *value, bool *b)
 {
-    if (strcmp(value, "true") == 0) {
+    if (streq("true", value) || streq("on", value)) {
         *b = true;
         return true;
-    } else if (strcmp(value, "false") == 0) {
+    } else if (streq("false", value) || streq("off", value)) {
         *b = false;
         return true;
     }
@@ -714,10 +778,10 @@ bool parse_bool(char *value, bool *b)
 
 bool parse_layout(char *s, layout_t *l)
 {
-    if (strcmp(s, "monocle") == 0) {
+    if (streq("monocle", s)) {
         *l = LAYOUT_MONOCLE;
         return true;
-    } else if (strcmp(s, "tiled") == 0) {
+    } else if (streq("tiled", s)) {
         *l = LAYOUT_TILED;
         return true;
     }
@@ -726,29 +790,17 @@ bool parse_layout(char *s, layout_t *l)
 
 bool parse_direction(char *s, direction_t *d)
 {
-    if (strcmp(s, "up") == 0) {
-        *d = DIR_UP;
-        return true;
-    } else if (strcmp(s, "down") == 0) {
-        *d = DIR_DOWN;
-        return true;
-    } else if (strcmp(s, "left") == 0) {
-        *d = DIR_LEFT;
-        return true;
-    } else if (strcmp(s, "right") == 0) {
+    if (streq("right", s)) {
         *d = DIR_RIGHT;
         return true;
-    }
-    return false;
-}
-
-bool parse_nearest_argument(char *s, nearest_arg_t *a)
-{
-    if (strcmp(s, "older") == 0) {
-        *a = NEAREST_OLDER;
+    } else if (streq("down", s)) {
+        *d = DIR_DOWN;
         return true;
-    } else if (strcmp(s, "newer") == 0) {
-        *a = NEAREST_NEWER;
+    } else if (streq("left", s)) {
+        *d = DIR_LEFT;
+        return true;
+    } else if (streq("up", s)) {
+        *d = DIR_UP;
         return true;
     }
     return false;
@@ -756,11 +808,11 @@ bool parse_nearest_argument(char *s, nearest_arg_t *a)
 
 bool parse_cycle_direction(char *s, cycle_dir_t *d)
 {
-    if (strcmp(s, "prev") == 0) {
-        *d = CYCLE_PREV;
-        return true;
-    } else if (strcmp(s, "next") == 0) {
+    if (streq("next", s)) {
         *d = CYCLE_NEXT;
+        return true;
+    } else if (streq("prev", s)) {
+        *d = CYCLE_PREV;
         return true;
     }
     return false;
@@ -768,110 +820,11 @@ bool parse_cycle_direction(char *s, cycle_dir_t *d)
 
 bool parse_circulate_direction(char *s, circulate_dir_t *d)
 {
-    if (strcmp(s, "forward") == 0) {
+    if (streq("forward", s)) {
         *d = CIRCULATE_FORWARD;
         return true;
-    } else if (strcmp(s, "backward") == 0) {
+    } else if (streq("backward", s)) {
         *d = CIRCULATE_BACKWARD;
-        return true;
-    }
-    return false;
-}
-
-bool parse_skip_client(char *s, skip_client_t *k)
-{
-    if (s == NULL) {
-        *k = CLIENT_SKIP_NONE;
-        return true;
-    } else if (strcmp(s, "--skip-floating") == 0) {
-        *k = CLIENT_SKIP_FLOATING;
-        return true;
-    } else if (strcmp(s, "--skip-tiled") == 0) {
-        *k = CLIENT_SKIP_TILED;
-        return true;
-    } else if (strcmp(s, "--skip-class-equal") == 0) {
-        *k = CLIENT_SKIP_CLASS_EQUAL;
-        return true;
-    } else if (strcmp(s, "--skip-class-differ") == 0) {
-        *k = CLIENT_SKIP_CLASS_DIFFER;
-        return true;
-    }
-    return false;
-}
-
-bool parse_skip_desktop(char *s, skip_desktop_t *k)
-{
-    if (s == NULL) {
-        *k = DESKTOP_SKIP_NONE;
-        return true;
-    } else if (strcmp(s, "--skip-free") == 0) {
-        *k = DESKTOP_SKIP_FREE;
-        return true;
-    } else if (strcmp(s, "--skip-occupied") == 0) {
-        *k = DESKTOP_SKIP_OCCUPIED;
-        return true;
-    }
-    return false;
-}
-
-bool parse_list_option(char *s, list_option_t *o)
-{
-    if (s == NULL) {
-        *o = LIST_OPTION_VERBOSE;
-        return true;
-    } else if (strcmp(s, "--quiet") == 0) {
-        *o = LIST_OPTION_QUIET;
-        return true;
-    }
-    return false;
-}
-
-bool parse_send_option(char *s, send_option_t *o)
-{
-    if (s == NULL) {
-        *o = SEND_OPTION_DONT_FOLLOW;
-        return true;
-    } else if (strcmp(s, "--follow") == 0) {
-        *o = SEND_OPTION_FOLLOW;
-        return true;
-    }
-    return false;
-}
-
-bool parse_swap_option(char *s, swap_option_t *o)
-{
-    if (s == NULL) {
-        *o = SWAP_OPTION_SWAP_FOCUS;
-        return true;
-    } else if (strcmp(s, "--keep-focus") == 0) {
-        *o = SWAP_OPTION_KEEP_FOCUS;
-        return true;
-    }
-    return false;
-}
-
-bool parse_cancel_option(char *s, cancel_option_t *o)
-{
-    if (s == NULL) {
-        *o = CANCEL_OPTION_FOCUSED;
-        return true;
-    } else if (strcmp(s, "--all") == 0) {
-        *o = CANCEL_OPTION_ALL;
-        return true;
-    }
-    return false;
-}
-
-bool parse_rotate(char *s, rotate_t *r)
-{
-    if (strcmp(s, "clockwise") == 0) {
-        *r = ROTATE_CLOCKWISE;
-        return true;
-    } else if (strcmp(s, "counter_clockwise") == 0) {
-        *r = ROTATE_COUNTER_CLOCKWISE;
-        return true;
-    } else if (strcmp(s, "full_cycle") == 0) {
-        *r = ROTATE_FULL_CYCLE;
         return true;
     }
     return false;
@@ -879,10 +832,10 @@ bool parse_rotate(char *s, rotate_t *r)
 
 bool parse_flip(char *s, flip_t *f)
 {
-    if (strcmp(s, "horizontal") == 0) {
+    if (streq("horizontal", s)) {
         *f = FLIP_HORIZONTAL;
         return true;
-    } else if (strcmp(s, "vertical") == 0) {
+    } else if (streq("vertical", s)) {
         *f = FLIP_VERTICAL;
         return true;
     }
@@ -891,10 +844,10 @@ bool parse_flip(char *s, flip_t *f)
 
 bool parse_fence_move(char *s, fence_move_t *m)
 {
-    if (strcmp(s, "push") == 0) {
+    if (streq("push", s)) {
         *m = MOVE_PUSH;
         return true;
-    } else if (strcmp(s, "pull") == 0) {
+    } else if (streq("pull", s)) {
         *m = MOVE_PULL;
         return true;
     }
@@ -903,18 +856,30 @@ bool parse_fence_move(char *s, fence_move_t *m)
 
 bool parse_pointer_action(char *s, pointer_action_t *a)
 {
-    if (strcmp(s, "move") == 0) {
+    if (streq("move", s)) {
         *a = ACTION_MOVE;
         return true;
-    } else if (strcmp(s, "resize_corner") == 0) {
+    } else if (streq("resize_corner", s)) {
         *a = ACTION_RESIZE_CORNER;
         return true;
-    } else if (strcmp(s, "resize_side") == 0) {
+    } else if (streq("resize_side", s)) {
         *a = ACTION_RESIZE_SIDE;
         return true;
-    } else if (strcmp(s, "focus") == 0) {
+    } else if (streq("focus", s)) {
         *a = ACTION_FOCUS;
         return true;
     }
     return false;
+}
+
+bool parse_window_id(char *s, long int *i)
+{
+    char *end;
+    errno = 0;
+    long int ret = strtol(s, &end, 0);
+    if (errno != 0 || *end != '\0')
+        return false;
+    else
+        *i = ret;
+    return true;
 }

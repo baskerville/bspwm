@@ -17,7 +17,7 @@ Synopsis
 
 *bspwm* [*-h*|*-v*|*-s* 'PANEL_FIFO'|*-p* 'PANEL_PREFIX']
 
-*bspc* 'MESSAGE' ['ARGUMENTS'] ['OPTIONS']
+*bspc* 'COMMAND' ['ARGUMENTS']
 
 Description
 -----------
@@ -25,6 +25,23 @@ Description
 *bspwm* is a tiling window manager that represents windows as the leaves of a full binary tree.
 
 It is controlled and configured via *bspc*.
+
+
+Options
+-------
+
+*-h*::
+    Print the synopsis and exit.
+
+*-v*::
+    Print the version and exit.
+
+*-s* 'PANEL_FIFO'::
+    Write the internal state to the given FIFO.
+
+*-p* 'PANEL_PREFIX'::
+    Start every line written to the 'PANEL_FIFO' with the given prefix.
+
 
 Configuration
 -------------
@@ -40,9 +57,11 @@ Example configuration files can be found in the *examples* directory.
 Splitting Modes
 ---------------
 
+New windows are inserted in the tree as close as possible to the focused window.
+
 There is only two splitting modes: 'automatic' and 'manual'.
 
-The default mode is 'automatic'. The 'manual' mode is entered by sending a *presel* message.
+The default mode is 'automatic'. The 'manual' mode is entered by sending a *preselection* message.
 
 Example: insertion of a new node (number 4) into the given tree in 'automatic' mode:
 
@@ -65,7 +84,7 @@ Example: insertion of a new node (number 4) into the given tree in 'automatic' m
  +-------------------------+         +-------------------------+
 ----
 
-Same departure, but the mode is 'manual', and a *presel* 'up' message was sent beforehand:
+Same departure, but the mode is 'manual', and a *window --presel up* message was sent beforehand:
 
 ----
              b                                   b
@@ -92,189 +111,254 @@ Each monitor contains at least one desktop.
 
 Each desktop contains at most one tree.
 
-Messages
+
+Definitions
+-----------
+
+----
+WINDOW_SEL     :=  (CYCLE|DIR|biggest|focused|last)[.WINDOW_CLASS] | <window_id>
+DESKTOP_SEL    :=  (CYCLE|focused|last)[.DESKTOP_CLASS] | <desktop_name>
+MONITOR_SEL    :=  (CYCLE|DIR|focused|last)[.DESKTOP_CLASS] | <monitor_name>
+
+DESKTOP_CLASS  :=  [occupied|free]
+WINDOW_CLASS   :=  [floating|tiled][.][like|unlike]
+
+DIR            :=  left|right|up|down
+CYCLE          :=  next|prev
+ROTATE         :=  90|270|180
+FLIP           :=  horizontal|vertical
+----
+
+Commands
 --------
 
+Window
+~~~~~~
 
-*get* 'SETTING'::
-    Return the value of the given setting.
+General Syntax
+^^^^^^^^^^^^^^
 
-*set* 'SETTING' 'VALUE'::
-    Set the value of the given setting.
+window ['WINDOW_SEL'] 'OPTIONS'
 
-*list* ['DESKTOP_NAME']::
-    Output the internal representation of the window tree.
+Options
+^^^^^^^
+*-f*, *--focus* ['WINDOW_SEL']::
+    Focus the selected or given window.
 
-*list_desktops* [*--quiet*]::
-    Perform a dump of each desktop for the current monitor.
+*-d*, *--to-desktop* 'DESKTOP_SEL'::
+    Send the selected window to the given desktop.
 
-*list_monitors* [*--quiet*]::
-    Perform a dump of each monitor.
+*-m*, *--to-monitor* 'MONITOR_SEL'::
+    Send the selected window to the given monitor.
 
-*list_history*::
-    Return the node focus history of each desktop.
+*-w*, *--to-window* 'WINDOW_SEL'::
+    Transplant the selected window to the given window.
 
-*list_windows*::
-    Return the list of managed windows (i.e. their identifiers).
+*-s*, *--swap* 'WINDOW_SEL'::
+    Swap the selected window with the given window.
 
-*list_rules*::
-    Return the list of rules.
+*-p*, *--presel* 'DIR'|cancel::
+    Preselect the splitting area of the selected window (or cancel the preselection).
 
-*presel* 'left'|'right'|'up'|'down' ['SPLIT_RATIO']::
-    Switch to manual mode and select the splitting direction.
+*-r*, *--ratio* 'RATIO'::
+    Set the splitting ratio of the selected window.
 
-*cancel* [*--all*]::
-    Switch to automatic mode.
+*-e*, *--edge* 'DIR' 'RATIO'|pull|push::
+    Set the splitting ratio (or pull, or push) the edge located in the given direction in relation to the selected window.
 
-*ratio* 'VALUE'::
-    Set the splitting ratio of the focused window.
+*-t*, *--toggle* floating|fullscreen|locked[=on|off]::
+    Set or toggle the given state for the selected window.
 
-*pad* 'MONITOR_NAME' ['TOP_PADDING' ['RIGHT_PADDING' ['BOTTOM_PADDING' ['LEFT_PADDING']]]]::
-    Set the padding of the given monitor.
+*-c*, *--close*::
+    Close the selected window.
 
-*focus* 'left'|'right'|'up'|'down'::
-    Focus the neighbor window situated in the given direction.
+*-k*, *--kill*::
+    Kill the selected window.
 
-*shift* 'left'|'right'|'up'|'down'::
-    Exchange the current window with the given neighbor.
+Desktop
+~~~~~~~
 
-*swap* [*--keep-focus*]::
-    Swap the focused window with the last focused window.
+General Syntax
+^^^^^^^^^^^^^^
 
-*push* 'left'|'right'|'up'|'down'::
-    Push the fence located in the given direction.
+desktop ['DESKTOP_SEL'] 'OPTIONS'
 
-*pull* 'left'|'right'|'up'|'down'::
-    Pull the fence located in the given direction.
+Options
+^^^^^^^
+*-f*, *--focus* ['DESKTOP_SEL']::
+    Focus the selected or given desktop.
 
-*fence_ratio* 'left'|'right'|'up'|'down' 'RATIO'::
-    Set the splitting ratio of the fence located in the given direction.
+*-m*, *--to-monitor* 'MONITOR_SEL'::
+    Send the selected desktop to the given monitor.
 
-*cycle* 'next'|'prev' [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
-    Focus the next or previous window matching the given constraints.
+*-l*, *--layout* 'CYCLE'|monocle|tiled::
+    Set or cycle the layout of the selected desktop.
 
-*nearest* 'older'|'newer' [*--skip-floating*|*--skip-tiled*|*--skip-class-equal*|*--skip-class-differ*]::
-    Focus the nearest window matching the given constraints.
+*-n*, *--rename* <new_name>::
+    Rename the selected desktop.
 
-*biggest*::
-    Return the ID of the biggest tiled window.
+*-r*, *--remove*::
+    Remove the selected desktop.
 
-*circulate* 'forward'|'backward'::
-    Circulate the leaves in the given direction.
+*-c*, *--cancel-presel*::
+    Cancel the preselection of all the windows of the selected desktop.
 
-*grab_pointer* 'focus'|'move'|'resize_side'|'resize_corner'::
-    Begin the specified pointer action.
+*-F*, *--flip* 'FLIP'::
+    Flip the tree of the selected desktop.
 
-*track_pointer* 'ROOT_X' 'ROOT_Y'::
-    Pass the pointer root coordinates for the current pointer action.
+*-R*, *--rotate* 'ROTATE'::
+    Rotate the tree of the selected desktop.
 
-*toggle_fullscreen*::
-    Toggle the fullscreen state of the current window.
+*-B*, *--balance*::
+    Adjust the split ratios of the tree of the selected desktop so that all windows occupy the same area.
 
-*toggle_floating*::
-    Toggle the floating state of the current window.
+*-C*, *--circulate* forward|backward::
+    Circulate the leaves of the tree of the selected desktop.
 
-*toggle_locked*::
-    Toggle the locked state of the current window (locked windows will not respond to the *close* message).
+Monitor
+~~~~~~~
 
-*toggle_visibility*::
+General Syntax
+^^^^^^^^^^^^^^
+
+monitor ['MONITOR_SEL'] 'OPTIONS'
+
+Options
+^^^^^^^
+*-f*, *--focus* ['MONITOR_SEL']::
+    Focus the selected or given monitor.
+
+*-a*, *--add-desktops* <name>...::
+    Create desktops with the given names in the selected monitor.
+
+*-r*, *--remove-desktops* <name>...::
+    Remove desktops with the given names.
+
+*-p*, *--pad* <top> <right> <bottom> <left>::
+    Set the padding of the selected monitor.
+
+*-n*, *--rename* <new_name>::
+    Rename the selected monitor.
+
+Query
+~~~~~
+
+General Syntax
+^^^^^^^^^^^^^^
+
+query 'OPTIONS'
+
+Options
+^^^^^^^
+*-W*, *--windows*::
+    List matching windows.
+
+*-D*, *--desktops*::
+    List matching desktops.
+
+*-M*, *--monitors*::
+    List matching monitors.
+
+*-T*, *--tree*::
+    Print tree rooted at query.
+
+*-H*, *--history*::
+    Print the history as it relates to the query.
+
+[*-m*,*--monitor* ['MONITOR_SEL']] | [*-d*,*--desktop* ['DESKTOP_SEL']] | [*-w*, *--window* ['WINDOW_SEL']]::
+    Constrain matches to the selected monitor, desktop or window.
+
+Restore
+~~~~~~~
+
+General Syntax
+^^^^^^^^^^^^^^
+
+restore 'OPTIONS'
+
+Options
+^^^^^^^
+
+*-T*, *--tree* <file_path>::
+    Load the desktop trees from the given file.
+
+*-H*, *--history* <file_path>::
+    Load the focus history from the given file.
+
+Control
+~~~~~~~
+
+General Syntax
+^^^^^^^^^^^^^^
+
+control 'OPTIONS'
+
+Options
+^^^^^^^
+
+*--adopt-orphans* <file_path>::
+   Manage all the unmanaged windows remaining from a previous session.
+
+*--put-status* <file_path>::
+    Write the current internal state to the panel FIFO.
+
+*--toggle-visibility*::
     Toggle the visibility of all the managed windows.
 
-*close*::
-    Close the focused window.
+Pointer
+~~~~~~~
 
-*kill*::
-    Kill the focused window.
+General Syntax
+^^^^^^^^^^^^^^
 
-*send_to* 'DESKTOP_NAME' [*--follow*]::
-    Send the focused window to the given desktop.
+pointer 'OPTIONS'
 
-*drop_to* 'next'|'prev' [*--follow*]::
-    Send the focused window to the next or previous desktop.
+Options
+^^^^^^^
 
-*send_to_monitor* 'MONITOR_NAME' [*--follow*]::
-    Send the focused window to the given monitor.
+*-t*, *--track* <x> <y>::
+    Pass the pointer root coordinates for the current pointer action.
 
-*drop_to_monitor* 'next'|'prev' [*--follow*]::
-    Send the focused window to the next or previous monitor.
+*-g*, *--grab* focus|move|resize_side|resize_corner::
+    Perform the given pointer action.
 
-*use* 'DESKTOP_NAME'::
-    Select the given desktop.
+Rule
+~~~~
 
-*use_monitor* 'MONITOR_NAME'::
-    Select the given monitor.
+General Syntax
+^^^^^^^^^^^^^^
 
-*focus_monitor* 'left'|'right'|'up'|'down'::
-    Focus the nearest monitor in the given direction.
+rule 'OPTIONS'
 
-*alternate*::
-    Alternate between the current and the last focused window.
+Options
+^^^^^^^
 
-*alternate_desktop*::
-    Alternate between the current and the last focused desktop.
+*-a*, *--add* <pattern> [-d 'DESKTOP_SEL'] [--floating] [--follow]::
+    Create a new rule (<pattern> must match the class or instance name).
 
-*alternate_monitor*::
-    Alternate between the current and the last focused monitor.
+*-r*, *--rm* <rule_uid>...::
+    Remove the rules with the given UIDs.
 
-*add* 'DESKTOP_NAME' ...::
-    Make new desktops with the given names.
+*-l*, *--list* [<pattern>]::
+    List the rules.
 
-*add_in* 'MONITOR_NAME' 'DESKTOP_NAME' ...::
-    Make new desktops with the given names in the given monitor.
+Config
+~~~~~~
 
-*rename_monitor* 'CURRENT_NAME' 'NEW_NAME'::
-    Rename the monitor named 'CURRENT_NAME' to 'NEW_NAME'.
+General Syntax
+^^^^^^^^^^^^^^
 
-*rename* 'CURRENT_NAME' 'NEW_NAME'::
-    Rename the desktop named 'CURRENT_NAME' to 'NEW_NAME'.
+config <key> [<value>]::
+    Get or set the value of <key>.
 
-*remove_desktop* 'DESKTOP_NAME' ...::
-    Remove the given desktops.
+Quit
+~~~~
 
-*send_desktop_to* 'MONITOR_NAME' [*--follow*]::
-    Send the current desktop to the given monitor.
+General Syntax
+^^^^^^^^^^^^^^
 
-*cycle_monitor* 'next'|'prev'::
-    Select the next or previous monitor.
-
-*cycle_desktop* 'next'|'prev' [*--skip-free*|*--skip-occupied*]::
-    Select the next or previous desktop.
-
-*layout* 'monocle'|'tiled' ['DESKTOP_NAME' ...]::
-    Set the layout of the given desktops (current if none given).
-
-*cycle_layout*::
-    Cycle the layout of the current desktop.
-
-*rotate* 'clockwise'|'counter_clockwise'|'full_cycle'::
-    Rotate the window tree.
-
-*flip* 'horizontal'|'vertical'::
-    Flip the window tree.
-
-*balance*::
-    Adjust the split ratios so that all windows occupy the same area.
-
-*rule* 'PATTERN' ['DESKTOP_NAME'] ['floating'] ['follow']::
-    Create a new rule ('PATTERN' must match the class or instance name).
-
-*remove_rule* 'UID' ...::
-    Remove the rules with the given 'UIDs'.
-
-*put_status*::
-    Output the current state to the panel fifo.
-
-*adopt_orphans*::
-    Manage all the unmanaged windows remaining from a previous session.
-
-*restore_layout* 'FILE_PATH'::
-    Restore the layout of each desktop from the content of 'FILE_PATH'.
-
-*restore_history* 'FILE_PATH'::
-    Restore the history of each desktop from the content of 'FILE_PATH'.
-
-*quit* ['EXIT_STATUS']::
-    Quit.
+quit [<status>]::
+    Quit with an optional exit status.
 
 Settings
 --------
@@ -376,7 +460,7 @@ Key Features
 * Configured and controlled through messages.
 * Multiple monitors support (via 'RandR').
 * EWMH support (*tint2* works).
-* Automatic and manual modes.
+* Hybrid tiling.
 
 Contributors
 ------------

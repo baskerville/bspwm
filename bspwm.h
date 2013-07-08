@@ -14,7 +14,6 @@ uint32_t num_desktops;
 unsigned int num_monitors;
 unsigned int monitor_uid;
 unsigned int desktop_uid;
-unsigned int client_uid;
 unsigned int rule_uid;
 xcb_screen_t *screen;
 xcb_window_t root;
@@ -43,6 +42,7 @@ void register_events(void);
 bool import_monitors(void);
 void init(void);
 void setup(void);
+void put_status(void);
 void cleanup(void);
 void quit(void);
 

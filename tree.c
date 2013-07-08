@@ -1,12 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <limits.h>
 #include <math.h>
+#include <limits.h>
 #include <float.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
 #include "settings.h"
 #include "helpers.h"
 #include "window.h"
@@ -46,7 +41,8 @@ bool is_second_child(node_t *n)
 
 void change_split_ratio(node_t *n, value_change_t chg)
 {
-    n->split_ratio = pow(n->split_ratio, (chg == CHANGE_INCREASE ? INC_EXP : DEC_EXP));
+    n->split_ratio = pow(n->split_ratio,
+            (chg == CHANGE_INCREASE ? (1 / GROWTH_FACTOR) : GROWTH_FACTOR));
 }
 
 void change_layout(monitor_t *m, desktop_t *d, layout_t l)
@@ -57,15 +53,15 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l)
         put_status();
 }
 
-void reset_mode(desktop_t *d, node_t *n, cancel_option_t c)
+void reset_mode(coordinates_t *loc)
 {
-    if (c == CANCEL_OPTION_FOCUSED) {
-        n->split_mode = MODE_AUTOMATIC;
-        window_draw_border(mon->desk->focus, d->focus == n, true);
-    } else if (c == CANCEL_OPTION_ALL) {
-        for (node_t *a = first_extrema(d->root); a != NULL; a = next_leaf(a, d->root)) {
+    if (loc->node != NULL) {
+        loc->node->split_mode = MODE_AUTOMATIC;
+        window_draw_border(loc->node, loc->desktop->focus == loc->node, mon == loc->monitor);
+    } else if (loc->desktop != NULL) {
+        for (node_t *a = first_extrema(loc->desktop->root); a != NULL; a = next_leaf(a, loc->desktop->root)) {
             a->split_mode = MODE_AUTOMATIC;
-            window_draw_border(a, d->focus == a, true);
+            window_draw_border(a, loc->desktop->focus == a, mon == loc->monitor);
         }
     }
 }
@@ -114,17 +110,37 @@ node_t *prev_leaf(node_t *n, node_t *r)
     return second_extrema(p->parent->first_child);
 }
 
-bool is_adjacent(node_t *a, node_t *r)
+/* bool is_adjacent(node_t *a, node_t *r) */
+/* { */
+/*     node_t *f = r->parent; */
+/*     node_t *p = a; */
+/*     bool first_child = is_first_child(r); */
+/*     while (p != r) { */
+/*         if (p->parent->split_type == f->split_type && is_first_child(p) == first_child) */
+/*             return false; */
+/*         p = p->parent; */
+/*     } */
+/*     return true; */
+/* } */
+
+/* Returns true if *b* is adjacent to *a* in the direction *dir* */
+bool is_adjacent(node_t *a, node_t *b, direction_t dir)
 {
-    node_t *f = r->parent;
-    node_t *p = a;
-    bool first_child = is_first_child(r);
-    while (p != r) {
-        if (p->parent->split_type == f->split_type && is_first_child(p) == first_child)
-            return false;
-        p = p->parent;
+    switch (dir) {
+        case DIR_RIGHT:
+            return (a->rectangle.x + a->rectangle.width) == b->rectangle.x;
+            break;
+        case DIR_DOWN:
+            return (a->rectangle.y + a->rectangle.height) == b->rectangle.y;
+            break;
+        case DIR_LEFT:
+            return (b->rectangle.x + b->rectangle.width) == a->rectangle.x;
+            break;
+        case DIR_UP:
+            return (b->rectangle.y + b->rectangle.height) == a->rectangle.y;
+            break;
     }
-    return true;
+    return false;
 }
 
 node_t *find_fence(node_t *n, direction_t dir)
@@ -205,7 +221,7 @@ node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir)
     int min_rank = INT_MAX;
 
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-        if (!is_tiled(a->client) || !is_adjacent(a, target) || a == n)
+        if (a->vacant || !is_adjacent(n, a, dir) || a == n)
             continue;
         int rank = history_rank(f, a);
         if (rank >= 0 && rank < min_rank) {
@@ -246,7 +262,7 @@ node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir)
 
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
         if (is_tiled(a->client) != is_tiled(n->client)
-                || (is_tiled(a->client) && !is_adjacent(a, target))
+                || (is_tiled(a->client) && !is_adjacent(n, a, dir))
                 || a == n)
             continue;
         get_side_handle(a->client, dir2, &pt2);
@@ -324,23 +340,23 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
         change_split_ratio(fence, CHANGE_DECREASE);
 }
 
-void rotate_tree(node_t *n, rotate_t rot)
+void rotate_tree(node_t *n, int rot)
 {
-    if (n == NULL || is_leaf(n) || rot == ROTATE_IDENTITY)
+    if (n == NULL || is_leaf(n) || rot == 0)
         return;
 
     node_t *tmp;
 
-    if ((rot == ROTATE_CLOCKWISE && n->split_type == TYPE_HORIZONTAL)
-            || (rot == ROTATE_COUNTER_CLOCKWISE && n->split_type == TYPE_VERTICAL)
-            || rot == ROTATE_FULL_CYCLE) {
+    if ((rot == 90 && n->split_type == TYPE_HORIZONTAL)
+            || (rot == 270 && n->split_type == TYPE_VERTICAL)
+            || rot == 180) {
         tmp = n->first_child;
         n->first_child = n->second_child;
         n->second_child = tmp;
         n->split_ratio = 1.0 - n->split_ratio;
     }
 
-    if (rot != ROTATE_FULL_CYCLE) {
+    if (rot != 180) {
         if (n->split_type == TYPE_HORIZONTAL)
             n->split_type = TYPE_VERTICAL;
         else if (n->split_type == TYPE_VERTICAL)
@@ -361,19 +377,11 @@ void rotate_brother(node_t *n)
         rotate_tree(n->parent->first_child, n->birth_rotation);
 }
 
-void unrotate_tree(node_t *n, rotate_t rot)
+void unrotate_tree(node_t *n, int rot)
 {
-    switch(rot) {
-        case ROTATE_CLOCKWISE:
-            rotate_tree(n, ROTATE_COUNTER_CLOCKWISE);
-            break;
-        case ROTATE_COUNTER_CLOCKWISE:
-            rotate_tree(n, ROTATE_CLOCKWISE);
-            break;
-        case ROTATE_IDENTITY:
-        case ROTATE_FULL_CYCLE:
-            break;
-    }
+    if (rot == 0)
+        return;
+    rotate_tree(n, 360 - rot);
 }
 
 void unrotate_brother(node_t *n)
@@ -403,20 +411,6 @@ void flip_tree(node_t *n, flip_t flp)
 
     flip_tree(n->first_child, flp);
     flip_tree(n->second_child, flp);
-}
-
-void list_history(char *rsp)
-{
-    char line[MAXLEN];
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-            snprintf(line, sizeof(line), "%s\n", d->name);
-            strncat(rsp, line, REMLEN(rsp));
-            for (node_list_t *a = d->history->tail; a != NULL; a = a->prev) {
-                snprintf(line, sizeof(line), "  %X\n", a->node->client->window);
-                strncat(rsp, line, REMLEN(rsp));
-            }
-        }
 }
 
 int balance_tree(node_t *n)
@@ -510,7 +504,6 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
                 fence = rect.width * n->split_ratio;
                 first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
                 second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
-
             } else if (n->split_type == TYPE_HORIZONTAL) {
                 fence = rect.height * n->split_ratio;
                 first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
@@ -568,15 +561,15 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
                     c->split_type = p->split_type;
                     c->split_ratio = p->split_ratio;
                     p->parent = c;
-                    rotate_t rot;
+                    int rot;
                     if (is_first_child(f)) {
                         c->first_child = n;
                         c->second_child = p;
-                        rot = ROTATE_CLOCKWISE;
+                        rot = 90;
                     } else {
                         c->first_child = p;
                         c->second_child = n;
-                        rot = ROTATE_COUNTER_CLOCKWISE;
+                        rot = 270;
                     }
                     if (!is_floating(n->client))
                         rotate_tree(p, rot);
@@ -593,7 +586,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
                 c->split_ratio = f->split_ratio;
                 c->parent = p;
                 f->parent = c;
-                f->birth_rotation = ROTATE_IDENTITY;
+                f->birth_rotation = 0;
                 switch (f->split_dir) {
                     case DIR_LEFT:
                         c->split_type = TYPE_VERTICAL;
@@ -786,8 +779,8 @@ void swap_nodes(node_t *n1, node_t *n2, bool interpret)
     node_t *pn2 = n2->parent;
     bool n1_first_child = is_first_child(n1);
     bool n2_first_child = is_first_child(n2);
-    rotate_t br1 = n1->birth_rotation;
-    rotate_t br2 = n2->birth_rotation;
+    int br1 = n1->birth_rotation;
+    int br2 = n2->birth_rotation;
 
     if (pn1 != NULL) {
         if (n1_first_child)
@@ -888,15 +881,15 @@ void select_monitor(monitor_t *m)
     put_status();
 }
 
-monitor_t *nearest_monitor(direction_t dir)
+monitor_t *nearest_monitor(monitor_t *m, direction_t dir)
 {
     int dmin = INT_MAX;
     monitor_t *nearest = NULL;
-    xcb_rectangle_t rect = mon->rectangle;
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        if (m == mon)
+    xcb_rectangle_t rect = m->rectangle;
+    for (monitor_t *f = mon_head; f != NULL; f = f->next) {
+        if (f == m)
             continue;
-        xcb_rectangle_t r = m->rectangle;
+        xcb_rectangle_t r = f->rectangle;
         if ((dir == DIR_LEFT && r.x < rect.x) ||
                 (dir == DIR_RIGHT && r.x >= (rect.x + rect.width)) ||
                 (dir == DIR_UP && r.y < rect.y) ||
@@ -905,7 +898,7 @@ monitor_t *nearest_monitor(direction_t dir)
                 ABS((r.y + r.height / 2) - (rect.y + rect.height / 2));
             if (d < dmin) {
                 dmin = d;
-                nearest = m;
+                nearest = f;
             }
         }
     }
@@ -931,41 +924,50 @@ void select_desktop(monitor_t *m, desktop_t *d)
     put_status();
 }
 
-void cycle_monitor(cycle_dir_t dir)
+monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)
 {
-    monitor_t *m = NULL;
-    if (dir == CYCLE_NEXT)
-        m = (mon->next == NULL ? mon_head : mon->next);
-    else if (dir == CYCLE_PREV)
-        m = (mon->prev == NULL ? mon_tail : mon->prev);
-    focus_node(m, m->desk, m->desk->focus);
+    monitor_t *f = (dir == CYCLE_PREV ? m->prev : m->next);
+    if (f == NULL)
+        f = (dir == CYCLE_PREV ? mon_tail : mon_head);
+
+    while (f != m) {
+        if (sel == DESKTOP_ALL
+                || (sel == DESKTOP_FREE && f->desk->root == NULL)
+                || (sel == DESKTOP_OCCUPIED && f->desk->root != NULL)) {
+            return f;
+        }
+        f = (dir == CYCLE_PREV ? m->prev : m->next);
+        if (f == NULL)
+            f = (dir == CYCLE_PREV ? mon_tail : mon_head);
+    }
+
+    return NULL;
 }
 
-void cycle_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, skip_desktop_t skip)
+desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
 {
     desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
     if (f == NULL)
         f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 
     while (f != d) {
-        if (skip == DESKTOP_SKIP_NONE
-                || (skip == DESKTOP_SKIP_FREE && f->root != NULL)
-                || (skip == DESKTOP_SKIP_OCCUPIED && f->root == NULL)) {
-            focus_node(m, f, f->focus);
-            return;
+        if (sel == DESKTOP_ALL
+                || (sel == DESKTOP_FREE && f->root == NULL)
+                || (sel == DESKTOP_OCCUPIED && f->root != NULL)) {
+            return f;
         }
         f = (dir == CYCLE_PREV ? f->prev : f->next);
         if (f == NULL)
             f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
     }
+
+    return NULL;
 }
 
-void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_client_t skip)
+node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
 {
     if (n == NULL)
-        return;
-
-    PUTS("cycle leaf");
+        return NULL;
 
     node_t *f = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
     if (f == NULL)
@@ -973,40 +975,21 @@ void cycle_leaf(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, skip_cli
 
     while (f != n) {
         bool tiled = is_tiled(f->client);
-        if (skip == CLIENT_SKIP_NONE || (skip == CLIENT_SKIP_TILED && !tiled) || (skip == CLIENT_SKIP_FLOATING && tiled)
-                || (skip == CLIENT_SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
-                || (skip == CLIENT_SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0)) {
-            focus_node(m, d, f);
-            return;
+        if ((sel.type == CLIENT_TYPE_ALL
+                    || (tiled && sel.type == CLIENT_TYPE_TILED)
+                    || (!tiled && sel.type == CLIENT_TYPE_FLOATING)) &&
+                (sel.class == CLIENT_CLASS_ALL
+                 || (sel.class == CLIENT_CLASS_EQUAL
+                     && streq(f->client->class_name, n->client->class_name))
+                 || (sel.class == CLIENT_CLASS_DIFFER
+                     && !streq(f->client->class_name, n->client->class_name)))) {
+            return f;
         }
         f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
         if (f == NULL)
             f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
     }
-}
-
-void nearest_leaf(monitor_t *m, desktop_t *d, node_t *n, nearest_arg_t dir, skip_client_t skip)
-{
-    if (n == NULL)
-        return;
-
-    PUTS("nearest leaf");
-
-    node_t *x = NULL;
-
-    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root))
-        if (skip == CLIENT_SKIP_NONE || (skip == CLIENT_SKIP_TILED && !is_tiled(f->client)) || (skip == CLIENT_SKIP_FLOATING && is_tiled(f->client))
-                || (skip == CLIENT_SKIP_CLASS_DIFFER && strcmp(f->client->class_name, n->client->class_name) == 0)
-                || (skip == CLIENT_SKIP_CLASS_EQUAL && strcmp(f->client->class_name, n->client->class_name) != 0))
-            if ((dir == NEAREST_OLDER
-                        && (f->client->uid < n->client->uid)
-                        && (x == NULL || f->client->uid > x->client->uid))
-                    || (dir == NEAREST_NEWER
-                        && (f->client->uid > n->client->uid)
-                        && (x == NULL || f->client->uid < x->client->uid)))
-                x = f;
-
-    focus_node(m, d, x);
+    return NULL;
 }
 
 void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
@@ -1056,265 +1039,4 @@ void fit_monitor(monitor_t *m, client_t *c)
     while (crect.y > (mrect.y + mrect.height - 1))
         crect.y -= mrect.height;
     c->floating_rectangle = crect;
-}
-
-void put_status(void)
-{
-    if (status_fifo == NULL)
-        return;
-    if (status_prefix != NULL)
-        fprintf(status_fifo, "%s", status_prefix);
-    bool urgent = false;
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
-                urgent |= n->client->urgent;
-            fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
-        }
-    }
-    if (mon != NULL && mon->desk != NULL)
-        fprintf(status_fifo, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
-    fprintf(status_fifo, "\n");
-    fflush(status_fifo);
-}
-
-void list_monitors(list_option_t opt, char *rsp)
-{
-    char line[MAXLEN];
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        snprintf(line, sizeof(line), "%s %ux%u%+i%+i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y);
-        strncat(rsp, line, REMLEN(rsp));
-        if (m == mon)
-            strncat(rsp, " #\n", REMLEN(rsp));
-        else if (m == last_mon)
-            strncat(rsp, " ~\n", REMLEN(rsp));
-        else
-            strncat(rsp, "\n", REMLEN(rsp));
-        if (opt == LIST_OPTION_VERBOSE)
-            list_desktops(m, opt, 1, rsp);
-    }
-}
-
-void list_desktops(monitor_t *m, list_option_t opt, unsigned int depth, char *rsp)
-{
-    char line[MAXLEN];
-    for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-        for (unsigned int i = 0; i < depth; i++)
-            strncat(rsp, "  ", REMLEN(rsp));
-        snprintf(line, sizeof(line), "%s %c", d->name, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
-        strncat(rsp, line, REMLEN(rsp));
-        if (d == m->desk)
-            strncat(rsp, " @\n", REMLEN(rsp));
-        else if (d == m->last_desk)
-            strncat(rsp, " ~\n", REMLEN(rsp));
-        else
-            strncat(rsp, "\n", REMLEN(rsp));
-        if (opt == LIST_OPTION_VERBOSE)
-            list(d, d->root, rsp, depth + 1);
-    }
-}
-
-void list(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
-{
-    if (n == NULL)
-        return;
-
-    char line[MAXLEN];
-
-    for (unsigned int i = 0; i < depth; i++)
-        strncat(rsp, "  ", REMLEN(rsp));
-
-    if (is_leaf(n)) {
-        client_t *c = n->client;
-        snprintf(line, sizeof(line), "%c %s %X %u %u %ux%u%+i%+i %c%c%c%c%c", (n->birth_rotation == ROTATE_CLOCKWISE ? 'a' : (n->birth_rotation == ROTATE_COUNTER_CLOCKWISE ? 'c' : 'm')), c->class_name, c->window, c->uid, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
-    } else {
-        snprintf(line, sizeof(line), "%c %c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), (n->birth_rotation == ROTATE_CLOCKWISE ? 'a' : (n->birth_rotation == ROTATE_COUNTER_CLOCKWISE ? 'c' : 'm')), n->split_ratio);
-    }
-
-    strncat(rsp, line, REMLEN(rsp));
-
-    if (n == d->focus)
-        strncat(rsp, " *\n", REMLEN(rsp));
-    else
-        strncat(rsp, "\n", REMLEN(rsp));
-
-    list(d, n->first_child, rsp, depth + 1);
-    list(d, n->second_child, rsp, depth + 1);
-}
-
-void restore_layout(char *file_path)
-{
-    if (file_path == NULL)
-        return;
-
-    FILE *snapshot = fopen(file_path, "r");
-    if (snapshot == NULL) {
-        warn("restore: can't open file\n");
-        return;
-    }
-
-    PUTS("restore layout");
-
-    char line[MAXLEN];
-    monitor_t *m = NULL;
-    desktop_t *d = NULL;
-    node_t *n = NULL;
-    num_clients = 0;
-    unsigned int level, last_level = 0, max_uid = 0;
-    bool aborted = false;
-
-    while (!aborted && fgets(line, sizeof(line), snapshot) != NULL) {
-        unsigned int len = strlen(line);
-        level = 0;
-        while (level < strlen(line) && isspace(line[level]))
-            level++;
-        if (level == 0) {
-            if (m == NULL)
-                m = mon_head;
-            else
-                m = m->next;
-            if (len >= 2)
-                switch (line[len - 2]) {
-                    case '#':
-                        mon = m;
-                        break;
-                    case '~':
-                        last_mon = m;
-                        break;
-                }
-        } else if (level == 2) {
-            if (d == NULL)
-                d = m->desk_head;
-            else
-                d = d->next;
-            int i = len - 1;
-            while (i > 0 && !isupper(line[i]))
-                i--;
-            if (line[i] == 'M')
-                d->layout = LAYOUT_MONOCLE;
-            else if (line[i] == 'T')
-                d->layout = LAYOUT_TILED;
-            if (len >= 2)
-                switch (line[len - 2]) {
-                    case '@':
-                        m->desk = d;
-                        break;
-                    case '~':
-                        m->last_desk = d;
-                        break;
-                }
-        } else {
-            node_t *birth = make_node();
-            if (level == 4) {
-                empty_desktop(d);
-                d->root = birth;
-            } else {
-                if (level > last_level) {
-                    n->first_child = birth;
-                } else {
-                    do {
-                        n = n->parent;
-                    } while (n != NULL && n->second_child != NULL);
-                    if (n == NULL) {
-                        warn("restore: file is malformed\n");
-                        aborted = true;
-                    }
-                    n->second_child = birth;
-                }
-                birth->parent = n;
-            }
-            n = birth;
-
-            char br;
-            if (isupper(line[level])) {
-                char st;
-                sscanf(line + level, "%c %c %lf", &st, &br, &n->split_ratio);
-                if (st == 'H')
-                    n->split_type = TYPE_HORIZONTAL;
-                else if (st == 'V')
-                    n->split_type = TYPE_VERTICAL;
-            } else {
-                client_t *c = make_client(XCB_NONE);
-                num_clients++;
-                char floating, transient, fullscreen, urgent, locked;
-                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c%c%c%c%c", &br, c->class_name, &c->window, &c->uid, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
-                c->floating = (floating == '-' ? false : true);
-                c->transient = (transient == '-' ? false : true);
-                c->fullscreen = (fullscreen == '-' ? false : true);
-                c->urgent = (urgent == '-' ? false : true);
-                c->locked = (locked == '-' ? false : true);
-                if (c->uid > max_uid)
-                    max_uid = c->uid;
-                n->client = c;
-                if (len >= 2 && line[len - 2] == '*')
-                    d->focus = n;
-            }
-            if (br == 'a')
-                n->birth_rotation = ROTATE_CLOCKWISE;
-            else if (br == 'c')
-                n->birth_rotation = ROTATE_COUNTER_CLOCKWISE;
-            else if (br == 'm')
-                n->birth_rotation = ROTATE_IDENTITY;
-        }
-        last_level = level;
-    }
-
-    fclose(snapshot);
-
-    if (!aborted) {
-        client_uid = max_uid + 1;
-        for (monitor_t *m = mon_head; m != NULL; m = m->next)
-            for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-                for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-                    uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
-                    xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-                    if (n->client->floating) {
-                        n->vacant = true;
-                        update_vacant_state(n->parent);
-                    }
-                }
-        ewmh_update_current_desktop();
-    }
-}
-
-void restore_history(char *file_path)
-{
-    if (file_path == NULL)
-        return;
-
-    FILE *snapshot = fopen(file_path, "r");
-    if (snapshot == NULL) {
-        warn("restore history: can't open file\n");
-        return;
-    }
-
-    PUTS("restore history");
-
-    char line[MAXLEN];
-    desktop_t *d = NULL;
-    unsigned int level;
-
-    while (fgets(line, sizeof(line), snapshot) != NULL) {
-        unsigned int i = strlen(line) - 1;
-        while (i > 0 && isspace(line[i]))
-            line[i--] = '\0';
-        level = 0;
-        while (level < strlen(line) && isspace(line[level]))
-            level++;
-        if (level == 0) {
-            desktop_location_t loc;
-            if (locate_desktop(line + level, &loc))
-                d = loc.desktop;
-        } else if (d != NULL) {
-            xcb_window_t win;
-            if (sscanf(line + level, "%X", &win) == 1) {
-                window_location_t loc;
-                if (locate_window(win, &loc))
-                    history_add(d->history, loc.node);
-            }
-        }
-    }
-
-    fclose(snapshot);
 }

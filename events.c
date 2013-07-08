@@ -12,6 +12,7 @@
 #include "window.h"
 #include "events.h"
 #include "tree.h"
+#include "query.h"
 #include "rules.h"
 #include "ewmh.h"
 
@@ -65,7 +66,7 @@ void configure_request(xcb_generic_event_t *evt)
 
     PRINTF("configure request %X\n", e->window);
 
-    window_location_t loc;
+    coordinates_t loc;
     bool is_managed = locate_window(e->window, &loc);
 
     if (!is_managed || is_floating(loc.node->client)) {
@@ -154,7 +155,7 @@ void destroy_notify(xcb_generic_event_t *evt)
 
     PRINTF("destroy notify %X\n", e->window);
 
-    window_location_t loc;
+    coordinates_t loc;
     if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
         arrange(loc.monitor, loc.desktop);
@@ -167,7 +168,7 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     PRINTF("unmap notify %X\n", e->window);
 
-    window_location_t loc;
+    coordinates_t loc;
     if (locate_window(e->window, &loc)) {
         remove_node(loc.desktop, loc.node);
         arrange(loc.monitor, loc.desktop);
@@ -184,7 +185,7 @@ void property_notify(xcb_generic_event_t *evt)
     if (e->atom != XCB_ATOM_WM_HINTS)
         return;
 
-    window_location_t loc;
+    coordinates_t loc;
     if (locate_window(e->window, &loc)
             && xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1)
         set_urgency(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
@@ -197,13 +198,13 @@ void client_message(xcb_generic_event_t *evt)
     PRINTF("client message %X %u\n", e->window, e->type);
 
     if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
-        desktop_location_t loc;
+        coordinates_t loc;
         if (ewmh_locate_desktop(e->data.data32[0], &loc))
             focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
         return;
     }
 
-    window_location_t loc;
+    coordinates_t loc;
     if (!locate_window(e->window, &loc))
         return;
 
@@ -214,12 +215,12 @@ void client_message(xcb_generic_event_t *evt)
         if (loc.node == mon->desk->focus)
             return;
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
-            toggle_fullscreen(loc.desktop, loc.desktop->focus);
+            set_fullscreen(loc.desktop, loc.desktop->focus, false);
             arrange(loc.monitor, loc.desktop);
         }
         focus_node(loc.monitor, loc.desktop, loc.node);
     } else if (e->type == ewmh->_NET_WM_DESKTOP) {
-        desktop_location_t dloc;
+        coordinates_t dloc;
         if (ewmh_locate_desktop(e->data.data32[0], &dloc))
             transfer_node(loc.monitor, loc.desktop, dloc.monitor, dloc.desktop, loc.node);
     }
@@ -258,13 +259,13 @@ void motion_notify(void)
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
 {
     if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-        bool fs = n->client->fullscreen;
-        if (action == XCB_EWMH_WM_STATE_TOGGLE
-                || (fs && action == XCB_EWMH_WM_STATE_REMOVE)
-                || (!fs && action == XCB_EWMH_WM_STATE_ADD)) {
-            toggle_fullscreen(d, n);
-            arrange(m, d);
-        }
+        if (action == XCB_EWMH_WM_STATE_ADD)
+            set_fullscreen(d, n, true);
+        else if (action == XCB_EWMH_WM_STATE_REMOVE)
+            set_fullscreen(d, n, false);
+        else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+            set_fullscreen(d, n, !n->client->fullscreen);
+        arrange(m, d);
     } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
         if (action == XCB_EWMH_WM_STATE_ADD)
             set_urgency(m, d, n, true);
@@ -287,7 +288,7 @@ void grab_pointer(pointer_action_t pac)
     if (win == XCB_NONE)
         return;
 
-    window_location_t loc;
+    coordinates_t loc;
     if (locate_window(win, &loc)) {
         client_t *c = NULL;
         frozen_pointer->position = pos;
@@ -438,7 +439,7 @@ void track_pointer(int root_x, int root_y)
                 query_pointer(&pwin, NULL);
                 if (pwin == win)
                     return;
-                window_location_t loc;
+                coordinates_t loc;
                 bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
                 if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
                     swap_nodes(n, loc.node, true);

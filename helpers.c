@@ -24,10 +24,9 @@ void err(char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-uint32_t get_color(char *col)
+bool get_color(char *col, uint32_t *pxl)
 {
     xcb_colormap_t map = screen->default_colormap;
-    uint32_t pxl = 0;
 
     if (col[0] == '#') {
         unsigned int red, green, blue;
@@ -38,19 +37,20 @@ uint32_t get_color(char *col)
             blue *= 0x101;
             xcb_alloc_color_reply_t *reply = xcb_alloc_color_reply(dpy, xcb_alloc_color(dpy, map, red, green, blue), NULL);
             if (reply != NULL) {
-                pxl = reply->pixel;
+                *pxl = reply->pixel;
                 free(reply);
+                return true;
             }
         }
     } else {
         xcb_alloc_named_color_reply_t *reply = xcb_alloc_named_color_reply(dpy, xcb_alloc_named_color(dpy, map, strlen(col), col), NULL);
         if (reply != NULL) {
-            pxl = reply->pixel;
+            *pxl = reply->pixel;
             free(reply);
+            return true;
         }
     }
-
-    return pxl;
+    return false;
 }
 
 double distance(xcb_point_t a, xcb_point_t b)

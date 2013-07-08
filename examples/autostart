@@ -2,14 +2,14 @@
 
 FIRST_DESK=1
 REMAINING_DESKS="$(seq 2 9) 0"
-bspc rename Desktop01 $FIRST_DESK
-bspc add $REMAINING_DESKS
+bspc desktop Desktop01 -n $FIRST_DESK
+bspc monitor -a $REMAINING_DESKS
 
-bspc rule Gimp Eight floating
+bspc rule -a Gimp -d Eight --floating
 
-bspc set split_ratio         0.52
-bspc set border_width        2
-bspc set window_gap          12
-bspc set borderless_monocle  true
-bspc set gapless_monocle     true
-bspc set focus_by_distance   true
+bspc config split_ratio         0.52
+bspc config border_width        2
+bspc config window_gap          12
+bspc config borderless_monocle  true
+bspc config gapless_monocle     true
+bspc config focus_by_distance   true

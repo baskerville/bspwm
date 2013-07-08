@@ -6,6 +6,7 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "rules.h"
+#include "query.h"
 
 void add_rule(rule_t *r)
 {
@@ -40,17 +41,6 @@ void remove_rule_by_uid(unsigned int uid)
     remove_rule(find_rule(uid));
 }
 
-void prune_rules(desktop_t *d)
-{
-    rule_t *r = rule_head;
-    while (r != NULL) {
-        rule_t *next = r->next;
-        if (r->effect.desktop == d)
-            remove_rule(r);
-        r = next;
-    }
-}
-
 rule_t *find_rule(unsigned int uid)
 {
     for (rule_t *r = rule_head; r != NULL; r = r->next)
@@ -63,8 +53,8 @@ bool is_match(rule_t *r, xcb_window_t win)
 {
     xcb_icccm_get_wm_class_reply_t reply;
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1
-            && (strcmp(reply.class_name, r->cause.name) == 0
-                || strcmp(reply.instance_name, r->cause.name) == 0)) {
+            && (streq(reply.class_name, r->cause.name)
+                || streq(reply.instance_name, r->cause.name))) {
         xcb_icccm_get_wm_class_reply_wipe(&reply);
         return true;
     }
@@ -126,21 +116,36 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
                 *floating = true;
             if (efc.follow)
                 *follow = true;
-            if (efc.monitor != NULL && efc.desktop != NULL) {
-                *m = efc.monitor;
-                *d = efc.desktop;
+            if (efc.desc[0] != '\0') {
+                coordinates_t ref = {*m, *d, NULL};
+                coordinates_t loc;
+                if (desktop_from_desc(efc.desc, &ref, &loc)) {
+                    *m = loc.monitor;
+                    *d = loc.desktop;
+                }
             }
         }
         rule = rule->next;
     }
 }
 
-void list_rules(char *rsp)
+void list_rules(char *pattern, char *rsp)
 {
     char line[MAXLEN];
 
     for (rule_t *r = rule_head; r != NULL; r = r->next) {
-        snprintf(line, sizeof(line), "%2X %s %s %s %s\n", r->uid, r->cause.name, (r->effect.desktop != NULL ? r->effect.desktop->name : "\b"), (r->effect.floating ? "floating" : "\b"), (r->effect.follow ? "follow" : "\b"));
+        if (pattern != NULL && !streq(pattern, r->cause.name))
+            continue;
+        snprintf(line, sizeof(line), "%2X %s", r->uid, r->cause.name);
         strncat(rsp, line, REMLEN(rsp));
+        if (r->effect.floating)
+            strncat(rsp, " --floating", REMLEN(rsp));
+        if (r->effect.follow)
+            strncat(rsp, " --follow", REMLEN(rsp));
+        if (r->effect.desc[0] != '\0') {
+            snprintf(line, sizeof(line), " -d %s", r->effect.desc);
+            strncat(rsp, line, REMLEN(rsp));
+        }
+        strncat(rsp, "\n", REMLEN(rsp));
     }
 }

@@ -1,6 +1,6 @@
 _bspc()
 {
-    local messages='get set list list_desktops list_monitors list_windows list_rules list_history presel cancel ratio pad focus shift swap push pull fence_ratio cycle nearest biggest circulate grab_pointer track_pointer toggle_fullscreen toggle_floating toggle_locked toggle_visibility close kill send_to drop_to send_to_monitor drop_to_monitor use use_monitor focus_monitor alternate alternate_desktop alternate_monitor add add_in rename_monitor rename remove_desktop send_desktop_to cycle_monitor cycle_desktop layout cycle_layout rotate flip balance rule remove_rule put_status adopt_orphans restore_layout restore_history quit'
+    local messages='window desktop monitor query pointer rule restore control config quit'
 
     local settings='focused_border_color active_border_color normal_border_color presel_border_color focused_locked_border_color active_locked_border_color normal_locked_border_color urgent_border_color border_width window_gap split_ratio top_padding right_padding bottom_padding left_padding wm_name borderless_monocle gapless_monocle focus_follows_pointer pointer_follows_monitor monitor_focus_fallback adaptative_raise apply_shadow_property auto_alternate auto_cancel focus_by_distance history_aware_focus'
 
@@ -14,7 +14,7 @@ _bspc()
         else
             local second_word=${COMP_WORDS[1]}
             case $second_word in
-                set|get)
+                config)
                     if [[ $COMP_CWORD -eq 2 ]] ; then
                         COMPREPLY=( $(compgen -W "$settings" -- "$current_word") )
                     fi
