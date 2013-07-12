@@ -1,2 +1,5 @@
-super + alt + {Escape,shift + Escape}
-    {bspc list_monitors > "$BSPWM_LAYOUT"; bspc list_history > "$BSPWM_HISTORY"; bspc quit,bspc quit 1}
+super + alt + {_,shift + }Escape
+    {bspc query -T > "$BSPWM_TREE"; \
+        bspc query -H > "$BSPWM_HISTORY"; \
+            bspc quit,\
+     bspc quit 1}
