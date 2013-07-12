@@ -42,7 +42,7 @@ void handle_event(xcb_generic_event_t *evt)
             enter_notify(evt);
             break;
         case XCB_MOTION_NOTIFY:
-            motion_notify();
+            motion_notify(evt);
             break;
         default:
             if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
@@ -240,9 +240,23 @@ void enter_notify(xcb_generic_event_t *evt)
     enable_motion_recorder();
 }
 
-void motion_notify(void)
+void motion_notify(xcb_generic_event_t *evt)
 {
     PUTS("motion notify");
+
+    xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
+
+    int dtime = e->time - last_motion_time;
+    if (dtime > 1000) {
+        last_motion_time = e->time;
+        last_motion_x = e->event_x;
+        last_motion_y = e->event_y;
+        return;
+    }
+
+    int mdist = abs(e->event_x - last_motion_x) + abs(e->event_y - last_motion_y);
+    if (mdist < 10)
+        return;
 
     disable_motion_recorder();
 
