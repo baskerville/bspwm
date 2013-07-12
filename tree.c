@@ -727,7 +727,6 @@ void unlink_node(desktop_t *d, node_t *n)
 
         update_vacant_state(b->parent);
     }
-    history_remove(d->history, n);
     put_status();
 }
 
@@ -739,6 +738,7 @@ void remove_node(desktop_t *d, node_t *n)
     PRINTF("remove node %X\n", n->client->window);
 
     unlink_node(d, n);
+    history_remove(d->history, n);
     free(n->client);
     free(n);
 
@@ -831,6 +831,7 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
     PRINTF("transfer node %X\n", n->client->window);
 
     unlink_node(ds, n);
+    history_remove(ds->history, n);
     insert_node(md, dd, n, dd->focus);
     ewmh_set_wm_desktop(n, dd);
 
@@ -861,7 +862,6 @@ void transplant_node(monitor_t *m, desktop_t *d, node_t *n1, node_t *n2)
 {
     unlink_node(d, n1);
     insert_node(m, d, n1, n2);
-    pseudo_focus(d, n1);
 }
 
 void select_monitor(monitor_t *m)
