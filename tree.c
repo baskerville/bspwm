@@ -894,8 +894,8 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir)
                 (dir == DIR_RIGHT && r.x >= (rect.x + rect.width)) ||
                 (dir == DIR_UP && r.y < rect.y) ||
                 (dir == DIR_DOWN && r.y >= (rect.y + rect.height))) {
-            int d = ABS((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
-                ABS((r.y + r.height / 2) - (rect.y + rect.height / 2));
+            int d = abs((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
+                abs((r.y + r.height / 2) - (rect.y + rect.height / 2));
             if (d < dmin) {
                 dmin = d;
                 nearest = f;
