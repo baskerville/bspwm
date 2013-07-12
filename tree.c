@@ -860,8 +860,11 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
 
 void transplant_node(monitor_t *m, desktop_t *d, node_t *n1, node_t *n2)
 {
+    bool was_focused = (d->focus == n1);
     unlink_node(d, n1);
     insert_node(m, d, n1, n2);
+    if (was_focused)
+        pseudo_focus(d, n1);
 }
 
 void select_monitor(monitor_t *m)
