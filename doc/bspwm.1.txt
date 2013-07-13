@@ -175,6 +175,12 @@ like::
 unlike::
     Only consider windows that have a different class than the current window.
 
+automatic::
+    Only consider windows in automatic splitting mode.
+
+manual::
+    Only consider windows in manual splitting mode (see *--presel*).
+
 Desktop
 ~~~~~~~
 
