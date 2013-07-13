@@ -80,7 +80,7 @@ bool cmd_window(char **args, int num)
                 return false;
             coordinates_t dst;
             if (node_from_desc(*args, &trg, &dst))
-                swap_nodes(trg.node, dst.node, true);
+                swap_nodes(trg.node, dst.node);
             else
                 return false;
             dirty = true;

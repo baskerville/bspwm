@@ -456,7 +456,7 @@ void track_pointer(int root_x, int root_y)
                 coordinates_t loc;
                 bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
                 if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
-                    swap_nodes(n, loc.node, true);
+                    swap_nodes(n, loc.node);
                     arrange(m, d);
                 } else {
                     if (is_managed && loc.monitor == m) {

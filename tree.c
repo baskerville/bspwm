@@ -762,17 +762,12 @@ void destroy_tree(node_t *n)
     destroy_tree(second_tree);
 }
 
-void swap_nodes(node_t *n1, node_t *n2, bool interpret)
+void swap_nodes(node_t *n1, node_t *n2)
 {
     if (n1 == NULL || n2 == NULL || n1 == n2)
         return;
 
     PUTS("swap nodes");
-
-    if (interpret && n2->split_mode == MODE_MANUAL) {
-        transplant_node(mon, mon->desk, n1, n2);
-        return;
-    }
 
     /* (n1 and n2 are leaves) */
     node_t *pn1 = n1->parent;
@@ -1003,10 +998,10 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
     bool focus_first_child = is_first_child(d->focus);
     if (dir == CIRCULATE_FORWARD)
         for (node_t *s = second_extrema(d->root), *f = prev_leaf(s, d->root); f != NULL; s = prev_leaf(f, d->root), f = prev_leaf(s, d->root))
-            swap_nodes(f, s, false);
+            swap_nodes(f, s);
     else
         for (node_t *f = first_extrema(d->root), *s = next_leaf(f, d->root); s != NULL; f = next_leaf(s, d->root), s = next_leaf(f, d->root))
-            swap_nodes(f, s, false);
+            swap_nodes(f, s);
     if (focus_first_child)
         focus_node(m, d, p->first_child);
     else

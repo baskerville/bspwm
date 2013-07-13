@@ -9,7 +9,7 @@ void focus_node(monitor_t *, desktop_t *, node_t *);
 void insert_node(monitor_t *, desktop_t *, node_t *, node_t *);
 void unlink_node(desktop_t *, node_t *);
 void remove_node(desktop_t *, node_t *);
-void swap_nodes(node_t *, node_t *, bool);
+void swap_nodes(node_t *, node_t *);
 void pseudo_focus(desktop_t *, node_t *);
 void update_current(void);
 node_t *find_fence(node_t *, direction_t);
