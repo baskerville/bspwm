@@ -111,21 +111,137 @@ Each monitor contains at least one desktop.
 
 Each desktop contains at most one tree.
 
-
-Definitions
------------
+Common Definitions
+------------------
 
 ----
-WINDOW_SEL     :=  (CYCLE|DIR|biggest|focused|last)[.WINDOW_CLASS] | <window_id>
-DESKTOP_SEL    :=  (CYCLE|focused|last)[.DESKTOP_CLASS] | <desktop_name>
-MONITOR_SEL    :=  (CYCLE|DIR|focused|last)[.DESKTOP_CLASS] | <monitor_name>
-
-DESKTOP_CLASS  :=  [occupied|free]
-WINDOW_CLASS   :=  [floating|tiled][.][like|unlike]
-
-DIR            :=  left|right|up|down
-CYCLE          :=  next|prev
+DIR         := left | right | up | down
+CYCLE_DIR   := next | prev
 ----
+
+Selectors
+---------
+
+Selectors are used to select a target window, desktop, or monitor. A selector
+can either describe the target relatively or name it globally.
+
+Descriptive (relative) selectors consist of a primary selector and any number
+of non-conflicting modifiers as follows:
+
+    PRIMARY_SELECTOR[.MODIFIER]*
+
+For obvious reasons, neither desktops nor monitors names may be valid
+descriptive selectors.
+
+Window
+~~~~~~
+
+Select a window.
+
+----
+WINDOW_SEL := <window_id> 
+            | (DIR|CYCLE_DIR|biggest|last|focused)[.floating|.tiled][.like|.unlike]
+----
+
+Primary Selectors
+^^^^^^^^^^^^^^^^^
+
+'DIR'::
+    Selects the window in the given (spacial) direction relative to the active
+    window.
+
+'CYCLE_DIR'::
+    Selects the window in the given (cyclic) direction.
+
+biggest::
+    Selects the biggest window on the current desktop.
+
+last::
+    Selects the previously focused window on the current desktop.
+
+focused::
+    Selects the currently focused window.
+
+Modifiers
+^^^^^^^^^
+
+floating::
+    Only consider floating windows.
+
+tiled::
+    Only consider tiled windows.
+
+like::
+    Only consider windows that have the same class as the current window.
+    
+unlike::
+    Only consider windows that have a different class than the current window.
+
+Desktop
+~~~~~~~
+
+Select a desktop.
+
+----
+DESKTOP_SEL := <desktop_name>
+             | (CYCLE_DIR|last|focused)[.occupied|.free]
+----
+
+Primary Selectors
+^^^^^^^^^^^^^^^^^
+
+'CYCLE_DIR'::
+    Selects the desktop in the given direction relative to the active desktop.
+
+last::
+    Selects the previously focused focused desktop.
+
+focused::
+    Selects the currently focused desktop.
+
+Modifiers
+^^^^^^^^^
+
+occupied::
+    Only consider occupied desktops.
+
+free::
+    Only consider free desktops.
+
+Monitor
+~~~~~~~
+
+Select a monitor.
+
+----
+MONITOR_SEL := <monitor_name>
+             | (DIR|CYCLE_DIR|last|focused)[.occupied|.free]
+----
+
+Primary Selectors
+^^^^^^^^^^^^^^^^^
+
+'DIR'::
+    Selects the monitor in the given (spacial) direction relative to the active monitor.
+
+'CYCLE_DIR'::
+    Selects the monitor in the given (cyclic) direction relative to the active monitor.
+
+last::
+    Selects the previously focused focused monitor.
+
+focused::
+    Selects the currently focused monitor.
+
+Modifiers
+^^^^^^^^^
+
+occupied::
+    Only consider monitors where the focused desktop is occupied.
+
+free::
+    Only consider monitors where the focused desktop is free.
+
 
 Commands
 --------
@@ -189,7 +305,7 @@ Options
 *-m*, *--to-monitor* 'MONITOR_SEL'::
     Send the selected desktop to the given monitor.
 
-*-l*, *--layout* 'CYCLE'|monocle|tiled::
+*-l*, *--layout* 'CYCLE_DIR'|monocle|tiled::
     Set or cycle the layout of the selected desktop.
 
 *-n*, *--rename* <new_name>::

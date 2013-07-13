@@ -136,25 +136,231 @@ Same departure, but the mode is \fImanual\fR, and a \fBwindow \-\-presel up\fR m
 Each monitor contains at least one desktop\&.
 .sp
 Each desktop contains at most one tree\&.
-.SH "DEFINITIONS"
+.SH "COMMON DEFINITIONS"
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-WINDOW_SEL     :=  (CYCLE|DIR|biggest|focused|last)[\&.WINDOW_CLASS] | <window_id>
-DESKTOP_SEL    :=  (CYCLE|focused|last)[\&.DESKTOP_CLASS] | <desktop_name>
-MONITOR_SEL    :=  (CYCLE|DIR|focused|last)[\&.DESKTOP_CLASS] | <monitor_name>
-
-DESKTOP_CLASS  :=  [occupied|free]
-WINDOW_CLASS   :=  [floating|tiled][\&.][like|unlike]
-
-DIR            :=  left|right|up|down
-CYCLE          :=  next|prev
+DIR         := left | right | up | down
+CYCLE_DIR   := next | prev
 .fi
 .if n \{\
 .RE
 .\}
+.SH "SELECTORS"
+.sp
+Selectors are used to select a target window, desktop, or monitor\&. A selector can either describe the target relatively or name it globally\&.
+.sp
+Descriptive (relative) selectors consist of a primary selector and any number of non\-conflicting modifiers as follows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+PRIMARY_SELECTOR[\&.MODIFIER]*
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+For obvious reasons, neither desktops nor monitors names may be valid descriptive selectors\&.
+.SS "Window"
+.sp
+Select a window\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+WINDOW_SEL := <window_id>
+            | (DIR|CYCLE_DIR|biggest|last|focused)[\&.floating|\&.tiled][\&.like|\&.unlike]
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBPrimary Selectors\fR
+.RS 4
+.PP
+\fIDIR\fR
+.RS 4
+Selects the window in the given (spacial) direction relative to the active window\&.
+.RE
+.PP
+\fICYCLE_DIR\fR
+.RS 4
+Selects the window in the given (cyclic) direction\&.
+.RE
+.PP
+biggest
+.RS 4
+Selects the biggest window on the current desktop\&.
+.RE
+.PP
+last
+.RS 4
+Selects the previously focused window on the current desktop\&.
+.RE
+.PP
+focused
+.RS 4
+Selects the currently focused window\&.
+.RE
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBModifiers\fR
+.RS 4
+.PP
+floating
+.RS 4
+Only consider floating windows\&.
+.RE
+.PP
+tiled
+.RS 4
+Only consider tiled windows\&.
+.RE
+.PP
+like
+.RS 4
+Only consider windows that have the same class as the current window\&.
+.RE
+.PP
+unlike
+.RS 4
+Only consider windows that have a different class than the current window\&.
+.RE
+.RE
+.SS "Desktop"
+.sp
+Select a desktop\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+DESKTOP_SEL := <desktop_name>
+             | (CYCLE_DIR|last|focused)[\&.occupied|\&.free]
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBPrimary Selectors\fR
+.RS 4
+.PP
+\fICYCLE_DIR\fR
+.RS 4
+Selects the desktop in the given direction relative to the active desktop\&.
+.RE
+.PP
+last
+.RS 4
+Selects the previously focused focused desktop\&.
+.RE
+.PP
+focused
+.RS 4
+Selects the currently focused desktop\&.
+.RE
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBModifiers\fR
+.RS 4
+.PP
+occupied
+.RS 4
+Only consider occupied desktops\&.
+.RE
+.PP
+free
+.RS 4
+Only consider free desktops\&.
+.RE
+.RE
+.SS "Monitor"
+.sp
+Select a monitor\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+MONITOR_SEL := <monitor_name>
+             | (DIR|CYCLE_DIR|last|focused)[\&.occupied|\&.free]
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBPrimary Selectors\fR
+.RS 4
+.PP
+\fIDIR\fR
+.RS 4
+Selects the monitor in the given (spacial) direction relative to the active monitor\&.
+.RE
+.PP
+\fICYCLE_DIR\fR
+.RS 4
+Selects the monitor in the given (cyclic) direction relative to the active monitor\&.
+.RE
+.PP
+last
+.RS 4
+Selects the previously focused focused monitor\&.
+.RE
+.PP
+focused
+.RS 4
+Selects the currently focused monitor\&.
+.RE
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBModifiers\fR
+.RS 4
+.PP
+occupied
+.RS 4
+Only consider monitors where the focused desktop is occupied\&.
+.RE
+.PP
+free
+.RS 4
+Only consider monitors where the focused desktop is free\&.
+.RE
+.RE
 .SH "COMMANDS"
 .SS "Window"
 .sp
@@ -263,7 +469,7 @@ Focus the selected or given desktop\&.
 Send the selected desktop to the given monitor\&.
 .RE
 .PP
-\fB\-l\fR, \fB\-\-layout\fR \fICYCLE\fR|monocle|tiled
+\fB\-l\fR, \fB\-\-layout\fR \fICYCLE_DIR\fR|monocle|tiled
 .RS 4
 Set or cycle the layout of the selected desktop\&.
 .RE
