@@ -192,7 +192,7 @@ Primary Selectors
     Selects the desktop in the given direction relative to the active desktop.
 
 last::
-    Selects the previously focused focused desktop.
+    Selects the previously focused desktop.
 
 focused::
     Selects the currently focused desktop.
@@ -226,7 +226,7 @@ Primary Selectors
     Selects the monitor in the given (cyclic) direction relative to the active monitor.
 
 last::
-    Selects the previously focused focused monitor.
+    Selects the previously focused monitor.
 
 focused::
     Selects the currently focused monitor.
