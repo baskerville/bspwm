@@ -320,7 +320,7 @@ bool cmd_monitor(char **args, int num)
             coordinates_t dst = trg;
             if (num > 1 && *(args + 1)[0] != OPT_CHR) {
                 num--, args++;
-                if (!desktop_from_desc(*args, &trg, &dst))
+                if (!monitor_from_desc(*args, &trg, &dst))
                     return false;
             }
             if (auto_alternate && dst.monitor == mon && last_mon != NULL)
