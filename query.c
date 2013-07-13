@@ -128,6 +128,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     client_select_t sel;
     sel.type = CLIENT_TYPE_ALL;
     sel.class = CLIENT_CLASS_ALL;
+    sel.mode = CLIENT_MODE_ALL;
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
@@ -140,6 +141,10 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
             sel.class = CLIENT_CLASS_EQUAL;
         } else if (streq("unlike", tok)) {
             sel.class = CLIENT_CLASS_DIFFER;
+        } else if (streq("automatic", tok)) {
+            sel.mode = CLIENT_MODE_AUTOMATIC;
+        } else if (streq("manual", tok)) {
+            sel.mode = CLIENT_MODE_MANUAL;
         }
     }
 
