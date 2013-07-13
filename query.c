@@ -150,17 +150,22 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     direction_t dir;
     cycle_dir_t cyc;
     if (parse_direction(desc, &dir)) {
-        dst->node = nearest_neighbor(dst->desktop, ref->node, dir);
+        dst->node = nearest_neighbor(dst->desktop, ref->node, dir, sel);
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->node = closest_node(ref->desktop, ref->node, cyc, sel);
     } else if (streq("last", desc)) {
-        dst->node = history_get(ref->desktop->history, 1);
+        int i = 1;
+        do {
+            dst->node = history_get(ref->desktop->history, i++);
+        } while (dst->node != NULL && (dst->node == ref->node || !node_matches(ref->node, dst->node, sel)));
     } else if (streq("biggest", desc)) {
-        dst->node = find_biggest(ref->desktop);
+        dst->node = find_biggest(ref->desktop, ref->node, sel);
     } else if (streq("focused", desc)) {
-        dst->monitor = mon;
-        dst->desktop = mon->desk;
-        dst->node = mon->desk->focus;
+        if (node_matches(ref->node, dst->node, sel)) {
+            dst->monitor = mon;
+            dst->desktop = mon->desk;
+            dst->node = mon->desk->focus;
+        }
     } else {
         long int wid;
         if (parse_window_id(desc, &wid))
@@ -192,11 +197,15 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
         dst->monitor = ref->monitor;
         dst->desktop = closest_desktop(ref->monitor, ref->desktop, cyc, sel);
     } else if (streq("last", desc)) {
-        dst->monitor = mon;
-        dst->desktop = mon->last_desk;
+        if (desktop_matches(mon->last_desk, sel)) {
+            dst->monitor = mon;
+            dst->desktop = mon->last_desk;
+        }
     } else if (streq("focused", desc)) {
-        dst->monitor = mon;
-        dst->desktop = mon->desk;
+        if (desktop_matches(mon->desk, sel)) {
+            dst->monitor = mon;
+            dst->desktop = mon->desk;
+        }
     } else {
         locate_desktop(desc, dst);
     }
@@ -224,13 +233,17 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     direction_t dir;
     cycle_dir_t cyc;
     if (parse_direction(desc, &dir)) {
-        dst->monitor = nearest_monitor(ref->monitor, dir);
+        dst->monitor = nearest_monitor(ref->monitor, dir, sel);
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = closest_monitor(ref->monitor, cyc, sel);
     } else if (streq("last", desc)) {
-        dst->monitor = last_mon;
+        if (desktop_matches(last_mon->desk, sel)) {
+            dst->monitor = last_mon;
+        }
     } else if (streq("focused", desc)) {
-        dst->monitor = mon;
+        if (desktop_matches(mon->desk, sel)) {
+            dst->monitor = mon;
+        }
     } else {
         locate_monitor(desc, dst);
     }

@@ -3,6 +3,8 @@
 
 #define GROWTH_FACTOR  1.1
 
+bool node_matches(node_t *, node_t *, client_select_t);
+bool desktop_matches(desktop_t *, desktop_select_t);
 void arrange(monitor_t *, desktop_t *);
 void apply_layout(monitor_t *, desktop_t *, node_t *, xcb_rectangle_t, xcb_rectangle_t);
 void focus_node(monitor_t *, desktop_t *, node_t *);
@@ -13,10 +15,10 @@ void swap_nodes(node_t *, node_t *);
 void pseudo_focus(desktop_t *, node_t *);
 void update_current(void);
 node_t *find_fence(node_t *, direction_t);
-node_t *nearest_neighbor(desktop_t *, node_t *, direction_t);
-node_t *nearest_from_distance(desktop_t *, node_t *, direction_t);
-node_t *nearest_from_history(focus_history_t *, node_t *, direction_t);
-node_t *find_biggest(desktop_t *);
+node_t *nearest_neighbor(desktop_t *, node_t *, direction_t, client_select_t);
+node_t *nearest_from_distance(desktop_t *, node_t *, direction_t, client_select_t);
+node_t *nearest_from_history(focus_history_t *, node_t *, direction_t, client_select_t);
+node_t *find_biggest(desktop_t *, node_t *, client_select_t);
 bool is_leaf(node_t *);
 bool is_tiled(client_t *);
 bool is_floating(client_t *);
@@ -45,7 +47,7 @@ void transfer_node(monitor_t *, desktop_t *, monitor_t *, desktop_t *, node_t *)
 void transplant_node(monitor_t *, desktop_t *, node_t *, node_t *);
 void select_monitor(monitor_t *);
 void select_desktop(monitor_t *, desktop_t *);
-monitor_t *nearest_monitor(monitor_t *, direction_t);
+monitor_t *nearest_monitor(monitor_t *, direction_t, desktop_select_t);
 node_t *closest_node(desktop_t *, node_t *, cycle_dir_t, client_select_t);
 desktop_t *closest_desktop(monitor_t *, desktop_t *, cycle_dir_t, desktop_select_t);
 monitor_t *closest_monitor(monitor_t *, cycle_dir_t, desktop_select_t);
