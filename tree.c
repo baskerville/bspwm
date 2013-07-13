@@ -39,6 +39,43 @@ bool is_second_child(node_t *n)
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
 
+/**
+ * Check if the specified node matches the selection criteria.
+ *
+ * Arguments:
+ *  node_t *c           - the active node
+ *  node_t *t           - the node to test
+ *  client_sel_t sel    - the selection criteria
+ *
+ * Returns true if the node matches.
+ **/
+bool node_matches(node_t *c, node_t *t, client_select_t sel)
+{
+    if (sel.type != CLIENT_TYPE_ALL &&
+            is_tiled(t->client)
+            ? sel.type == CLIENT_TYPE_FLOATING
+            : sel.type == CLIENT_TYPE_TILED
+       ) return false;
+
+    if (sel.class != CLIENT_CLASS_ALL &&
+            streq(c->client->class_name, t->client->class_name)
+            ? sel.class == CLIENT_CLASS_DIFFER
+            : sel.class == CLIENT_CLASS_EQUAL
+       ) return false;
+
+    return true;
+}
+
+bool desktop_matches(desktop_t *t, desktop_select_t sel) {
+    if (sel != DESKTOP_ALL &&
+            t->root == NULL
+            ? sel == DESKTOP_OCCUPIED
+            : sel == DESKTOP_FREE
+       ) return false;
+
+    return true;
+}
+
 void change_split_ratio(node_t *n, value_change_t chg)
 {
     n->split_ratio = pow(n->split_ratio,
@@ -165,7 +202,7 @@ node_t *find_fence(node_t *n, direction_t dir)
 }
 
 
-node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
+node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL || n->client->fullscreen
             || (d->layout == LAYOUT_MONOCLE && is_tiled(n->client)))
@@ -173,13 +210,13 @@ node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir)
 
     node_t *nearest = NULL;
     if (history_aware_focus)
-        nearest = nearest_from_history(d->history, n, dir);
+        nearest = nearest_from_history(d->history, n, dir, sel);
     if (nearest == NULL)
-        nearest = nearest_from_distance(d, n, dir);
+        nearest = nearest_from_distance(d, n, dir, sel);
     return nearest;
 }
 
-node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir)
+node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL || !is_tiled(n->client))
         return NULL;
@@ -198,6 +235,9 @@ node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir)
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
         if (a->vacant || !is_adjacent(n, a, dir) || a == n)
             continue;
+        if (!node_matches(n, a, sel))
+            continue;
+
         int rank = history_rank(f, a);
         if (rank >= 0 && rank < min_rank) {
             nearest = a;
@@ -208,7 +248,7 @@ node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir)
     return nearest;
 }
 
-node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir)
+node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL)
         return NULL;
@@ -236,10 +276,11 @@ node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir)
     double ds = DBL_MAX;
 
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-        if (is_tiled(a->client) != is_tiled(n->client)
-                || (is_tiled(a->client) && !is_adjacent(n, a, dir))
-                || a == n)
-            continue;
+        if (a == n) continue;
+        if (!node_matches(n, a, sel)) continue;
+        if (is_tiled(a->client) != is_tiled(n->client)) continue;
+        if (is_tiled(a->client) && !is_adjacent(n, a, dir)) continue;
+
         get_side_handle(a->client, dir2, &pt2);
         double ds2 = distance(pt, pt2);
         if (ds2 < ds) {
@@ -277,7 +318,7 @@ int tiled_area(node_t *n)
     return rect.width * rect.height;
 }
 
-node_t *find_biggest(desktop_t *d)
+node_t *find_biggest(desktop_t *d, node_t *c, client_select_t sel)
 {
     if (d == NULL)
         return NULL;
@@ -286,7 +327,7 @@ node_t *find_biggest(desktop_t *d)
     int r_area = tiled_area(r);
 
     for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-        if (!is_tiled(f->client))
+        if (!is_tiled(f->client) || !node_matches(c, f, sel))
             continue;
         int f_area = tiled_area(f);
         if (r == NULL) {
@@ -854,13 +895,15 @@ void select_monitor(monitor_t *m)
     put_status();
 }
 
-monitor_t *nearest_monitor(monitor_t *m, direction_t dir)
+monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
 {
     int dmin = INT_MAX;
     monitor_t *nearest = NULL;
     xcb_rectangle_t rect = m->rectangle;
     for (monitor_t *f = mon_head; f != NULL; f = f->next) {
         if (f == m)
+            continue;
+        if (desktop_matches(f->desk, sel))
             continue;
         xcb_rectangle_t r = f->rectangle;
         if ((dir == DIR_LEFT && r.x < rect.x) ||
@@ -904,11 +947,8 @@ monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)
         f = (dir == CYCLE_PREV ? mon_tail : mon_head);
 
     while (f != m) {
-        if (sel == DESKTOP_ALL
-                || (sel == DESKTOP_FREE && f->desk->root == NULL)
-                || (sel == DESKTOP_OCCUPIED && f->desk->root != NULL)) {
+        if (desktop_matches(f->desk, sel))
             return f;
-        }
         f = (dir == CYCLE_PREV ? m->prev : m->next);
         if (f == NULL)
             f = (dir == CYCLE_PREV ? mon_tail : mon_head);
@@ -924,11 +964,8 @@ desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_
         f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 
     while (f != d) {
-        if (sel == DESKTOP_ALL
-                || (sel == DESKTOP_FREE && f->root == NULL)
-                || (sel == DESKTOP_OCCUPIED && f->root != NULL)) {
+        if (desktop_matches(f, sel))
             return f;
-        }
         f = (dir == CYCLE_PREV ? f->prev : f->next);
         if (f == NULL)
             f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
@@ -947,17 +984,8 @@ node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t s
         f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
 
     while (f != n) {
-        bool tiled = is_tiled(f->client);
-        if ((sel.type == CLIENT_TYPE_ALL
-                    || (tiled && sel.type == CLIENT_TYPE_TILED)
-                    || (!tiled && sel.type == CLIENT_TYPE_FLOATING)) &&
-                (sel.class == CLIENT_CLASS_ALL
-                 || (sel.class == CLIENT_CLASS_EQUAL
-                     && streq(f->client->class_name, n->client->class_name))
-                 || (sel.class == CLIENT_CLASS_DIFFER
-                     && !streq(f->client->class_name, n->client->class_name)))) {
+        if (node_matches(n, f, sel))
             return f;
-        }
         f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
         if (f == NULL)
             f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
