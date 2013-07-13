@@ -151,8 +151,6 @@ WINDOW_CLASS   :=  [floating|tiled][\&.][like|unlike]
 
 DIR            :=  left|right|up|down
 CYCLE          :=  next|prev
-ROTATE         :=  90|270|180
-FLIP           :=  horizontal|vertical
 .fi
 .if n \{\
 .RE
@@ -285,12 +283,12 @@ Remove the selected desktop\&.
 Cancel the preselection of all the windows of the selected desktop\&.
 .RE
 .PP
-\fB\-F\fR, \fB\-\-flip\fR \fIFLIP\fR
+\fB\-F\fR, \fB\-\-flip\fR \fIhorizontal|vertical\fR
 .RS 4
 Flip the tree of the selected desktop\&.
 .RE
 .PP
-\fB\-R\fR, \fB\-\-rotate\fR \fIROTATE\fR
+\fB\-R\fR, \fB\-\-rotate\fR \fI90|270|180\fR
 .RS 4
 Rotate the tree of the selected desktop\&.
 .RE

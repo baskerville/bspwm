@@ -125,8 +125,6 @@ WINDOW_CLASS   :=  [floating|tiled][.][like|unlike]
 
 DIR            :=  left|right|up|down
 CYCLE          :=  next|prev
-ROTATE         :=  90|270|180
-FLIP           :=  horizontal|vertical
 ----
 
 Commands
@@ -203,10 +201,10 @@ Options
 *-c*, *--cancel-presel*::
     Cancel the preselection of all the windows of the selected desktop.
 
-*-F*, *--flip* 'FLIP'::
+*-F*, *--flip* 'horizontal|vertical'::
     Flip the tree of the selected desktop.
 
-*-R*, *--rotate* 'ROTATE'::
+*-R*, *--rotate* '90|270|180'::
     Rotate the tree of the selected desktop.
 
 *-B*, *--balance*::
