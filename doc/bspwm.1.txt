@@ -545,9 +545,6 @@ All the boolean settings are 'false' by default.
 'auto_cancel'::
     Interpret two consecutive identical *presel* messages as a *cancel* message.
 
-'focus_by_distance'::
-    Use window or leaf distance for focus movement.
-
 'history_aware_focus'::
     Give priority to the focus history when focusing nodes.
 

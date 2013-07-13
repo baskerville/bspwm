@@ -28,7 +28,6 @@
 #define APPLY_SHADOW_PROPERTY    false
 #define AUTO_ALTERNATE           false
 #define AUTO_CANCEL              false
-#define FOCUS_BY_DISTANCE        false
 #define HISTORY_AWARE_FOCUS      false
 
 char focused_border_color[MAXLEN];
@@ -61,7 +60,6 @@ bool adaptative_raise;
 bool apply_shadow_property;
 bool auto_alternate;
 bool auto_cancel;
-bool focus_by_distance;
 bool history_aware_focus;
 
 char wm_name[MAXLEN];

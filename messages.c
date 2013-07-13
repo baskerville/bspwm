@@ -695,7 +695,6 @@ bool set_setting(char *name, char *value)
         SETBOOL(apply_shadow_property)
         SETBOOL(auto_alternate)
         SETBOOL(auto_cancel)
-        SETBOOL(focus_by_distance)
         SETBOOL(history_aware_focus)
 #undef SETBOOL
     } else if (streq("wm_name", name)) {
@@ -752,7 +751,6 @@ bool get_setting(char *name, char* rsp)
     GETBOOL(apply_shadow_property)
     GETBOOL(auto_alternate)
     GETBOOL(auto_cancel)
-    GETBOOL(focus_by_distance)
     GETBOOL(history_aware_focus)
 #undef GETBOOL
     else if (streq("wm_name", name))

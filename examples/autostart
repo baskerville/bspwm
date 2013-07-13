@@ -12,4 +12,3 @@ bspc config border_width        2
 bspc config window_gap          12
 bspc config borderless_monocle  true
 bspc config gapless_monocle     true
-bspc config focus_by_distance   true

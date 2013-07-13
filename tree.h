@@ -14,7 +14,6 @@ void pseudo_focus(desktop_t *, node_t *);
 void update_current(void);
 node_t *find_fence(node_t *, direction_t);
 node_t *nearest_neighbor(desktop_t *, node_t *, direction_t);
-node_t *nearest_from_tree(node_t *, direction_t);
 node_t *nearest_from_distance(desktop_t *, node_t *, direction_t);
 node_t *nearest_from_history(focus_history_t *, node_t *, direction_t);
 node_t *find_biggest(desktop_t *);
