@@ -419,9 +419,6 @@ All the boolean settings are 'false' by default.
 'pointer_follows_monitor'::
     When focusing a monitor, put the pointer at its center.
 
-'monitor_focus_fallback'::
-    If the focus message fails, try to focus the nearest monitor in the same direction.
-
 'adaptative_raise'::
     Prevent floating windows from being raised when they might cover other floating windows.
 

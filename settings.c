@@ -64,7 +64,6 @@ void load_settings(void)
     gapless_monocle = GAPLESS_MONOCLE;
     focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
     pointer_follows_monitor = POINTER_FOLLOWS_MONITOR;
-    monitor_focus_fallback = MONITOR_FOCUS_FALLBACK;
     adaptative_raise = ADAPTATIVE_RAISE;
     apply_shadow_property = APPLY_SHADOW_PROPERTY;
     auto_alternate = AUTO_ALTERNATE;

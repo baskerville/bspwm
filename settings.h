@@ -24,7 +24,6 @@
 #define GAPLESS_MONOCLE          false
 #define FOCUS_FOLLOWS_POINTER    false
 #define POINTER_FOLLOWS_MONITOR  false
-#define MONITOR_FOCUS_FALLBACK   false
 #define ADAPTATIVE_RAISE         false
 #define APPLY_SHADOW_PROPERTY    false
 #define AUTO_ALTERNATE           false
@@ -58,7 +57,6 @@ bool borderless_monocle;
 bool gapless_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_monitor;
-bool monitor_focus_fallback;
 bool adaptative_raise;
 bool apply_shadow_property;
 bool auto_alternate;

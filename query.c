@@ -151,13 +151,6 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     cycle_dir_t cyc;
     if (parse_direction(desc, &dir)) {
         dst->node = nearest_neighbor(dst->desktop, ref->node, dir);
-        if (dst->node == NULL && monitor_focus_fallback) {
-            if (monitor_from_desc(desc, ref, dst)) {
-                dst->desktop = dst->monitor->desk;
-                dst->node = dst->monitor->desk->focus;
-                return true;
-            }
-        }
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->node = closest_node(ref->desktop, ref->node, cyc, sel);
     } else if (streq("last", desc)) {
