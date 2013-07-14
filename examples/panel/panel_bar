@@ -13,7 +13,7 @@ while read -r line ; do
         W*)
             wm_infos=""
             IFS=':'
-            set - ${line#?}
+            set -- ${line#?}
             while [ $# -gt 0 ] ; do
                 item=$1
                 name=${item#?}
