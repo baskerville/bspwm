@@ -161,7 +161,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (streq("biggest", desc)) {
         dst->node = find_biggest(ref->desktop, ref->node, sel);
     } else if (streq("focused", desc)) {
-        if (node_matches(ref->node, dst->node, sel)) {
+        if (node_matches(ref->node, mon->desk->focus, sel)) {
             dst->monitor = mon;
             dst->desktop = mon->desk;
             dst->node = mon->desk->focus;
@@ -197,7 +197,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
         dst->monitor = ref->monitor;
         dst->desktop = closest_desktop(ref->monitor, ref->desktop, cyc, sel);
     } else if (streq("last", desc)) {
-        if (desktop_matches(mon->last_desk, sel)) {
+        if (mon->last_desk != NULL && desktop_matches(mon->last_desk, sel)) {
             dst->monitor = mon;
             dst->desktop = mon->last_desk;
         }
@@ -237,7 +237,7 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = closest_monitor(ref->monitor, cyc, sel);
     } else if (streq("last", desc)) {
-        if (desktop_matches(last_mon->desk, sel)) {
+        if (last_mon != NULL && desktop_matches(last_mon->desk, sel)) {
             dst->monitor = last_mon;
         }
     } else if (streq("focused", desc)) {
