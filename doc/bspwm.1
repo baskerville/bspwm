@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/13/2013
+.\"      Date: 07/14/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.7
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "07/13/2013" "Bspwm 0\&.7" "Bspwm Manual"
+.TH "BSPWM" "1" "07/14/2013" "Bspwm 0\&.7" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -545,9 +545,9 @@ Create desktops with the given names in the selected monitor\&.
 Remove desktops with the given names\&.
 .RE
 .PP
-\fB\-p\fR, \fB\-\-pad\fR <top> <right> <bottom> <left>
+\fB\-p\fR, \fB\-\-pad\fR [<top> <right> <bottom> <left>]
 .RS 4
-Set the padding of the selected monitor\&.
+Set or get the padding of the selected monitor\&.
 .RE
 .PP
 \fB\-n\fR, \fB\-\-rename\fR <new_name>
@@ -831,11 +831,6 @@ Value of the gap that separates windows\&.
 \fIsplit_ratio\fR
 .RS 4
 Default split ratio\&.
-.RE
-.PP
-\fItop_padding\fR, \fIright_padding\fR, \fIbottom_padding\fR, \fIleft_padding\fR
-.RS 4
-Padding space added at the sides of the current monitor\&.
 .RE
 .PP
 \fIwm_name\fR

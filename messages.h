@@ -11,7 +11,7 @@ bool handle_message(char *, int, char *);
 bool process_message(char **, int, char *);
 bool cmd_window(char **, int);
 bool cmd_desktop(char **, int);
-bool cmd_monitor(char **, int);
+bool cmd_monitor(char **, int, char *);
 bool cmd_query(char **, int, char *);
 bool cmd_rule(char **, int, char *);
 bool cmd_pointer(char **, int);

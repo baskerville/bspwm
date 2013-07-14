@@ -309,7 +309,7 @@ bool cmd_desktop(char **args, int num)
     return true;
 }
 
-bool cmd_monitor(char **args, int num)
+bool cmd_monitor(char **args, int num, char *rsp)
 {
     if (num < 1)
         return false;
@@ -357,6 +357,10 @@ bool cmd_monitor(char **args, int num)
             }
         } else if (streq("-p", *args) || streq("--pad", *args)) {
             num--, args++;
+            if (num == 0) {
+                snprintf(rsp, BUFSIZ, "%i %i %i %i", trg.monitor->top_padding, trg.monitor->right_padding, trg.monitor->bottom_padding, trg.monitor->left_padding);
+                return true;
+            }
             if (num < 4)
                 return false;
             char values[MAXLEN];
@@ -618,7 +622,7 @@ bool process_message(char **args, int num, char *rsp)
     } else if (streq("desktop", *args)) {
         return cmd_desktop(++args, --num);
     } else if (streq("monitor", *args)) {
-        return cmd_monitor(++args, --num);
+        return cmd_monitor(++args, --num, rsp);
     } else if (streq("query", *args)) {
         return cmd_query(++args, --num, rsp);
     } else if (streq("restore", *args)) {
@@ -648,18 +652,6 @@ bool set_setting(char *name, char *value)
             return false;
     } else if (streq("split_ratio", name)) {
         if (sscanf(value, "%lf", &split_ratio) != 1)
-            return false;
-    } else if (streq("left_padding", name)) {
-        if (sscanf(value, "%i", &mon->left_padding) != 1)
-            return false;
-    } else if (streq("right_padding", name)) {
-        if (sscanf(value, "%i", &mon->right_padding) != 1)
-            return false;
-    } else if (streq("top_padding", name)) {
-        if (sscanf(value, "%i", &mon->top_padding) != 1)
-            return false;
-    } else if (streq("bottom_padding", name)) {
-        if (sscanf(value, "%i", &mon->bottom_padding) != 1)
             return false;
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
@@ -729,14 +721,6 @@ bool get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%lf", split_ratio);
     else if (streq("window_gap", name))
         snprintf(rsp, BUFSIZ, "%i", window_gap);
-    else if (streq("left_padding", name))
-        snprintf(rsp, BUFSIZ, "%i", mon->left_padding);
-    else if (streq("right_padding", name))
-        snprintf(rsp, BUFSIZ, "%i", mon->right_padding);
-    else if (streq("top_padding", name))
-        snprintf(rsp, BUFSIZ, "%i", mon->top_padding);
-    else if (streq("bottom_padding", name))
-        snprintf(rsp, BUFSIZ, "%i", mon->bottom_padding);
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \
         snprintf(rsp, BUFSIZ, "%s (%06X)", s, s##_pxl);

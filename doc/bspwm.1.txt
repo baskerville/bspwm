@@ -346,8 +346,8 @@ Options
 *-r*, *--remove-desktops* <name>...::
     Remove desktops with the given names.
 
-*-p*, *--pad* <top> <right> <bottom> <left>::
-    Set the padding of the selected monitor.
+*-p*, *--pad* [<top> <right> <bottom> <left>]::
+    Set or get the padding of the selected monitor.
 
 *-n*, *--rename* <new_name>::
     Rename the selected monitor.
@@ -511,12 +511,6 @@ All the boolean settings are 'false' by default.
 
 'split_ratio'::
     Default split ratio.
-
-'top_padding'::
-'right_padding'::
-'bottom_padding'::
-'left_padding'::
-    Padding space added at the sides of the current monitor.
 
 'wm_name'::
     The value that shall be used for the '_NET_WM_NAME' property of the root window.
