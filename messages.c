@@ -18,6 +18,9 @@
 
 bool cmd_window(char **args, int num)
 {
+    if (num < 1)
+        return false;
+
     coordinates_t ref = {mon, mon->desk, mon->desk->focus};
     coordinates_t trg = ref;
 
@@ -187,6 +190,9 @@ bool cmd_window(char **args, int num)
 
 bool cmd_desktop(char **args, int num)
 {
+    if (num < 1)
+        return false;
+
     coordinates_t ref = {mon, mon->desk, NULL};
     coordinates_t trg = ref;
 
@@ -305,6 +311,9 @@ bool cmd_desktop(char **args, int num)
 
 bool cmd_monitor(char **args, int num)
 {
+    if (num < 1)
+        return false;
+
     coordinates_t ref = {mon, NULL, NULL};
     coordinates_t trg = ref;
 
