@@ -903,7 +903,7 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
     for (monitor_t *f = mon_head; f != NULL; f = f->next) {
         if (f == m)
             continue;
-        if (desktop_matches(f->desk, sel))
+        if (!desktop_matches(f->desk, sel))
             continue;
         xcb_rectangle_t r = f->rectangle;
         if ((dir == DIR_LEFT && r.x < rect.x) ||
