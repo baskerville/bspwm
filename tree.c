@@ -63,6 +63,12 @@ bool node_matches(node_t *c, node_t *t, client_select_t sel)
             : sel.class == CLIENT_CLASS_EQUAL
        ) return false;
 
+    if (sel.mode != CLIENT_MODE_ALL &&
+            t->split_mode == MODE_MANUAL
+            ? sel.mode == CLIENT_MODE_AUTOMATIC
+            : sel.mode == CLIENT_MODE_MANUAL)
+        return false;
+
     return true;
 }
 
