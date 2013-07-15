@@ -35,6 +35,7 @@ xcb_atom_t compton_shadow;
 int exit_status;
 
 bool visible;
+bool auto_raise;
 bool running;
 bool randr;
 

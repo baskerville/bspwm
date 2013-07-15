@@ -264,9 +264,11 @@ void motion_notify(xcb_generic_event_t *evt)
     query_pointer(&win, NULL);
     if (win != XCB_NONE) {
         bool backup = pointer_follows_monitor;
+        auto_raise = false;
         pointer_follows_monitor = false;
         window_focus(win);
         pointer_follows_monitor = backup;
+        auto_raise = true;
     }
 }
 

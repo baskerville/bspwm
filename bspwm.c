@@ -160,7 +160,7 @@ void init(void)
     status_fifo = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
     randr_base = 0;
-    visible = true;
+    visible = auto_raise = true;
     exit_status = 0;
 }
 

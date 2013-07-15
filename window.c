@@ -500,12 +500,10 @@ void stack_tiled(desktop_t *d)
 
 void stack(desktop_t *d, node_t *n)
 {
-    if (!is_tiled(n->client)) {
-        if (!adaptative_raise || !might_cover(d, n))
-            window_raise(n->client->window);
-    } else {
+    if (is_tiled(n->client))
         stack_tiled(d);
-    }
+    else if (auto_raise && (!adaptative_raise || !might_cover(d, n)))
+        window_raise(n->client->window);
 }
 
 void window_lower(xcb_window_t win)
