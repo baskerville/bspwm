@@ -309,7 +309,7 @@ bool cmd_desktop(char **args, int num)
     return true;
 }
 
-bool cmd_monitor(char **args, int num, char *rsp)
+bool cmd_monitor(char **args, int num)
 {
     if (num < 1)
         return false;
@@ -357,10 +357,6 @@ bool cmd_monitor(char **args, int num, char *rsp)
             }
         } else if (streq("-p", *args) || streq("--pad", *args)) {
             num--, args++;
-            if (num == 0) {
-                snprintf(rsp, BUFSIZ, "%i %i %i %i", trg.monitor->top_padding, trg.monitor->right_padding, trg.monitor->bottom_padding, trg.monitor->left_padding);
-                return true;
-            }
             if (num < 4)
                 return false;
             char values[MAXLEN];
@@ -624,7 +620,7 @@ bool process_message(char **args, int num, char *rsp)
     } else if (streq("desktop", *args)) {
         return cmd_desktop(++args, --num);
     } else if (streq("monitor", *args)) {
-        return cmd_monitor(++args, --num, rsp);
+        return cmd_monitor(++args, --num);
     } else if (streq("query", *args)) {
         return cmd_query(++args, --num, rsp);
     } else if (streq("restore", *args)) {

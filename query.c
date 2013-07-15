@@ -19,7 +19,7 @@ void query_monitors(coordinates_t loc, domain_t dom, char *rsp)
                 strncat(rsp, line, REMLEN(rsp));
                 continue;
             } else {
-                snprintf(line, sizeof(line), "%s %ux%u%+i%+i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y);
+                snprintf(line, sizeof(line), "%s %ux%u%+i%+i %i,%i,%i,%i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y, m->top_padding, m->right_padding, m->bottom_padding, m->left_padding);
                 strncat(rsp, line, REMLEN(rsp));
                 if (m == mon)
                     strncat(rsp, " #", REMLEN(rsp));
