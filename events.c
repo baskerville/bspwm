@@ -325,6 +325,8 @@ void grab_pointer(pointer_action_t pac)
                     pointer_follows_monitor = false;
                     focus_node(loc.monitor, loc.desktop, loc.node);
                     pointer_follows_monitor = backup;
+                } else if (focus_follows_pointer && is_floating(loc.node->client)) {
+                    stack(loc.desktop, loc.node);
                 }
                 break;
             case ACTION_MOVE:
