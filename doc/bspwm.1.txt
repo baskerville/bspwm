@@ -451,7 +451,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <pattern> [-d 'DESKTOP_SEL'] [--floating] [--follow]::
+*-a*, *--add* <pattern> [-d 'DESKTOP_SEL' [--follow]] [--floating]::
     Create a new rule (<pattern> must match the class or instance name).
 
 *-r*, *--rm* <rule_uid>...::
