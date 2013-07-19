@@ -337,6 +337,16 @@ node_t *history_get(focus_history_t *f, int i)
         return a->node;
 }
 
+node_t *history_last(focus_history_t *f, node_t *n, client_select_t sel)
+{
+    for (node_list_t *a = f->head; a != NULL; a = a->next) {
+        if (!a->latest || a->node == n || !node_matches(n, a->node, sel))
+            continue;
+        return a->node;
+    }
+    return NULL;
+}
+
 int history_rank(focus_history_t *f, node_t *n)
 {
     int i = 0;

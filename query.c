@@ -164,10 +164,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->node = closest_node(ref->desktop, ref->node, cyc, sel);
     } else if (streq("last", desc)) {
-        int i = 1;
-        do {
-            dst->node = history_get(ref->desktop->history, i++);
-        } while (dst->node != NULL && (dst->node == ref->node || !node_matches(ref->node, dst->node, sel)));
+        dst->node = history_last(ref->desktop->history, ref->node, sel);
     } else if (streq("biggest", desc)) {
         dst->node = find_biggest(ref->desktop, ref->node, sel);
     } else if (streq("focused", desc)) {
