@@ -48,17 +48,23 @@ typedef enum {
     CLIENT_CLASS_DIFFER
 } client_class_t;
 
-
 typedef enum {
     CLIENT_MODE_ALL,
     CLIENT_MODE_AUTOMATIC,
     CLIENT_MODE_MANUAL
 } client_mode_t;
 
+typedef enum {
+    CLIENT_URGENCY_ALL,
+    CLIENT_URGENCY_ON,
+    CLIENT_URGENCY_OFF
+} client_urgency_t;
+
 typedef struct {
     client_type_t type;
     client_class_t class;
     client_mode_t mode;
+    client_urgency_t urgency;
 } client_select_t;
 
 typedef enum {
@@ -68,9 +74,20 @@ typedef enum {
 } state_alter_t;
 
 typedef enum {
-    DESKTOP_ALL,
-    DESKTOP_FREE,
-    DESKTOP_OCCUPIED
+    DESKTOP_STATUS_ALL,
+    DESKTOP_STATUS_FREE,
+    DESKTOP_STATUS_OCCUPIED
+} desktop_status_t;
+
+typedef enum {
+    DESKTOP_URGENCY_ALL,
+    DESKTOP_URGENCY_ON,
+    DESKTOP_URGENCY_OFF
+} desktop_urgency_t;
+
+typedef struct {
+    desktop_status_t status;
+    desktop_urgency_t urgency;
 } desktop_select_t;
 
 typedef enum {

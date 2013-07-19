@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/16/2013
+.\"      Date: 07/19/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.7
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "07/16/2013" "Bspwm 0\&.7" "Bspwm Manual"
+.TH "BSPWM" "1" "07/19/2013" "Bspwm 0\&.7" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -174,7 +174,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|focused)[\&.floating|\&.tiled][\&.like|\&.unlike]
+            | (DIR|CYCLE_DIR|biggest|last|focused)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.urgent|\&.nonurgent]
 .fi
 .if n \{\
 .RE
@@ -252,6 +252,16 @@ manual
 Only consider windows in manual splitting mode (see
 \fB\-\-presel\fR)\&.
 .RE
+.PP
+urgent
+.RS 4
+Only consider urgent windows\&.
+.RE
+.PP
+nonurgent
+.RS 4
+Only consider nonurgent windows\&.
+.RE
 .RE
 .SS "Desktop"
 .sp
@@ -262,7 +272,7 @@ Select a desktop\&.
 .\}
 .nf
 DESKTOP_SEL := <desktop_name>
-             | (CYCLE_DIR|last|focused)[\&.occupied|\&.free]
+             | (CYCLE_DIR|last|focused)[\&.occupied|\&.free][\&.urgent|\&.nonurgent]
 .fi
 .if n \{\
 .RE
@@ -308,6 +318,16 @@ Only consider occupied desktops\&.
 free
 .RS 4
 Only consider free desktops\&.
+.RE
+.PP
+urgent
+.RS 4
+Only consider urgent desktops\&.
+.RE
+.PP
+nonurgent
+.RS 4
+Only consider nonurgent desktops\&.
 .RE
 .RE
 .SS "Monitor"

@@ -129,6 +129,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     sel.type = CLIENT_TYPE_ALL;
     sel.class = CLIENT_CLASS_ALL;
     sel.mode = CLIENT_MODE_ALL;
+    sel.urgency = CLIENT_URGENCY_ALL;
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
@@ -145,6 +146,10 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
             sel.mode = CLIENT_MODE_AUTOMATIC;
         } else if (streq("manual", tok)) {
             sel.mode = CLIENT_MODE_MANUAL;
+        } else if (streq("urgent", tok)) {
+            sel.urgency = CLIENT_URGENCY_ON;
+        } else if (streq("nonurgent", tok)) {
+            sel.urgency = CLIENT_URGENCY_OFF;
         }
     }
 
@@ -183,15 +188,20 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
     desktop_select_t sel;
-    sel = DESKTOP_ALL;
+    sel.status = DESKTOP_STATUS_ALL;
+    sel.urgency = DESKTOP_URGENCY_ALL;
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
         tok++;
         if (streq("free", tok)) {
-            sel = DESKTOP_FREE;
+            sel.status = DESKTOP_STATUS_FREE;
         } else if (streq("occupied", tok)) {
-            sel = DESKTOP_OCCUPIED;
+            sel.status = DESKTOP_STATUS_OCCUPIED;
+        } else if (streq("urgent", tok)) {
+            sel.urgency = DESKTOP_URGENCY_ON;
+        } else if (streq("nonurgent", tok)) {
+            sel.urgency = DESKTOP_URGENCY_OFF;
         }
     }
 
@@ -221,15 +231,16 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
     desktop_select_t sel;
-    sel = DESKTOP_ALL;
+    sel.status = DESKTOP_STATUS_ALL;
+    sel.urgency = DESKTOP_URGENCY_ALL;
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
         tok++;
         if (streq("free", tok)) {
-            sel = DESKTOP_FREE;
+            sel.status = DESKTOP_STATUS_FREE;
         } else if (streq("occupied", tok)) {
-            sel = DESKTOP_OCCUPIED;
+            sel.status = DESKTOP_STATUS_OCCUPIED;
         }
     }
 

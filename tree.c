@@ -69,17 +69,37 @@ bool node_matches(node_t *c, node_t *t, client_select_t sel)
             : sel.mode == CLIENT_MODE_MANUAL)
         return false;
 
+    if (sel.urgency != CLIENT_URGENCY_ALL &&
+            t->client->urgent
+            ? sel.urgency == CLIENT_URGENCY_OFF
+            : sel.urgency == CLIENT_URGENCY_ON
+       ) return false;
+
     return true;
 }
 
 bool desktop_matches(desktop_t *t, desktop_select_t sel) {
-    if (sel != DESKTOP_ALL &&
+    if (sel.status != DESKTOP_STATUS_ALL &&
             t->root == NULL
-            ? sel == DESKTOP_OCCUPIED
-            : sel == DESKTOP_FREE
+            ? sel.status == DESKTOP_STATUS_OCCUPIED
+            : sel.status == DESKTOP_STATUS_FREE
+       ) return false;
+
+    if (sel.urgency != DESKTOP_URGENCY_ALL &&
+            is_urgent(t)
+            ? sel.urgency == DESKTOP_URGENCY_OFF
+            : sel.urgency == DESKTOP_URGENCY_ON
        ) return false;
 
     return true;
+}
+
+bool is_urgent(desktop_t *d)
+{
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        if (n->client->urgent)
+            return true;
+    return false;
 }
 
 void change_split_ratio(node_t *n, value_change_t chg)

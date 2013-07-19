@@ -24,6 +24,7 @@ bool is_tiled(client_t *);
 bool is_floating(client_t *);
 bool is_first_child(node_t *);
 bool is_second_child(node_t *);
+bool is_urgent(desktop_t *);
 void change_split_ratio(node_t *, value_change_t);
 void change_layout(monitor_t *, desktop_t *, layout_t);
 void reset_mode(coordinates_t *);

@@ -140,7 +140,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused)[.floating|.tiled][.like|.unlike]
+            | (DIR|CYCLE_DIR|biggest|last|focused)[.floating|.tiled][.like|.unlike][.urgent|.nonurgent]
 ----
 
 Primary Selectors
@@ -183,6 +183,12 @@ automatic::
 manual::
     Only consider windows in manual splitting mode (see *--presel*).
 
+urgent::
+    Only consider urgent windows.
+
+nonurgent::
+    Only consider nonurgent windows.
+
 Desktop
 ~~~~~~~
 
@@ -190,7 +196,7 @@ Select a desktop.
 
 ----
 DESKTOP_SEL := <desktop_name>
-             | (CYCLE_DIR|last|focused)[.occupied|.free]
+             | (CYCLE_DIR|last|focused)[.occupied|.free][.urgent|.nonurgent]
 ----
 
 Primary Selectors
@@ -213,6 +219,12 @@ occupied::
 
 free::
     Only consider free desktops.
+
+urgent::
+    Only consider urgent desktops.
+
+nonurgent::
+    Only consider nonurgent desktops.
 
 Monitor
 ~~~~~~~
