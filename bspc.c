@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     argc--, argv++;
     int msg_len = 0;
 
-    for (int offset = 0, rem = sizeof(msg), n = 0; argc > 0 && rem > 0; offset += n, msg_len = offset, rem -= n, argc--, argv++) {
+    for (int offset = 0, rem = sizeof(msg), n = 0; argc > 0 && rem > 0; offset += n, rem -= n, argc--, argv++) {
         n = snprintf(msg + offset, rem, "%s%c", *argv, 0);
         msg_len += n;
     }
