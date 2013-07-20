@@ -29,7 +29,7 @@ void restore_tree(char *file_path)
     unsigned int level, last_level = 0;
     bool aborted = false;
 
-    while (!aborted && fgets(line, sizeof(line), snapshot) != NULL) {
+    while (fgets(line, sizeof(line), snapshot) != NULL) {
         unsigned int len = strlen(line);
         level = 0;
         while (level < strlen(line) && isspace(line[level]))
@@ -74,7 +74,7 @@ void restore_tree(char *file_path)
             if (level == 4) {
                 empty_desktop(d);
                 d->root = birth;
-            } else {
+            } else if (n != NULL) {
                 if (level > last_level) {
                     n->first_child = birth;
                 } else {
@@ -82,8 +82,9 @@ void restore_tree(char *file_path)
                         n = n->parent;
                     } while (n != NULL && n->second_child != NULL);
                     if (n == NULL) {
-                        warn("Restore: file is malformed\n");
+                        warn("Restore: malformed file\n");
                         aborted = true;
+                        break;
                     }
                     n->second_child = birth;
                 }

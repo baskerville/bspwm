@@ -604,8 +604,10 @@ bool handle_message(char *msg, int msg_len, char *rsp)
         }
     }
 
-    if (num < 1)
+    if (num < 1) {
+        free(args);
         return false;
+    }
 
     char **args_orig = args;
     bool ret = process_message(args, num, rsp);

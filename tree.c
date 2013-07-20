@@ -516,6 +516,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
                     r = rect;
                 else if (d->layout == LAYOUT_MONOCLE)
                     r = root_rect;
+                else
+                    return;
                 int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
                 int bleed = wg + 2 * n->client->border_width;
                 r.width = (bleed < r.width ? r.width - bleed : 1);
