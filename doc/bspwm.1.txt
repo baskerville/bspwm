@@ -291,7 +291,7 @@ Options
     Preselect the splitting area of the selected window (or cancel the preselection).
 
 *-r*, *--ratio* 'RATIO'::
-    Set the splitting ratio of the selected window.
+    Set the splitting ratio of the selected window (0 < 'RATIO' < 1).
 
 *-e*, *--edge* 'DIR' 'RATIO'|pull|push::
     Set the splitting ratio (or pull, or push) the edge located in the given direction in relation to the selected window.
