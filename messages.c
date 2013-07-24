@@ -125,7 +125,7 @@ bool cmd_window(char **args, int num)
                     double rat = trg.node->split_ratio;
                     if (num > 1 && *(args + 1)[0] != OPT_CHR) {
                         num--, args++;
-                        if (sscanf(*args, "%lf", &rat) != 1)
+                        if (sscanf(*args, "%lf", &rat) != 1 || rat <= 0 || rat >= 1)
                             return false;
                     }
                     if (auto_cancel && trg.node->split_mode == MODE_MANUAL
@@ -155,7 +155,10 @@ bool cmd_window(char **args, int num)
                 move_fence(trg.node, dir, fmo);
             } else {
                 node_t *n = find_fence(trg.node, dir);
-                if (n == NULL || sscanf(*args, "%lf", &n->split_ratio) != 1)
+                double rat;
+                if (n != NULL && sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
+                    n->split_ratio = rat;
+                else
                     return false;
             }
             dirty = true;
@@ -163,10 +166,13 @@ bool cmd_window(char **args, int num)
             num--, args++;
             if (num < 1)
                 return false;
-            if (sscanf(*args, "%lf", &trg.node->split_ratio) == 1)
+            double rat;
+            if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
+                trg.node->split_ratio = rat;
                 window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
-            else
+            } else {
                 return false;
+            }
         } else if (streq("-c", *args) || streq("--close", *args)) {
             if (num > 1)
                 return false;
@@ -651,7 +657,10 @@ bool set_setting(char *name, char *value)
         if (sscanf(value, "%i", &window_gap) != 1)
             return false;
     } else if (streq("split_ratio", name)) {
-        if (sscanf(value, "%lf", &split_ratio) != 1)
+        double rat;
+        if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1)
+            split_ratio = rat;
+        else
             return false;
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
