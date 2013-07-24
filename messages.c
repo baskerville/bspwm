@@ -355,7 +355,7 @@ bool cmd_monitor(char **args, int num)
                 return false;
             while (num > 0) {
                 coordinates_t dst;
-                if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail) {
+                if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail && dst.desktop->root == NULL) {
                     remove_desktop(dst.monitor, dst.desktop);
                     desktop_show(dst.monitor->desk);
                 }
