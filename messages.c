@@ -228,7 +228,7 @@ bool cmd_desktop(char **args, int num)
                 return false;
             coordinates_t dst;
             if (monitor_from_desc(*args, &trg, &dst)) {
-                transfer_desktop(trg.monitor, dst.monitor, dst.desktop);
+                transfer_desktop(trg.monitor, dst.monitor, trg.desktop);
                 trg.monitor = dst.monitor;
                 update_current();
             } else {
