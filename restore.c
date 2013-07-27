@@ -39,6 +39,11 @@ void restore_tree(char *file_path)
                 m = mon_head;
             else
                 m = m->next;
+            if (m == NULL) {
+                aborted = true;
+                break;
+            }
+            d = NULL;
             if (len >= 2)
                 switch (line[len - 2]) {
                     case '#':
@@ -53,6 +58,10 @@ void restore_tree(char *file_path)
                 d = m->desk_head;
             else
                 d = d->next;
+            if (d == NULL) {
+                aborted = true;
+                break;
+            }
             int i = len - 1;
             while (i > 0 && !isupper(line[i]))
                 i--;
