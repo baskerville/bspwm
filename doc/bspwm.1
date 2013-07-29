@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/23/2013
+.\"      Date: 07/29/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.7
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "07/23/2013" "Bspwm 0\&.7" "Bspwm Manual"
+.TH "BSPWM" "1" "07/29/2013" "Bspwm 0\&.7" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,7 +31,7 @@
 bspwm \- Tiling window manager based on binary space partitioning
 .SH "SYNOPSIS"
 .sp
-\fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-s\fR \fIPANEL_FIFO\fR|\fB\-p\fR \fIPANEL_PREFIX\fR]
+\fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-c\fR \fICONFIG_PATH\fR|\fB\-s\fR \fIPANEL_FIFO\fR|\fB\-p\fR \fIPANEL_PREFIX\fR]
 .sp
 \fBbspc\fR \fICOMMAND\fR [\fIARGUMENTS\fR]
 .SH "DESCRIPTION"
@@ -51,6 +51,11 @@ Print the synopsis and exit\&.
 Print the version and exit\&.
 .RE
 .PP
+\fB\-c\fR \fICONFIG_PATH\fR
+.RS 4
+Use the given configuration file\&.
+.RE
+.PP
 \fB\-s\fR \fIPANEL_FIFO\fR
 .RS 4
 Write the internal state to the given FIFO\&.
@@ -66,7 +71,7 @@ with the given prefix\&.
 .sp
 \fBbspwm\fR have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket\&.
 .sp
-Its configuration file is \fI$XDG_CONFIG_HOME/bspwm/autostart\fR\&.
+The default configuration file is \fI$XDG_CONFIG_HOME/bspwm/bspwmrc\fR\&.
 .sp
 Keyboard and pointer bindings are defined with sxhkd\&.
 .sp

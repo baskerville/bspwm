@@ -10,23 +10,15 @@
 #include "common.h"
 #include "settings.h"
 
-void run_autostart(void)
+void run_config(void)
 {
-    char path[MAXLEN];
-
-    char *config_home = getenv(CONFIG_HOME_ENV);
-    if (config_home != NULL)
-        snprintf(path, sizeof(path), "%s/%s/%s", config_home, WM_NAME, AUTOSTART_FILE);
-    else
-        snprintf(path, sizeof(path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, AUTOSTART_FILE);
-
     if (fork() == 0) {
         if (dpy != NULL)
             close(xcb_get_file_descriptor(dpy));
         if (fork() == 0) {
             setsid();
-            execl(path, path, NULL);
-            err("Couldn't spawn the autostart file.\n");
+            execl(config_path, config_path, NULL);
+            err("Couldn't execute the configuration file.\n");
         }
         exit(EXIT_SUCCESS);
     }

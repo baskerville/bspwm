@@ -4,7 +4,7 @@
 #include "types.h"
 
 #define WM_NAME             "bspwm"
-#define AUTOSTART_FILE      "autostart"
+#define CONFIG_NAME         WM_NAME "rc"
 #define CONFIG_HOME_ENV     "XDG_CONFIG_HOME"
 
 #define FOCUSED_BORDER_COLOR        "#7E7F89"
@@ -65,6 +65,6 @@ bool history_aware_focus;
 char wm_name[MAXLEN];
 
 void load_settings(void);
-void run_autostart(void);
+void run_config(void);
 
 #endif

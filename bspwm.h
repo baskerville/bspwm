@@ -20,6 +20,7 @@ xcb_window_t root;
 uint8_t root_depth;
 FILE *status_fifo;
 char *status_prefix;
+char config_path[MAXLEN];
 
 monitor_t *mon;
 monitor_t *last_mon;

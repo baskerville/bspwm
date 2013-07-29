@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     fd_set descriptors;
     char socket_path[MAXLEN];
     char *fifo_path = NULL;
+    config_path[0] = '\0';
     status_prefix = NULL;
     int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
@@ -37,15 +38,18 @@ int main(int argc, char *argv[])
     xcb_generic_event_t *event;
     char opt;
 
-    while ((opt = getopt(argc, argv, "hvs:p:")) != -1) {
+    while ((opt = getopt(argc, argv, "hvc:s:p:")) != -1) {
         switch (opt) {
             case 'h':
-                printf("bspwm [-h|-v|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
+                printf("bspwm [-h|-v|-c CONFIG_PATH|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
                 exit(EXIT_SUCCESS);
                 break;
             case 'v':
                 printf("%s\n", VERSION);
                 exit(EXIT_SUCCESS);
+                break;
+            case 'c':
+                strncpy(config_path, optarg, sizeof(config_path));
                 break;
             case 's':
                 fifo_path = optarg;
@@ -54,6 +58,14 @@ int main(int argc, char *argv[])
                 status_prefix = optarg;
                 break;
         }
+    }
+
+    if (config_path[0] == '\0') {
+        char *config_home = getenv(CONFIG_HOME_ENV);
+        if (config_home != NULL)
+            snprintf(config_path, sizeof(config_path), "%s/%s/%s", config_home, WM_NAME, CONFIG_NAME);
+        else
+            snprintf(config_path, sizeof(config_path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, CONFIG_NAME);
     }
 
     running = true;
@@ -95,7 +107,7 @@ int main(int argc, char *argv[])
     }
 
     load_settings();
-    run_autostart();
+    run_config();
     ewmh_update_wm_name();
 
     while (running) {

@@ -15,7 +15,7 @@ bspwm - Tiling window manager based on binary space partitioning
 Synopsis
 --------
 
-*bspwm* [*-h*|*-v*|*-s* 'PANEL_FIFO'|*-p* 'PANEL_PREFIX']
+*bspwm* [*-h*|*-v*|*-c* 'CONFIG_PATH'|*-s* 'PANEL_FIFO'|*-p* 'PANEL_PREFIX']
 
 *bspc* 'COMMAND' ['ARGUMENTS']
 
@@ -36,6 +36,9 @@ Options
 *-v*::
     Print the version and exit.
 
+*-c* 'CONFIG_PATH'::
+    Use the given configuration file.
+
 *-s* 'PANEL_FIFO'::
     Write the internal state to the given FIFO.
 
@@ -48,7 +51,7 @@ Configuration
 
 *bspwm* have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
 
-Its configuration file is '$XDG_CONFIG_HOME/bspwm/autostart'.
+The default configuration file is '$XDG_CONFIG_HOME/bspwm/bspwmrc'.
 
 Keyboard and pointer bindings are defined with https://github.com/baskerville/sxhkd[sxhkd].
 
