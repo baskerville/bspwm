@@ -595,8 +595,9 @@ void update_input_focus(void)
 void set_input_focus(node_t *n)
 {
     if (n == NULL)
-        return;
-    xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+        clear_input_focus();
+    else
+        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 }
 
 void clear_input_focus(void)

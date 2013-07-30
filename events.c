@@ -44,6 +44,9 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_MOTION_NOTIFY:
             motion_notify(evt);
             break;
+        case XCB_FOCUS_IN:
+            focus_in(evt);
+            break;
         default:
             if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
                 import_monitors();
@@ -224,6 +227,24 @@ void client_message(xcb_generic_event_t *evt)
         if (ewmh_locate_desktop(e->data.data32[0], &dloc))
             transfer_node(loc.monitor, loc.desktop, dloc.monitor, dloc.desktop, loc.node);
     }
+}
+
+void focus_in(xcb_generic_event_t *evt)
+{
+    xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) evt;
+
+    /* PRINTF("focus in %X %d %d\n", e->event, e->mode, e->detail); */
+
+    if (e->mode == XCB_NOTIFY_MODE_GRAB
+            || e->mode == XCB_NOTIFY_MODE_UNGRAB)
+        return;
+    if ((e->detail == XCB_NOTIFY_DETAIL_ANCESTOR ||
+                e->detail == XCB_NOTIFY_DETAIL_INFERIOR ||
+                e->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL ||
+                e->detail == XCB_NOTIFY_DETAIL_NONLINEAR) &&
+            (mon->desk->focus == NULL
+             || mon->desk->focus->client->window != e->event))
+        update_input_focus();
 }
 
 void enter_notify(xcb_generic_event_t *evt)
