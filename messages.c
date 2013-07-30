@@ -470,11 +470,13 @@ bool cmd_rule(char **args, int num, char *rsp) {
                     num--, args++;
                     if (num < 1) {
                         free(rule);
+                        rule_uid--;
                         return false;
                     }
                     strncpy(rule->effect.desc, *args, sizeof(rule->effect.desc));
                 } else {
                     free(rule);
+                    rule_uid--;
                     return false;
                 }
                 num--, args++;
