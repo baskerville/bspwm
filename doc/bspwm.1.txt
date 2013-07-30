@@ -141,7 +141,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused)[.floating|.tiled][.like|.unlike][.urgent|.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|focused)[.floating|.tiled][.like|.unlike][.automatic|.manual][.urgent|.nonurgent]
 ----
 
 Primary Selectors
