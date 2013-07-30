@@ -451,6 +451,8 @@ bool cmd_query(char **args, int num, char *rsp) {
 }
 
 bool cmd_rule(char **args, int num, char *rsp) {
+    if (num < 1)
+        return false;
     while (num > 0) {
         if (streq("-a", *args) || streq("--add", *args)) {
             num--, args++;
@@ -503,6 +505,8 @@ bool cmd_rule(char **args, int num, char *rsp) {
 }
 
 bool cmd_pointer(char **args, int num) {
+    if (num < 1)
+        return false;
     while (num > 0) {
         if (streq("-t", *args) || streq("--track", *args)) {
             num--, args++;
@@ -532,6 +536,8 @@ bool cmd_pointer(char **args, int num) {
 }
 
 bool cmd_restore(char **args, int num) {
+    if (num < 1)
+        return false;
     while (num > 0) {
         if (streq("-T", *args) || streq("--tree", *args)) {
             num--, args++;
@@ -553,6 +559,8 @@ bool cmd_restore(char **args, int num) {
 }
 
 bool cmd_control(char **args, int num) {
+    if (num < 1)
+        return false;
     while (num > 0) {
         if (streq("--adopt-orphans", *args)) {
             adopt_orphans();
