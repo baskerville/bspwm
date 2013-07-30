@@ -1,13 +1,13 @@
 bspc.o: bspc.c common.h helpers.h
 bspwm.o: bspwm.c bspwm.h common.h events.h ewmh.h helpers.h messages.h rules.h settings.h tree.h types.h window.h
-events.o: events.c bspwm.h events.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
+events.o: events.c bspwm.h events.h ewmh.h helpers.h query.h rules.h settings.h tree.h types.h window.h
 ewmh.o: ewmh.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h
 helpers.o: helpers.c bspwm.h helpers.h types.h
 messages.o: messages.c bspwm.h common.h events.h ewmh.h helpers.h messages.h query.h restore.h rules.h settings.h tree.h types.h window.h
-query.o: query.c bspwm.h helpers.h query.h tree.h types.h
-restore.o: restore.c bspwm.h ewmh.h helpers.h restore.h settings.h tree.h types.h
-rules.o: rules.c bspwm.h ewmh.h helpers.h rules.h types.h
+query.o: query.c bspwm.h helpers.h messages.h query.h settings.h tree.h types.h
+restore.o: restore.c bspwm.h ewmh.h helpers.h query.h restore.h settings.h tree.h types.h
+rules.o: rules.c bspwm.h ewmh.h helpers.h query.h rules.h types.h
 settings.o: settings.c bspwm.h common.h helpers.h settings.h types.h
 tree.o: tree.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h window.h
 types.o: types.c bspwm.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
-window.o: window.c bspwm.h ewmh.h helpers.h rules.h settings.h tree.h types.h window.h
+window.o: window.c bspwm.h ewmh.h helpers.h query.h rules.h settings.h tree.h types.h window.h
