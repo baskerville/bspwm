@@ -55,7 +55,6 @@ uninstall:
 
 doc:
 	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt
-	cat doc/header.txt doc/bspwm.1.txt > README.asciidoc
 
 clean:
 	rm -f $(WM_OBJ) $(CL_OBJ) bspwm bspc
