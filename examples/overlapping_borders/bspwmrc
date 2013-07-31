@@ -2,6 +2,6 @@
 
 BW=$(bspc config border_width)
 bspc config window_gap -$BW
-for m in $(bspc query -M) ; do
-    bspc pad "$m" $BW $BW $BW $BW
+for mon in $(bspc query -M) ; do
+    bspc monitor "$mon" -p $BW $BW $BW $BW
 done
