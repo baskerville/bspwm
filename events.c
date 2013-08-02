@@ -452,7 +452,7 @@ void track_pointer(int root_x, int root_y)
     if (frozen_pointer->action == ACTION_NONE)
         return;
 
-    int16_t delta_x, delta_y, x, y, w, h;
+    int16_t delta_x, delta_y, x = 0, y = 0, w = 1, h = 1;
     uint16_t width, height;
 
     pointer_action_t pac = frozen_pointer->action;
@@ -464,9 +464,6 @@ void track_pointer(int root_x, int root_y)
     xcb_rectangle_t rect = frozen_pointer->rectangle;
     node_t *vertical_fence = frozen_pointer->vertical_fence;
     node_t *horizontal_fence = frozen_pointer->horizontal_fence;
-
-    x = y = 0;
-    w = h = 1;
 
     delta_x = root_x - frozen_pointer->position.x;
     delta_y = root_y - frozen_pointer->position.y;
