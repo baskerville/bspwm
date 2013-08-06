@@ -23,6 +23,9 @@ super + {grave,Tab}
 super + apostrophe
     bspc window -s last
 
+super + y
+    bspc window -w last.manual
+
 super + m
     bspc window -s biggest
 
