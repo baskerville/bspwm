@@ -370,16 +370,14 @@ node_t *find_biggest(desktop_t *d, node_t *c, client_select_t sel)
 
 void move_fence(node_t *n, direction_t dir, fence_move_t mov)
 {
-    node_t *fence = find_fence(n, dir);
-
-    if (fence == NULL)
+    if (n == NULL)
         return;
 
     if ((mov == MOVE_PUSH && (dir == DIR_RIGHT || dir == DIR_DOWN))
             || (mov == MOVE_PULL && (dir == DIR_LEFT || dir == DIR_UP)))
-        change_split_ratio(fence, CHANGE_INCREASE);
+        change_split_ratio(n, CHANGE_INCREASE);
     else
-        change_split_ratio(fence, CHANGE_DECREASE);
+        change_split_ratio(n, CHANGE_DECREASE);
 }
 
 void rotate_tree(node_t *n, int rot)

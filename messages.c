@@ -150,13 +150,15 @@ bool cmd_window(char **args, int num)
             if (!parse_direction(*args, &dir))
                 return false;
             num--, args++;
+            node_t *n = find_fence(trg.node, dir);
+            if (n == NULL)
+                return false;
             fence_move_t fmo;
             if (parse_fence_move(*args, &fmo)) {
-                move_fence(trg.node, dir, fmo);
+                move_fence(n, dir, fmo);
             } else {
-                node_t *n = find_fence(trg.node, dir);
                 double rat;
-                if (n != NULL && sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
+                if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
                     n->split_ratio = rat;
                 else
                     return false;
