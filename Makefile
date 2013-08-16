@@ -9,7 +9,8 @@ LDFLAGS += -L$(PREFIX)/lib
 PREFIX   ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 MANPREFIX = $(PREFIX)/share/man
-CPLPREFIX = $(PREFIX)/share/bash-completion/completions
+BASHCPL = $(PREFIX)/share/bash-completion/completions
+ZSHCPL = $(PREFIX)/share/zsh/site-functions
 
 WM_SRC = bspwm.c helpers.c settings.c types.c tree.c events.c window.c messages.c query.c restore.c rules.c ewmh.c
 WM_OBJ = $(WM_SRC:.c=.o)
@@ -43,15 +44,18 @@ install:
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	mkdir -p "$(DESTDIR)$(CPLPREFIX)"
-	cp -p bash_completion "$(DESTDIR)$(CPLPREFIX)"/bspc
+	mkdir -p "$(DESTDIR)$(BASHCPL)"
+	cp -p bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
+	mkdir -p "$(DESTDIR)$(ZSHCPL)"
+	cp -p zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspc
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1
-	rm -f "$(DESTDIR)$(CPLPREFIX)"/bspc
+	rm -f "$(DESTDIR)$(BASHCPL)"/bspc
+	rm -f "$(DESTDIR)$(ZSHCPL)"/_bspc
 
 doc:
 	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt

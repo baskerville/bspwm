@@ -1,6 +1,5 @@
-_bspc()
-{
-    local messages='window desktop monitor query pointer rule restore control config quit'
+_bspc() {
+    local commands='window desktop monitor query pointer rule restore control config quit'
 
     local settings='focused_border_color active_border_color normal_border_color presel_border_color focused_locked_border_color active_locked_border_color normal_locked_border_color urgent_border_color border_width window_gap split_ratio wm_name borderless_monocle gapless_monocle focus_follows_pointer pointer_follows_monitor adaptative_raise apply_shadow_property auto_alternate auto_cancel history_aware_focus'
 
@@ -9,7 +8,7 @@ _bspc()
     if [[ $COMP_CWORD -ge 1 ]] ; then
         local current_word="${COMP_WORDS[COMP_CWORD]}"
         if [[ $COMP_CWORD -eq 1 ]] ; then
-            COMPREPLY=( $(compgen -W "$messages" -- "$current_word") )
+            COMPREPLY=( $(compgen -W "$commands" -- "$current_word") )
             return 0
         else
             local second_word=${COMP_WORDS[1]}
@@ -17,6 +16,7 @@ _bspc()
                 config)
                     if [[ $COMP_CWORD -eq 2 ]] ; then
                         COMPREPLY=( $(compgen -W "$settings" -- "$current_word") )
+                        return 0
                     fi
                     ;;
             esac
