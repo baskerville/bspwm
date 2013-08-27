@@ -175,6 +175,17 @@ bool cmd_window(char **args, int num)
             } else {
                 return false;
             }
+        } else if (streq("-R", *args) || streq("--rotate", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            int deg;
+            if (parse_degree(*args, &deg)) {
+                rotate_tree(brother_tree(trg.node), deg);
+                dirty = true;
+            } else {
+                return false;
+            }
         } else if (streq("-c", *args) || streq("--close", *args)) {
             if (num > 1)
                 return false;
@@ -275,21 +286,19 @@ bool cmd_desktop(char **args, int num)
             if (parse_flip(*args, &flp)) {
                 flip_tree(trg.desktop->root, flp);
                 dirty = true;
+            } else {
+                return false;
             }
         } else if (streq("-R", *args) || streq("--rotate", *args)) {
             num--, args++;
             if (num < 1)
                 return false;
-            int rot = atoi(*args);
-            while (rot < 0)
-                rot += 360;
-            while (rot > 359)
-                rot -= 360;
-            if ((rot % 90) != 0) {
-                return false;
-            } else {
-                rotate_tree(trg.desktop->root, rot);
+            int deg;
+            if (parse_degree(*args, &deg)) {
+                rotate_tree(trg.desktop->root, deg);
                 dirty = true;
+            } else {
+                return false;
             }
         } else if (streq("-B", *args) || streq("--balance", *args)) {
             balance_tree(trg.desktop->root);
@@ -882,6 +891,21 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
         return true;
     }
     return false;
+}
+
+bool parse_degree(char *s, int *d)
+{
+    int i = atoi(s);
+    while (i < 0)
+        i += 360;
+    while (i > 359)
+        i -= 360;
+    if ((i % 90) != 0) {
+        return false;
+    } else {
+        *d = i;
+        return true;
+    }
 }
 
 bool parse_window_id(char *s, long int *i)

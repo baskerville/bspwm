@@ -299,6 +299,9 @@ Options
 *-e*, *--edge* 'DIR' 'RATIO'|pull|push::
     Set the splitting ratio (or pull, or push) the edge located in the given direction in relation to the selected window.
 
+*-R*, *--rotate* '90|270|180'::
+    Rotate the brother tree of the selected window.
+
 *-t*, *--toggle* floating|fullscreen|locked[=on|off]::
     Set or toggle the given state for the selected window.
 

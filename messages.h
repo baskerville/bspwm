@@ -29,6 +29,7 @@ bool parse_circulate_direction(char *, circulate_dir_t *);
 bool parse_flip(char *, flip_t *);
 bool parse_fence_move(char *, fence_move_t *);
 bool parse_pointer_action(char *, pointer_action_t *);
+bool parse_degree(char *, int *);
 bool parse_window_id(char *, long int *);
 
 #endif

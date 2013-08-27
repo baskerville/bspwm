@@ -28,6 +28,7 @@ bool is_urgent(desktop_t *);
 void change_split_ratio(node_t *, value_change_t);
 void change_layout(monitor_t *, desktop_t *, layout_t);
 void reset_mode(coordinates_t *);
+node_t *brother_tree(node_t *);
 node_t *first_extrema(node_t *);
 node_t *second_extrema(node_t *);
 node_t *next_leaf(node_t *, node_t *);

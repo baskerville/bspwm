@@ -129,6 +129,16 @@ void reset_mode(coordinates_t *loc)
     }
 }
 
+node_t *brother_tree(node_t *n)
+{
+    if (n == NULL || n->parent == NULL)
+        return NULL;
+    if (is_first_child(n))
+        return n->parent->second_child;
+    else
+        return n->parent->first_child;
+}
+
 node_t *first_extrema(node_t *n)
 {
     if (n == NULL)
@@ -380,41 +390,36 @@ void move_fence(node_t *n, direction_t dir, fence_move_t mov)
         change_split_ratio(n, CHANGE_DECREASE);
 }
 
-void rotate_tree(node_t *n, int rot)
+void rotate_tree(node_t *n, int deg)
 {
-    if (n == NULL || is_leaf(n) || rot == 0)
+    if (n == NULL || is_leaf(n) || deg == 0)
         return;
 
     node_t *tmp;
 
-    if ((rot == 90 && n->split_type == TYPE_HORIZONTAL)
-            || (rot == 270 && n->split_type == TYPE_VERTICAL)
-            || rot == 180) {
+    if ((deg == 90 && n->split_type == TYPE_HORIZONTAL)
+            || (deg == 270 && n->split_type == TYPE_VERTICAL)
+            || deg == 180) {
         tmp = n->first_child;
         n->first_child = n->second_child;
         n->second_child = tmp;
         n->split_ratio = 1.0 - n->split_ratio;
     }
 
-    if (rot != 180) {
+    if (deg != 180) {
         if (n->split_type == TYPE_HORIZONTAL)
             n->split_type = TYPE_VERTICAL;
         else if (n->split_type == TYPE_VERTICAL)
             n->split_type = TYPE_HORIZONTAL;
     }
 
-    rotate_tree(n->first_child, rot);
-    rotate_tree(n->second_child, rot);
+    rotate_tree(n->first_child, deg);
+    rotate_tree(n->second_child, deg);
 }
 
 void rotate_brother(node_t *n)
 {
-    if (n == NULL || n->parent == NULL)
-        return;
-    if (is_first_child(n))
-        rotate_tree(n->parent->second_child, n->birth_rotation);
-    else
-        rotate_tree(n->parent->first_child, n->birth_rotation);
+    rotate_tree(brother_tree(n), n->birth_rotation);
 }
 
 void unrotate_tree(node_t *n, int rot)
@@ -426,12 +431,7 @@ void unrotate_tree(node_t *n, int rot)
 
 void unrotate_brother(node_t *n)
 {
-    if (n == NULL || n->parent == NULL)
-        return;
-    if (is_first_child(n))
-        unrotate_tree(n->parent->second_child, n->birth_rotation);
-    else
-        unrotate_tree(n->parent->first_child, n->birth_rotation);
+    unrotate_tree(brother_tree(n), n->birth_rotation);
 }
 
 void flip_tree(node_t *n, flip_t flp)
