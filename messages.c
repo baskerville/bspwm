@@ -149,10 +149,10 @@ bool cmd_window(char **args, int num)
             direction_t dir;
             if (!parse_direction(*args, &dir))
                 return false;
-            num--, args++;
             node_t *n = find_fence(trg.node, dir);
             if (n == NULL)
                 return false;
+            num--, args++;
             fence_move_t fmo;
             if (parse_fence_move(*args, &fmo)) {
                 move_fence(n, dir, fmo);
@@ -177,11 +177,18 @@ bool cmd_window(char **args, int num)
             }
         } else if (streq("-R", *args) || streq("--rotate", *args)) {
             num--, args++;
-            if (num < 1)
+            if (num < 2)
                 return false;
+            direction_t dir;
+            if (!parse_direction(*args, &dir))
+                return false;
+            node_t *n = find_fence(trg.node, dir);
+            if (n == NULL)
+                return false;
+            num--, args++;
             int deg;
             if (parse_degree(*args, &deg)) {
-                rotate_tree(brother_tree(trg.node), deg);
+                rotate_tree(n, deg);
                 dirty = true;
             } else {
                 return false;
