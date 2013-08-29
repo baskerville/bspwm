@@ -69,7 +69,7 @@ void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 
     if (is_leaf(n)) {
         client_t *c = n->client;
-        snprintf(line, sizeof(line), "%c %s %X %u %ux%u%+i%+i %c%c%c%c%c", (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), c->class_name, c->window, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'));
+        snprintf(line, sizeof(line), "%c %s %X %u %ux%u%+i%+i %c%c%c%c%c%c", (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), c->class_name, c->window, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (n->split_mode ? 'p' : '-'));
     } else {
         snprintf(line, sizeof(line), "%c %c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), n->split_ratio);
     }

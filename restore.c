@@ -112,13 +112,14 @@ void restore_tree(char *file_path)
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char floating, transient, fullscreen, urgent, locked;
-                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c%c%c%c%c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked);
+                char floating, transient, fullscreen, urgent, locked, split_mode;
+                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c%c%c%c%c%c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked, &split_mode);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
                 c->urgent = (urgent == '-' ? false : true);
                 c->locked = (locked == '-' ? false : true);
+                n->split_mode = (split_mode == '-' ? false : true);
                 n->client = c;
                 if (len >= 2 && line[len - 2] == '*')
                     d->focus = n;
