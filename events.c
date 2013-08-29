@@ -322,9 +322,6 @@ void grab_pointer(pointer_action_t pac)
 
     query_pointer(&win, &pos);
 
-    if (win == XCB_NONE)
-        return;
-
     coordinates_t loc;
     if (locate_window(win, &loc)) {
         client_t *c = NULL;
@@ -443,6 +440,11 @@ void grab_pointer(pointer_action_t pac)
                 break;
         }
     } else {
+        if (pac == ACTION_FOCUS) {
+            monitor_t *m = monitor_from_point(pos);
+            if (m != NULL)
+                focus_node(m, m->desk, m->desk->focus);
+        }
         frozen_pointer->action = ACTION_NONE;
     }
 }
