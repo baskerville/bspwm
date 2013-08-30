@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <xcb/xcb_ewmh.h>
 #include "types.h"
 #include "bspwm.h"
@@ -16,8 +17,10 @@ void ewmh_init(void)
 
 void ewmh_update_wm_name(void)
 {
-    if (wm_name != NULL)
+    if (wm_name != NULL) {
         xcb_ewmh_set_wm_name(ewmh, root, strlen(wm_name), wm_name);
+        xcb_ewmh_set_wm_name(ewmh, motion_recorder, strlen(wm_name), wm_name);
+    }
 }
 
 void ewmh_update_active_window(void)
@@ -110,4 +113,13 @@ void ewmh_update_client_list(void)
 
     xcb_ewmh_set_client_list(ewmh, default_screen, num_clients, wins);
     xcb_ewmh_set_client_list_stacking(ewmh, default_screen, num_clients, wins);
+}
+
+void ewmh_set_supporting(void)
+{
+    pid_t wm_pid = getpid();
+    xcb_ewmh_set_supporting_wm_check(ewmh, root, motion_recorder);
+    xcb_ewmh_set_supporting_wm_check(ewmh, motion_recorder, motion_recorder);
+    xcb_ewmh_set_wm_name(ewmh, motion_recorder, strlen(WM_NAME), WM_NAME);
+    xcb_ewmh_set_wm_pid(ewmh, motion_recorder, wm_pid);
 }

@@ -196,6 +196,7 @@ void setup(void)
     xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder, root, 0, 0, screen_width, screen_height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, mask, values);
 
     xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
+                              ewmh->_NET_SUPPORTING_WM_CHECK,
                               ewmh->_NET_DESKTOP_NAMES,
                               ewmh->_NET_NUMBER_OF_DESKTOPS,
                               ewmh->_NET_CURRENT_DESKTOP,
@@ -213,6 +214,7 @@ void setup(void)
                               ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR};
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
+    ewmh_set_supporting();
 
     xcb_intern_atom_reply_t *iar = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("_COMPTON_SHADOW"), "_COMPTON_SHADOW"), NULL);
 

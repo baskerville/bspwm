@@ -15,5 +15,6 @@ void ewmh_update_current_desktop(void);
 void ewmh_set_wm_desktop(node_t *, desktop_t *);
 void ewmh_update_desktop_names(void);
 void ewmh_update_client_list(void);
+void ewmh_set_supporting(void);
 
 #endif
