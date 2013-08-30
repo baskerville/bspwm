@@ -240,6 +240,10 @@ void setup(void)
     ewmh_update_desktop_names();
     ewmh_update_current_desktop();
     frozen_pointer = make_pointer_state();
+    xcb_get_input_focus_reply_t *ifo = xcb_get_input_focus_reply(dpy, xcb_get_input_focus(dpy), NULL);
+    if (ifo != NULL && (ifo->focus == XCB_INPUT_FOCUS_POINTER_ROOT || ifo->focus == XCB_NONE))
+        clear_input_focus();
+    free(ifo);
 }
 
 void register_events(void)
