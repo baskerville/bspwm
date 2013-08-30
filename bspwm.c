@@ -214,7 +214,7 @@ void setup(void)
                               ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR};
 
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
-    ewmh_set_supporting();
+    ewmh_set_supporting(motion_recorder);
 
     xcb_intern_atom_reply_t *iar = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("_COMPTON_SHADOW"), "_COMPTON_SHADOW"), NULL);
 
