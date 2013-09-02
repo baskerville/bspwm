@@ -205,9 +205,12 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     dst->desktop = NULL;
 
     cycle_dir_t cyc;
+    int idx;
     if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = ref->monitor;
         dst->desktop = closest_desktop(ref->monitor, ref->desktop, cyc, sel);
+    } else if (parse_index(desc, &idx)) {
+        desktop_from_index(idx, dst);
     } else if (streq("last", desc)) {
         if (mon->last_desk != NULL && desktop_matches(mon->last_desk, sel)) {
             dst->monitor = mon;
@@ -245,10 +248,13 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
     direction_t dir;
     cycle_dir_t cyc;
+    int idx;
     if (parse_direction(desc, &dir)) {
         dst->monitor = nearest_monitor(ref->monitor, dir, sel);
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = closest_monitor(ref->monitor, cyc, sel);
+    } else if (parse_index(desc, &idx)) {
+        monitor_from_index(idx, dst);
     } else if (streq("last", desc)) {
         if (last_mon != NULL && desktop_matches(last_mon->desk, sel)) {
             dst->monitor = last_mon;
@@ -295,6 +301,31 @@ bool locate_monitor(char *name, coordinates_t *loc)
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         if (streq(m->name, name)) {
             loc->monitor = m;
+            return true;
+        }
+    return false;
+}
+
+bool desktop_from_index(int i, coordinates_t *loc)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, i--)
+            if (i == 1) {
+                loc->monitor = m;
+                loc->desktop = d;
+                loc->node = NULL;
+                return true;
+            }
+    return false;
+}
+
+bool monitor_from_index(int i, coordinates_t *loc)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next, i--)
+        if (i == 1) {
+            loc->monitor = m;
+            loc->desktop = NULL;
+            loc->node = NULL;
             return true;
         }
     return false;

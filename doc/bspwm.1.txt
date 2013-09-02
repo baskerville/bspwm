@@ -197,11 +197,18 @@ Select a desktop.
 
 ----
 DESKTOP_SEL := <desktop_name>
+             | ^<n>
              | (CYCLE_DIR|last|focused)[.occupied|.free][.urgent|.nonurgent]
 ----
 
 Primary Selectors
 ^^^^^^^^^^^^^^^^^
+
+<desktop_name>::
+    Selects the desktop with the given name.
+
+^<n>::
+    Selects the nth desktop.
 
 'CYCLE_DIR'::
     Selects the desktop in the given direction relative to the active desktop.
@@ -234,11 +241,18 @@ Select a monitor.
 
 ----
 MONITOR_SEL := <monitor_name>
+             | ^<n>
              | (DIR|CYCLE_DIR|last|focused)[.occupied|.free]
 ----
 
 Primary Selectors
 ^^^^^^^^^^^^^^^^^
+
+<monitor_name>::
+    Selects the monitor with the given name.
+
+^<n>::
+    Selects the nth monitor.
 
 'DIR'::
     Selects the monitor in the given (spacial) direction relative to the active monitor.

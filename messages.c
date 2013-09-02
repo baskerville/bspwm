@@ -926,3 +926,8 @@ bool parse_window_id(char *s, long int *i)
         *i = ret;
     return true;
 }
+
+bool parse_index(char *s, int *i)
+{
+    return sscanf(s, "^%i", i) == 1;
+}

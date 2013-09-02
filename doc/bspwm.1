@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/28/2013
+.\"      Date: 09/02/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "08/28/2013" "Bspwm 0\&.8" "Bspwm Manual"
+.TH "BSPWM" "1" "09/02/2013" "Bspwm 0\&.8" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -277,6 +277,7 @@ Select a desktop\&.
 .\}
 .nf
 DESKTOP_SEL := <desktop_name>
+             | ^<n>
              | (CYCLE_DIR|last|focused)[\&.occupied|\&.free][\&.urgent|\&.nonurgent]
 .fi
 .if n \{\
@@ -290,6 +291,16 @@ DESKTOP_SEL := <desktop_name>
 .ps +1
 \fBPrimary Selectors\fR
 .RS 4
+.PP
+<desktop_name>
+.RS 4
+Selects the desktop with the given name\&.
+.RE
+.PP
+^<n>
+.RS 4
+Selects the nth desktop\&.
+.RE
 .PP
 \fICYCLE_DIR\fR
 .RS 4
@@ -344,6 +355,7 @@ Select a monitor\&.
 .\}
 .nf
 MONITOR_SEL := <monitor_name>
+             | ^<n>
              | (DIR|CYCLE_DIR|last|focused)[\&.occupied|\&.free]
 .fi
 .if n \{\
@@ -357,6 +369,16 @@ MONITOR_SEL := <monitor_name>
 .ps +1
 \fBPrimary Selectors\fR
 .RS 4
+.PP
+<monitor_name>
+.RS 4
+Selects the monitor with the given name\&.
+.RE
+.PP
+^<n>
+.RS 4
+Selects the nth monitor\&.
+.RE
 .PP
 \fIDIR\fR
 .RS 4

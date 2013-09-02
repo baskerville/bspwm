@@ -39,7 +39,6 @@ uint32_t ewmh_get_desktop_index(desktop_t *d)
         for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next, i++)
             if (d == cd)
                 return i;
-
     return 0;
 }
 

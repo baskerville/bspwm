@@ -20,5 +20,7 @@ bool locate_monitor(char *, coordinates_t *);
 bool node_from_desc(char *, coordinates_t *, coordinates_t *);
 bool desktop_from_desc(char *, coordinates_t *, coordinates_t *);
 bool monitor_from_desc(char *, coordinates_t *, coordinates_t *);
+bool desktop_from_index(int, coordinates_t *);
+bool monitor_from_index(int, coordinates_t *);
 
 #endif
