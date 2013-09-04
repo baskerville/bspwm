@@ -33,7 +33,7 @@
 void warn(char *, ...);
 __attribute__((noreturn))
 void err(char *, ...);
-bool get_color(char *, uint32_t *);
+bool get_color(char *, xcb_window_t, uint32_t *);
 double distance(xcb_point_t, xcb_point_t);
 
 #endif

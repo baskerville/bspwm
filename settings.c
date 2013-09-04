@@ -37,15 +37,6 @@ void load_settings(void)
     strncpy(normal_locked_border_color, NORMAL_LOCKED_BORDER_COLOR, sizeof(normal_locked_border_color));
     strncpy(urgent_border_color, URGENT_BORDER_COLOR, sizeof(urgent_border_color));
 
-    get_color(normal_border_color, &normal_border_color_pxl);
-    get_color(active_border_color, &focused_border_color_pxl);
-    get_color(active_border_color, &active_border_color_pxl);
-    get_color(presel_border_color, &presel_border_color_pxl);
-    get_color(active_locked_border_color, &focused_locked_border_color_pxl);
-    get_color(active_locked_border_color, &active_locked_border_color_pxl);
-    get_color(normal_locked_border_color, &normal_locked_border_color_pxl);
-    get_color(urgent_border_color, &urgent_border_color_pxl);
-
     strncpy(wm_name, WM_NAME, sizeof(wm_name));
 
     border_width = BORDER_WIDTH;

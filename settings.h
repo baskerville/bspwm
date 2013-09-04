@@ -39,15 +39,6 @@ char active_locked_border_color[MAXLEN];
 char normal_locked_border_color[MAXLEN];
 char urgent_border_color[MAXLEN];
 
-uint32_t focused_border_color_pxl;
-uint32_t active_border_color_pxl;
-uint32_t normal_border_color_pxl;
-uint32_t presel_border_color_pxl;
-uint32_t focused_locked_border_color_pxl;
-uint32_t active_locked_border_color_pxl;
-uint32_t normal_locked_border_color_pxl;
-uint32_t urgent_border_color_pxl;
-
 unsigned int border_width;
 int window_gap;
 double split_ratio;

@@ -211,6 +211,9 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
     if (n->split_mode == MODE_AUTOMATIC) {
         xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXEL, &border_color_pxl);
     } else {
+        uint32_t presel_border_color_pxl;
+        get_color(presel_border_color, win, &presel_border_color_pxl);
+
         xcb_rectangle_t actual_rectangle = get_rectangle(n->client);
 
         uint16_t width = actual_rectangle.width;
@@ -233,14 +236,14 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
             win_depth = geo->depth;
         free(geo);
 
-        xcb_pixmap_t pix = xcb_generate_id(dpy);
-        xcb_create_pixmap(dpy, win_depth, pix, win, full_width, full_height);
+        xcb_pixmap_t pixmap = xcb_generate_id(dpy);
+        xcb_create_pixmap(dpy, win_depth, pixmap, win, full_width, full_height);
 
         xcb_gcontext_t gc = xcb_generate_id(dpy);
-        xcb_create_gc(dpy, gc, pix, 0, NULL);
+        xcb_create_gc(dpy, gc, pixmap, 0, NULL);
 
         xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &border_color_pxl);
-        xcb_poly_fill_rectangle(dpy, pix, gc, LENGTH(border_rectangles), border_rectangles);
+        xcb_poly_fill_rectangle(dpy, pixmap, gc, LENGTH(border_rectangles), border_rectangles);
 
         uint16_t fence = (int16_t) (n->split_ratio * ((n->split_dir == DIR_UP || n->split_dir == DIR_DOWN) ? height : width));
         presel_rectangles = malloc(2 * sizeof(xcb_rectangle_t));
@@ -262,13 +265,12 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
                 presel_rectangles[1] = (xcb_rectangle_t) {width, 0, border_width, full_height};
                 break;
         }
-
         xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &presel_border_color_pxl);
-        xcb_poly_fill_rectangle(dpy, pix, gc, 2, presel_rectangles);
-        xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXMAP, &pix);
+        xcb_poly_fill_rectangle(dpy, pixmap, gc, 2, presel_rectangles);
+        xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXMAP, &pixmap);
         free(presel_rectangles);
         xcb_free_gc(dpy, gc);
-        xcb_free_pixmap(dpy, pix);
+        xcb_free_pixmap(dpy, pixmap);
     }
 }
 
@@ -402,26 +404,30 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
     if (c == NULL)
         return 0;
 
+    uint32_t pxl = 0;
+
     if (focused_monitor && focused_window) {
         if (c->locked)
-            return focused_locked_border_color_pxl;
+            get_color(focused_locked_border_color, c->window, &pxl);
         else
-            return focused_border_color_pxl;
+            get_color(focused_border_color, c->window, &pxl);
     } else if (focused_window) {
         if (c->urgent)
-            return urgent_border_color_pxl;
+            get_color(urgent_border_color, c->window, &pxl);
         else if (c->locked)
-            return active_locked_border_color_pxl;
+            get_color(active_locked_border_color, c->window, &pxl);
         else
-            return active_border_color_pxl;
+            get_color(active_border_color, c->window, &pxl);
     } else {
         if (c->urgent)
-            return urgent_border_color_pxl;
+            get_color(urgent_border_color, c->window, &pxl);
         else if (c->locked)
-            return normal_locked_border_color_pxl;
+            get_color(normal_locked_border_color, c->window, &pxl);
         else
-            return normal_border_color_pxl;
+            get_color(normal_border_color, c->window, &pxl);
     }
+
+    return pxl;
 }
 
 void update_floating_rectangle(client_t *c)

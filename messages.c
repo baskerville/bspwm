@@ -694,10 +694,7 @@ bool set_setting(char *name, char *value)
             return false;
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
-        if (get_color(value, &s ## _pxl)) \
-            strncpy(s, value, sizeof(s)); \
-        else \
-            return false;
+        strncpy(s, value, sizeof(s));
     SETCOLOR(focused_border_color)
     SETCOLOR(active_border_color)
     SETCOLOR(normal_border_color)
@@ -762,7 +759,7 @@ bool get_setting(char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%i", window_gap);
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \
-        snprintf(rsp, BUFSIZ, "%s (%06X)", s, s##_pxl);
+        snprintf(rsp, BUFSIZ, "%s", s);
     GETCOLOR(focused_border_color)
     GETCOLOR(active_border_color)
     GETCOLOR(normal_border_color)

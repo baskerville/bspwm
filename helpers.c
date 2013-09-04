@@ -24,9 +24,13 @@ void err(char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-bool get_color(char *col, uint32_t *pxl)
+bool get_color(char *col, xcb_window_t win, uint32_t *pxl)
 {
     xcb_colormap_t map = screen->default_colormap;
+    xcb_get_window_attributes_reply_t *reply = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
+    if (reply != NULL)
+        map = reply->colormap;
+    free(reply);
 
     if (col[0] == '#') {
         unsigned int red, green, blue;
@@ -50,6 +54,7 @@ bool get_color(char *col, uint32_t *pxl)
             return true;
         }
     }
+    *pxl = 0;
     return false;
 }
 
