@@ -37,8 +37,6 @@ void load_settings(void)
     strncpy(normal_locked_border_color, NORMAL_LOCKED_BORDER_COLOR, sizeof(normal_locked_border_color));
     strncpy(urgent_border_color, URGENT_BORDER_COLOR, sizeof(urgent_border_color));
 
-    strncpy(wm_name, WM_NAME, sizeof(wm_name));
-
     border_width = BORDER_WIDTH;
     window_gap = WINDOW_GAP;
     split_ratio = SPLIT_RATIO;

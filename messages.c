@@ -734,10 +734,6 @@ bool set_setting(char *name, char *value)
         SETBOOL(auto_cancel)
         SETBOOL(history_aware_focus)
 #undef SETBOOL
-    } else if (streq("wm_name", name)) {
-        strncpy(wm_name, value, sizeof(wm_name));
-        ewmh_update_wm_name();
-        return true;
     } else {
         return false;
     }
@@ -782,8 +778,6 @@ bool get_setting(char *name, char* rsp)
     GETBOOL(auto_cancel)
     GETBOOL(history_aware_focus)
 #undef GETBOOL
-    else if (streq("wm_name", name))
-        snprintf(rsp, BUFSIZ, "%s", wm_name);
     else
         return false;
     return true;

@@ -15,12 +15,6 @@ void ewmh_init(void)
         err("Can't initialize EWMH atoms.\n");
 }
 
-void ewmh_update_wm_name(void)
-{
-    if (wm_name != NULL)
-        xcb_ewmh_set_wm_name(ewmh, root, strlen(wm_name), wm_name);
-}
-
 void ewmh_update_active_window(void)
 {
     xcb_window_t win = (mon->desk->focus == NULL ? XCB_NONE : mon->desk->focus->client->window);

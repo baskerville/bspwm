@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     while ((opt = getopt(argc, argv, "hvc:s:p:")) != -1) {
         switch (opt) {
             case 'h':
-                printf("bspwm [-h|-v|-c CONFIG_PATH|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
+                printf(WM_NAME " [-h|-v|-c CONFIG_PATH|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
                 exit(EXIT_SUCCESS);
                 break;
             case 'v':
@@ -108,7 +108,6 @@ int main(int argc, char *argv[])
 
     load_settings();
     run_config();
-    ewmh_update_wm_name();
 
     while (running) {
 
@@ -213,6 +212,7 @@ void setup(void)
                               ewmh->_NET_WM_WINDOW_TYPE_UTILITY,
                               ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR};
 
+    xcb_ewmh_set_wm_name(ewmh, root, strlen(WM_NAME), WM_NAME);
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
     ewmh_set_supporting(motion_recorder);
 

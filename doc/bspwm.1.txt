@@ -550,9 +550,6 @@ All the boolean settings are 'false' by default.
 'split_ratio'::
     Default split ratio.
 
-'wm_name'::
-    The value that shall be used for the '_NET_WM_NAME' property of the root window.
-
 'borderless_monocle'::
     Remove borders for tiled windows in monocle mode.
 

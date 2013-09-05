@@ -53,8 +53,6 @@ bool auto_alternate;
 bool auto_cancel;
 bool history_aware_focus;
 
-char wm_name[MAXLEN];
-
 void load_settings(void);
 void run_config(void);
 
