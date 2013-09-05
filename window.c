@@ -107,7 +107,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     handle_rules(win, &m, &d, &floating, &follow, &transient, &fullscreen, &takes_focus, &manage);
 
     if (!manage) {
-        disable_shadow(win);
+        disable_floating_atom(win);
         window_show(win);
         return;
     }
@@ -129,7 +129,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     insert_node(m, d, n, d->focus);
 
-    disable_shadow(c->window);
+    disable_floating_atom(c->window);
 
     if (floating)
         set_floating(d, n, true);
@@ -351,10 +351,10 @@ void set_floating(desktop_t *d, node_t *n, bool value)
     c->floating = n->vacant = value;
     update_vacant_state(n->parent);
     if (value) {
-        enable_shadow(c->window);
+        enable_floating_atom(c->window);
         unrotate_brother(n);
     } else {
-        disable_shadow(c->window);
+        disable_floating_atom(c->window);
         rotate_brother(n);
     }
     stack(d, n);
@@ -382,21 +382,21 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
     put_status();
 }
 
-void set_shadow(xcb_window_t win, uint32_t value)
+void set_floating_atom(xcb_window_t win, uint32_t value)
 {
-    if (!apply_shadow_property)
+    if (!apply_floating_atom)
         return;
-    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, compton_shadow, XCB_ATOM_CARDINAL, 32, 1, &value);
+    set_atom(win, _BSPWM_FLOATING_WINDOW, value);
 }
 
-void enable_shadow(xcb_window_t win)
+void enable_floating_atom(xcb_window_t win)
 {
-    set_shadow(win, 1);
+    set_floating_atom(win, 1);
 }
 
-void disable_shadow(xcb_window_t win)
+void disable_floating_atom(xcb_window_t win)
 {
-    set_shadow(win, 0);
+    set_floating_atom(win, 0);
 }
 
 uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor)
@@ -600,10 +600,14 @@ void update_input_focus(void)
 
 void set_input_focus(node_t *n)
 {
-    if (n == NULL)
+    if (n == NULL) {
         clear_input_focus();
-    else
-        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+    } else {
+        if (n->client->icccm_focus)
+            icccm_focus(n->client->window);
+        else
+            xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+    }
 }
 
 void clear_input_focus(void)
@@ -618,4 +622,43 @@ void center_pointer(monitor_t *m)
     window_lower(motion_recorder);
     xcb_warp_pointer(dpy, XCB_NONE, root, 0, 0, 0, 0, cx, cy);
     window_raise(motion_recorder);
+}
+
+void get_atom(char *name, xcb_atom_t *atom)
+{
+    xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen(name), name), NULL);
+    if (reply != NULL)
+        *atom = reply->atom;
+    else
+        *atom = XCB_NONE;
+    free(reply);
+}
+
+void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value)
+{
+    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, atom, XCB_ATOM_CARDINAL, 32, 1, &value);
+}
+
+bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols)
+{
+    for (uint32_t i = 0; i < protocols->atoms_len; i++)
+        if (protocols->atoms[i] == atom)
+            return true;
+    return false;
+}
+
+void icccm_focus(xcb_window_t win)
+{
+    PRINTF("focus via ICCCM %X\n", win);
+    xcb_client_message_event_t e;
+
+    e.response_type = XCB_CLIENT_MESSAGE;
+    e.window = win;
+    e.format = 32;
+    e.sequence = 0;
+    e.type = ewmh->WM_PROTOCOLS;
+    e.data.data32[0] = WM_TAKE_FOCUS;
+    e.data.data32[1] = XCB_CURRENT_TIME;
+
+    xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
 }

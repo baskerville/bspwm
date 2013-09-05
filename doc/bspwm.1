@@ -898,6 +898,11 @@ Value of the gap that separates windows\&.
 Default split ratio\&.
 .RE
 .PP
+\fIhistory_aware_focus\fR
+.RS 4
+Give priority to the focus history when focusing nodes\&.
+.RE
+.PP
 \fIborderless_monocle\fR
 .RS 4
 Remove borders for tiled windows in monocle mode\&.
@@ -923,13 +928,6 @@ When focusing a monitor, put the pointer at its center\&.
 Prevent floating windows from being raised when they might cover other floating windows\&.
 .RE
 .PP
-\fIapply_shadow_property\fR
-.RS 4
-Enable shadows for floating windows via the
-\fI_COMPTON_SHADOW\fR
-property\&.
-.RE
-.PP
 \fIauto_alternate\fR
 .RS 4
 Interpret two consecutive identical
@@ -948,9 +946,11 @@ messages as a
 message\&.
 .RE
 .PP
-\fIhistory_aware_focus\fR
+\fIapply_floating_atom\fR
 .RS 4
-Give priority to the focus history when focusing nodes\&.
+Set the value of the
+\fI_BSPWM_FLOATING_WINDOW\fR
+atom of each window according to its floating state\&.
 .RE
 .SH "ENVIRONMENT VARIABLES"
 .PP

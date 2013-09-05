@@ -20,15 +20,15 @@
 #define WINDOW_GAP     6
 #define SPLIT_RATIO    0.5
 
+#define HISTORY_AWARE_FOCUS      false
 #define BORDERLESS_MONOCLE       false
 #define GAPLESS_MONOCLE          false
 #define FOCUS_FOLLOWS_POINTER    false
 #define POINTER_FOLLOWS_MONITOR  false
-#define ADAPTATIVE_RAISE         false
-#define APPLY_SHADOW_PROPERTY    false
 #define AUTO_ALTERNATE           false
 #define AUTO_CANCEL              false
-#define HISTORY_AWARE_FOCUS      false
+#define ADAPTATIVE_RAISE         false
+#define APPLY_FLOATING_ATOM      false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -48,7 +48,7 @@ bool gapless_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_monitor;
 bool adaptative_raise;
-bool apply_shadow_property;
+bool apply_floating_atom;
 bool auto_alternate;
 bool auto_cancel;
 bool history_aware_focus;

@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_icccm.h>
 #include <xcb/xcb_event.h>
 #include "types.h"
 
@@ -26,9 +27,9 @@ void set_fullscreen(desktop_t *, node_t *, bool);
 void set_floating(desktop_t *, node_t *, bool);
 void set_locked(monitor_t *, desktop_t *, node_t *, bool);
 void set_urgency(monitor_t *, desktop_t *, node_t *, bool);
-void set_shadow(xcb_window_t, uint32_t);
-void enable_shadow(xcb_window_t);
-void disable_shadow(xcb_window_t);
+void set_floating_atom(xcb_window_t, uint32_t);
+void enable_floating_atom(xcb_window_t);
+void disable_floating_atom(xcb_window_t);
 void window_border_width(xcb_window_t, uint32_t);
 void window_move(xcb_window_t, int16_t, int16_t);
 void window_resize(xcb_window_t, uint16_t, uint16_t);
@@ -51,5 +52,9 @@ void update_input_focus(void);
 void set_input_focus(node_t *);
 void clear_input_focus(void);
 void center_pointer(monitor_t *);
+void get_atom(char *, xcb_atom_t *);
+void set_atom(xcb_window_t, xcb_atom_t, uint32_t);
+bool has_proto(xcb_atom_t, xcb_icccm_get_wm_protocols_reply_t *);
+void icccm_focus(xcb_window_t);
 
 #endif

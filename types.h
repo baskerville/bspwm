@@ -139,10 +139,11 @@ typedef struct {
     char class_name[MAXLEN];
     unsigned int border_width;
     bool floating;
-    bool transient;  /* transient window are always floating */
+    bool transient;    /* transient window are always floating */
     bool fullscreen;
-    bool locked;     /* protects window from being closed */
+    bool locked;       /* protects window from being closed */
     bool urgent;
+    bool icccm_focus;  /* send an event to request input focus */
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
 } client_t;

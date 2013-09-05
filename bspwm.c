@@ -216,12 +216,12 @@ void setup(void)
     xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
     ewmh_set_supporting(motion_recorder);
 
-    xcb_intern_atom_reply_t *iar = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("_COMPTON_SHADOW"), "_COMPTON_SHADOW"), NULL);
-
-    if (iar != NULL) {
-        compton_shadow = iar->atom;
-        free(iar);
-    }
+#define GETATOM(a) \
+    get_atom(#a, &a);
+    GETATOM(WM_DELETE_WINDOW)
+    GETATOM(WM_TAKE_FOCUS)
+    GETATOM(_BSPWM_FLOATING_WINDOW)
+#undef GETATOM
 
     const xcb_query_extension_reply_t *qep = xcb_get_extension_data(dpy, &xcb_randr_id);
     if (qep->present && import_monitors()) {

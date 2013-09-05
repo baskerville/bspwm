@@ -550,6 +550,9 @@ All the boolean settings are 'false' by default.
 'split_ratio'::
     Default split ratio.
 
+'history_aware_focus'::
+    Give priority to the focus history when focusing nodes.
+
 'borderless_monocle'::
     Remove borders for tiled windows in monocle mode.
 
@@ -565,17 +568,15 @@ All the boolean settings are 'false' by default.
 'adaptative_raise'::
     Prevent floating windows from being raised when they might cover other floating windows.
 
-'apply_shadow_property'::
-    Enable shadows for floating windows via the '_COMPTON_SHADOW' property.
-
 'auto_alternate'::
     Interpret two consecutive identical *use* messages as an *alternate* message.
 
 'auto_cancel'::
     Interpret two consecutive identical *presel* messages as a *cancel* message.
 
-'history_aware_focus'::
-    Give priority to the focus history when focusing nodes.
+'apply_floating_atom'::
+    Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
+
 
 Environment Variables
 ---------------------
