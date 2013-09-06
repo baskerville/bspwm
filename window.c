@@ -605,7 +605,8 @@ void set_input_focus(node_t *n)
     } else {
         if (n->client->icccm_focus)
             icccm_focus(n->client->window);
-        xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
+        else
+            xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 }
 
