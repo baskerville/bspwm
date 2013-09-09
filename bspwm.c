@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/select.h>
@@ -369,7 +370,10 @@ void put_status(void)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
             for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
                 urgent |= n->client->urgent;
-            fprintf(status_fifo, "%c%s:", m->desk == d ? (urgent ? 'U' : 'D') : (d->root == NULL ? 'E' : (urgent ? 'u' : 'd')), d->name);
+            char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
+            if (m->desk == d)
+                c = toupper(c);
+            fprintf(status_fifo, "%c%s:", c, d->name);
         }
     }
     if (mon != NULL && mon->desk != NULL)

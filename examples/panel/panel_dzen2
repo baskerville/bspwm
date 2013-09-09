@@ -47,29 +47,29 @@ while read -r line ; do
             while [ $# -gt 0 ] ; do
                 item=$1
                 case $item in
-                    [DdEUu]*)
+                    [OoFfUu]*)
                         # desktops
                         name=${item#?}
                         case $item in
-                            u*)
-                                # urgent (inactive) desktop
-                                FG=$COLOR_URGENT_FG
-                                BG=$COLOR_URGENT_BG
-                                ;;
-                            [DU]*)
+                            [OFU]*)
                                 # active desktop
                                 FG=$COLOR_ACTIVE_FG
                                 BG=$COLOR_ACTIVE_BG
                                 ;;
-                            d*)
+                            o*)
                                 # inactive desktop
                                 FG=$COLOR_INACTIVE_FG
                                 BG=$COLOR_INACTIVE_BG
                                 ;;
-                            E*)
+                            f*)
                                 # empty desktop
                                 FG=$COLOR_EMPTY_FG
                                 BG=$COLOR_EMPTY_BG
+                                ;;
+                            u*)
+                                # urgent (inactive) desktop
+                                FG=$COLOR_URGENT_FG
+                                BG=$COLOR_URGENT_BG
                                 ;;
                         esac
                         wm_infos="${wm_infos}^fg(${FG})^bg(${BG})^ca(1, bspc desktop -f ${name})^ca(2, bspc window -d ${name})^ca(3, bspc window -d ${name} -f)${PADDING}${name}${PADDING}^ca()^ca()^ca()"
