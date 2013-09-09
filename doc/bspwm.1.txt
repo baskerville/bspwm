@@ -242,7 +242,7 @@ Select a monitor.
 ----
 MONITOR_SEL := <monitor_name>
              | ^<n>
-             | (DIR|CYCLE_DIR|last|focused)[.occupied|.free]
+             | (DIR|CYCLE_DIR|last|primary|focused)[.occupied|.free]
 ----
 
 Primary Selectors
@@ -259,6 +259,9 @@ Primary Selectors
 
 'CYCLE_DIR'::
     Selects the monitor in the given (cyclic) direction relative to the active monitor.
+
+primary::
+    Selects the primary monitor.
 
 last::
     Selects the previously focused monitor.

@@ -256,13 +256,14 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (parse_index(desc, &idx)) {
         monitor_from_index(idx, dst);
     } else if (streq("last", desc)) {
-        if (last_mon != NULL && desktop_matches(last_mon->desk, sel)) {
+        if (last_mon != NULL && desktop_matches(last_mon->desk, sel))
             dst->monitor = last_mon;
-        }
+    } else if (streq("primary", desc)) {
+        if (pri_mon != NULL && desktop_matches(pri_mon->desk, sel))
+            dst->monitor = pri_mon;
     } else if (streq("focused", desc)) {
-        if (desktop_matches(mon->desk, sel)) {
+        if (desktop_matches(mon->desk, sel))
             dst->monitor = mon;
-        }
     } else {
         locate_monitor(desc, dst);
     }

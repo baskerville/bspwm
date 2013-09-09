@@ -86,6 +86,8 @@ void remove_monitor(monitor_t *m)
         mon_tail = prev;
     if (last_mon == m)
         last_mon = NULL;
+    if (pri_mon == m)
+        pri_mon = NULL;
     if (mon == m) {
         monitor_t *mm = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
         if (mm != NULL) {

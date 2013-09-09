@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 09/05/2013
+.\"      Date: 09/09/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "09/05/2013" "Bspwm 0\&.8" "Bspwm Manual"
+.TH "BSPWM" "1" "09/09/2013" "Bspwm 0\&.8" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -356,7 +356,7 @@ Select a monitor\&.
 .nf
 MONITOR_SEL := <monitor_name>
              | ^<n>
-             | (DIR|CYCLE_DIR|last|focused)[\&.occupied|\&.free]
+             | (DIR|CYCLE_DIR|last|primary|focused)[\&.occupied|\&.free]
 .fi
 .if n \{\
 .RE
@@ -388,6 +388,11 @@ Selects the monitor in the given (spacial) direction relative to the active moni
 \fICYCLE_DIR\fR
 .RS 4
 Selects the monitor in the given (cyclic) direction relative to the active monitor\&.
+.RE
+.PP
+primary
+.RS 4
+Selects the primary monitor\&.
 .RE
 .PP
 last

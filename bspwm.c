@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
             snprintf(config_path, sizeof(config_path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, CONFIG_NAME);
     }
 
-    running = true;
     dpy = xcb_connect(NULL, &default_screen);
 
     if (xcb_connection_has_error(dpy))
@@ -108,6 +107,7 @@ int main(int argc, char *argv[])
 
     load_settings();
     run_config();
+    running = true;
 
     while (running) {
 
@@ -166,7 +166,7 @@ void init(void)
 {
     num_monitors = num_desktops = num_clients = 0;
     monitor_uid = desktop_uid = rule_uid = 0;
-    mon = last_mon = mon_head = mon_tail = NULL;
+    mon = last_mon = mon_head = mon_tail = pri_mon = NULL;
     rule_head = rule_tail = NULL;
     status_fifo = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
@@ -299,7 +299,6 @@ bool import_monitors(void)
                     strncpy(mm->name, name, name_len);
                     mm->name[name_len] = '\0';
                     mm->id = outputs[i];
-                    add_desktop(mm, make_desktop(NULL));
                     PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
                 }
                 num++;
@@ -309,6 +308,25 @@ bool import_monitors(void)
         free(info);
     }
 
+    /* initially focus the primary monitor and add the first desktop to it */
+    xcb_randr_get_output_primary_reply_t *gpo = xcb_randr_get_output_primary_reply(dpy, xcb_randr_get_output_primary(dpy, root), NULL);
+    if (gpo != NULL) {
+        pri_mon = get_monitor_by_id(gpo->output);
+        if (!running && pri_mon != NULL) {
+            if (mon != pri_mon)
+                mon = pri_mon;
+            add_desktop(pri_mon, make_desktop(NULL));
+            ewmh_update_current_desktop();
+        }
+    }
+    free(gpo);
+
+    /* add one desktop to each new monitor */
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
+            add_desktop(m, make_desktop(NULL));
+
+    /* merge and remove disconnected monitors */
     monitor_t *m = mon_head;
     while (m != NULL) {
         monitor_t *next = m->next;

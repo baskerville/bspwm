@@ -26,6 +26,7 @@ monitor_t *mon;
 monitor_t *last_mon;
 monitor_t *mon_head;
 monitor_t *mon_tail;
+monitor_t *pri_mon;
 rule_t *rule_head;
 rule_t *rule_tail;
 
