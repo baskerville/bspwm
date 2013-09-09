@@ -137,6 +137,39 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
     }
 }
 
+void swap_monitors(monitor_t *m1, monitor_t *m2)
+{
+    if (m1 == NULL || m2 == NULL || m1 == m2)
+        return;
+
+    if (mon_head == m1)
+        mon_head = m2;
+    if (mon_tail == m1)
+        mon_tail = m2;
+
+    monitor_t *m1p = m1->prev;
+    monitor_t *m1n = m1->next;
+    monitor_t *m2p = m2->prev;
+    monitor_t *m2n = m2->next;
+
+    if (m1p != NULL && m1p != m2)
+        m1p->next = m2;
+    if (m1n != NULL && m1n != m2)
+        m1n->prev = m2;
+    if (m2p != NULL && m2p != m1)
+        m2p->next = m1;
+    if (m2n != NULL && m2n != m1)
+        m2n->prev = m1;
+
+    m1->prev = m2p == m1 ? m2 : m2p;
+    m1->next = m2n == m1 ? m2 : m2n;
+    m2->prev = m1p == m2 ? m1 : m1p;
+    m2->next = m1n == m2 ? m1 : m1n;
+
+    ewmh_update_desktop_names();
+    put_status();
+}
+
 desktop_t *make_desktop(const char *name)
 {
     desktop_t *d = malloc(sizeof(desktop_t));

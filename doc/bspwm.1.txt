@@ -393,6 +393,9 @@ Options
 *-n*, *--rename* <new_name>::
     Rename the selected monitor.
 
+*-s*, *--swap* 'MONITOR_SEL'::
+    Swap the selected monitor with the given monitor.
+
 Query
 ~~~~~
 

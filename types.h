@@ -261,6 +261,7 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t);
 monitor_t *add_monitor(xcb_rectangle_t *);
 void remove_monitor(monitor_t *);
 void merge_monitors(monitor_t *, monitor_t *);
+void swap_monitors(monitor_t *, monitor_t *);
 desktop_t *make_desktop(const char *);
 void insert_desktop(monitor_t *, desktop_t *);
 void add_desktop(monitor_t *, desktop_t *);

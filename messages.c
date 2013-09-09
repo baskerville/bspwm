@@ -398,6 +398,15 @@ bool cmd_monitor(char **args, int num)
                 return false;
             strncpy(trg.monitor->name, *args, sizeof(trg.monitor->name));
             put_status();
+        } else if (streq("-s", *args) || streq("--swap", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            coordinates_t dst;
+            if (monitor_from_desc(*args, &trg, &dst))
+                swap_monitors(trg.monitor, dst.monitor);
+            else
+                return false;
         } else {
             return false;
         }
