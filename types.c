@@ -23,16 +23,13 @@ node_t *make_node(void)
     return n;
 }
 
-monitor_t *make_monitor(xcb_rectangle_t *rect)
+monitor_t *make_monitor(xcb_rectangle_t rect)
 {
     monitor_t *m = malloc(sizeof(monitor_t));
     snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
     m->prev = m->next = NULL;
     m->desk = m->last_desk = NULL;
-    if (rect != NULL)
-        m->rectangle = *rect;
-    else
-        warn("no rectangle was given for monitor '%s'\n", m->name);
+    m->rectangle = rect;
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     m->wired = true;
     return m;
@@ -54,7 +51,7 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t id)
     return NULL;
 }
 
-monitor_t *add_monitor(xcb_rectangle_t *rect)
+monitor_t *add_monitor(xcb_rectangle_t rect)
 {
     monitor_t *m = make_monitor(rect);
     if (mon == NULL) {

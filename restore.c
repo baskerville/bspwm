@@ -15,70 +15,70 @@ void restore_tree(char *file_path)
 
     FILE *snapshot = fopen(file_path, "r");
     if (snapshot == NULL) {
-        warn("Restore: can't open file\n");
+        warn("Restore tree: can't open file\n");
         return;
     }
 
     PUTS("restore tree");
 
     char line[MAXLEN];
-    monitor_t *m = NULL;
-    desktop_t *d = NULL;
-    node_t *n = NULL;
+    char name[MAXLEN];
+    coordinates_t loc;
+    monitor_t *m;
+    desktop_t *d;
+    node_t *n;
     num_clients = 0;
-    unsigned int level, last_level = 0;
-    bool aborted = false;
+    unsigned int level, last_level;
 
     while (fgets(line, sizeof(line), snapshot) != NULL) {
         unsigned int len = strlen(line);
         level = 0;
-        while (level < strlen(line) && isspace(line[level]))
+
+        while (level < len && isspace(line[level]))
             level++;
+
         if (level == 0) {
+            int x, y, left, right, top, bottom;
+            unsigned int w, h;
+            char end = 0;
+            name[0] = '\0';
+            sscanf(line + level, "%s %ux%u%i%i %i,%i,%i,%i %c", name, &w, &h, &x, &y, &top, &right, &bottom, &left, &end);
+            m = find_monitor(name);
             if (m == NULL)
-                m = mon_head;
-            else
-                m = m->next;
-            if (m == NULL) {
-                aborted = true;
-                break;
-            }
-            d = NULL;
-            if (len >= 2)
-                switch (line[len - 2]) {
-                    case '#':
-                        mon = m;
-                        break;
-                    case '~':
-                        last_mon = m;
-                        break;
-                }
+                continue;
+            m->rectangle = (xcb_rectangle_t) {x, y, w, h};
+            m->top_padding = top;
+            m->right_padding = right;
+            m->bottom_padding = bottom;
+            m->left_padding = left;
+            if (end == '#')
+                mon = m;
+            else if (end == '~')
+                last_mon = m;
+
         } else if (level == 2) {
+            if (m == NULL)
+                continue;
+            char layout = 0, end = 0;
+            name[0] = '\0';
+            loc.desktop = NULL;
+            sscanf(line + level, "%s %c %c", name, &layout, &end);
+            locate_desktop(name, &loc);
+            d = loc.desktop;
             if (d == NULL)
-                d = m->desk_head;
-            else
-                d = d->next;
-            if (d == NULL) {
-                aborted = true;
-                break;
-            }
-            int i = len - 1;
-            while (i > 0 && !isupper(line[i]))
-                i--;
-            if (line[i] == 'M')
+                continue;
+            if (layout == 'M')
                 d->layout = LAYOUT_MONOCLE;
-            else if (line[i] == 'T')
+            else if (layout == 'T')
                 d->layout = LAYOUT_TILED;
-            if (len >= 2)
-                switch (line[len - 2]) {
-                    case '@':
-                        m->desk = d;
-                        break;
-                    case '~':
-                        m->last_desk = d;
-                        break;
-                }
+            if (end == '@')
+                m->desk = d;
+            else if (end == '~')
+                m->last_desk = d;
+
         } else {
+            if (m == NULL || d == NULL)
+                continue;
             node_t *birth = make_node();
             if (level == 4) {
                 empty_desktop(d);
@@ -90,11 +90,8 @@ void restore_tree(char *file_path)
                     do {
                         n = n->parent;
                     } while (n != NULL && n->second_child != NULL);
-                    if (n == NULL) {
-                        warn("Restore: malformed file\n");
-                        aborted = true;
-                        break;
-                    }
+                    if (n == NULL)
+                        continue;
                     n->second_child = birth;
                 }
                 birth->parent = n;
@@ -112,8 +109,8 @@ void restore_tree(char *file_path)
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char floating, transient, fullscreen, urgent, locked, split_mode;
-                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c%c%c%c%c%c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked, &split_mode);
+                char floating, transient, fullscreen, urgent, locked, split_mode, end = 0;
+                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &floating, &transient, &fullscreen, &urgent, &locked, &split_mode, &end);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
@@ -121,7 +118,7 @@ void restore_tree(char *file_path)
                 c->locked = (locked == '-' ? false : true);
                 n->split_mode = (split_mode == '-' ? false : true);
                 n->client = c;
-                if (len >= 2 && line[len - 2] == '*')
+                if (end == '*')
                     d->focus = n;
             }
             if (br == 'a')
@@ -136,19 +133,17 @@ void restore_tree(char *file_path)
 
     fclose(snapshot);
 
-    if (!aborted) {
-        for (monitor_t *m = mon_head; m != NULL; m = m->next)
-            for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-                for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-                    uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
-                    xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-                    if (n->client->floating) {
-                        n->vacant = true;
-                        update_vacant_state(n->parent);
-                    }
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+                uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
+                xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+                if (n->client->floating) {
+                    n->vacant = true;
+                    update_vacant_state(n->parent);
                 }
-        ewmh_update_current_desktop();
-    }
+            }
+    ewmh_update_current_desktop();
 }
 
 void restore_history(char *file_path)
