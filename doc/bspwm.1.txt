@@ -8,7 +8,7 @@ bspwm(1)
 Name
 ----
 
-bspwm - Tiling window manager based on binary space partitioning
+bspwm - Binary space partitioning window manager
 
 Synopsis
 --------
