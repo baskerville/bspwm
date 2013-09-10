@@ -45,9 +45,9 @@ install:
 	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	mkdir -p "$(DESTDIR)$(BASHCPL)"
-	cp -p bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
+	cp -p contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
 	mkdir -p "$(DESTDIR)$(ZSHCPL)"
-	cp -p zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
+	cp -p contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
