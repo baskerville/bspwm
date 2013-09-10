@@ -61,6 +61,13 @@ void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
     xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
 }
 
+void ewmh_update_wm_desktop(desktop_t *d)
+{
+    uint32_t i = ewmh_get_desktop_index(d);
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
+}
+
 void ewmh_update_desktop_names(void)
 {
     char names[MAXLEN];

@@ -174,6 +174,14 @@ void swap_monitors(monitor_t *m1, monitor_t *m2)
     m2->prev = p1 == m2 ? m1 : p1;
     m2->next = n1 == m2 ? m1 : n1;
 
+
+#define UPDATE_WM_DESKTOP(m) \
+    for (desktop_t *d = m->desk_head; d != NULL; d = d->next) \
+        ewmh_update_wm_desktop(d);
+UPDATE_WM_DESKTOP(m1)
+UPDATE_WM_DESKTOP(m2)
+#undef UPDATE_WM_DESKTOP
+
     ewmh_update_desktop_names();
     put_status();
 }
@@ -288,6 +296,8 @@ void swap_desktops(monitor_t *m, desktop_t *d1, desktop_t *d2)
     d2->prev = p1 == d2 ? d1 : p1;
     d2->next = n1 == d2 ? d1 : n1;
 
+    ewmh_update_wm_desktop(d1);
+    ewmh_update_wm_desktop(d2);
     ewmh_update_desktop_names();
     put_status();
 }
