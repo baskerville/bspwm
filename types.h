@@ -268,6 +268,7 @@ void add_desktop(monitor_t *, desktop_t *);
 void empty_desktop(desktop_t *);
 void unlink_desktop(monitor_t *, desktop_t *);
 void remove_desktop(monitor_t *, desktop_t *);
+void swap_desktops(monitor_t *, desktop_t *, desktop_t *);
 void transfer_desktop(monitor_t *, monitor_t *, desktop_t *);
 rule_t *make_rule(void);
 pointer_state_t *make_pointer_state(void);

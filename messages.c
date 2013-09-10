@@ -254,6 +254,15 @@ bool cmd_desktop(char **args, int num)
             } else {
                 return false;
             }
+        } else if (streq("-s", *args) || streq("--swap", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            coordinates_t dst;
+            if (desktop_from_desc(*args, &trg, &dst) && trg.monitor == dst.monitor)
+                swap_desktops(dst.monitor, trg.desktop, dst.desktop);
+            else
+                return false;
         } else if (streq("-l", *args) || streq("--layout", *args)) {
             num--, args++;
             if (num < 1)

@@ -106,23 +106,27 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
     if (ms == md)
         return;
+
     desktop_t *dd = ms->desk;
     unlink_desktop(ms, d);
     insert_desktop(md, d);
+
     if (d == dd) {
         if (ms->desk != NULL)
             desktop_show(ms->desk);
         if (md->desk != d)
             desktop_hide(d);
     }
+
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
         fit_monitor(md, n->client);
     arrange(md, d);
     if (d != dd && md->desk == d) {
         desktop_show(d);
     }
-    put_status();
+
     ewmh_update_desktop_names();
+    put_status();
 }
 
 void merge_monitors(monitor_t *ms, monitor_t *md)
@@ -243,6 +247,39 @@ void remove_desktop(monitor_t *m, desktop_t *d)
     free(d);
     num_desktops--;
     ewmh_update_number_of_desktops();
+    ewmh_update_desktop_names();
+    put_status();
+}
+
+void swap_desktops(monitor_t *m, desktop_t *d1, desktop_t *d2)
+{
+    if (d1 == NULL || d2 == NULL || d1 == d2)
+        return;
+
+    if (m->desk_head == d1)
+        m->desk_head = d2;
+    if (m->desk_tail == d1)
+        m->desk_tail = d2;
+
+    desktop_t *d1p = d1->prev;
+    desktop_t *d1n = d1->next;
+    desktop_t *d2p = d2->prev;
+    desktop_t *d2n = d2->next;
+
+    if (d1p != NULL && d1p != d2)
+        d1p->next = d2;
+    if (d1n != NULL && d1n != d2)
+        d1n->prev = d2;
+    if (d2p != NULL && d2p != d1)
+        d2p->next = d1;
+    if (d2n != NULL && d2n != d1)
+        d2n->prev = d1;
+
+    d1->prev = d2p == d1 ? d2 : d2p;
+    d1->next = d2n == d1 ? d2 : d2n;
+    d2->prev = d1p == d2 ? d1 : d1p;
+    d2->next = d1n == d2 ? d1 : d1n;
+
     ewmh_update_desktop_names();
     put_status();
 }

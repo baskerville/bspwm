@@ -350,6 +350,9 @@ Options
 *-n*, *--rename* <new_name>::
     Rename the selected desktop.
 
+*-s*, *--swap* 'DESKTOP_SEL'::
+    Swap the selected desktop with the given desktop.
+
 *-r*, *--remove*::
     Remove the selected desktop.
 
