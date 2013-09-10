@@ -55,6 +55,6 @@ void center_pointer(monitor_t *);
 void get_atom(char *, xcb_atom_t *);
 void set_atom(xcb_window_t, xcb_atom_t, uint32_t);
 bool has_proto(xcb_atom_t, xcb_icccm_get_wm_protocols_reply_t *);
-void icccm_focus(xcb_window_t);
+void send_client_message(xcb_window_t, xcb_atom_t property, xcb_atom_t);
 
 #endif

@@ -281,28 +281,7 @@ void window_close(node_t *n)
 
     PRINTF("close window %X\n", n->client->window);
 
-    xcb_atom_t WM_DELETE_WINDOW;
-    xcb_window_t win = n->client->window;
-    xcb_client_message_event_t e;
-
-    xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(dpy, xcb_intern_atom(dpy, 0, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW"), NULL);
-    if (reply) {
-        WM_DELETE_WINDOW = reply->atom;
-        free(reply);
-    } else {
-        warn("close_window %X: could not acquire WM_DELETE_WINDOW atom\n", win);
-        return;
-    }
-
-    e.response_type = XCB_CLIENT_MESSAGE;
-    e.window = win;
-    e.format = 32;
-    e.sequence = 0;
-    e.type = ewmh->WM_PROTOCOLS;
-    e.data.data32[0] = WM_DELETE_WINDOW;
-    e.data.data32[1] = XCB_CURRENT_TIME;
-
-    xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
+    send_client_message(n->client->window, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
 }
 
 void window_kill(desktop_t *d, node_t *n)
@@ -604,7 +583,7 @@ void set_input_focus(node_t *n)
         clear_input_focus();
     } else {
         if (n->client->icccm_focus)
-            icccm_focus(n->client->window);
+            send_client_message(n->client->window, ewmh->WM_PROTOCOLS, WM_TAKE_FOCUS);
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
     }
 }
@@ -646,17 +625,16 @@ bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols)
     return false;
 }
 
-void icccm_focus(xcb_window_t win)
+void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value)
 {
-    PRINTF("focus via ICCCM %X\n", win);
     xcb_client_message_event_t e;
 
     e.response_type = XCB_CLIENT_MESSAGE;
     e.window = win;
     e.format = 32;
     e.sequence = 0;
-    e.type = ewmh->WM_PROTOCOLS;
-    e.data.data32[0] = WM_TAKE_FOCUS;
+    e.type = property;
+    e.data.data32[0] = value;
     e.data.data32[1] = XCB_CURRENT_TIME;
 
     xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
