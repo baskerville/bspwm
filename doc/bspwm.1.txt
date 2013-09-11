@@ -47,7 +47,7 @@ Options
 Configuration
 -------------
 
-*bspwm* have only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
+*bspwm* has only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
 
 The default configuration file is '$XDG_CONFIG_HOME/bspwm/bspwmrc'.
 
