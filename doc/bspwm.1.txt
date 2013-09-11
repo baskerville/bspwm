@@ -507,7 +507,7 @@ Config
 General Syntax
 ^^^^^^^^^^^^^^
 
-config <key> [<value>]::
+config [-m 'MONITOR_SEL'|-d 'DESKTOP_SEL'] <key> [<value>]::
     Get or set the value of <key>.
 
 Quit

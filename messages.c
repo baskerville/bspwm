@@ -618,10 +618,32 @@ bool cmd_control(char **args, int num) {
 }
 
 bool cmd_config(char **args, int num, char *rsp) {
+    if (num < 1)
+        return false;
+    coordinates_t ref = {mon, mon->desk, mon->desk->focus};
+    coordinates_t trg = {NULL, NULL, NULL};
+    if (*args[0] == OPT_CHR) {
+        if (streq("-d", *args) || streq("--desktop", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            if (!desktop_from_desc(*args, &ref, &trg))
+                return false;
+        } else if (streq("-m", *args) || streq("--monitor", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            if (!monitor_from_desc(*args, &ref, &trg))
+                return false;
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
     if (num == 2)
-        return set_setting(*args, *(args + 1));
+        return set_setting(trg, *args, *(args + 1));
     else if (num == 1)
-        return get_setting(*args, rsp);
+        return get_setting(trg, *args, rsp);
     else
         return false;
 }
@@ -696,14 +718,24 @@ bool process_message(char **args, int num, char *rsp)
     return false;
 }
 
-bool set_setting(char *name, char *value)
+bool set_setting(coordinates_t loc, char *name, char *value)
 {
     if (streq("border_width", name)) {
         if (sscanf(value, "%u", &border_width) != 1)
             return false;
     } else if (streq("window_gap", name)) {
-        if (sscanf(value, "%i", &window_gap) != 1)
+        int wg;
+        if (sscanf(value, "%i", &wg) != 1)
             return false;
+        if (loc.desktop != NULL)
+            loc.desktop->window_gap = wg;
+        else if (loc.monitor != NULL)
+            for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next)
+                d->window_gap = wg;
+        else
+            for (monitor_t *m = mon_head; m != NULL; m = m->next)
+                for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+                    d->window_gap = wg;
     } else if (streq("split_ratio", name)) {
         double rat;
         if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1)
@@ -763,14 +795,17 @@ bool set_setting(char *name, char *value)
     return true;
 }
 
-bool get_setting(char *name, char* rsp)
+bool get_setting(coordinates_t loc, char *name, char* rsp)
 {
     if (streq("border_width", name))
         snprintf(rsp, BUFSIZ, "%u", border_width);
     else if (streq("split_ratio", name))
         snprintf(rsp, BUFSIZ, "%lf", split_ratio);
     else if (streq("window_gap", name))
-        snprintf(rsp, BUFSIZ, "%i", window_gap);
+        if (loc.desktop == NULL)
+            return false;
+        else
+            snprintf(rsp, BUFSIZ, "%i", loc.desktop->window_gap);
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \
         snprintf(rsp, BUFSIZ, "%s", s);

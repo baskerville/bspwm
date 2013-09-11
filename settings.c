@@ -38,7 +38,6 @@ void load_settings(void)
     strncpy(urgent_border_color, URGENT_BORDER_COLOR, sizeof(urgent_border_color));
 
     border_width = BORDER_WIDTH;
-    window_gap = WINDOW_GAP;
     split_ratio = SPLIT_RATIO;
 
     borderless_monocle = BORDERLESS_MONOCLE;

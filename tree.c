@@ -477,7 +477,7 @@ void arrange(monitor_t *m, desktop_t *d)
     PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
 
     xcb_rectangle_t rect = m->rectangle;
-    int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
+    int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
     rect.x += m->left_padding + wg;
     rect.y += m->top_padding + wg;
     rect.width -= m->left_padding + m->right_padding + wg;
@@ -516,7 +516,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
                     r = root_rect;
                 else
                     return;
-                int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : window_gap);
+                int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
                 int bleed = wg + 2 * n->client->border_width;
                 r.width = (bleed < r.width ? r.width - bleed : 1);
                 r.height = (bleed < r.height ? r.height - bleed : 1);

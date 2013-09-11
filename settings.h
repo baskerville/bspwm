@@ -17,7 +17,6 @@
 #define URGENT_BORDER_COLOR         "#EFA29A"
 
 #define BORDER_WIDTH   1
-#define WINDOW_GAP     6
 #define SPLIT_RATIO    0.5
 
 #define HISTORY_AWARE_FOCUS      false
@@ -40,7 +39,6 @@ char normal_locked_border_color[MAXLEN];
 char urgent_border_color[MAXLEN];
 
 unsigned int border_width;
-int window_gap;
 double split_ratio;
 
 bool borderless_monocle;

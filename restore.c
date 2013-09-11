@@ -59,14 +59,16 @@ void restore_tree(char *file_path)
         } else if (level == 2) {
             if (m == NULL)
                 continue;
+            int wg;
             char layout = 0, end = 0;
             name[0] = '\0';
             loc.desktop = NULL;
-            sscanf(line + level, "%s %c %c", name, &layout, &end);
+            sscanf(line + level, "%s %i %c %c", name, &wg, &layout, &end);
             locate_desktop(name, &loc);
             d = loc.desktop;
             if (d == NULL)
                 continue;
+            d->window_gap = wg;
             if (layout == 'M')
                 d->layout = LAYOUT_MONOCLE;
             else if (layout == 'T')

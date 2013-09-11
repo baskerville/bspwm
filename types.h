@@ -10,6 +10,7 @@
 #define DEFAULT_DESK_NAME    "Desktop"
 #define DEFAULT_MON_NAME     "Monitor"
 #define MISSING_VALUE        "N/A"
+#define WINDOW_GAP           6
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -185,6 +186,7 @@ struct desktop_t {
     focus_history_t *history;
     desktop_t *prev;
     desktop_t *next;
+    int window_gap;
 };
 
 typedef struct monitor_t monitor_t;

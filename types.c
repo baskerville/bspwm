@@ -190,6 +190,7 @@ desktop_t *make_desktop(const char *name)
     d->prev = d->next = NULL;
     d->root = d->focus = NULL;
     d->history = make_focus_history();
+    d->window_gap = WINDOW_GAP;
     return d;
 }
 
