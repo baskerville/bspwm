@@ -61,11 +61,14 @@ void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
     xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
 }
 
-void ewmh_update_wm_desktop(desktop_t *d)
+void ewmh_update_wm_desktops(void)
 {
-    uint32_t i = ewmh_get_desktop_index(d);
-    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+            uint32_t i = ewmh_get_desktop_index(d);
+            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+                xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
+        }
 }
 
 void ewmh_update_desktop_names(void)
