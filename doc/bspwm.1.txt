@@ -574,9 +574,6 @@ All the boolean settings are 'false' by default.
 'pointer_follows_monitor'::
     When focusing a monitor, put the pointer at its center.
 
-'adaptative_raise'::
-    Prevent floating windows from being raised when they might cover other floating windows.
-
 'auto_alternate'::
     Interpret two consecutive identical *use* messages as an *alternate* message.
 
