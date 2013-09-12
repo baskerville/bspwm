@@ -44,7 +44,6 @@ void load_settings(void)
     gapless_monocle = GAPLESS_MONOCLE;
     focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
     pointer_follows_monitor = POINTER_FOLLOWS_MONITOR;
-    adaptative_raise = ADAPTATIVE_RAISE;
     apply_floating_atom = APPLY_FLOATING_ATOM;
     auto_alternate = AUTO_ALTERNATE;
     auto_cancel = AUTO_CANCEL;

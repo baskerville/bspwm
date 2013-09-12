@@ -1,7 +1,7 @@
 _bspc() {
     local commands='window desktop monitor query pointer rule restore control config quit'
 
-    local settings='focused_border_color active_border_color normal_border_color presel_border_color focused_locked_border_color active_locked_border_color normal_locked_border_color urgent_border_color border_width window_gap split_ratio borderless_monocle gapless_monocle focus_follows_pointer pointer_follows_monitor adaptative_raise apply_floating_atom auto_alternate auto_cancel history_aware_focus'
+    local settings='focused_border_color active_border_color normal_border_color presel_border_color focused_locked_border_color active_locked_border_color normal_locked_border_color urgent_border_color border_width window_gap split_ratio borderless_monocle gapless_monocle focus_follows_pointer pointer_follows_monitor apply_floating_atom auto_alternate auto_cancel history_aware_focus'
 
     COMPREPLY=()
 

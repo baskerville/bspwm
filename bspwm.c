@@ -208,6 +208,7 @@ void setup(void)
                               ewmh->_NET_WM_STATE_DEMANDS_ATTENTION,
                               ewmh->_NET_WM_WINDOW_TYPE,
                               ewmh->_NET_WM_WINDOW_TYPE_DOCK,
+                              ewmh->_NET_WM_WINDOW_TYPE_DESKTOP,
                               ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION,
                               ewmh->_NET_WM_WINDOW_TYPE_DIALOG,
                               ewmh->_NET_WM_WINDOW_TYPE_UTILITY,

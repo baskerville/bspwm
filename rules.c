@@ -2,6 +2,7 @@
 #include <string.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_ewmh.h>
+#include "window.h"
 #include "types.h"
 #include "bspwm.h"
 #include "ewmh.h"
@@ -73,8 +74,10 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
                 *takes_focus = false;
             } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
                 *floating = true;
-            } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK || a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {
+            } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK || a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP || a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {
                 *manage = false;
+                if (a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
+                    window_lower(win);
             }
         }
         xcb_ewmh_get_atoms_reply_wipe(&win_type);

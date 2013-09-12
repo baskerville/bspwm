@@ -664,10 +664,11 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
 void pseudo_focus(desktop_t *d, node_t *n)
 {
-    if (d->focus == n)
+    if (n == NULL || d->focus == n)
         return;
     d->focus = n;
     history_add(d->history, n);
+    stack(d, n);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -705,8 +706,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     n->client->urgent = false;
 
     pseudo_focus(d, n);
-    stack(d, n);
-
     set_input_focus(n);
 
     if (focus_follows_pointer) {
@@ -884,9 +883,6 @@ void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, n
         window_show(n->client->window);
 
     pseudo_focus(dd, n);
-
-    if (md->desk == dd)
-        stack(dd, n);
 
     arrange(ms, ds);
     arrange(md, dd);

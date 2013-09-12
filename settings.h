@@ -26,7 +26,6 @@
 #define POINTER_FOLLOWS_MONITOR  false
 #define AUTO_ALTERNATE           false
 #define AUTO_CANCEL              false
-#define ADAPTATIVE_RAISE         false
 #define APPLY_FLOATING_ATOM      false
 
 char focused_border_color[MAXLEN];
@@ -45,7 +44,6 @@ bool borderless_monocle;
 bool gapless_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_monitor;
-bool adaptative_raise;
 bool apply_floating_atom;
 bool auto_alternate;
 bool auto_cancel;

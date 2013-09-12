@@ -28,14 +28,6 @@ bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
             && a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
 }
 
-bool might_cover(desktop_t *d, node_t *n)
-{
-    for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root))
-        if (f != n && is_floating(f->client) && contains(n->client->floating_rectangle, f->client->floating_rectangle))
-            return true;
-    return false;
-}
-
 bool is_inside(monitor_t *m, xcb_point_t pt)
 {
     xcb_rectangle_t r = m->rectangle;
@@ -140,17 +132,20 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (fullscreen)
         set_fullscreen(d, n, true);
 
-    if (is_tiled(c))
-        window_lower(c->window);
-
     c->transient = transient;
 
-    bool give_focus = takes_focus && (d == mon->desk || follow);
+    bool give_focus = (takes_focus && (d == mon->desk || follow));
 
-    if (give_focus)
+    if (give_focus) {
         focus_node(m, d, n);
-    else if (takes_focus)
+    } else if (takes_focus) {
         pseudo_focus(d, n);
+    } else {
+        node_t *f = d->focus;
+        pseudo_focus(d, n);
+        if (f != NULL)
+            pseudo_focus(d, f);
+    }
 
     xcb_rectangle_t *frect = &n->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
@@ -309,13 +304,13 @@ void set_fullscreen(desktop_t *d, node_t *n, bool value)
         c->fullscreen = true;
         xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        window_raise(c->window);
     } else {
         c->fullscreen = false;
         xcb_atom_t values[] = {XCB_NONE};
         xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-        stack(d, n);
     }
+
+    stack(d, n);
 }
 
 void set_floating(desktop_t *d, node_t *n, bool value)
@@ -329,6 +324,7 @@ void set_floating(desktop_t *d, node_t *n, bool value)
     client_t *c = n->client;
     c->floating = n->vacant = value;
     update_vacant_state(n->parent);
+
     if (value) {
         enable_floating_atom(c->window);
         unrotate_brother(n);
@@ -336,6 +332,7 @@ void set_floating(desktop_t *d, node_t *n, bool value)
         disable_floating_atom(c->window);
         rotate_brother(n);
     }
+
     stack(d, n);
 }
 
@@ -425,7 +422,9 @@ void update_floating_rectangle(client_t *c)
 void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {
     window_lower(motion_recorder);
+
     xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
+
     if (qpr != NULL) {
         if (win != NULL)
             *win = qpr->child;
@@ -433,6 +432,7 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
             *pt = (xcb_point_t) {qpr->root_x, qpr->root_y};
         free(qpr);
     }
+
     window_raise(motion_recorder);
 }
 
@@ -476,19 +476,53 @@ void window_raise(xcb_window_t win)
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }
 
-void stack_tiled(desktop_t *d)
+void window_stack(xcb_window_t w1, xcb_window_t w2, uint32_t mode)
 {
-    for (node_list_t *a = d->history->head; a != NULL; a = a->next)
-        if (a->latest && is_tiled(a->node->client))
-            window_lower(a->node->client->window);
+    if (w2 == XCB_NONE)
+        return;
+    uint16_t mask = XCB_CONFIG_WINDOW_SIBLING | XCB_CONFIG_WINDOW_STACK_MODE;
+    uint32_t values[] = {w2, mode};
+    xcb_configure_window(dpy, w1, mask, values);
+}
+
+void window_above(xcb_window_t w1, xcb_window_t w2)
+{
+    window_stack(w1, w2, XCB_STACK_MODE_ABOVE);
+}
+
+void window_below(xcb_window_t w1, xcb_window_t w2)
+{
+    window_stack(w1, w2, XCB_STACK_MODE_BELOW);
 }
 
 void stack(desktop_t *d, node_t *n)
 {
-    if (is_tiled(n->client))
-        stack_tiled(d);
-    else if (auto_raise && (!adaptative_raise || !might_cover(d, n)))
+    if (is_leaf(d->root))
+        return;
+    if (n->client->fullscreen) {
         window_raise(n->client->window);
+    } else {
+        if (n->client->floating && !auto_raise)
+            return;
+        xcb_window_t latest_tiled = XCB_NONE;
+        xcb_window_t oldest_floating = XCB_NONE;
+        for (node_list_t *a = d->history->head; a != NULL; a = a->next) {
+            if (a->latest && a->node != n) {
+                if (a->node->client->floating == n->client->floating) {
+                    window_above(n->client->window, a->node->client->window);
+                    return;
+                } else if (latest_tiled == XCB_NONE && !a->node->client->floating) {
+                    latest_tiled = a->node->client->window;
+                } else if (a->node->client->floating) {
+                    oldest_floating = a->node->client->window;
+                }
+            }
+        }
+        if (n->client->floating)
+            window_above(n->client->window, latest_tiled);
+        else
+            window_below(n->client->window, oldest_floating);
+    }
 }
 
 void window_lower(xcb_window_t win)
