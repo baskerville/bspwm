@@ -221,6 +221,7 @@ typedef struct {
     bool floating;
     bool follow;
     bool focus;
+    bool unmanage;
     char desc[MAXLEN];
 } rule_effect_t;
 

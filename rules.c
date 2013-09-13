@@ -121,6 +121,8 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
                 *follow = true;
             if (efc.focus)
                 *takes_focus = true;
+            if (efc.unmanage)
+                *manage = false;
             if (efc.desc[0] != '\0') {
                 coordinates_t ref = {*m, *d, NULL};
                 coordinates_t loc;
@@ -149,6 +151,8 @@ void list_rules(char *pattern, char *rsp)
             strncat(rsp, " --follow", REMLEN(rsp));
         if (r->effect.focus)
             strncat(rsp, " --focus", REMLEN(rsp));
+        if (r->effect.unmanage)
+            strncat(rsp, " --unmanage", REMLEN(rsp));
         if (r->effect.desc[0] != '\0') {
             snprintf(line, sizeof(line), " -d %s", r->effect.desc);
             strncat(rsp, line, REMLEN(rsp));

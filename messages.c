@@ -504,6 +504,8 @@ bool cmd_rule(char **args, int num, char *rsp) {
                     rule->effect.follow = true;
                 } else if (streq("--focus", *args)) {
                     rule->effect.focus = true;
+                } else if (streq("--unmanage", *args)) {
+                    rule->effect.unmanage = true;
                 } else if (streq("-d", *args) || streq("--desktop", *args)) {
                     num--, args++;
                     if (num < 1) {
