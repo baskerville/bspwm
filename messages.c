@@ -738,6 +738,21 @@ bool set_setting(coordinates_t loc, char *name, char *value)
             for (monitor_t *m = mon_head; m != NULL; m = m->next)
                 for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
                     d->window_gap = wg;
+#define MONSET(k) \
+    } else if (streq(#k, name)) { \
+        int v; \
+        if (sscanf(value, "%i", &v) != 1) \
+            return false; \
+        if (loc.monitor != NULL) \
+            loc.monitor->k = v; \
+        else \
+            for (monitor_t *m = mon_head; m!= NULL; m = m->next) \
+                m->k = v;
+    MONSET(top_padding)
+    MONSET(right_padding)
+    MONSET(bottom_padding)
+    MONSET(left_padding)
+#undef MONSET
     } else if (streq("split_ratio", name)) {
         double rat;
         if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1)
@@ -807,6 +822,17 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
             return false;
         else
             snprintf(rsp, BUFSIZ, "%i", loc.desktop->window_gap);
+#define MONGET(k) \
+    else if (streq(#k, name)) \
+        if (loc.monitor == NULL) \
+            return false; \
+        else \
+            snprintf(rsp, BUFSIZ, "%i", loc.monitor->k);
+    MONGET(top_padding)
+    MONGET(right_padding)
+    MONGET(bottom_padding)
+    MONGET(left_padding)
+#undef MONGET
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \
         snprintf(rsp, BUFSIZ, "%s", s);

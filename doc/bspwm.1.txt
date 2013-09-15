@@ -525,6 +525,8 @@ Colors are either http://en.wikipedia.org/wiki/X11_color_names[X color names] or
 
 All the boolean settings are 'false' by default.
 
+Global Settings
+~~~~~~~~~~~~~~~
 
 'focused_border_color'::
     Color of the border of a focused window of a focused monitor.
@@ -553,9 +555,6 @@ All the boolean settings are 'false' by default.
 'border_width'::
     Window border width.
 
-'window_gap'::
-    Value of the gap that separates windows.
-
 'split_ratio'::
     Default split ratio.
 
@@ -582,6 +581,21 @@ All the boolean settings are 'false' by default.
 
 'apply_floating_atom'::
     Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
+
+Monitor Settings
+~~~~~~~~~~~~~~~~
+
+'top_padding'::
+'right_padding'::
+'bottom_padding'::
+'left_padding'::
+    Padding space added at the sides of the monitor.
+
+Desktop Settings
+~~~~~~~~~~~~~~~~
+
+'window_gap'::
+    Size of the gap that separates windows.
 
 
 Environment Variables
