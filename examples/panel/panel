@@ -1,5 +1,7 @@
 #! /bin/sh
 
+trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
+
 flavor=${1:-bar}
 
 bspc config top_padding $PANEL_HEIGHT
