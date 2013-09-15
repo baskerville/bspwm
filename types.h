@@ -144,7 +144,7 @@ typedef struct {
     bool fullscreen;
     bool locked;       /* protects window from being closed */
     bool urgent;
-    bool icccm_focus;  /* send an event to request input focus */
+    bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
 } client_t;
@@ -167,7 +167,7 @@ struct node_t {
 typedef struct node_list_t node_list_t;
 struct node_list_t {
     node_t *node;
-    bool latest;          /* used for z-ordering tiled windows */
+    bool latest;
     node_list_t *prev;
     node_list_t *next;
 };
