@@ -1,9 +1,7 @@
 #! /bin/sh
 
-FIRST_DESK=I
-REMAINING_DESKS="II III IV V VI VII VIII IX X"
-bspc desktop ^1 -n $FIRST_DESK
-bspc monitor -a $REMAINING_DESKS
+bspc desktop ^1 -n I
+bspc monitor -a II III IV V VI VII VIII IX X
 
 bspc rule -a Gimp -d ^8 --follow --floating
 bspc rule -a Chromium -d ^2
