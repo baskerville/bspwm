@@ -456,13 +456,16 @@ Options
 ^^^^^^^
 
 *--adopt-orphans*::
-   Manage all the unmanaged windows remaining from a previous session.
+    Manage all the unmanaged windows remaining from a previous session.
 
 *--put-status*::
     Write the current internal state to the panel FIFO.
 
 *--toggle-visibility*::
-    Toggle the visibility of all the managed windows.
+    Toggle the visibility of all the windows.
+
+*--float-upcoming*::
+    Toggle the floating state of the upcoming window.
 
 Pointer
 ~~~~~~~

@@ -610,6 +610,8 @@ bool cmd_control(char **args, int num) {
             put_status();
         } else if (streq("--toggle-visibility", *args)) {
             toggle_visibility();
+        } else if (streq("--float-upcoming", *args)) {
+            float_upcoming = !float_upcoming;
         } else {
             return false;
         }

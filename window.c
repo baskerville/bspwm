@@ -104,6 +104,11 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         return;
     }
 
+    if (float_upcoming) {
+        floating = true;
+        float_upcoming = false;
+    }
+
     client_t *c = make_client(win);
     update_floating_rectangle(c);
 
