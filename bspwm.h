@@ -39,7 +39,6 @@ int exit_status;
 
 bool visible;
 bool auto_raise;
-bool float_upcoming;
 bool running;
 bool randr;
 

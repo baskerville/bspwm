@@ -461,9 +461,6 @@ Options
 *--toggle-visibility*::
     Toggle the visibility of all the windows.
 
-*--float-upcoming*::
-    Toggle the floating state of the upcoming window.
-
 Pointer
 ~~~~~~~
 
