@@ -390,9 +390,6 @@ Options
 *-r*, *--remove-desktops* <name>...::
     Remove desktops with the given names.
 
-*-p*, *--pad* <top> <right> <bottom> <left>::
-    Set the padding of the selected monitor.
-
 *-n*, *--rename* <new_name>::
     Rename the selected monitor.
 

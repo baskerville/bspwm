@@ -388,19 +388,6 @@ bool cmd_monitor(char **args, int num)
                 }
                 num--, args++;
             }
-        } else if (streq("-p", *args) || streq("--pad", *args)) {
-            num--, args++;
-            if (num < 4)
-                return false;
-            char values[MAXLEN];
-            snprintf(values, sizeof(values), "%s %s %s %s", args[0], args[1], args[2], args[3]);
-            num -= 3;
-            args += 3;
-            if (sscanf(values, "%i %i %i %i", &trg.monitor->top_padding, &trg.monitor->right_padding, &trg.monitor->bottom_padding, &trg.monitor->left_padding) == 4)
-                for (desktop_t *d = trg.monitor->desk_head; d != NULL; d = d->next)
-                    arrange(trg.monitor, d);
-            else
-                return false;
         } else if (streq("-n", *args) || streq("--rename", *args)) {
             num--, args++;
             if (num < 1)

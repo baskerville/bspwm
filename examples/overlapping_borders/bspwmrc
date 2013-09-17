@@ -2,6 +2,6 @@
 
 BW=$(bspc config border_width)
 bspc config window_gap -$BW
-for mon in $(bspc query -M) ; do
-    bspc monitor "$mon" -p $BW $BW $BW $BW
+for side in top right bottom left ; do
+    bspc config ${side}_padding $BW
 done
