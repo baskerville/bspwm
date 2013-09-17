@@ -282,7 +282,7 @@ bool cmd_desktop(char **args, int num)
             strncpy(trg.desktop->name, *args, sizeof(trg.desktop->name));
             ewmh_update_desktop_names();
             put_status();
-        } else if (streq("-r", *args) || streq("--rm", *args)) {
+        } else if (streq("-r", *args) || streq("--remove", *args)) {
             if (trg.desktop->root == NULL
                     && trg.monitor->desk_head != trg.monitor->desk_tail) {
                 remove_desktop(trg.monitor, trg.desktop);
@@ -511,7 +511,7 @@ bool cmd_rule(char **args, int num, char *rsp) {
                 num--, args++;
             }
             add_rule(rule);
-        } else if (streq("-r", *args) || streq("--rm", *args)) {
+        } else if (streq("-r", *args) || streq("--remove", *args)) {
             num--, args++;
             if (num < 1)
                 return false;

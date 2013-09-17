@@ -492,7 +492,7 @@ Options
 *-a*, *--add* <pattern> [-d 'DESKTOP_SEL' [--follow]] [--floating] [--focus] [--unmanage] [--one-shot]::
     Create a new rule (<pattern> must match the class or instance name).
 
-*-r*, *--rm* <rule_uid>...::
+*-r*, *--remove* <rule_uid>...::
     Remove the rules with the given UIDs.
 
 *-l*, *--list* [<pattern>]::
