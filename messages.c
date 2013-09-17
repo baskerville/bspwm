@@ -519,6 +519,10 @@ bool cmd_rule(char **args, int num, char *rsp) {
             while (num > 0) {
                 if (sscanf(*args, "%X", &uid) == 1)
                     remove_rule_by_uid(uid);
+                else if (streq("tail", *args))
+                    remove_rule(rule_tail);
+                else if (streq("head", *args))
+                    remove_rule(rule_head);
                 else
                     return false;
                 num--, args++;
