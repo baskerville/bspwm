@@ -1,6 +1,8 @@
 #ifndef _RULES_H
 #define _RULES_H
 
+#define MATCH_ALL  "*"
+
 void add_rule(rule_t *);
 void remove_rule(rule_t *);
 void remove_rule_by_uid(unsigned int);

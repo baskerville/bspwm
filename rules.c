@@ -53,9 +53,10 @@ rule_t *find_rule(unsigned int uid)
 bool is_match(rule_t *r, xcb_window_t win)
 {
     xcb_icccm_get_wm_class_reply_t reply;
-    if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1
+    if (streq(r->cause.name, MATCH_ALL) ||
+            (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1
             && (streq(reply.class_name, r->cause.name)
-                || streq(reply.instance_name, r->cause.name))) {
+                || streq(reply.instance_name, r->cause.name)))) {
         xcb_icccm_get_wm_class_reply_wipe(&reply);
         return true;
     }
