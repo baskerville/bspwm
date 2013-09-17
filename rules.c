@@ -132,7 +132,10 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
                 }
             }
         }
-        rule = rule->next;
+        rule_t *next = rule->next;
+        if (rule->one_shot)
+            remove_rule(rule);
+        rule = next;
     }
 }
 
@@ -153,6 +156,8 @@ void list_rules(char *pattern, char *rsp)
             strncat(rsp, " --focus", REMLEN(rsp));
         if (r->effect.unmanage)
             strncat(rsp, " --unmanage", REMLEN(rsp));
+        if (r->one_shot)
+            strncat(rsp, " --one-shot", REMLEN(rsp));
         if (r->effect.desc[0] != '\0') {
             snprintf(line, sizeof(line), " -d %s", r->effect.desc);
             strncat(rsp, line, REMLEN(rsp));

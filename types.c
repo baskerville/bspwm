@@ -321,6 +321,7 @@ rule_t *make_rule(void)
     r->effect.follow = false;
     r->effect.focus = false;
     r->effect.unmanage = false;
+    r->one_shot = false;
     r->effect.desc[0] = '\0';
     r->prev = NULL;
     r->next = NULL;
