@@ -1,5 +1,10 @@
 #! /bin/sh
 
+if [ $(pgrep -cx panel) -gt 1 ] ; then
+    printf "%s\n" "The panel is already running." >&2
+    exit 1
+fi
+
 trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
 
 flavor=${1:-bar}
