@@ -1,16 +1,19 @@
 #! /bin/sh
 #
-# Example panel for LemonBoy's bar
+# Example panel for LemonBoy's bar-aint-recursive
 
 while read -r line ; do
     case $line in
         S*)
-            sys_infos="\\r\\f5${line#?}\\fr"
+            # clock output
+            sys_infos="\\br\\f6${line#?}"
             ;;
         T*)
-            title="\\c${line#?}"
+            # xtitle output
+            title="\\br\\f7${line#?}"
             ;;
         W*)
+            # bspwm internal state
             wm_infos=""
             IFS=':'
             set -- ${line#?}
@@ -18,31 +21,39 @@ while read -r line ; do
                 item=$1
                 name=${item#?}
                 case $item in
-                    [OFU]*)
-                        # active desktop
-                        wm_infos="$wm_infos \\u5\\b2\\f9${name}\\fr\\br\\ur"
+                    O*)
+                        # focused occupied desktop
+                        wm_infos="$wm_infos \\u3\\br\\fr${name}\\ur"
+                        ;;
+                    F*)
+                        # focused free desktop
+                        wm_infos="$wm_infos \\u4\\br\\f7${name}\\ur"
+                        ;;
+                    U*)
+                        # focused urgent desktop
+                        wm_infos="$wm_infos \\u9\\br\\fr${name}\\ur"
                         ;;
                     o*)
-                        # inactive but occupied desktop
-                        wm_infos="$wm_infos \\f7${name}\\fr"
+                        # occupied desktop
+                        wm_infos="$wm_infos \\br\\fr${name}"
                         ;;
                     f*)
-                        # inactive desktop
-                        wm_infos="$wm_infos ${name}"
+                        # free desktop
+                        wm_infos="$wm_infos \\br\\f7${name}"
                         ;;
                     u*)
                         # urgent desktop
-                        wm_infos="$wm_infos \\b3\\f0${name}\\fr\\br"
+                        wm_infos="$wm_infos \\b1\\fr${name}"
                         ;;
                     L*)
                         # layout
                         layout=$(printf "%s" "${name}" | sed 's/\(.\).*/\U\1/')
-                        wm_infos="$wm_infos \\b4\\f0$layout\\br\\fr"
+                        wm_infos="$wm_infos    \\br\\f6$layout"
                         ;;
                 esac
                 shift
             done
             ;;
     esac
-    printf "%s\n" "$wm_infos $title $sys_infos"
+    printf "%s\n" "\\l $wm_infos \\c $title \\r $sys_infos  "
 done
