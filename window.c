@@ -533,10 +533,13 @@ void window_set_visibility(xcb_window_t win, bool visible)
     uint32_t values_off[] = {ROOT_EVENT_MASK & ~XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
     uint32_t values_on[] = {ROOT_EVENT_MASK};
     xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_off);
-    if (visible)
+    if (visible) {
         xcb_map_window(dpy, win);
-    else
+        set_state(win, XCB_ICCCM_WM_STATE_NORMAL);
+    } else {
         xcb_unmap_window(dpy, win);
+        set_state(win, XCB_ICCCM_WM_STATE_WITHDRAWN);
+    }
     xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_on);
 }
 
