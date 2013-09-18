@@ -101,5 +101,5 @@ while read -r line ; do
             center_indent=$(( (screen_width - center_width) / 2 ))
         fi
     fi
-    printf "%s\n" "^pa($center_indent)$title^pa($left_indent)$wm_infos^pa($right_indent)$sys_infos"
+    printf "%s\n" "^pa($left_indent)$wm_infos^pa($center_indent)$title^pa($right_indent)$sys_infos"
 done
