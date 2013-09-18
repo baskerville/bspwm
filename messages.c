@@ -487,6 +487,10 @@ bool cmd_rule(char **args, int num, char *rsp) {
             while (num > 0) {
                 if (streq("--floating", *args)) {
                     rule->effect.floating = true;
+                } else if (streq("--fullscreen", *args)) {
+                    rule->effect.fullscreen = true;
+                } else if (streq("--locked", *args)) {
+                    rule->effect.locked = true;
                 } else if (streq("--follow", *args)) {
                     rule->effect.follow = true;
                 } else if (streq("--focus", *args)) {

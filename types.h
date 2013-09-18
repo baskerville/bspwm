@@ -219,6 +219,8 @@ typedef struct {
 
 typedef struct {
     bool floating;
+    bool fullscreen;
+    bool locked;
     bool follow;
     bool focus;
     bool unmanage;

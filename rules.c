@@ -65,7 +65,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *follow, bool *transient, bool *fullscreen, bool *takes_focus, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *fullscreen, bool *locked, bool *follow, bool *transient, bool *takes_focus, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -120,6 +120,10 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
             rule_effect_t efc = rule->effect;
             if (efc.floating)
                 *floating = true;
+            if (efc.fullscreen)
+                *fullscreen = true;
+            if (efc.locked)
+                *locked = true;
             if (efc.follow)
                 *follow = true;
             if (efc.focus)
@@ -153,6 +157,10 @@ void list_rules(char *pattern, char *rsp)
         strncat(rsp, line, REMLEN(rsp));
         if (r->effect.floating)
             strncat(rsp, " --floating", REMLEN(rsp));
+        if (r->effect.fullscreen)
+            strncat(rsp, " --fullscreen", REMLEN(rsp));
+        if (r->effect.locked)
+            strncat(rsp, " --locked", REMLEN(rsp));
         if (r->effect.follow)
             strncat(rsp, " --follow", REMLEN(rsp));
         if (r->effect.focus)

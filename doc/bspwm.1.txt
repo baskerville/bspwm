@@ -489,7 +489,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <pattern> [-d 'DESKTOP_SEL' [--follow]] [--floating] [--focus] [--unmanage] [--one-shot]::
+*-a*, *--add* <pattern> [-d 'DESKTOP_SEL' [--follow]] [--floating] [--fullscreen] [--locked] [--focus] [--unmanage] [--one-shot]::
     Create a new rule (<pattern> must match the class or instance name).
 
 *-r*, *--remove* <rule_uid>|tail|head...::

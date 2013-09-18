@@ -94,9 +94,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool floating = false, follow = false, transient = false, fullscreen = false, takes_focus = true, manage = true;
+    bool floating = false, fullscreen = false, locked = false, follow = false, transient = false, takes_focus = true, manage = true;
 
-    handle_rules(win, &m, &d, &floating, &follow, &transient, &fullscreen, &takes_focus, &manage);
+    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &follow, &transient, &takes_focus, &manage);
 
     if (!manage) {
         disable_floating_atom(win);
@@ -122,20 +122,17 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     insert_node(m, d, n, d->focus);
 
     disable_floating_atom(c->window);
-
-    if (floating)
-        set_floating(d, n, true);
+    set_floating(d, n, floating);
+    set_locked(m, d, n, locked);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
         set_fullscreen(d, d->focus, false);
 
-    if (fullscreen)
-        set_fullscreen(d, n, true);
+    set_fullscreen(d, n, fullscreen);
 
     c->transient = transient;
 
     bool give_focus = (takes_focus && (d == mon->desk || follow));
-
     if (give_focus) {
         focus_node(m, d, n);
     } else if (takes_focus) {
