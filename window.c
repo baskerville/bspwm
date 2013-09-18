@@ -95,7 +95,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         return;
 
     bool floating = false, fullscreen = false, locked = false, follow = false, transient = false, takes_focus = true, manage = true;
-
     handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &follow, &transient, &takes_focus, &manage);
 
     if (!manage) {
@@ -121,6 +120,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     insert_node(m, d, n, d->focus);
 
+    set_state(win, XCB_ICCCM_WM_STATE_NORMAL);
     disable_floating_atom(c->window);
     set_floating(d, n, floating);
     set_locked(m, d, n, locked);
@@ -646,6 +646,12 @@ void get_atom(char *name, xcb_atom_t *atom)
 void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value)
 {
     xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, atom, XCB_ATOM_CARDINAL, 32, 1, &value);
+}
+
+void set_state(xcb_window_t win, uint32_t state)
+{
+    uint32_t values[] = {state, XCB_NONE};
+    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, WM_STATE, WM_STATE, 32, 2, values);
 }
 
 bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols)

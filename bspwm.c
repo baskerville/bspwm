@@ -220,6 +220,7 @@ void setup(void)
 
 #define GETATOM(a) \
     get_atom(#a, &a);
+    GETATOM(WM_STATE)
     GETATOM(WM_DELETE_WINDOW)
     GETATOM(WM_TAKE_FOCUS)
     GETATOM(_BSPWM_FLOATING_WINDOW)

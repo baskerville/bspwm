@@ -32,6 +32,7 @@ rule_t *rule_tail;
 
 pointer_state_t *frozen_pointer;
 xcb_window_t motion_recorder;
+xcb_atom_t WM_STATE;
 xcb_atom_t WM_TAKE_FOCUS;
 xcb_atom_t WM_DELETE_WINDOW;
 xcb_atom_t _BSPWM_FLOATING_WINDOW;
