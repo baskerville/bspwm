@@ -37,7 +37,7 @@ while read -r line ; do
             ;;
         T*)
             # focused window title
-            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)^ca(1, bspc window -t floating)^ca(2, bspc window -t locked)^ca(3, bspc window -c)${PADDING}${line#?}${PADDING}^ca()^ca()^ca()"
+            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)^ca(1, bspc window -t floating)^ca(2, bspc window -t locked)^ca(3, bspc window -c)${PADDING}${line#?}${PADDING}^ca()^ca()^ca()^fg()^bg()"
             ;;
         W*)
             # window manager informations
