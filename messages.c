@@ -3,20 +3,17 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "settings.h"
-#include "messages.h"
 #include "query.h"
-#include "restore.h"
-#include "common.h"
-#include "types.h"
+#include "bspwm.h"
+#include "tree.h"
 #include "desktop.h"
 #include "monitor.h"
-#include "bspwm.h"
-#include "ewmh.h"
-#include "helpers.h"
 #include "window.h"
+#include "rule.h"
+#include "restore.h"
 #include "events.h"
-#include "tree.h"
-#include "rules.h"
+#include "ewmh.h"
+#include "messages.h"
 
 bool cmd_window(char **args, int num)
 {

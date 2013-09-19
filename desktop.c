@@ -1,10 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bspwm.h"
-#include "types.h"
 #include "desktop.h"
-#include "history.h"
 #include "tree.h"
+#include "history.h"
 #include "window.h"
 #include "ewmh.h"
 

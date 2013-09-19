@@ -1,11 +1,9 @@
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include "bspwm.h"
 #include "tree.h"
-#include "history.h"
-#include "settings.h"
 #include "messages.h"
+#include "history.h"
 #include "query.h"
 
 void query_monitors(coordinates_t loc, domain_t dom, char *rsp)

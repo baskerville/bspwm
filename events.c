@@ -1,20 +1,13 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <xcb/xcb.h>
-#include <xcb/randr.h>
-#include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 #include "types.h"
-#include "monitor.h"
 #include "bspwm.h"
 #include "settings.h"
-#include "helpers.h"
-#include "window.h"
 #include "events.h"
-#include "tree.h"
+#include "monitor.h"
+#include "window.h"
 #include "query.h"
-#include "rules.h"
+#include "tree.h"
 #include "ewmh.h"
 
 void handle_event(xcb_generic_event_t *evt)

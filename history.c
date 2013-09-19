@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "types.h"
 #include "query.h"
-#include "history.h"
 
 focus_history_t *make_focus_history(void)
 {

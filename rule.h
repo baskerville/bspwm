@@ -1,5 +1,5 @@
-#ifndef _RULES_H
-#define _RULES_H
+#ifndef _RULE_H
+#define _RULE_H
 
 #define MATCH_ALL  "*"
 

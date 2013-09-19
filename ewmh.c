@@ -1,8 +1,5 @@
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <xcb/xcb_ewmh.h>
-#include "types.h"
 #include "bspwm.h"
 #include "settings.h"
 #include "tree.h"

@@ -1,17 +1,12 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
-#include <xcb/xcb_icccm.h>
 #include "types.h"
 #include "tree.h"
 #include "bspwm.h"
 #include "settings.h"
 #include "ewmh.h"
-#include "rules.h"
 #include "query.h"
+#include "rule.h"
 #include "window.h"
 
 pointer_state_t *make_pointer_state(void)

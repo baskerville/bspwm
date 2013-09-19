@@ -2,28 +2,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/select.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
-#include <xcb/xcb_ewmh.h>
-#include <xcb/randr.h>
 #include "types.h"
 #include "desktop.h"
 #include "monitor.h"
 #include "settings.h"
 #include "messages.h"
-#include "rules.h"
 #include "events.h"
 #include "common.h"
-#include "helpers.h"
-#include "window.h"
 #include "bspwm.h"
 #include "tree.h"
+#include "window.h"
+#include "rule.h"
 #include "ewmh.h"
 
 int main(int argc, char *argv[])

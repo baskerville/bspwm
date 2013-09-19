@@ -3,15 +3,13 @@
 #include <limits.h>
 #include <float.h>
 #include "settings.h"
-#include "helpers.h"
 #include "window.h"
-#include "types.h"
-#include "desktop.h"
-#include "history.h"
-#include "query.h"
 #include "bspwm.h"
 #include "ewmh.h"
 #include "tree.h"
+#include "desktop.h"
+#include "history.h"
+#include "query.h"
 
 node_t *make_node(void)
 {

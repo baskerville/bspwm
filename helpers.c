@@ -1,10 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
 #include "bspwm.h"
-#include "helpers.h"
 
 void warn(char *fmt, ...)
 {

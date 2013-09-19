@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <xcb/xcb_icccm.h>
-#include <xcb/xcb_ewmh.h>
-#include "window.h"
-#include "types.h"
 #include "bspwm.h"
 #include "ewmh.h"
-#include "rules.h"
+#include "window.h"
 #include "query.h"
+#include "rule.h"
 
 rule_t *make_rule(void)
 {

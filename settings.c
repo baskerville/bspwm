@@ -1,13 +1,8 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <xcb/xcb.h>
-#include <xcb/xcb_event.h>
 #include "bspwm.h"
-#include "helpers.h"
-#include "common.h"
 #include "settings.h"
 
 void run_config(void)
