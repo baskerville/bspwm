@@ -3,6 +3,7 @@
 
 #define MATCH_ALL  "*"
 
+rule_t *make_rule(void);
 void add_rule(rule_t *);
 void remove_rule(rule_t *);
 void remove_rule_by_uid(unsigned int);

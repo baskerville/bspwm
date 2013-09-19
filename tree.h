@@ -3,8 +3,8 @@
 
 #define GROWTH_FACTOR  1.1
 
-bool node_matches(node_t *, node_t *, client_select_t);
-bool desktop_matches(desktop_t *, desktop_select_t);
+node_t *make_node(void);
+client_t *make_client(xcb_window_t);
 void arrange(monitor_t *, desktop_t *);
 void apply_layout(monitor_t *, desktop_t *, node_t *, xcb_rectangle_t, xcb_rectangle_t);
 void focus_node(monitor_t *, desktop_t *, node_t *);

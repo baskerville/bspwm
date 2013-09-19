@@ -6,9 +6,42 @@
 #include "helpers.h"
 #include "window.h"
 #include "types.h"
+#include "desktop.h"
+#include "history.h"
+#include "query.h"
 #include "bspwm.h"
 #include "ewmh.h"
 #include "tree.h"
+
+node_t *make_node(void)
+{
+    node_t *n = malloc(sizeof(node_t));
+    n->parent = n->first_child = n->second_child = NULL;
+    n->split_ratio = split_ratio;
+    n->split_mode = MODE_AUTOMATIC;
+    n->split_type = TYPE_VERTICAL;
+    n->birth_rotation = 0;
+    n->client = NULL;
+    n->vacant = false;
+    return n;
+}
+
+client_t *make_client(xcb_window_t win)
+{
+    client_t *c = malloc(sizeof(client_t));
+    strncpy(c->class_name, MISSING_VALUE, sizeof(c->class_name));
+    c->border_width = border_width;
+    c->window = win;
+    c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;
+    c->icccm_focus = false;
+    xcb_icccm_get_wm_protocols_reply_t protocols;
+    if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
+        if (has_proto(WM_TAKE_FOCUS, &protocols))
+            c->icccm_focus = true;
+        xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
+    }
+    return c;
+}
 
 bool is_leaf(node_t *n)
 {
@@ -37,61 +70,6 @@ bool is_first_child(node_t *n)
 bool is_second_child(node_t *n)
 {
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
-}
-
-/**
- * Check if the specified node matches the selection criteria.
- *
- * Arguments:
- *  node_t *c           - the active node
- *  node_t *t           - the node to test
- *  client_sel_t sel    - the selection criteria
- *
- * Returns true if the node matches.
- **/
-bool node_matches(node_t *c, node_t *t, client_select_t sel)
-{
-    if (sel.type != CLIENT_TYPE_ALL &&
-            is_tiled(t->client)
-            ? sel.type == CLIENT_TYPE_FLOATING
-            : sel.type == CLIENT_TYPE_TILED
-       ) return false;
-
-    if (sel.class != CLIENT_CLASS_ALL &&
-            streq(c->client->class_name, t->client->class_name)
-            ? sel.class == CLIENT_CLASS_DIFFER
-            : sel.class == CLIENT_CLASS_EQUAL
-       ) return false;
-
-    if (sel.mode != CLIENT_MODE_ALL &&
-            t->split_mode == MODE_MANUAL
-            ? sel.mode == CLIENT_MODE_AUTOMATIC
-            : sel.mode == CLIENT_MODE_MANUAL)
-        return false;
-
-    if (sel.urgency != CLIENT_URGENCY_ALL &&
-            t->client->urgent
-            ? sel.urgency == CLIENT_URGENCY_OFF
-            : sel.urgency == CLIENT_URGENCY_ON
-       ) return false;
-
-    return true;
-}
-
-bool desktop_matches(desktop_t *t, desktop_select_t sel) {
-    if (sel.status != DESKTOP_STATUS_ALL &&
-            t->root == NULL
-            ? sel.status == DESKTOP_STATUS_OCCUPIED
-            : sel.status == DESKTOP_STATUS_FREE
-       ) return false;
-
-    if (sel.urgency != DESKTOP_URGENCY_ALL &&
-            is_urgent(t)
-            ? sel.urgency == DESKTOP_URGENCY_OFF
-            : sel.urgency == DESKTOP_URGENCY_ON
-       ) return false;
-
-    return true;
 }
 
 bool is_urgent(desktop_t *d)
@@ -954,8 +932,8 @@ void select_desktop(monitor_t *m, desktop_t *d)
 
     PRINTF("select desktop %s\n", d->name);
 
-    desktop_show(d);
-    desktop_hide(mon->desk);
+    show_desktop(d);
+    hide_desktop(mon->desk);
 
     mon->last_desk = mon->desk;
     mon->desk = d;

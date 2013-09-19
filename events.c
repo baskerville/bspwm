@@ -6,6 +6,7 @@
 #include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 #include "types.h"
+#include "monitor.h"
 #include "bspwm.h"
 #include "settings.h"
 #include "helpers.h"

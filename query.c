@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "bspwm.h"
 #include "tree.h"
+#include "history.h"
 #include "settings.h"
 #include "messages.h"
 #include "query.h"
@@ -330,4 +331,59 @@ bool monitor_from_index(int i, coordinates_t *loc)
             return true;
         }
     return false;
+}
+
+/**
+ * Check if the specified node matches the selection criteria.
+ *
+ * Arguments:
+ *  node_t *c           - the active node
+ *  node_t *t           - the node to test
+ *  client_sel_t sel    - the selection criteria
+ *
+ * Returns true if the node matches.
+ **/
+bool node_matches(node_t *c, node_t *t, client_select_t sel)
+{
+    if (sel.type != CLIENT_TYPE_ALL &&
+            is_tiled(t->client)
+            ? sel.type == CLIENT_TYPE_FLOATING
+            : sel.type == CLIENT_TYPE_TILED
+       ) return false;
+
+    if (sel.class != CLIENT_CLASS_ALL &&
+            streq(c->client->class_name, t->client->class_name)
+            ? sel.class == CLIENT_CLASS_DIFFER
+            : sel.class == CLIENT_CLASS_EQUAL
+       ) return false;
+
+    if (sel.mode != CLIENT_MODE_ALL &&
+            t->split_mode == MODE_MANUAL
+            ? sel.mode == CLIENT_MODE_AUTOMATIC
+            : sel.mode == CLIENT_MODE_MANUAL)
+        return false;
+
+    if (sel.urgency != CLIENT_URGENCY_ALL &&
+            t->client->urgent
+            ? sel.urgency == CLIENT_URGENCY_OFF
+            : sel.urgency == CLIENT_URGENCY_ON
+       ) return false;
+
+    return true;
+}
+
+bool desktop_matches(desktop_t *t, desktop_select_t sel) {
+    if (sel.status != DESKTOP_STATUS_ALL &&
+            t->root == NULL
+            ? sel.status == DESKTOP_STATUS_OCCUPIED
+            : sel.status == DESKTOP_STATUS_FREE
+       ) return false;
+
+    if (sel.urgency != DESKTOP_URGENCY_ALL &&
+            is_urgent(t)
+            ? sel.urgency == DESKTOP_URGENCY_OFF
+            : sel.urgency == DESKTOP_URGENCY_ON
+       ) return false;
+
+    return true;
 }

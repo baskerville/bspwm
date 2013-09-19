@@ -9,6 +9,21 @@
 #include "rules.h"
 #include "query.h"
 
+rule_t *make_rule(void)
+{
+    rule_t *r = malloc(sizeof(rule_t));
+    r->uid = ++rule_uid;
+    r->effect.floating = false;
+    r->effect.follow = false;
+    r->effect.focus = false;
+    r->effect.unmanage = false;
+    r->one_shot = false;
+    r->effect.desc[0] = '\0';
+    r->prev = NULL;
+    r->next = NULL;
+    return r;
+}
+
 void add_rule(rule_t *r)
 {
     if (rule_head == NULL) {

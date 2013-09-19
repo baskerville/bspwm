@@ -7,6 +7,7 @@
 #include <xcb/xcb_event.h>
 #include "types.h"
 
+pointer_state_t *make_pointer_state(void);
 void center(xcb_rectangle_t, xcb_rectangle_t *);
 bool contains(xcb_rectangle_t, xcb_rectangle_t);
 bool is_inside(monitor_t *, xcb_point_t);
@@ -45,8 +46,6 @@ void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);
 void window_show(xcb_window_t);
 void toggle_visibility(void);
-void desktop_show(desktop_t *);
-void desktop_hide(desktop_t *);
 void enable_motion_recorder(void);
 void disable_motion_recorder(void);
 void update_motion_recorder(void);

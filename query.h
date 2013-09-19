@@ -22,5 +22,7 @@ bool desktop_from_desc(char *, coordinates_t *, coordinates_t *);
 bool monitor_from_desc(char *, coordinates_t *, coordinates_t *);
 bool desktop_from_index(int, coordinates_t *);
 bool monitor_from_index(int, coordinates_t *);
+bool node_matches(node_t *, node_t *, client_select_t);
+bool desktop_matches(desktop_t *, desktop_select_t);
 
 #endif

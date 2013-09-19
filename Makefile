@@ -12,7 +12,8 @@ MANPREFIX = $(PREFIX)/share/man
 BASHCPL = $(PREFIX)/share/bash-completion/completions
 ZSHCPL = $(PREFIX)/share/zsh/site-functions
 
-WM_SRC = bspwm.c helpers.c settings.c types.c tree.c events.c window.c messages.c query.c restore.c rules.c ewmh.c
+WM_SRC = bspwm.c helpers.c settings.c monitor.c desktop.c tree.c history.c \
+	 events.c window.c messages.c query.c restore.c rules.c ewmh.c
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_SRC = bspc.c helpers.c
 CL_OBJ = $(CL_SRC:.c=.o)

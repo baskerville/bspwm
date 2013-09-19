@@ -1,6 +1,9 @@
 #include <ctype.h>
 #include <string.h>
 #include "types.h"
+#include "desktop.h"
+#include "monitor.h"
+#include "history.h"
 #include "tree.h"
 #include "settings.h"
 #include "ewmh.h"

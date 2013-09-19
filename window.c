@@ -14,6 +14,17 @@
 #include "query.h"
 #include "window.h"
 
+pointer_state_t *make_pointer_state(void)
+{
+    pointer_state_t *p = malloc(sizeof(pointer_state_t));
+    p->monitor = NULL;
+    p->desktop = NULL;
+    p->node = p->vertical_fence = p->horizontal_fence = NULL;
+    p->client = NULL;
+    p->window = XCB_NONE;
+    return p;
+}
+
 void center(xcb_rectangle_t a, xcb_rectangle_t *b)
 {
     if (b->width < a.width)
@@ -559,22 +570,6 @@ void toggle_visibility(void)
             window_set_visibility(n->client->window, visible);
     if (visible)
         update_input_focus();
-}
-
-void desktop_show(desktop_t *d)
-{
-    if (!visible)
-        return;
-    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        window_show(n->client->window);
-}
-
-void desktop_hide(desktop_t *d)
-{
-    if (!visible)
-        return;
-    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        window_hide(n->client->window);
 }
 
 void enable_motion_recorder(void)

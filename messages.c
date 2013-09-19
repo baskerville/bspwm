@@ -8,6 +8,8 @@
 #include "restore.h"
 #include "common.h"
 #include "types.h"
+#include "desktop.h"
+#include "monitor.h"
 #include "bspwm.h"
 #include "ewmh.h"
 #include "helpers.h"
@@ -286,7 +288,7 @@ bool cmd_desktop(char **args, int num)
             if (trg.desktop->root == NULL
                     && trg.monitor->desk_head != trg.monitor->desk_tail) {
                 remove_desktop(trg.monitor, trg.desktop);
-                desktop_show(trg.monitor->desk);
+                show_desktop(trg.monitor->desk);
                 update_current();
                 return true;
             } else {
@@ -384,7 +386,7 @@ bool cmd_monitor(char **args, int num)
                 coordinates_t dst;
                 if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail && dst.desktop->root == NULL) {
                     remove_desktop(dst.monitor, dst.desktop);
-                    desktop_show(dst.monitor->desk);
+                    show_desktop(dst.monitor->desk);
                 }
                 num--, args++;
             }

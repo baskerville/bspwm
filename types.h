@@ -7,10 +7,7 @@
 #include <xcb/xcb_event.h>
 #include "helpers.h"
 
-#define DEFAULT_DESK_NAME    "Desktop"
-#define DEFAULT_MON_NAME     "Monitor"
 #define MISSING_VALUE        "N/A"
-#define WINDOW_GAP           6
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -21,11 +18,6 @@ typedef enum {
     MODE_AUTOMATIC,
     MODE_MANUAL
 } split_mode_t;
-
-typedef enum {
-    LAYOUT_TILED,
-    LAYOUT_MONOCLE
-} layout_t;
 
 typedef enum {
     MOVE_PULL,
@@ -75,23 +67,6 @@ typedef enum {
 } state_alter_t;
 
 typedef enum {
-    DESKTOP_STATUS_ALL,
-    DESKTOP_STATUS_FREE,
-    DESKTOP_STATUS_OCCUPIED
-} desktop_status_t;
-
-typedef enum {
-    DESKTOP_URGENCY_ALL,
-    DESKTOP_URGENCY_ON,
-    DESKTOP_URGENCY_OFF
-} desktop_urgency_t;
-
-typedef struct {
-    desktop_status_t status;
-    desktop_urgency_t urgency;
-} desktop_select_t;
-
-typedef enum {
     CYCLE_NEXT,
     CYCLE_PREV
 } cycle_dir_t;
@@ -100,11 +75,6 @@ typedef enum {
     CIRCULATE_FORWARD,
     CIRCULATE_BACKWARD
 } circulate_dir_t;
-
-typedef enum {
-    FLIP_HORIZONTAL,
-    FLIP_VERTICAL
-} flip_t;
 
 typedef enum {
     DIR_RIGHT,
@@ -134,6 +104,33 @@ typedef enum {
     ACTION_RESIZE_SIDE,
     ACTION_RESIZE_CORNER
 } pointer_action_t;
+
+typedef enum {
+    LAYOUT_TILED,
+    LAYOUT_MONOCLE
+} layout_t;
+
+typedef enum {
+    FLIP_HORIZONTAL,
+    FLIP_VERTICAL
+} flip_t;
+
+typedef enum {
+    DESKTOP_STATUS_ALL,
+    DESKTOP_STATUS_FREE,
+    DESKTOP_STATUS_OCCUPIED
+} desktop_status_t;
+
+typedef enum {
+    DESKTOP_URGENCY_ALL,
+    DESKTOP_URGENCY_ON,
+    DESKTOP_URGENCY_OFF
+} desktop_urgency_t;
+
+typedef struct {
+    desktop_status_t status;
+    desktop_urgency_t urgency;
+} desktop_select_t;
 
 typedef struct {
     xcb_window_t window;
@@ -259,33 +256,5 @@ typedef struct {
     node_t *fence;
     unsigned int distance;
 } fence_distance_t;
-
-node_t *make_node(void);
-monitor_t *make_monitor(xcb_rectangle_t);
-monitor_t *find_monitor(char *);
-monitor_t *get_monitor_by_id(xcb_randr_output_t);
-monitor_t *add_monitor(xcb_rectangle_t);
-void remove_monitor(monitor_t *);
-void merge_monitors(monitor_t *, monitor_t *);
-void swap_monitors(monitor_t *, monitor_t *);
-desktop_t *make_desktop(const char *);
-void insert_desktop(monitor_t *, desktop_t *);
-void add_desktop(monitor_t *, desktop_t *);
-void empty_desktop(desktop_t *);
-void unlink_desktop(monitor_t *, desktop_t *);
-void remove_desktop(monitor_t *, desktop_t *);
-void swap_desktops(monitor_t *, desktop_t *, desktop_t *);
-void transfer_desktop(monitor_t *, monitor_t *, desktop_t *);
-rule_t *make_rule(void);
-pointer_state_t *make_pointer_state(void);
-client_t *make_client(xcb_window_t);
-focus_history_t *make_focus_history(void);
-node_list_t *make_node_list(void);
-void history_add(focus_history_t *, node_t *);
-void history_remove(focus_history_t *, node_t *);
-void empty_history(focus_history_t *);
-node_t *history_get(focus_history_t *, int);
-node_t *history_last(focus_history_t *, node_t *, client_select_t);
-int history_rank(focus_history_t *, node_t *);
 
 #endif
