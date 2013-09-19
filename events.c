@@ -173,7 +173,6 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     coordinates_t loc;
     if (locate_window(e->window, &loc)) {
-        set_state(e->window, XCB_ICCCM_WM_STATE_WITHDRAWN);
         remove_node(loc.desktop, loc.node);
         arrange(loc.monitor, loc.desktop);
     }
