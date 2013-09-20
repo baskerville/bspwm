@@ -230,6 +230,7 @@ void focus_in(xcb_generic_event_t *evt)
     if (e->mode == XCB_NOTIFY_MODE_GRAB
             || e->mode == XCB_NOTIFY_MODE_UNGRAB)
         return;
+    /* prevent focus stealing */
     if ((e->detail == XCB_NOTIFY_DETAIL_ANCESTOR ||
                 e->detail == XCB_NOTIFY_DETAIL_INFERIOR ||
                 e->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL ||
