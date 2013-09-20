@@ -625,7 +625,7 @@ Contributors
 Author
 ------
 
-Bastien Dejean <baskerville at lavabit.com>
+Bastien Dejean <nihilhill at gmail.com>
 
 Mailing List
 ------------
