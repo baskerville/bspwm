@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "bspwm.h"
 #include "tree.h"
+#include "monitor.h"
+#include "desktop.h"
 #include "messages.h"
 #include "history.h"
 #include "query.h"

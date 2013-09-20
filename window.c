@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "monitor.h"
 #include "tree.h"
 #include "bspwm.h"
 #include "settings.h"

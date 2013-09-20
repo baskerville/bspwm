@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include "settings.h"
 #include "bspwm.h"
 #include "tree.h"
-#include "monitor.h"
 #include "desktop.h"
 #include "window.h"
+#include "query.h"
 #include "ewmh.h"
+#include "monitor.h"
 
 monitor_t *make_monitor(xcb_rectangle_t rect)
 {
@@ -33,6 +36,38 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t id)
         if (m->id == id)
             return m;
     return NULL;
+}
+
+void fit_monitor(monitor_t *m, client_t *c)
+{
+    xcb_rectangle_t crect = c->floating_rectangle;
+    xcb_rectangle_t mrect = m->rectangle;
+    while (crect.x < mrect.x)
+        crect.x += mrect.width;
+    while (crect.x > (mrect.x + mrect.width - 1))
+        crect.x -= mrect.width;
+    while (crect.y < mrect.y)
+        crect.y += mrect.height;
+    while (crect.y > (mrect.y + mrect.height - 1))
+        crect.y -= mrect.height;
+    c->floating_rectangle = crect;
+}
+
+void select_monitor(monitor_t *m)
+{
+    if (mon == m)
+        return;
+
+    PRINTF("select monitor %s\n", m->name);
+
+    last_mon = mon;
+    mon = m;
+
+    if (pointer_follows_monitor)
+        center_pointer(m);
+
+    ewmh_update_current_desktop();
+    put_status();
 }
 
 monitor_t *add_monitor(xcb_rectangle_t rect)
@@ -132,6 +167,49 @@ void swap_monitors(monitor_t *m1, monitor_t *m2)
     ewmh_update_desktop_names();
     ewmh_update_current_desktop();
     put_status();
+}
+
+monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)
+{
+    monitor_t *f = (dir == CYCLE_PREV ? m->prev : m->next);
+    if (f == NULL)
+        f = (dir == CYCLE_PREV ? mon_tail : mon_head);
+
+    while (f != m) {
+        if (desktop_matches(f->desk, sel))
+            return f;
+        f = (dir == CYCLE_PREV ? m->prev : m->next);
+        if (f == NULL)
+            f = (dir == CYCLE_PREV ? mon_tail : mon_head);
+    }
+
+    return NULL;
+}
+
+monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
+{
+    int dmin = INT_MAX;
+    monitor_t *nearest = NULL;
+    xcb_rectangle_t rect = m->rectangle;
+    for (monitor_t *f = mon_head; f != NULL; f = f->next) {
+        if (f == m)
+            continue;
+        if (!desktop_matches(f->desk, sel))
+            continue;
+        xcb_rectangle_t r = f->rectangle;
+        if ((dir == DIR_LEFT && r.x < rect.x) ||
+                (dir == DIR_RIGHT && r.x >= (rect.x + rect.width)) ||
+                (dir == DIR_UP && r.y < rect.y) ||
+                (dir == DIR_DOWN && r.y >= (rect.y + rect.height))) {
+            int d = abs((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
+                abs((r.y + r.height / 2) - (rect.y + rect.height / 2));
+            if (d < dmin) {
+                dmin = d;
+                nearest = f;
+            }
+        }
+    }
+    return nearest;
 }
 
 bool import_monitors(void)

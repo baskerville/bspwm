@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <xcb/xcb_icccm.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "window.h"

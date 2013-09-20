@@ -8,8 +8,265 @@
 #include "ewmh.h"
 #include "tree.h"
 #include "desktop.h"
+#include "monitor.h"
 #include "history.h"
 #include "query.h"
+
+void arrange(monitor_t *m, desktop_t *d)
+{
+    if (d->root == NULL)
+        return;
+
+    PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
+
+    xcb_rectangle_t rect = m->rectangle;
+    int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+    rect.x += m->left_padding + wg;
+    rect.y += m->top_padding + wg;
+    rect.width -= m->left_padding + m->right_padding + wg;
+    rect.height -= m->top_padding + m->bottom_padding + wg;
+    apply_layout(m, d, d->root, rect, rect);
+}
+
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
+{
+    if (n == NULL)
+        return;
+
+    n->rectangle = rect;
+
+    if (is_leaf(n)) {
+
+        if (is_floating(n->client) && n->client->border_width != border_width) {
+            int ds = 2 * (border_width - n->client->border_width);
+            n->client->floating_rectangle.width += ds;
+            n->client->floating_rectangle.height += ds;
+        }
+
+        if ((borderless_monocle && is_tiled(n->client) && d->layout == LAYOUT_MONOCLE) ||
+                n->client->fullscreen)
+            n->client->border_width = 0;
+        else
+            n->client->border_width = border_width;
+
+        xcb_rectangle_t r;
+        if (!n->client->fullscreen) {
+            if (!n->client->floating) {
+                /* tiled clients */
+                if (d->layout == LAYOUT_TILED)
+                    r = rect;
+                else if (d->layout == LAYOUT_MONOCLE)
+                    r = root_rect;
+                else
+                    return;
+                int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+                int bleed = wg + 2 * n->client->border_width;
+                r.width = (bleed < r.width ? r.width - bleed : 1);
+                r.height = (bleed < r.height ? r.height - bleed : 1);
+                n->client->tiled_rectangle = r;
+            } else {
+                /* floating clients */
+                r = n->client->floating_rectangle;
+            }
+        } else {
+            /* fullscreen clients */
+            r = m->rectangle;
+        }
+
+        window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
+        window_border_width(n->client->window, n->client->border_width);
+        window_draw_border(n, n == d->focus, m == mon);
+
+    } else {
+        xcb_rectangle_t first_rect;
+        xcb_rectangle_t second_rect;
+
+        if (n->first_child->vacant || n->second_child->vacant) {
+            first_rect = second_rect = rect;
+        } else {
+            unsigned int fence;
+            if (n->split_type == TYPE_VERTICAL) {
+                fence = rect.width * n->split_ratio;
+                first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+                second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+            } else if (n->split_type == TYPE_HORIZONTAL) {
+                fence = rect.height * n->split_ratio;
+                first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+                second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+            }
+        }
+
+        apply_layout(m, d, n->first_child, first_rect, root_rect);
+        apply_layout(m, d, n->second_child, second_rect, root_rect);
+    }
+}
+
+void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
+{
+    if (d == NULL || n == NULL)
+        return;
+
+    PRINTF("insert node %X\n", n->client->window);
+
+    /* n: new leaf node */
+    /* c: new container node */
+    /* f: focus or insertion anchor */
+    /* p: parent of focus */
+    /* g: grand parent of focus */
+
+    if (f == NULL) {
+        d->root = n;
+    } else {
+        node_t *c = make_node();
+        node_t *p = f->parent;
+        n->parent = c;
+        c->birth_rotation = f->birth_rotation;
+        switch (f->split_mode) {
+            case MODE_AUTOMATIC:
+                if (p == NULL) {
+                    c->first_child = n;
+                    c->second_child = f;
+                    if (m->rectangle.width > m->rectangle.height)
+                        c->split_type = TYPE_VERTICAL;
+                    else
+                        c->split_type = TYPE_HORIZONTAL;
+                    f->parent = c;
+                    d->root = c;
+                } else {
+                    node_t *g = p->parent;
+                    c->parent = g;
+                    if (g != NULL) {
+                        if (is_first_child(p))
+                            g->first_child = c;
+                        else
+                            g->second_child = c;
+                    } else {
+                        d->root = c;
+                    }
+                    c->split_type = p->split_type;
+                    c->split_ratio = p->split_ratio;
+                    p->parent = c;
+                    int rot;
+                    if (is_first_child(f)) {
+                        c->first_child = n;
+                        c->second_child = p;
+                        rot = 90;
+                    } else {
+                        c->first_child = p;
+                        c->second_child = n;
+                        rot = 270;
+                    }
+                    if (!is_floating(n->client))
+                        rotate_tree(p, rot);
+                    n->birth_rotation = rot;
+                }
+                break;
+            case MODE_MANUAL:
+                if (p != NULL) {
+                    if (is_first_child(f))
+                        p->first_child = c;
+                    else
+                        p->second_child = c;
+                }
+                c->split_ratio = f->split_ratio;
+                c->parent = p;
+                f->parent = c;
+                f->birth_rotation = 0;
+                switch (f->split_dir) {
+                    case DIR_LEFT:
+                        c->split_type = TYPE_VERTICAL;
+                        c->first_child = n;
+                        c->second_child = f;
+                        break;
+                    case DIR_RIGHT:
+                        c->split_type = TYPE_VERTICAL;
+                        c->first_child = f;
+                        c->second_child = n;
+                        break;
+                    case DIR_UP:
+                        c->split_type = TYPE_HORIZONTAL;
+                        c->first_child = n;
+                        c->second_child = f;
+                        break;
+                    case DIR_DOWN:
+                        c->split_type = TYPE_HORIZONTAL;
+                        c->first_child = f;
+                        c->second_child = n;
+                        break;
+                }
+                if (d->root == f)
+                    d->root = c;
+                f->split_mode = MODE_AUTOMATIC;
+                break;
+        }
+        if (f->vacant)
+            update_vacant_state(p);
+    }
+    put_status();
+}
+
+void pseudo_focus(desktop_t *d, node_t *n)
+{
+    if (n == NULL || d->focus == n)
+        return;
+    d->focus = n;
+    history_add(d->history, n);
+    stack(d, n);
+}
+
+void focus_node(monitor_t *m, desktop_t *d, node_t *n)
+{
+    if (n == NULL && d->root != NULL)
+        return;
+
+    if (mon->desk != d)
+        clear_input_focus();
+
+    if (mon != m) {
+        for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
+            window_draw_border(cd->focus, true, false);
+        for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next)
+            if (cd != d)
+                window_draw_border(cd->focus, true, true);
+        if (d->focus == n)
+            window_draw_border(n, true, true);
+    }
+
+    if (d->focus != n) {
+        window_draw_border(d->focus, false, true);
+        window_draw_border(n, true, true);
+    }
+
+    select_desktop(m, d);
+
+    if (n == NULL) {
+        ewmh_update_active_window();
+        return;
+    }
+
+    PRINTF("focus node %X\n", n->client->window);
+
+    n->client->urgent = false;
+
+    pseudo_focus(d, n);
+    set_input_focus(n);
+
+    if (focus_follows_pointer) {
+        xcb_window_t win = XCB_NONE;
+        query_pointer(&win, NULL);
+        if (win != n->client->window)
+            enable_motion_recorder();
+        else
+            disable_motion_recorder();
+    }
+
+    ewmh_update_active_window();
+}
+
+void update_current(void)
+{
+    focus_node(mon, mon->desk, mon->desk->focus);
+}
 
 node_t *make_node(void)
 {
@@ -70,26 +327,10 @@ bool is_second_child(node_t *n)
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
 
-bool is_urgent(desktop_t *d)
-{
-    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        if (n->client->urgent)
-            return true;
-    return false;
-}
-
 void change_split_ratio(node_t *n, value_change_t chg)
 {
     n->split_ratio = pow(n->split_ratio,
             (chg == CHANGE_INCREASE ? (1 / GROWTH_FACTOR) : GROWTH_FACTOR));
-}
-
-void change_layout(monitor_t *m, desktop_t *d, layout_t l)
-{
-    d->layout = l;
-    arrange(m, d);
-    if (d == mon->desk)
-        put_status();
 }
 
 void reset_mode(coordinates_t *loc)
@@ -445,262 +686,6 @@ int balance_tree(node_t *n)
     }
 }
 
-void arrange(monitor_t *m, desktop_t *d)
-{
-    if (d->root == NULL)
-        return;
-
-    PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
-
-    xcb_rectangle_t rect = m->rectangle;
-    int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
-    rect.x += m->left_padding + wg;
-    rect.y += m->top_padding + wg;
-    rect.width -= m->left_padding + m->right_padding + wg;
-    rect.height -= m->top_padding + m->bottom_padding + wg;
-    apply_layout(m, d, d->root, rect, rect);
-}
-
-void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
-{
-    if (n == NULL)
-        return;
-
-    n->rectangle = rect;
-
-    if (is_leaf(n)) {
-
-        if (is_floating(n->client) && n->client->border_width != border_width) {
-            int ds = 2 * (border_width - n->client->border_width);
-            n->client->floating_rectangle.width += ds;
-            n->client->floating_rectangle.height += ds;
-        }
-
-        if ((borderless_monocle && is_tiled(n->client) && d->layout == LAYOUT_MONOCLE) ||
-                n->client->fullscreen)
-            n->client->border_width = 0;
-        else
-            n->client->border_width = border_width;
-
-        xcb_rectangle_t r;
-        if (!n->client->fullscreen) {
-            if (!n->client->floating) {
-                /* tiled clients */
-                if (d->layout == LAYOUT_TILED)
-                    r = rect;
-                else if (d->layout == LAYOUT_MONOCLE)
-                    r = root_rect;
-                else
-                    return;
-                int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
-                int bleed = wg + 2 * n->client->border_width;
-                r.width = (bleed < r.width ? r.width - bleed : 1);
-                r.height = (bleed < r.height ? r.height - bleed : 1);
-                n->client->tiled_rectangle = r;
-            } else {
-                /* floating clients */
-                r = n->client->floating_rectangle;
-            }
-        } else {
-            /* fullscreen clients */
-            r = m->rectangle;
-        }
-
-        window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
-        window_border_width(n->client->window, n->client->border_width);
-        window_draw_border(n, n == d->focus, m == mon);
-
-    } else {
-        xcb_rectangle_t first_rect;
-        xcb_rectangle_t second_rect;
-
-        if (n->first_child->vacant || n->second_child->vacant) {
-            first_rect = second_rect = rect;
-        } else {
-            unsigned int fence;
-            if (n->split_type == TYPE_VERTICAL) {
-                fence = rect.width * n->split_ratio;
-                first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
-                second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
-            } else if (n->split_type == TYPE_HORIZONTAL) {
-                fence = rect.height * n->split_ratio;
-                first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
-                second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
-            }
-        }
-
-        apply_layout(m, d, n->first_child, first_rect, root_rect);
-        apply_layout(m, d, n->second_child, second_rect, root_rect);
-    }
-}
-
-void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
-{
-    if (d == NULL || n == NULL)
-        return;
-
-    PRINTF("insert node %X\n", n->client->window);
-
-    /* n: new leaf node */
-    /* c: new container node */
-    /* f: focus or insertion anchor */
-    /* p: parent of focus */
-    /* g: grand parent of focus */
-
-    if (f == NULL) {
-        d->root = n;
-    } else {
-        node_t *c = make_node();
-        node_t *p = f->parent;
-        n->parent = c;
-        c->birth_rotation = f->birth_rotation;
-        switch (f->split_mode) {
-            case MODE_AUTOMATIC:
-                if (p == NULL) {
-                    c->first_child = n;
-                    c->second_child = f;
-                    if (m->rectangle.width > m->rectangle.height)
-                        c->split_type = TYPE_VERTICAL;
-                    else
-                        c->split_type = TYPE_HORIZONTAL;
-                    f->parent = c;
-                    d->root = c;
-                } else {
-                    node_t *g = p->parent;
-                    c->parent = g;
-                    if (g != NULL) {
-                        if (is_first_child(p))
-                            g->first_child = c;
-                        else
-                            g->second_child = c;
-                    } else {
-                        d->root = c;
-                    }
-                    c->split_type = p->split_type;
-                    c->split_ratio = p->split_ratio;
-                    p->parent = c;
-                    int rot;
-                    if (is_first_child(f)) {
-                        c->first_child = n;
-                        c->second_child = p;
-                        rot = 90;
-                    } else {
-                        c->first_child = p;
-                        c->second_child = n;
-                        rot = 270;
-                    }
-                    if (!is_floating(n->client))
-                        rotate_tree(p, rot);
-                    n->birth_rotation = rot;
-                }
-                break;
-            case MODE_MANUAL:
-                if (p != NULL) {
-                    if (is_first_child(f))
-                        p->first_child = c;
-                    else
-                        p->second_child = c;
-                }
-                c->split_ratio = f->split_ratio;
-                c->parent = p;
-                f->parent = c;
-                f->birth_rotation = 0;
-                switch (f->split_dir) {
-                    case DIR_LEFT:
-                        c->split_type = TYPE_VERTICAL;
-                        c->first_child = n;
-                        c->second_child = f;
-                        break;
-                    case DIR_RIGHT:
-                        c->split_type = TYPE_VERTICAL;
-                        c->first_child = f;
-                        c->second_child = n;
-                        break;
-                    case DIR_UP:
-                        c->split_type = TYPE_HORIZONTAL;
-                        c->first_child = n;
-                        c->second_child = f;
-                        break;
-                    case DIR_DOWN:
-                        c->split_type = TYPE_HORIZONTAL;
-                        c->first_child = f;
-                        c->second_child = n;
-                        break;
-                }
-                if (d->root == f)
-                    d->root = c;
-                f->split_mode = MODE_AUTOMATIC;
-                break;
-        }
-        if (f->vacant)
-            update_vacant_state(p);
-    }
-    put_status();
-}
-
-void pseudo_focus(desktop_t *d, node_t *n)
-{
-    if (n == NULL || d->focus == n)
-        return;
-    d->focus = n;
-    history_add(d->history, n);
-    stack(d, n);
-}
-
-void focus_node(monitor_t *m, desktop_t *d, node_t *n)
-{
-    if (n == NULL && d->root != NULL)
-        return;
-
-    if (mon->desk != d)
-        clear_input_focus();
-
-    if (mon != m) {
-        for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
-            window_draw_border(cd->focus, true, false);
-        for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next)
-            if (cd != d)
-                window_draw_border(cd->focus, true, true);
-        if (d->focus == n)
-            window_draw_border(n, true, true);
-    }
-
-    if (d->focus != n) {
-        window_draw_border(d->focus, false, true);
-        window_draw_border(n, true, true);
-    }
-
-    select_desktop(m, d);
-
-    if (n == NULL) {
-        ewmh_update_active_window();
-        return;
-    }
-
-    PRINTF("focus node %X\n", n->client->window);
-
-    n->client->urgent = false;
-
-    pseudo_focus(d, n);
-    set_input_focus(n);
-
-    if (focus_follows_pointer) {
-        xcb_window_t win = XCB_NONE;
-        query_pointer(&win, NULL);
-        if (win != n->client->window)
-            enable_motion_recorder();
-        else
-            disable_motion_recorder();
-    }
-
-    ewmh_update_active_window();
-}
-
-void update_current(void)
-{
-    focus_node(mon, mon->desk, mon->desk->focus);
-}
-
 void unlink_node(desktop_t *d, node_t *n)
 {
     if (d == NULL || n == NULL)
@@ -878,102 +863,6 @@ void transplant_node(monitor_t *m, desktop_t *d, node_t *n1, node_t *n2)
         pseudo_focus(d, n1);
 }
 
-void select_monitor(monitor_t *m)
-{
-    if (mon == m)
-        return;
-
-    PRINTF("select monitor %s\n", m->name);
-
-    last_mon = mon;
-    mon = m;
-
-    if (pointer_follows_monitor)
-        center_pointer(m);
-
-    ewmh_update_current_desktop();
-    put_status();
-}
-
-monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
-{
-    int dmin = INT_MAX;
-    monitor_t *nearest = NULL;
-    xcb_rectangle_t rect = m->rectangle;
-    for (monitor_t *f = mon_head; f != NULL; f = f->next) {
-        if (f == m)
-            continue;
-        if (!desktop_matches(f->desk, sel))
-            continue;
-        xcb_rectangle_t r = f->rectangle;
-        if ((dir == DIR_LEFT && r.x < rect.x) ||
-                (dir == DIR_RIGHT && r.x >= (rect.x + rect.width)) ||
-                (dir == DIR_UP && r.y < rect.y) ||
-                (dir == DIR_DOWN && r.y >= (rect.y + rect.height))) {
-            int d = abs((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
-                abs((r.y + r.height / 2) - (rect.y + rect.height / 2));
-            if (d < dmin) {
-                dmin = d;
-                nearest = f;
-            }
-        }
-    }
-    return nearest;
-}
-
-void select_desktop(monitor_t *m, desktop_t *d)
-{
-    select_monitor(m);
-
-    if (d == mon->desk)
-        return;
-
-    PRINTF("select desktop %s\n", d->name);
-
-    show_desktop(d);
-    hide_desktop(mon->desk);
-
-    mon->last_desk = mon->desk;
-    mon->desk = d;
-
-    ewmh_update_current_desktop();
-    put_status();
-}
-
-monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)
-{
-    monitor_t *f = (dir == CYCLE_PREV ? m->prev : m->next);
-    if (f == NULL)
-        f = (dir == CYCLE_PREV ? mon_tail : mon_head);
-
-    while (f != m) {
-        if (desktop_matches(f->desk, sel))
-            return f;
-        f = (dir == CYCLE_PREV ? m->prev : m->next);
-        if (f == NULL)
-            f = (dir == CYCLE_PREV ? mon_tail : mon_head);
-    }
-
-    return NULL;
-}
-
-desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
-{
-    desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
-    if (f == NULL)
-        f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
-
-    while (f != d) {
-        if (desktop_matches(f, sel))
-            return f;
-        f = (dir == CYCLE_PREV ? f->prev : f->next);
-        if (f == NULL)
-            f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
-    }
-
-    return NULL;
-}
-
 node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
 {
     if (n == NULL)
@@ -1025,19 +914,4 @@ void update_vacant_state(node_t *n)
         p->vacant = (p->first_child->vacant && p->second_child->vacant);
         p = p->parent;
     }
-}
-
-void fit_monitor(monitor_t *m, client_t *c)
-{
-    xcb_rectangle_t crect = c->floating_rectangle;
-    xcb_rectangle_t mrect = m->rectangle;
-    while (crect.x < mrect.x)
-        crect.x += mrect.width;
-    while (crect.x > (mrect.x + mrect.width - 1))
-        crect.x -= mrect.width;
-    while (crect.y < mrect.y)
-        crect.y += mrect.height;
-    while (crect.y > (mrect.y + mrect.height - 1))
-        crect.y -= mrect.height;
-    c->floating_rectangle = crect;
 }

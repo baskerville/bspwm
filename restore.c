@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <string.h>
 #include "bspwm.h"
-#include "types.h"
 #include "monitor.h"
 #include "desktop.h"
 #include "tree.h"

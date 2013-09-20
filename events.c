@@ -1,6 +1,4 @@
 #include <stdlib.h>
-#include <xcb/xcb_icccm.h>
-#include "types.h"
 #include "bspwm.h"
 #include "settings.h"
 #include "events.h"

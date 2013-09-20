@@ -2,10 +2,56 @@
 #include <string.h>
 #include "bspwm.h"
 #include "desktop.h"
+#include "monitor.h"
 #include "tree.h"
 #include "history.h"
 #include "window.h"
+#include "query.h"
 #include "ewmh.h"
+
+void select_desktop(monitor_t *m, desktop_t *d)
+{
+    select_monitor(m);
+
+    if (d == mon->desk)
+        return;
+
+    PRINTF("select desktop %s\n", d->name);
+
+    show_desktop(d);
+    hide_desktop(mon->desk);
+
+    mon->last_desk = mon->desk;
+    mon->desk = d;
+
+    ewmh_update_current_desktop();
+    put_status();
+}
+
+desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
+{
+    desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
+    if (f == NULL)
+        f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
+
+    while (f != d) {
+        if (desktop_matches(f, sel))
+            return f;
+        f = (dir == CYCLE_PREV ? f->prev : f->next);
+        if (f == NULL)
+            f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
+    }
+
+    return NULL;
+}
+
+void change_layout(monitor_t *m, desktop_t *d, layout_t l)
+{
+    d->layout = l;
+    arrange(m, d);
+    if (d == mon->desk)
+        put_status();
+}
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
@@ -167,4 +213,12 @@ void hide_desktop(desktop_t *d)
         return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
         window_hide(n->client->window);
+}
+
+bool is_urgent(desktop_t *d)
+{
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+        if (n->client->urgent)
+            return true;
+    return false;
 }
