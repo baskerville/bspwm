@@ -72,6 +72,8 @@ void ewmh_update_desktop_names(void)
 {
     char names[MAXLEN];
     unsigned int i, j;
+    uint32_t names_len;
+    i = 0;
 
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
@@ -82,7 +84,7 @@ void ewmh_update_desktop_names(void)
                 names[i++] = '\0';
         }
 
-    uint32_t names_len = i - 1;
+    names_len = i - 1;
 
     xcb_ewmh_set_desktop_names(ewmh, default_screen, names_len, names);
 }
