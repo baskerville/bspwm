@@ -15,6 +15,69 @@
 #include "ewmh.h"
 #include "messages.h"
 
+bool handle_message(char *msg, int msg_len, char *rsp)
+{
+    int cap = INIT_CAP;
+    int num = 0;
+    char **args = malloc(cap * sizeof(char *));
+    if (args == NULL)
+        return false;
+
+    for (int i = 0, j = 0; i < msg_len; i++) {
+        if (msg[i] == 0) {
+            args[num++] = msg + j;
+            j = i + 1;
+        }
+        if (num >= cap) {
+            cap *= 2;
+            char **new = realloc(args, cap * sizeof(char *));
+            if (new == NULL) {
+                free(args);
+                return false;
+            } else {
+                args = new;
+            }
+        }
+    }
+
+    if (num < 1) {
+        free(args);
+        return false;
+    }
+
+    char **args_orig = args;
+    bool ret = process_message(args, num, rsp);
+    free(args_orig);
+    return ret;
+}
+
+bool process_message(char **args, int num, char *rsp)
+{
+    if (streq("window", *args)) {
+        return cmd_window(++args, --num);
+    } else if (streq("desktop", *args)) {
+        return cmd_desktop(++args, --num);
+    } else if (streq("monitor", *args)) {
+        return cmd_monitor(++args, --num);
+    } else if (streq("query", *args)) {
+        return cmd_query(++args, --num, rsp);
+    } else if (streq("restore", *args)) {
+        return cmd_restore(++args, --num);
+    } else if (streq("control", *args)) {
+        return cmd_control(++args, --num);
+    } else if (streq("rule", *args)) {
+        return cmd_rule(++args, --num, rsp);
+    } else if (streq("pointer", *args)) {
+        return cmd_pointer(++args, --num);
+    } else if (streq("config", *args)) {
+        return cmd_config(++args, --num, rsp);
+    } else if (streq("quit", *args)) {
+        return cmd_quit(++args, --num);
+    }
+
+    return false;
+}
+
 bool cmd_window(char **args, int num)
 {
     if (num < 1)
@@ -278,7 +341,7 @@ bool cmd_desktop(char **args, int num)
             num--, args++;
             if (num < 1)
                 return false;
-            strncpy(trg.desktop->name, *args, sizeof(trg.desktop->name));
+            snprintf(trg.desktop->name, sizeof(trg.desktop->name), "%s", *args);
             ewmh_update_desktop_names();
             put_status();
         } else if (streq("-r", *args) || streq("--remove", *args)) {
@@ -391,7 +454,7 @@ bool cmd_monitor(char **args, int num)
             num--, args++;
             if (num < 1)
                 return false;
-            strncpy(trg.monitor->name, *args, sizeof(trg.monitor->name));
+            snprintf(trg.monitor->name, sizeof(trg.monitor->name), "%s", *args);
             put_status();
         } else if (streq("-s", *args) || streq("--swap", *args)) {
             num--, args++;
@@ -481,7 +544,7 @@ bool cmd_rule(char **args, int num, char *rsp) {
             if (num < 2)
                 return false;
             rule_t *rule = make_rule();
-            strncpy(rule->cause.name, *args, sizeof(rule->cause.name));
+            snprintf(rule->cause.name, sizeof(rule->cause.name), "%s", *args);
             num--, args++;
             while (num > 0) {
                 if (streq("--floating", *args)) {
@@ -505,7 +568,7 @@ bool cmd_rule(char **args, int num, char *rsp) {
                         rule_uid--;
                         return false;
                     }
-                    strncpy(rule->effect.desc, *args, sizeof(rule->effect.desc));
+                    snprintf(rule->effect.desc, sizeof(rule->effect.desc), "%s", *args);
                 } else {
                     free(rule);
                     rule_uid--;
@@ -653,69 +716,6 @@ bool cmd_quit(char **args, int num) {
     return true;
 }
 
-bool handle_message(char *msg, int msg_len, char *rsp)
-{
-    int cap = INIT_CAP;
-    int num = 0;
-    char **args = malloc(cap * sizeof(char *));
-    if (args == NULL)
-        return false;
-
-    for (int i = 0, j = 0; i < msg_len; i++) {
-        if (msg[i] == 0) {
-            args[num++] = msg + j;
-            j = i + 1;
-        }
-        if (num >= cap) {
-            cap *= 2;
-            char **new = realloc(args, cap * sizeof(char *));
-            if (new == NULL) {
-                free(args);
-                return false;
-            } else {
-                args = new;
-            }
-        }
-    }
-
-    if (num < 1) {
-        free(args);
-        return false;
-    }
-
-    char **args_orig = args;
-    bool ret = process_message(args, num, rsp);
-    free(args_orig);
-    return ret;
-}
-
-bool process_message(char **args, int num, char *rsp)
-{
-    if (streq("window", *args)) {
-        return cmd_window(++args, --num);
-    } else if (streq("desktop", *args)) {
-        return cmd_desktop(++args, --num);
-    } else if (streq("monitor", *args)) {
-        return cmd_monitor(++args, --num);
-    } else if (streq("query", *args)) {
-        return cmd_query(++args, --num, rsp);
-    } else if (streq("restore", *args)) {
-        return cmd_restore(++args, --num);
-    } else if (streq("control", *args)) {
-        return cmd_control(++args, --num);
-    } else if (streq("rule", *args)) {
-        return cmd_rule(++args, --num, rsp);
-    } else if (streq("pointer", *args)) {
-        return cmd_pointer(++args, --num);
-    } else if (streq("config", *args)) {
-        return cmd_config(++args, --num, rsp);
-    } else if (streq("quit", *args)) {
-        return cmd_quit(++args, --num);
-    }
-
-    return false;
-}
-
 bool set_setting(coordinates_t loc, char *name, char *value)
 {
     if (streq("border_width", name)) {
@@ -757,7 +757,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
             return false;
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
-        strncpy(s, value, sizeof(s));
+        snprintf(s, sizeof(s), "%s", value);
     SETCOLOR(focused_border_color)
     SETCOLOR(active_border_color)
     SETCOLOR(normal_border_color)

@@ -134,7 +134,7 @@ typedef struct {
 
 typedef struct {
     xcb_window_t window;
-    char class_name[MAXLEN];
+    char class_name[SMALEN];
     unsigned int border_width;
     bool floating;
     bool transient;    /* transient window are always floating */
@@ -176,7 +176,7 @@ typedef struct {
 
 typedef struct desktop_t desktop_t;
 struct desktop_t {
-    char name[MAXLEN];
+    char name[SMALEN];
     layout_t layout;
     node_t *root;
     node_t *focus;
@@ -188,7 +188,7 @@ struct desktop_t {
 
 typedef struct monitor_t monitor_t;
 struct monitor_t {
-    char name[MAXLEN];
+    char name[SMALEN];
     xcb_randr_output_t id;
     xcb_rectangle_t rectangle;
     bool wired;
@@ -211,7 +211,7 @@ typedef struct {
 } coordinates_t;
 
 typedef struct {
-    char name[MAXLEN];
+    char name[SMALEN];
 } rule_cause_t;
 
 typedef struct {

@@ -71,23 +71,20 @@ void ewmh_update_wm_desktops(void)
 void ewmh_update_desktop_names(void)
 {
     char names[MAXLEN];
-    unsigned int pos, i;
-    pos = i = 0;
+    unsigned int i, j;
 
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        for (desktop_t *d = m->desk_head; d != NULL && i < num_desktops; d = d->next) {
-            for (unsigned int j = 0; j < strlen(d->name); j++)
-                names[pos + j] = d->name[j];
-            pos += strlen(d->name);
-            names[pos] = '\0';
-            pos++, i++;
+        for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+            for (j = 0; d->name[j] != '\0' && (i + j) < sizeof(names); j++)
+                names[i + j] = d->name[j];
+            i += j;
+            if (i <= sizeof(names))
+                names[i++] = '\0';
         }
 
-    if (i != num_desktops)
-        return;
-    pos--;
+    uint32_t names_len = i - 1;
 
-    xcb_ewmh_set_desktop_names(ewmh, default_screen, pos, names);
+    xcb_ewmh_set_desktop_names(ewmh, default_screen, names_len, names);
 }
 
 void ewmh_update_client_list(void)

@@ -252,8 +252,7 @@ bool import_monitors(void)
                     mm = add_monitor(rect);
                     char *name = (char *)xcb_randr_get_output_info_name(info);
                     size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info));
-                    strncpy(mm->name, name, name_len);
-                    mm->name[name_len] = '\0';
+                    snprintf(mm->name, name_len, "%s", name);
                     mm->id = outputs[i];
                     PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
                 }

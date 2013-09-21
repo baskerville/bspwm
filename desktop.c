@@ -88,7 +88,7 @@ desktop_t *make_desktop(const char *name)
     if (name == NULL)
         snprintf(d->name, sizeof(d->name), "%s%02d", DEFAULT_DESK_NAME, ++desktop_uid);
     else
-        strncpy(d->name, name, sizeof(d->name));
+        snprintf(d->name, sizeof(d->name), "%s", name);
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
     d->root = d->focus = NULL;

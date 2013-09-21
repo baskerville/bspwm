@@ -16,13 +16,10 @@ int main(int argc, char *argv[])
     if (argc < 2)
         err("No arguments given.\n");
 
-    char *sock_path = getenv(SOCKET_ENV_VAR);
-    if (sock_path != NULL && sizeof(sock_address.sun_path) <= strlen(sock_path))
-        err("The socket path can't fit into the socket address.\n");
+    char *sp = getenv(SOCKET_ENV_VAR);
 
     sock_address.sun_family = AF_UNIX;
-    strncpy(sock_address.sun_path, (sock_path == NULL ? DEFAULT_SOCKET_PATH : sock_path), sizeof(sock_address.sun_path));
-    sock_address.sun_path[sizeof(sock_address.sun_path) - 1] = 0;
+    snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
 
     argc--, argv++;
     int msg_len = 0;

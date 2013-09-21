@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
                 exit(EXIT_SUCCESS);
                 break;
             case 'c':
-                strncpy(config_path, optarg, sizeof(config_path));
+                snprintf(config_path, sizeof(config_path), "%s", optarg);
                 break;
             case 's':
                 fifo_path = optarg;
@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
     dpy_fd = xcb_get_file_descriptor(dpy);
 
     char *sp = getenv(SOCKET_ENV_VAR);
-    strncpy(socket_path, (sp == NULL ? DEFAULT_SOCKET_PATH : sp), sizeof(socket_path));
+    snprintf(socket_path, sizeof(socket_path), "%s", (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
 
     sock_address.sun_family = AF_UNIX;
-    strncpy(sock_address.sun_path, socket_path, sizeof(sock_address.sun_path));
+    snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", socket_path);
     unlink(socket_path);
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
