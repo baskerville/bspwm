@@ -88,6 +88,8 @@ monitor_t *add_monitor(xcb_rectangle_t rect)
 
 void remove_monitor(monitor_t *m)
 {
+    PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
+
     while (m->desk_head != NULL)
         remove_desktop(m, m->desk_head);
     monitor_t *prev = m->prev;
@@ -219,6 +221,9 @@ bool import_monitors(void)
     if (sres == NULL)
         return false;
 
+    monitor_t *m, *mm = NULL;
+    unsigned int num = 0;
+
     int len = xcb_randr_get_screen_resources_current_outputs_length(sres);
     xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(sres);
 
@@ -226,11 +231,8 @@ bool import_monitors(void)
     for (int i = 0; i < len; i++)
         cookies[i] = xcb_randr_get_output_info(dpy, outputs[i], XCB_CURRENT_TIME);
 
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+    for (m = mon_head; m != NULL; m = m->next)
         m->wired = false;
-
-    monitor_t *mm = NULL;
-    unsigned int num = 0;
 
     for (int i = 0; i < len; i++) {
         xcb_randr_get_output_info_reply_t *info = xcb_randr_get_output_info_reply(dpy, cookies[i], NULL);
@@ -276,17 +278,33 @@ bool import_monitors(void)
     }
     free(gpo);
 
+    /* handle overlapping monitors */
+    m = mon_head;
+    while (m != NULL) {
+        monitor_t *next = m->next;
+        if (m->wired) {
+            for (monitor_t *mb = mon_head; mb != NULL; mb = mb->next)
+                if (mb != m && mb->wired && contains(mb->rectangle, m->rectangle)) {
+                    if (mm == m)
+                        mm = mb;
+                    merge_monitors(m, mb);
+                    remove_monitor(m);
+                    break;
+                }
+        }
+        m = next;
+    }
+
     /* add one desktop to each new monitor */
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+    for (m = mon_head; m != NULL; m = m->next)
         if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
             add_desktop(m, make_desktop(NULL));
 
     /* merge and remove disconnected monitors */
-    monitor_t *m = mon_head;
+    m = mon_head;
     while (m != NULL) {
         monitor_t *next = m->next;
         if (!m->wired) {
-            PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
             merge_monitors(m, mm);
             remove_monitor(m);
         }
