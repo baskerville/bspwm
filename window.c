@@ -110,6 +110,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         return;
     }
 
+    PRINTF("manage %X\n", win);
+
     client_t *c = make_client(win);
     update_floating_rectangle(c);
 
@@ -160,6 +162,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     if (d == m->desk && visible)
         window_show(c->window);
+    else
+        window_hide(c->window);
 
     /* the same function is already called in `focus_node` but has no effects on unmapped windows */
     if (give_focus)
@@ -186,7 +190,6 @@ void adopt_orphans(void)
     for (int i = 0; i < len; i++) {
         uint32_t idx;
         xcb_window_t win = wins[i];
-        window_hide(win);
         if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
             coordinates_t loc;
             if (ewmh_locate_desktop(idx, &loc))
