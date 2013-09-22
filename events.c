@@ -275,15 +275,19 @@ void motion_notify(xcb_generic_event_t *evt)
     disable_motion_recorder();
 
     xcb_window_t win = XCB_NONE;
+    xcb_point_t pt = {e->root_x, e->root_y};
     query_pointer(&win, NULL);
-    if (win != XCB_NONE) {
-        bool backup = pointer_follows_monitor;
-        auto_raise = false;
-        pointer_follows_monitor = false;
-        window_focus(win);
-        pointer_follows_monitor = backup;
-        auto_raise = true;
+
+    bool backup = pointer_follows_monitor;
+    auto_raise = false;
+    pointer_follows_monitor = false;
+    if (!window_focus(win)) {
+        monitor_t *m = monitor_from_point(pt);
+        if (m != NULL && m != mon)
+            focus_node(m, m->desk, m->desk->focus);
     }
+    pointer_follows_monitor = backup;
+    auto_raise = true;
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
@@ -435,7 +439,7 @@ void grab_pointer(pointer_action_t pac)
     } else {
         if (pac == ACTION_FOCUS) {
             monitor_t *m = monitor_from_point(pos);
-            if (m != NULL)
+            if (m != NULL && m != mon)
                 focus_node(m, m->desk, m->desk->focus);
         }
         frozen_pointer->action = ACTION_NONE;

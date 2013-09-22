@@ -775,10 +775,15 @@ bool set_setting(coordinates_t loc, char *name, char *value)
                 for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
                     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
                         xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-            if (focus_follows_pointer)
+            if (focus_follows_pointer) {
+                for (monitor_t *m = mon_head; m != NULL; m = m->next)
+                    window_hide(m->root);
                 disable_motion_recorder();
-            else
+            } else {
+                for (monitor_t *m = mon_head; m != NULL; m = m->next)
+                    window_show(m->root);
                 enable_motion_recorder();
+            }
             focus_follows_pointer = b;
             return true;
         } else {

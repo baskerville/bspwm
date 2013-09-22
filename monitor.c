@@ -19,6 +19,13 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
     m->rectangle = rect;
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     m->wired = true;
+    uint32_t mask = XCB_CW_EVENT_MASK;
+    uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
+    m->root = xcb_generate_id(dpy);
+    xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, rect.x, rect.y, rect.width, rect.height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, mask, values);
+    window_lower(m->root);
+    if (focus_follows_pointer)
+        window_show(m->root);
     return m;
 }
 
@@ -51,6 +58,12 @@ void fit_monitor(monitor_t *m, client_t *c)
     while (crect.y > (mrect.y + mrect.height - 1))
         crect.y -= mrect.height;
     c->floating_rectangle = crect;
+}
+
+void update_root(monitor_t *m)
+{
+    xcb_rectangle_t rect = m->rectangle;
+    window_move_resize(m->root, rect.x, rect.y, rect.width, rect.height);
 }
 
 void select_monitor(monitor_t *m)
@@ -115,6 +128,7 @@ void remove_monitor(monitor_t *m)
             mon = NULL;
         }
     }
+    xcb_destroy_window(dpy, m->root);
     free(m);
     num_monitors--;
     put_status();
@@ -244,6 +258,7 @@ bool import_monitors(void)
                 mm = get_monitor_by_id(outputs[i]);
                 if (mm != NULL) {
                     mm->rectangle = rect;
+                    update_root(mm);
                     for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
                         for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
                             fit_monitor(mm, n->client);

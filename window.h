@@ -34,7 +34,7 @@ void window_border_width(xcb_window_t, uint32_t);
 void window_move(xcb_window_t, int16_t, int16_t);
 void window_resize(xcb_window_t, uint16_t, uint16_t);
 void window_move_resize(xcb_window_t, int16_t, int16_t, uint16_t, uint16_t);
-void window_focus(xcb_window_t);
+bool window_focus(xcb_window_t);
 void window_raise(xcb_window_t);
 void window_stack(xcb_window_t, xcb_window_t, uint32_t);
 void window_above(xcb_window_t, xcb_window_t);
