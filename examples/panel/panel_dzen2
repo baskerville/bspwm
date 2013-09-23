@@ -33,11 +33,11 @@ while read -r line ; do
     case $line in
         S*)
             # system informations
-            sys_infos="^fg($COLOR_STATUS_FG)^bg($COLOR_STATUS_BG)^ca(1, bspc control --toggle-visibility)${PADDING}${line#?}${PADDING}^ca()^fg()^bg()${PADDING}"
+            sys_infos="^fg($COLOR_STATUS_FG)^bg($COLOR_STATUS_BG)${PADDING}${line#?}${PADDING}^fg()^bg()${PADDING}"
             ;;
         T*)
             # focused window title
-            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)^ca(1, bspc window -t floating)^ca(2, bspc window -t locked)^ca(3, bspc window -c)${PADDING}${line#?}${PADDING}^ca()^ca()^ca()^fg()^bg()"
+            title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)${PADDING}${line#?}${PADDING}^fg()^bg()"
             ;;
         W*)
             # window manager informations
@@ -72,12 +72,12 @@ while read -r line ; do
                                 BG=$COLOR_URGENT_BG
                                 ;;
                         esac
-                        wm_infos="${wm_infos}^fg(${FG})^bg(${BG})^ca(1, bspc desktop -f ${name})^ca(2, bspc window -d ${name})^ca(3, bspc window -d ${name} -f)${PADDING}${name}${PADDING}^ca()^ca()^ca()"
+                        wm_infos="${wm_infos}^fg(${FG})^bg(${BG})${PADDING}${name}${PADDING}"
                         ;;
                     L*)
                         # layout
                         layout=$(printf "%s" "${item#?}" | sed 's/^\(.\).*/\U\1/')
-                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)^ca(1, bspc desktop -l next)^ca(2, bspc desktop -B)${PADDING}$layout${PADDING}^ca()^ca()"
+                        wm_infos="${wm_infos}^fg()^bg()${PADDING}${PADDING}^fg($COLOR_LAYOUT_FG)^bg($COLOR_LAYOUT_BG)${PADDING}$layout${PADDING}"
                         ;;
                 esac
                 shift
