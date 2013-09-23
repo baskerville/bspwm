@@ -555,6 +555,9 @@ Global Settings
 'split_ratio'::
     Default split ratio.
 
+'growth_factor'::
+    Intensity of the growth involved in pulling or pushing an edge.
+
 'history_aware_focus'::
     Give priority to the focus history when focusing nodes.
 

@@ -18,6 +18,7 @@
 
 #define BORDER_WIDTH   1
 #define SPLIT_RATIO    0.5
+#define GROWTH_FACTOR  1.1
 
 #define HISTORY_AWARE_FOCUS      false
 #define BORDERLESS_MONOCLE       false
@@ -39,6 +40,7 @@ char urgent_border_color[MAXLEN];
 
 unsigned int border_width;
 double split_ratio;
+double growth_factor;
 
 bool borderless_monocle;
 bool gapless_monocle;

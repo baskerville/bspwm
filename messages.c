@@ -750,11 +750,19 @@ bool set_setting(coordinates_t loc, char *name, char *value)
     MONSET(left_padding)
 #undef MONSET
     } else if (streq("split_ratio", name)) {
-        double rat;
-        if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1)
-            split_ratio = rat;
+        double r;
+        if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1)
+            split_ratio = r;
         else
             return false;
+        return true;
+    } else if (streq("growth_factor", name)) {
+        double g;
+        if (sscanf(value, "%lf", &g) == 1 && g > 1)
+            growth_factor = g;
+        else
+            return false;
+        return true;
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
         snprintf(s, sizeof(s), "%s", value);
@@ -818,6 +826,8 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%u", border_width);
     else if (streq("split_ratio", name))
         snprintf(rsp, BUFSIZ, "%lf", split_ratio);
+    else if (streq("growth_factor", name))
+        snprintf(rsp, BUFSIZ, "%lf", growth_factor);
     else if (streq("window_gap", name))
         if (loc.desktop == NULL)
             return false;

@@ -34,6 +34,7 @@ void load_settings(void)
 
     border_width = BORDER_WIDTH;
     split_ratio = SPLIT_RATIO;
+    growth_factor = GROWTH_FACTOR;
 
     borderless_monocle = BORDERLESS_MONOCLE;
     gapless_monocle = GAPLESS_MONOCLE;

@@ -330,7 +330,7 @@ bool is_second_child(node_t *n)
 void change_split_ratio(node_t *n, value_change_t chg)
 {
     n->split_ratio = pow(n->split_ratio,
-            (chg == CHANGE_INCREASE ? (1 / GROWTH_FACTOR) : GROWTH_FACTOR));
+            (chg == CHANGE_INCREASE ? (1 / growth_factor) : growth_factor));
 }
 
 void reset_mode(coordinates_t *loc)

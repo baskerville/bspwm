@@ -1,8 +1,6 @@
 #ifndef _TREE_H
 #define _TREE_H
 
-#define GROWTH_FACTOR  1.1
-
 node_t *make_node(void);
 client_t *make_client(xcb_window_t);
 void arrange(monitor_t *, desktop_t *);
