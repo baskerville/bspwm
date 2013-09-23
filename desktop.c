@@ -86,7 +86,7 @@ desktop_t *make_desktop(const char *name)
 {
     desktop_t *d = malloc(sizeof(desktop_t));
     if (name == NULL)
-        snprintf(d->name, sizeof(d->name), "%s%02d", DEFAULT_DESK_NAME, ++desktop_uid);
+        snprintf(d->name, sizeof(d->name), "%s%d", DEFAULT_DESK_NAME, ++desktop_uid);
     else
         snprintf(d->name, sizeof(d->name), "%s", name);
     d->layout = LAYOUT_TILED;

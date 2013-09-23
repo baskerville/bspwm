@@ -1,7 +1,7 @@
 #ifndef _MONITOR_H
 #define _MONITOR_H
 
-#define DEFAULT_MON_NAME     "Monitor"
+#define DEFAULT_MON_NAME     "MONITOR"
 
 monitor_t *make_monitor(xcb_rectangle_t);
 monitor_t *find_monitor(char *);
