@@ -44,4 +44,5 @@ void load_settings(void)
     auto_alternate = AUTO_ALTERNATE;
     auto_cancel = AUTO_CANCEL;
     history_aware_focus = HISTORY_AWARE_FOCUS;
+    honor_ewmh_focus = HONOR_EWMH_FOCUS;
 }

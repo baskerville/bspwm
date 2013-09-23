@@ -808,6 +808,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         SETBOOL(auto_alternate)
         SETBOOL(auto_cancel)
         SETBOOL(history_aware_focus)
+        SETBOOL(honor_ewmh_focus)
 #undef SETBOOL
     } else {
         return false;
@@ -867,6 +868,7 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
     GETBOOL(auto_alternate)
     GETBOOL(auto_cancel)
     GETBOOL(history_aware_focus)
+    GETBOOL(honor_ewmh_focus)
 #undef GETBOOL
     else
         return false;
