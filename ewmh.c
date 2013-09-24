@@ -80,12 +80,14 @@ void ewmh_update_desktop_names(void)
             for (j = 0; d->name[j] != '\0' && (i + j) < sizeof(names); j++)
                 names[i + j] = d->name[j];
             i += j;
-            if (i <= sizeof(names))
+            if (i < sizeof(names))
                 names[i++] = '\0';
         }
 
-    names_len = i - 1;
+    if (i < 1)
+        return;
 
+    names_len = i - 1;
     xcb_ewmh_set_desktop_names(ewmh, default_screen, names_len, names);
 }
 
