@@ -141,7 +141,8 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
     desktop_t *d = ms->desk_head;
     while (d != NULL) {
         desktop_t *next = d->next;
-        transfer_desktop(ms, md, d);
+        if (d->root != NULL || strstr(d->name, DEFAULT_DESK_NAME) == NULL)
+            transfer_desktop(ms, md, d);
         d = next;
     }
 }
@@ -293,6 +294,11 @@ bool import_monitors(void)
     }
     free(gpo);
 
+    /* add one desktop to each new monitor */
+    for (m = mon_head; m != NULL; m = m->next)
+        if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
+            add_desktop(m, make_desktop(NULL));
+
     /* handle overlapping monitors */
     m = mon_head;
     while (m != NULL) {
@@ -309,11 +315,6 @@ bool import_monitors(void)
         }
         m = next;
     }
-
-    /* add one desktop to each new monitor */
-    for (m = mon_head; m != NULL; m = m->next)
-        if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
-            add_desktop(m, make_desktop(NULL));
 
     /* merge and remove disconnected monitors */
     m = mon_head;
