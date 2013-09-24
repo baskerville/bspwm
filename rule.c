@@ -11,6 +11,8 @@ rule_t *make_rule(void)
     rule_t *r = malloc(sizeof(rule_t));
     r->uid = ++rule_uid;
     r->effect.floating = false;
+    r->effect.fullscreen = false;
+    r->effect.locked = false;
     r->effect.follow = false;
     r->effect.focus = false;
     r->effect.unmanage = false;
