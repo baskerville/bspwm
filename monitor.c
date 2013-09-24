@@ -15,7 +15,7 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
     monitor_t *m = malloc(sizeof(monitor_t));
     snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
     m->prev = m->next = NULL;
-    m->desk = m->last_desk = NULL;
+    m->desk = m->last_desk = m->desk_head = m->desk_tail = NULL;
     m->rectangle = rect;
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     m->wired = true;
