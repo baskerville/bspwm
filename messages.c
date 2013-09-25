@@ -8,10 +8,10 @@
 #include "tree.h"
 #include "desktop.h"
 #include "monitor.h"
+#include "pointer.h"
 #include "window.h"
 #include "rule.h"
 #include "restore.h"
-#include "events.h"
 #include "ewmh.h"
 #include "messages.h"
 

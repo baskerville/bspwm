@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "monitor.h"
