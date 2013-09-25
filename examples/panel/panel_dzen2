@@ -32,15 +32,15 @@ shift $((OPTIND - 1))
 while read -r line ; do
     case $line in
         S*)
-            # system informations
+            # clock output
             sys_infos="^fg($COLOR_STATUS_FG)^bg($COLOR_STATUS_BG)${PADDING}${line#?}${PADDING}^fg()^bg()${PADDING}"
             ;;
         T*)
-            # focused window title
+            # xtitle output
             title="^fg($COLOR_TITLE_FG)^bg($COLOR_TITLE_BG)${PADDING}${line#?}${PADDING}^fg()^bg()"
             ;;
         W*)
-            # window manager informations
+            # bspwm internal state
             wm_infos="$PADDING"
             IFS=$FIELDIFS
             set -- ${line#?}
@@ -51,23 +51,33 @@ while read -r line ; do
                         # desktops
                         name=${item#?}
                         case $item in
-                            [OFU]*)
-                                # active desktop
-                                FG=$COLOR_ACTIVE_FG
-                                BG=$COLOR_ACTIVE_BG
+                            O*)
+                                # focused occupied desktop
+                                FG=$COLOR_FOCUSED_OCCUPIED_FG
+                                BG=$COLOR_FOCUSED_OCCUPIED_BG
+                                ;;
+                            F*)
+                                # focused free desktop
+                                FG=$COLOR_FOCUSED_FREE_FG
+                                BG=$COLOR_FOCUSED_FREE_BG
+                                ;;
+                            U*)
+                                # focused urgent desktop
+                                FG=$COLOR_FOCUSED_URGENT_FG
+                                BG=$COLOR_FOCUSED_URGENT_BG
                                 ;;
                             o*)
-                                # inactive desktop
-                                FG=$COLOR_INACTIVE_FG
-                                BG=$COLOR_INACTIVE_BG
+                                # occupied desktop
+                                FG=$COLOR_OCUPPIED_FG
+                                BG=$COLOR_OCUPPIED_BG
                                 ;;
                             f*)
-                                # empty desktop
-                                FG=$COLOR_EMPTY_FG
-                                BG=$COLOR_EMPTY_BG
+                                # free desktop
+                                FG=$COLOR_FREE_FG
+                                BG=$COLOR_FREE_BG
                                 ;;
                             u*)
-                                # urgent (inactive) desktop
+                                # urgent desktop
                                 FG=$COLOR_URGENT_FG
                                 BG=$COLOR_URGENT_BG
                                 ;;
