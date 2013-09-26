@@ -237,7 +237,6 @@ bool import_monitors(void)
         return false;
 
     monitor_t *m, *mm = NULL;
-    unsigned int num = 0;
 
     int len = xcb_randr_get_screen_resources_current_outputs_length(sres);
     xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(sres);
@@ -274,7 +273,6 @@ bool import_monitors(void)
                     mm->id = outputs[i];
                     PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
                 }
-                num++;
             }
             free(cir);
         }
