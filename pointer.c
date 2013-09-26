@@ -187,7 +187,10 @@ void track_pointer(int root_x, int root_y)
                             loc.desktop = pmon->desk;
                         }
                     }
+                    bool focused = (n == mon->desk->focus);
                     transfer_node(m, d, loc.monitor, loc.desktop, n);
+                    if (focused)
+                        focus_node(loc.monitor, loc.desktop, n);
                     frozen_pointer->monitor = loc.monitor;
                     frozen_pointer->desktop = loc.desktop;
                 }
@@ -201,7 +204,10 @@ void track_pointer(int root_x, int root_y)
                 monitor_t *pmon = monitor_from_point(pt);
                 if (pmon == NULL || pmon == m)
                     return;
+                bool focused = (n == mon->desk->focus);
                 transfer_node(m, d, pmon, pmon->desk, n);
+                if (focused)
+                    focus_node(pmon, pmon->desk, n);
                 frozen_pointer->monitor = pmon;
                 frozen_pointer->desktop = pmon->desk;
             }
