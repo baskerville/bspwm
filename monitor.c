@@ -250,31 +250,36 @@ bool import_monitors(void)
 
     for (int i = 0; i < len; i++) {
         xcb_randr_get_output_info_reply_t *info = xcb_randr_get_output_info_reply(dpy, cookies[i], NULL);
-        if (info != NULL && info->crtc != XCB_NONE) {
-
-            xcb_randr_get_crtc_info_reply_t *cir = xcb_randr_get_crtc_info_reply(dpy, xcb_randr_get_crtc_info(dpy, info->crtc, XCB_CURRENT_TIME), NULL);
-            if (cir != NULL) {
-                xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
-                mm = get_monitor_by_id(outputs[i]);
-                if (mm != NULL) {
-                    mm->rectangle = rect;
-                    update_root(mm);
-                    for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
-                        for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-                            fit_monitor(mm, n->client);
-                    arrange(mm, mm->desk);
-                    mm->wired = true;
-                    PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);
-                } else {
-                    mm = add_monitor(rect);
-                    char *name = (char *)xcb_randr_get_output_info_name(info);
-                    size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info) + 1);
-                    snprintf(mm->name, name_len, "%s", name);
-                    mm->id = outputs[i];
-                    PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
+        if (info != NULL) {
+            if (info->crtc != XCB_NONE) {
+                xcb_randr_get_crtc_info_reply_t *cir = xcb_randr_get_crtc_info_reply(dpy, xcb_randr_get_crtc_info(dpy, info->crtc, XCB_CURRENT_TIME), NULL);
+                if (cir != NULL) {
+                    xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
+                    mm = get_monitor_by_id(outputs[i]);
+                    if (mm != NULL) {
+                        mm->rectangle = rect;
+                        update_root(mm);
+                        for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
+                            for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+                                fit_monitor(mm, n->client);
+                        arrange(mm, mm->desk);
+                        mm->wired = true;
+                        PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);
+                    } else {
+                        mm = add_monitor(rect);
+                        char *name = (char *)xcb_randr_get_output_info_name(info);
+                        size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info) + 1);
+                        snprintf(mm->name, name_len, "%s", name);
+                        mm->id = outputs[i];
+                        PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
+                    }
                 }
+                free(cir);
+            } else if (info->connection != XCB_RANDR_CONNECTION_DISCONNECTED) {
+                m = get_monitor_by_id(outputs[i]);
+                if (m != NULL)
+                    m->wired = true;
             }
-            free(cir);
         }
         free(info);
     }
