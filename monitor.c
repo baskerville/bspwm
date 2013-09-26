@@ -294,18 +294,14 @@ bool import_monitors(void)
     }
     free(gpo);
 
-    /* add one desktop to each new monitor */
-    for (m = mon_head; m != NULL; m = m->next)
-        if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
-            add_desktop(m, make_desktop(NULL));
-
     /* handle overlapping monitors */
     m = mon_head;
     while (m != NULL) {
         monitor_t *next = m->next;
         if (m->wired) {
             for (monitor_t *mb = mon_head; mb != NULL; mb = mb->next)
-                if (mb != m && mb->wired && contains(mb->rectangle, m->rectangle)) {
+                if (mb != m && mb->wired && (m->desk == NULL || mb->desk == NULL)
+                        && contains(mb->rectangle, m->rectangle)) {
                     if (mm == m)
                         mm = mb;
                     merge_monitors(m, mb);
@@ -326,6 +322,11 @@ bool import_monitors(void)
         }
         m = next;
     }
+
+    /* add one desktop to each new monitor */
+    for (m = mon_head; m != NULL; m = m->next)
+        if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
+            add_desktop(m, make_desktop(NULL));
 
     free(sres);
     update_motion_recorder();
