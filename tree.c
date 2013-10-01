@@ -222,7 +222,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     if (mon->desk != d || n == NULL)
         clear_input_focus();
 
-    if (n != NULL && d->focus != NULL && d->focus->client->fullscreen) {
+    if (n != NULL && d->focus != NULL && n != d->focus && d->focus->client->fullscreen) {
         set_fullscreen(d->focus, false);
         arrange(m, d);
     }
