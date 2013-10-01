@@ -315,7 +315,7 @@ bool cmd_desktop(char **args, int num)
                 if (!desktop_from_desc(*args, &trg, &dst))
                     return false;
             }
-            if (auto_alternate && dst.desktop == dst.monitor->desk) {
+            if (auto_alternate && dst.desktop == mon->desk) {
                 desktop_select_t sel;
                 sel.status = DESKTOP_STATUS_ALL;
                 sel.urgency = DESKTOP_URGENCY_ALL;
