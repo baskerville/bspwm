@@ -13,6 +13,7 @@ rule_t *make_rule(void)
     r->effect.floating = false;
     r->effect.fullscreen = false;
     r->effect.locked = false;
+    r->effect.sticky = false;
     r->effect.follow = false;
     r->effect.focus = false;
     r->effect.unmanage = false;
@@ -79,7 +80,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *fullscreen, bool *locked, bool *follow, bool *transient, bool *takes_focus, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *fullscreen, bool *locked, bool *sticky, bool *follow, bool *transient, bool *takes_focus, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -138,6 +139,8 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
                 *fullscreen = true;
             if (efc.locked)
                 *locked = true;
+            if (efc.sticky)
+                *sticky = true;
             if (efc.follow)
                 *follow = true;
             if (efc.focus)
@@ -158,6 +161,11 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
             remove_rule(rule);
         rule = next;
     }
+
+    if (*sticky) {
+        *m = mon;
+        *d = mon->desk;
+    }
 }
 
 void list_rules(char *pattern, char *rsp)
@@ -175,6 +183,8 @@ void list_rules(char *pattern, char *rsp)
             strncat(rsp, " --fullscreen", REMLEN(rsp));
         if (r->effect.locked)
             strncat(rsp, " --locked", REMLEN(rsp));
+        if (r->effect.sticky)
+            strncat(rsp, " --sticky", REMLEN(rsp));
         if (r->effect.follow)
             strncat(rsp, " --follow", REMLEN(rsp));
         if (r->effect.focus)

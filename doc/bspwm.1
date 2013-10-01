@@ -493,7 +493,7 @@ Set the splitting ratio (or pull, or push) the edge located in the given directi
 Rotate the tree holding the edge located in the given direction in relation to the selected window\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked[=on|off]
+\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked|sticky[=on|off]
 .RS 4
 Set or toggle the given state for the selected window\&.
 .RE
@@ -810,7 +810,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <pattern> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <pattern> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
 Create a new rule (<pattern> must match the class or instance name)\&.
 .RE
@@ -897,6 +897,16 @@ Color of the border of a focused locked window of an unfocused monitor\&.
 \fInormal_locked_border_color\fR
 .RS 4
 Color of the border of an unfocused locked window\&.
+.RE
+.PP
+\fIfocused_sticky_border_color\fR
+.RS 4
+Color of the border of a focused sticky window of a focused monitor\&.
+.RE
+.PP
+\fInormal_sticky_border_color\fR
+.RS 4
+Color of the border of an unfocused sticky window\&.
 .RE
 .PP
 \fIurgent_border_color\fR

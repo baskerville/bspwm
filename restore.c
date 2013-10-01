@@ -111,13 +111,14 @@ void restore_tree(char *file_path)
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char floating, transient, fullscreen, urgent, locked, sd, sm, end = 0;
-                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sm, &end);
+                char floating, transient, fullscreen, urgent, locked, sticky, sd, sm, end = 0;
+                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &sm, &end);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
                 c->urgent = (urgent == '-' ? false : true);
                 c->locked = (locked == '-' ? false : true);
+                c->sticky = (sticky == '-' ? false : true);
                 n->split_mode = (sm == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
                 if (sd == 'U')
                     n->split_dir = DIR_UP;
@@ -130,6 +131,8 @@ void restore_tree(char *file_path)
                 n->client = c;
                 if (end != 0)
                     d->focus = n;
+                if (c->sticky)
+                    d->num_sticky++;
             }
             if (br == 'a')
                 n->birth_rotation = 90;

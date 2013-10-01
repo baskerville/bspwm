@@ -140,6 +140,7 @@ typedef struct {
     bool transient;    /* transient window are always floating */
     bool fullscreen;
     bool locked;       /* protects window from being closed */
+    bool sticky;
     bool urgent;
     bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
@@ -171,6 +172,7 @@ struct desktop_t {
     desktop_t *next;
     int window_gap;
     unsigned int border_width;
+    int num_sticky;
 };
 
 typedef struct monitor_t monitor_t;
@@ -220,6 +222,7 @@ typedef struct {
     bool floating;
     bool fullscreen;
     bool locked;
+    bool sticky;
     bool follow;
     bool focus;
     bool unmanage;

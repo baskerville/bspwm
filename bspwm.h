@@ -42,6 +42,7 @@ int exit_status;
 
 bool visible;
 bool auto_raise;
+bool sticky_still;
 bool running;
 bool randr;
 

@@ -319,7 +319,7 @@ Options
 *-R*, *--rotate* 'DIR' '90|270|180'::
     Rotate the tree holding the edge located in the given direction in relation to the selected window.
 
-*-t*, *--toggle* floating|fullscreen|locked[=on|off]::
+*-t*, *--toggle* floating|fullscreen|locked|sticky[=on|off]::
     Set or toggle the given state for the selected window.
 
 *-c*, *--close*::
@@ -495,7 +495,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <pattern> [-d 'DESKTOP_SEL' [--follow]] [--floating] [--fullscreen] [--locked] [--focus] [--unmanage] [--one-shot]::
+*-a*, *--add* <pattern> [-d 'DESKTOP_SEL' [--follow]] [--floating] [--fullscreen] [--locked] [--sticky] [--focus] [--unmanage] [--one-shot]::
     Create a new rule (<pattern> must match the class or instance name).
 
 *-r*, *--remove* <rule_uid>|tail|head...::
@@ -551,6 +551,12 @@ Global Settings
 
 'normal_locked_border_color'::
     Color of the border of an unfocused locked window.
+
+'focused_sticky_border_color'::
+    Color of the border of a focused sticky window of a focused monitor.
+
+'normal_sticky_border_color'::
+    Color of the border of an unfocused sticky window.
 
 'urgent_border_color'::
     Color of the border of an urgent window.

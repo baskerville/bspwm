@@ -26,6 +26,7 @@ void window_kill(desktop_t *, node_t *);
 void set_fullscreen(node_t *, bool);
 void set_floating(node_t *, bool);
 void set_locked(monitor_t *, desktop_t *, node_t *, bool);
+void set_sticky(monitor_t *, desktop_t *, node_t *, bool);
 void set_urgency(monitor_t *, desktop_t *, node_t *, bool);
 void set_floating_atom(xcb_window_t, uint32_t);
 void enable_floating_atom(xcb_window_t);

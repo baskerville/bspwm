@@ -24,8 +24,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool floating = false, fullscreen = false, locked = false, follow = false, transient = false, takes_focus = true, manage = true;
-    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &follow, &transient, &takes_focus, &manage);
+    bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, manage = true;
+    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &manage);
 
     if (!manage) {
         disable_floating_atom(win);
@@ -55,6 +55,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     disable_floating_atom(c->window);
     set_floating(n, floating);
     set_locked(m, d, n, locked);
+    set_sticky(m, d, n, sticky);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
         set_fullscreen(d->focus, false);
@@ -353,6 +354,23 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
     window_draw_border(n, d->focus == n, m == mon);
 }
 
+void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+    if (n == NULL || n->client->sticky == value)
+        return;
+
+    client_t *c = n->client;
+
+    PRINTF("set sticky %X: %s\n", c->window, BOOLSTR(value));
+
+    c->sticky = value;
+    if (value)
+        d->num_sticky++;
+    else
+        d->num_sticky--;
+    window_draw_border(n, d->focus == n, m == mon);
+}
+
 void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
     if (value && mon->desk->focus == n)
@@ -389,6 +407,8 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
     if (focused_monitor && focused_window) {
         if (c->locked)
             get_color(focused_locked_border_color, c->window, &pxl);
+        else if (c->sticky)
+            get_color(focused_sticky_border_color, c->window, &pxl);
         else
             get_color(focused_border_color, c->window, &pxl);
     } else if (focused_window) {
@@ -403,6 +423,8 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
             get_color(urgent_border_color, c->window, &pxl);
         else if (c->locked)
             get_color(normal_locked_border_color, c->window, &pxl);
+        else if (c->sticky)
+            get_color(normal_sticky_border_color, c->window, &pxl);
         else
             get_color(normal_border_color, c->window, &pxl);
     }

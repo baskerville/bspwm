@@ -203,6 +203,8 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
         if (f->vacant)
             update_vacant_state(p);
     }
+    if (n->client->sticky)
+        d->num_sticky++;
     put_status();
 }
 
@@ -221,6 +223,20 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
     if (mon->desk != d || n == NULL)
         clear_input_focus();
+
+    if (mon->desk->num_sticky > 0 && d != mon->desk) {
+        node_t *a = first_extrema(mon->desk->root);
+        sticky_still = false;
+        while (a != NULL) {
+            node_t *b = next_leaf(a, mon->desk->root);
+            if (a->client->sticky)
+                transfer_node(mon, mon->desk, a, m, d, d->focus);
+            a = b;
+        }
+        sticky_still = true;
+        if (n == NULL)
+            n = d->focus;
+    }
 
     if (n != NULL && d->focus != NULL && n != d->focus && d->focus->client->fullscreen) {
         set_fullscreen(d->focus, false);
@@ -294,7 +310,7 @@ client_t *make_client(xcb_window_t win)
     snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
     c->border_width = BORDER_WIDTH;
     c->window = win;
-    c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;
+    c->floating = c->transient = c->fullscreen = c->locked = c->sticky = c->urgent = false;
     c->icccm_focus = false;
     xcb_icccm_get_wm_protocols_reply_t protocols;
     if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
@@ -739,6 +755,8 @@ void unlink_node(desktop_t *d, node_t *n)
 
         update_vacant_state(b->parent);
     }
+    if (n->client->sticky)
+        d->num_sticky--;
     put_status();
 }
 
@@ -777,7 +795,7 @@ void destroy_tree(node_t *n)
 
 void swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
-    if (n1 == NULL || n2 == NULL || n1 == n2)
+    if (n1 == NULL || n2 == NULL || n1 == n2 || (d1 != d2 && (n1->client->sticky || n2->client->sticky)))
         return;
 
     PRINTF("swap nodes %X %X", n1->client->window, n2->client->window);
@@ -846,7 +864,7 @@ void swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 void transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
 {
-    if (ns == NULL || ns == nd)
+    if (ns == NULL || ns == nd || (sticky_still && ns->client->sticky))
         return;
 
     PRINTF("transfer node %X\n", ns->client->window);
@@ -865,10 +883,12 @@ void transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 
     if (ds != dd) {
         ewmh_set_wm_desktop(ns, dd);
-        if (ds == ms->desk && dd != md->desk)
-            window_hide(ns->client->window);
-        else if (ds != ms->desk && dd == md->desk)
-            window_show(ns->client->window);
+        if (!ns->client->sticky) {
+            if (ds == ms->desk && dd != md->desk)
+                window_hide(ns->client->window);
+            else if (ds != ms->desk && dd == md->desk)
+                window_show(ns->client->window);
+        }
     }
 
     history_transfer_node(md, dd, ns);

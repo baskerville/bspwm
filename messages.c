@@ -176,6 +176,8 @@ bool cmd_window(char **args, int num)
                 dirty = true;
             } else if (streq("locked", key)) {
                 set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->locked));
+            } else if (streq("sticky", key)) {
+                set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->sticky));
             }
         } else if (streq("-p", *args) || streq("--presel", *args)) {
             num--, args++;
@@ -568,6 +570,8 @@ bool cmd_rule(char **args, int num, char *rsp) {
                     rule->effect.fullscreen = true;
                 } else if (streq("--locked", *args)) {
                     rule->effect.locked = true;
+                } else if (streq("--sticky", *args)) {
+                    rule->effect.sticky = true;
                 } else if (streq("--follow", *args)) {
                     rule->effect.follow = true;
                 } else if (streq("--focus", *args)) {
@@ -798,6 +802,8 @@ bool set_setting(coordinates_t loc, char *name, char *value)
     SETCOLOR(focused_locked_border_color)
     SETCOLOR(active_locked_border_color)
     SETCOLOR(normal_locked_border_color)
+    SETCOLOR(focused_sticky_border_color)
+    SETCOLOR(normal_sticky_border_color)
     SETCOLOR(urgent_border_color)
 #undef SETCOLOR
     } else if (streq("focus_follows_pointer", name)) {
@@ -883,6 +889,8 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
     GETCOLOR(focused_locked_border_color)
     GETCOLOR(active_locked_border_color)
     GETCOLOR(normal_locked_border_color)
+    GETCOLOR(focused_sticky_border_color)
+    GETCOLOR(normal_sticky_border_color)
     GETCOLOR(urgent_border_color)
 #undef GETCOLOR
 #define GETBOOL(s) \
