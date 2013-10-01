@@ -555,9 +555,6 @@ Global Settings
 'urgent_border_color'::
     Color of the border of an urgent window.
 
-'border_width'::
-    Window border width.
-
 'split_ratio'::
     Default split ratio.
 
@@ -605,6 +602,9 @@ Desktop Settings
 
 'window_gap'::
     Size of the gap that separates windows.
+
+'border_width'::
+    Window border width.
 
 
 Environment Variables

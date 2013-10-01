@@ -170,6 +170,7 @@ struct desktop_t {
     desktop_t *prev;
     desktop_t *next;
     int window_gap;
+    unsigned int border_width;
 };
 
 typedef struct monitor_t monitor_t;

@@ -118,16 +118,13 @@ void configure_request(xcb_generic_event_t *evt)
     } else {
         xcb_configure_notify_event_t evt;
         xcb_rectangle_t rect;
-        unsigned int bw;
         xcb_window_t win = loc.node->client->window;
+        unsigned int bw = loc.node->client->border_width;
 
-        if (is_tiled(loc.node->client)) {
-            rect = loc.node->client->tiled_rectangle;
-            bw = border_width;
-        } else {
+        if (loc.node->client->fullscreen)
             rect = loc.monitor->rectangle;
-            bw = 0;
-        }
+        else
+            rect = loc.node->client->tiled_rectangle;
 
         evt.response_type = XCB_CONFIGURE_NOTIFY;
         evt.event = win;

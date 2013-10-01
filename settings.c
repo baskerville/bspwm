@@ -31,7 +31,6 @@ void load_settings(void)
     snprintf(normal_locked_border_color, sizeof(normal_locked_border_color), "%s", NORMAL_LOCKED_BORDER_COLOR);
     snprintf(urgent_border_color, sizeof(urgent_border_color), "%s", URGENT_BORDER_COLOR);
 
-    border_width = BORDER_WIDTH;
     split_ratio = SPLIT_RATIO;
     growth_factor = GROWTH_FACTOR;
 

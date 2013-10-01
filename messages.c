@@ -738,22 +738,27 @@ bool cmd_quit(char **args, int num) {
 
 bool set_setting(coordinates_t loc, char *name, char *value)
 {
+#define DESKSET(k, v) \
+        if (loc.desktop != NULL) \
+            loc.desktop->k = v; \
+        else if (loc.monitor != NULL) \
+            for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) \
+                d->k = v; \
+        else \
+            for (monitor_t *m = mon_head; m != NULL; m = m->next) \
+                for (desktop_t *d = m->desk_head; d != NULL; d = d->next) \
+                    d->k = v;
     if (streq("border_width", name)) {
-        if (sscanf(value, "%u", &border_width) != 1)
+        unsigned int bw;
+        if (sscanf(value, "%u", &bw) != 1)
             return false;
+        DESKSET(border_width, bw)
     } else if (streq("window_gap", name)) {
         int wg;
         if (sscanf(value, "%i", &wg) != 1)
             return false;
-        if (loc.desktop != NULL)
-            loc.desktop->window_gap = wg;
-        else if (loc.monitor != NULL)
-            for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next)
-                d->window_gap = wg;
-        else
-            for (monitor_t *m = mon_head; m != NULL; m = m->next)
-                for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-                    d->window_gap = wg;
+        DESKSET(window_gap, wg)
+#undef DESKSET
 #define MONSET(k) \
     } else if (streq(#k, name)) { \
         int v; \
@@ -843,9 +848,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 
 bool get_setting(coordinates_t loc, char *name, char* rsp)
 {
-    if (streq("border_width", name))
-        snprintf(rsp, BUFSIZ, "%u", border_width);
-    else if (streq("split_ratio", name))
+    if (streq("split_ratio", name))
         snprintf(rsp, BUFSIZ, "%lf", split_ratio);
     else if (streq("growth_factor", name))
         snprintf(rsp, BUFSIZ, "%lf", growth_factor);
@@ -854,6 +857,11 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
             return false;
         else
             snprintf(rsp, BUFSIZ, "%i", loc.desktop->window_gap);
+    else if (streq("border_width", name))
+        if (loc.desktop == NULL)
+            return false;
+        else
+            snprintf(rsp, BUFSIZ, "%u", loc.desktop->border_width);
 #define MONGET(k) \
     else if (streq(#k, name)) \
         if (loc.monitor == NULL) \

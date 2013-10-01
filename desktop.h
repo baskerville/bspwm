@@ -3,6 +3,7 @@
 
 #define DEFAULT_DESK_NAME    "Desktop"
 #define WINDOW_GAP           6
+#define BORDER_WIDTH         1
 
 void select_desktop(monitor_t *, desktop_t *);
 desktop_t *closest_desktop(monitor_t *, desktop_t *, cycle_dir_t, desktop_select_t);

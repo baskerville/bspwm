@@ -37,8 +37,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 
     if (is_leaf(n)) {
 
-        if (is_floating(n->client) && n->client->border_width != border_width) {
-            int ds = 2 * (border_width - n->client->border_width);
+        if (is_floating(n->client) && n->client->border_width != d->border_width) {
+            int ds = 2 * (d->border_width - n->client->border_width);
             n->client->floating_rectangle.width += ds;
             n->client->floating_rectangle.height += ds;
         }
@@ -47,7 +47,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
                 n->client->fullscreen)
             n->client->border_width = 0;
         else
-            n->client->border_width = border_width;
+            n->client->border_width = d->border_width;
 
         xcb_rectangle_t r;
         if (!n->client->fullscreen) {
@@ -292,7 +292,7 @@ client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
     snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
-    c->border_width = border_width;
+    c->border_width = BORDER_WIDTH;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->urgent = false;
     c->icccm_focus = false;

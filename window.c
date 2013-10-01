@@ -99,7 +99,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 {
-    if (n == NULL || border_width < 1 || n->client->border_width < 1)
+    if (n == NULL || n->client->border_width < 1)
         return;
 
     xcb_window_t win = n->client->window;
@@ -108,6 +108,7 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
     if (n->split_mode == MODE_AUTOMATIC) {
         xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXEL, &border_color_pxl);
     } else {
+        unsigned int border_width = n->client->border_width;
         uint32_t presel_border_color_pxl;
         get_color(presel_border_color, win, &presel_border_color_pxl);
 
