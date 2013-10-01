@@ -1,13 +1,14 @@
 #include <ctype.h>
 #include <string.h>
 #include "bspwm.h"
-#include "monitor.h"
 #include "desktop.h"
-#include "tree.h"
-#include "settings.h"
-#include "query.h"
-#include "history.h"
 #include "ewmh.h"
+#include "history.h"
+#include "monitor.h"
+#include "query.h"
+#include "settings.h"
+#include "stack.h"
+#include "tree.h"
 #include "restore.h"
 
 void restore_tree(char *file_path)
@@ -53,11 +54,8 @@ void restore_tree(char *file_path)
             m->right_padding = right;
             m->bottom_padding = bottom;
             m->left_padding = left;
-            if (end == '#')
+            if (end != 0)
                 mon = m;
-            else if (end == '~')
-                last_mon = m;
-
         } else if (level == 2) {
             if (m == NULL)
                 continue;
@@ -75,10 +73,8 @@ void restore_tree(char *file_path)
                 d->layout = LAYOUT_MONOCLE;
             else if (layout == 'T')
                 d->layout = LAYOUT_TILED;
-            if (end == '@')
+            if (end != 0)
                 m->desk = d;
-            else if (end == '~')
-                m->last_desk = d;
 
         } else {
             if (m == NULL || d == NULL)
@@ -130,7 +126,7 @@ void restore_tree(char *file_path)
                 else if (sd == 'L')
                     n->split_dir = DIR_LEFT;
                 n->client = c;
-                if (end == '*')
+                if (end != 0)
                     d->focus = n;
             }
             if (br == 'a')
@@ -165,34 +161,70 @@ void restore_history(char *file_path)
 
     FILE *snapshot = fopen(file_path, "r");
     if (snapshot == NULL) {
-        warn("Restore history: can't open file\n");
+        warn("Restore history: can't open '%s'.\n", file_path);
         return;
     }
 
     PUTS("restore history");
 
     char line[MAXLEN];
-    desktop_t *d = NULL;
-    unsigned int level;
+    char mnm[SMALEN];
+    char dnm[SMALEN];
+    xcb_window_t win;
 
     while (fgets(line, sizeof(line), snapshot) != NULL) {
-        unsigned int i = strlen(line) - 1;
-        while (i > 0 && isspace(line[i]))
-            line[i--] = '\0';
-        level = 0;
-        while (level < strlen(line) && isspace(line[level]))
-            level++;
-        if (level == 0) {
+        if (sscanf(line, "%s %s %X", mnm, dnm, &win) == 3) {
             coordinates_t loc;
-            if (locate_desktop(line + level, &loc))
-                d = loc.desktop;
-        } else if (d != NULL) {
-            xcb_window_t win;
-            if (sscanf(line + level, "%X", &win) == 1) {
-                coordinates_t loc;
-                if (locate_window(win, &loc))
-                    history_add(d->history, loc.node);
+            if (win != XCB_NONE && !locate_window(win, &loc)) {
+                warn("Can't locate window 0x%X.\n", win);
+                continue;
             }
+            node_t *n = (win == XCB_NONE ? NULL : loc.node);
+            if (!locate_desktop(dnm, &loc)) {
+                warn("Can't locate desktop '%s'.\n", dnm);
+                continue;
+            }
+            desktop_t *d = loc.desktop;
+            if (!locate_monitor(mnm, &loc)) {
+                warn("Can't locate monitor '%s'.\n", mnm);
+                continue;
+            }
+            monitor_t *m = loc.monitor;
+            history_add(m, d, n);
+        } else {
+            warn("Can't parse history entry: '%s'\n", line);
+        }
+    }
+
+    fclose(snapshot);
+}
+
+void restore_stack(char *file_path)
+{
+    if (file_path == NULL)
+        return;
+
+    FILE *snapshot = fopen(file_path, "r");
+    if (snapshot == NULL) {
+        warn("Restore stack: can't open '%s'.\n", file_path);
+        return;
+    }
+
+    PUTS("restore stack");
+
+    char line[MAXLEN];
+    xcb_window_t win;
+
+    while (fgets(line, sizeof(line), snapshot) != NULL) {
+        if (sscanf(line, "%X", &win) == 1) {
+            coordinates_t loc;
+            if (win != XCB_NONE && !locate_window(win, &loc)) {
+                warn("Can't locate window 0x%X.\n", win);
+                continue;
+            }
+            stack_insert_after(stack_tail, loc.node);
+        } else {
+            warn("Can't parse stack entry: '%s'\n", line);
         }
     }
 

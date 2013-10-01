@@ -3,8 +3,8 @@
 
 #include <stdarg.h>
 #include <xcb/xcb.h>
-#include <xcb/xcb_icccm.h>
 #include <xcb/xcb_event.h>
+#include <xcb/xcb_icccm.h>
 #include "types.h"
 
 pointer_state_t *make_pointer_state(void);
@@ -23,8 +23,8 @@ void update_floating_rectangle(client_t *);
 void query_pointer(xcb_window_t *, xcb_point_t *);
 void window_close(node_t *);
 void window_kill(desktop_t *, node_t *);
-void set_fullscreen(desktop_t *, node_t *, bool);
-void set_floating(desktop_t *, node_t *, bool);
+void set_fullscreen(node_t *, bool);
+void set_floating(node_t *, bool);
 void set_locked(monitor_t *, desktop_t *, node_t *, bool);
 void set_urgency(monitor_t *, desktop_t *, node_t *, bool);
 void set_floating_atom(xcb_window_t, uint32_t);
@@ -39,8 +39,6 @@ void window_raise(xcb_window_t);
 void window_stack(xcb_window_t, xcb_window_t, uint32_t);
 void window_above(xcb_window_t, xcb_window_t);
 void window_below(xcb_window_t, xcb_window_t);
-void stack_tiled(desktop_t *);
-void stack(desktop_t *, node_t *);
 void window_lower(xcb_window_t);
 void window_set_visibility(xcb_window_t, bool);
 void window_hide(xcb_window_t);

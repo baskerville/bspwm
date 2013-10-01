@@ -17,6 +17,8 @@
 #include "bspwm.h"
 #include "tree.h"
 #include "window.h"
+#include "history.h"
+#include "stack.h"
 #include "rule.h"
 #include "ewmh.h"
 
@@ -163,8 +165,10 @@ void init(void)
 {
     num_monitors = num_desktops = num_clients = 0;
     monitor_uid = desktop_uid = rule_uid = 0;
-    mon = last_mon = mon_head = mon_tail = pri_mon = NULL;
+    mon = mon_head = mon_tail = pri_mon = NULL;
     rule_head = rule_tail = NULL;
+    history_head = history_tail = NULL;
+    stack_head = stack_tail = NULL;
     status_fifo = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
     randr_base = 0;
@@ -264,6 +268,9 @@ void cleanup(void)
         remove_monitor(mon_head);
     while (rule_head != NULL)
         remove_rule(rule_head);
+    while (stack_head != NULL)
+        remove_stack(stack_head);
+    empty_history();
     free(frozen_pointer);
 }
 

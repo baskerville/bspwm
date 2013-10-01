@@ -3,5 +3,6 @@
 
 void restore_tree(char *);
 void restore_history(char *);
+void restore_stack(char *);
 
 #endif

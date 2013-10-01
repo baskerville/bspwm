@@ -23,10 +23,13 @@ char *status_prefix;
 char config_path[MAXLEN];
 
 monitor_t *mon;
-monitor_t *last_mon;
 monitor_t *mon_head;
 monitor_t *mon_tail;
 monitor_t *pri_mon;
+history_t *history_head;
+history_t *history_tail;
+stack_t *stack_head;
+stack_t *stack_tail;
 rule_t *rule_head;
 rule_t *rule_tail;
 

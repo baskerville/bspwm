@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 09/23/2013
+.\"      Date: 10/01/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "09/23/2013" "Bspwm 0\&.8" "Bspwm Manual"
+.TH "BSPWM" "1" "10/01/2013" "Bspwm 0\&.8" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -676,6 +676,11 @@ Print tree rooted at query\&.
 Print the history as it relates to the query\&.
 .RE
 .PP
+\fB\-S\fR, \fB\-\-stack\fR
+.RS 4
+Print the window stacking order\&.
+.RE
+.PP
 [\fB\-m\fR,\fB\-\-monitor\fR [\fIMONITOR_SEL\fR]] | [\fB\-d\fR,\fB\-\-desktop\fR [\fIDESKTOP_SEL\fR]] | [\fB\-w\fR, \fB\-\-window\fR [\fIWINDOW_SEL\fR]]
 .RS 4
 Constrain matches to the selected monitor, desktop or window\&.
@@ -710,6 +715,11 @@ Load the desktop trees from the given file\&.
 \fB\-H\fR, \fB\-\-history\fR <file_path>
 .RS 4
 Load the focus history from the given file\&.
+.RE
+.PP
+\fB\-S\fR, \fB\-\-stack\fR <file_path>
+.RS 4
+Load the window stacking order from the given file\&.
 .RE
 .RE
 .SS "Control"

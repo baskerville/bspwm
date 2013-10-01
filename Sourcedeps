@@ -1,16 +1,17 @@
 bspc.o: bspc.c common.h helpers.h
-bspwm.o: bspwm.c bspwm.h common.h desktop.h events.h ewmh.h helpers.h messages.h monitor.h rule.h settings.h tree.h types.h window.h
+bspwm.o: bspwm.c bspwm.h common.h desktop.h events.h ewmh.h helpers.h history.h messages.h monitor.h rule.h settings.h stack.h tree.h types.h window.h
 desktop.o: desktop.c bspwm.h desktop.h ewmh.h helpers.h history.h monitor.h query.h tree.h types.h window.h
 events.o: events.c bspwm.h events.h ewmh.h helpers.h monitor.h query.h settings.h tree.h types.h window.h
 ewmh.o: ewmh.c bspwm.h ewmh.h helpers.h settings.h tree.h types.h
 helpers.o: helpers.c bspwm.h helpers.h types.h
-history.o: history.c helpers.h query.h types.h
-messages.o: messages.c bspwm.h desktop.h ewmh.h helpers.h messages.h monitor.h pointer.h query.h restore.h rule.h settings.h tree.h types.h window.h
-monitor.o: monitor.c bspwm.h desktop.h ewmh.h helpers.h monitor.h query.h settings.h tree.h types.h window.h
-pointer.o: pointer.c bspwm.h helpers.h pointer.h query.h settings.h tree.h types.h window.h
+history.o: history.c bspwm.h helpers.h query.h types.h
+messages.o: messages.c bspwm.h desktop.h ewmh.h helpers.h history.h messages.h monitor.h pointer.h query.h restore.h rule.h settings.h tree.h types.h window.h
+monitor.o: monitor.c bspwm.h desktop.h ewmh.h helpers.h history.h monitor.h query.h settings.h tree.h types.h window.h
+pointer.o: pointer.c bspwm.h helpers.h pointer.h query.h settings.h stack.h tree.h types.h window.h
 query.o: query.c bspwm.h desktop.h helpers.h history.h messages.h monitor.h query.h tree.h types.h
-restore.o: restore.c bspwm.h desktop.h ewmh.h helpers.h history.h monitor.h query.h restore.h settings.h tree.h types.h
+restore.o: restore.c bspwm.h desktop.h ewmh.h helpers.h history.h monitor.h query.h restore.h settings.h stack.h tree.h types.h
 rule.o: rule.c bspwm.h ewmh.h helpers.h query.h rule.h types.h window.h
 settings.o: settings.c bspwm.h helpers.h settings.h types.h
-tree.o: tree.c bspwm.h desktop.h ewmh.h helpers.h history.h monitor.h query.h settings.h tree.h types.h window.h
-window.o: window.c bspwm.h ewmh.h helpers.h monitor.h query.h rule.h settings.h tree.h types.h window.h
+stack.o: stack.c bspwm.h helpers.h stack.h types.h window.h
+tree.o: tree.c bspwm.h desktop.h ewmh.h helpers.h history.h monitor.h query.h settings.h stack.h tree.h types.h window.h
+window.o: window.c bspwm.h ewmh.h helpers.h monitor.h query.h rule.h settings.h stack.h tree.h types.h window.h

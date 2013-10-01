@@ -107,9 +107,6 @@ void ewmh_update_client_list(void)
             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
                 wins[i++] = n->client->window;
 
-    if (i != num_clients)
-        return;
-
     xcb_ewmh_set_client_list(ewmh, default_screen, num_clients, wins);
     xcb_ewmh_set_client_list_stacking(ewmh, default_screen, num_clients, wins);
 }

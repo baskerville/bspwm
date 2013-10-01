@@ -6,14 +6,16 @@ typedef enum {
     DOMAIN_DESKTOP,
     DOMAIN_WINDOW,
     DOMAIN_TREE,
-    DOMAIN_HISTORY
+    DOMAIN_HISTORY,
+    DOMAIN_STACK
 } domain_t;
 
 void query_monitors(coordinates_t, domain_t, char *);
 void query_desktops(monitor_t *, domain_t, coordinates_t, unsigned int, char *);
+void query_windows(coordinates_t, char *);
 void query_tree(desktop_t *, node_t *, char *, unsigned int);
 void query_history(coordinates_t, char *);
-void query_windows(coordinates_t, char *);
+void query_stack(char *);
 bool locate_window(xcb_window_t, coordinates_t *);
 bool locate_desktop(char *, coordinates_t *);
 bool locate_monitor(char *, coordinates_t *);

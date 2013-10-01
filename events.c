@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include "bspwm.h"
-#include "settings.h"
-#include "events.h"
-#include "monitor.h"
-#include "window.h"
-#include "query.h"
-#include "tree.h"
 #include "ewmh.h"
+#include "monitor.h"
+#include "query.h"
+#include "settings.h"
+#include "tree.h"
+#include "window.h"
+#include "events.h"
 
 void handle_event(xcb_generic_event_t *evt)
 {
@@ -210,14 +210,14 @@ void client_message(xcb_generic_event_t *evt)
         if (!honor_ewmh_focus || loc.node == mon->desk->focus)
             return;
         if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
-            set_fullscreen(loc.desktop, loc.desktop->focus, false);
+            set_fullscreen(loc.desktop->focus, false);
             arrange(loc.monitor, loc.desktop);
         }
         focus_node(loc.monitor, loc.desktop, loc.node);
     } else if (e->type == ewmh->_NET_WM_DESKTOP) {
         coordinates_t dloc;
         if (ewmh_locate_desktop(e->data.data32[0], &dloc))
-            transfer_node(loc.monitor, loc.desktop, dloc.monitor, dloc.desktop, loc.node);
+            transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus);
     }
 }
 
@@ -294,11 +294,11 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 {
     if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
         if (action == XCB_EWMH_WM_STATE_ADD)
-            set_fullscreen(d, n, true);
+            set_fullscreen(n, true);
         else if (action == XCB_EWMH_WM_STATE_REMOVE)
-            set_fullscreen(d, n, false);
+            set_fullscreen(n, false);
         else if (action == XCB_EWMH_WM_STATE_TOGGLE)
-            set_fullscreen(d, n, !n->client->fullscreen);
+            set_fullscreen(n, !n->client->fullscreen);
         arrange(m, d);
     } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
         if (action == XCB_EWMH_WM_STATE_ADD)

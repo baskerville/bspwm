@@ -1,13 +1,6 @@
 #! /bin/sh
 
 if [ -e "$BSPWM_TREE" ] ; then
-    bspc restore -T "$BSPWM_TREE"
-    rm "$BSPWM_TREE"
-else
-    bspc control --adopt-orphans
-fi
-
-if [ -e "$BSPWM_HISTORY" ] ; then
-    bspc restore -H "$BSPWM_HISTORY"
-    rm "$BSPWM_HISTORY"
+    bspc restore -T "$BSPWM_TREE" -H "$BSPWM_HISTORY" -S "$BSPWM_STACK"
+    rm "$BSPWM_TREE" "$BSPWM_HISTORY" "$BSPWM_STACK"
 fi

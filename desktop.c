@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include "bspwm.h"
-#include "desktop.h"
-#include "monitor.h"
-#include "tree.h"
-#include "history.h"
-#include "window.h"
-#include "query.h"
 #include "ewmh.h"
+#include "history.h"
+#include "monitor.h"
+#include "query.h"
+#include "tree.h"
+#include "window.h"
+#include "desktop.h"
 
 void select_desktop(monitor_t *m, desktop_t *d)
 {
@@ -20,7 +20,6 @@ void select_desktop(monitor_t *m, desktop_t *d)
     show_desktop(d);
     hide_desktop(mon->desk);
 
-    mon->last_desk = mon->desk;
     mon->desk = d;
 
     ewmh_update_current_desktop();
@@ -70,10 +69,13 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
         fit_monitor(md, n->client);
+
     arrange(md, d);
-    if (d != dd && md->desk == d) {
+
+    if (d != dd && md->desk == d)
         show_desktop(d);
-    }
+
+    history_transfer_desktop(md, d);
 
     ewmh_update_wm_desktops();
     ewmh_update_desktop_names();
@@ -91,7 +93,6 @@ desktop_t *make_desktop(const char *name)
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
     d->root = d->focus = NULL;
-    d->history = make_focus_history();
     d->window_gap = WINDOW_GAP;
     return d;
 }
@@ -124,13 +125,13 @@ void empty_desktop(desktop_t *d)
 {
     destroy_tree(d->root);
     d->root = d->focus = NULL;
-    empty_history(d->history);
 }
 
 void unlink_desktop(monitor_t *m, desktop_t *d)
 {
     desktop_t *prev = d->prev;
     desktop_t *next = d->next;
+    desktop_t *last_desk = history_get_desktop(m, d);
     if (prev != NULL)
         prev->next = next;
     if (next != NULL)
@@ -139,10 +140,8 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
         m->desk_head = next;
     if (m->desk_tail == d)
         m->desk_tail = prev;
-    if (m->last_desk == d)
-        m->last_desk = NULL;
     if (m->desk == d)
-        m->desk = (m->last_desk == NULL ? (prev == NULL ? next : prev) : m->last_desk);
+        m->desk = (last_desk == NULL ? (prev == NULL ? next : prev) : last_desk);
     d->prev = d->next = NULL;
 }
 
@@ -151,6 +150,7 @@ void remove_desktop(monitor_t *m, desktop_t *d)
     PRINTF("remove desktop %s\n", d->name);
 
     unlink_desktop(m, d);
+    history_remove(d, NULL);
     empty_desktop(d);
     free(d);
     num_desktops--;
@@ -159,19 +159,39 @@ void remove_desktop(monitor_t *m, desktop_t *d)
     put_status();
 }
 
-void swap_desktops(monitor_t *m, desktop_t *d1, desktop_t *d2)
+void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 {
     if (d1 == NULL || d2 == NULL || d1 == d2)
         return;
 
-    if (m->desk_head == d1)
-        m->desk_head = d2;
-    else if (m->desk_head == d2)
-        m->desk_head = d1;
-    if (m->desk_tail == d1)
-        m->desk_tail = d2;
-    else if (m->desk_tail == d2)
-        m->desk_tail = d1;
+    PRINTF("swap desktops %s %s\n", d1->name, d2->name);
+
+    bool d1_focused = (m1->desk == d1);
+    bool d2_focused = (m2->desk == d2);
+
+    if (m1 != m2) {
+        if (m1->desk == d1)
+            m1->desk = d2;
+        if (m1->desk_head == d1)
+            m1->desk_head = d2;
+        if (m1->desk_tail == d1)
+            m1->desk_tail = d2;
+        if (m2->desk == d2)
+            m2->desk = d1;
+        if (m2->desk_head == d2)
+            m2->desk_head = d1;
+        if (m2->desk_tail == d2)
+            m2->desk_tail = d1;
+    } else {
+        if (m1->desk_head == d1)
+            m1->desk_head = d2;
+        else if (m1->desk_head == d2)
+            m1->desk_head = d1;
+        if (m1->desk_tail == d1)
+            m1->desk_tail = d2;
+        else if (m1->desk_tail == d2)
+            m1->desk_tail = d1;
+    }
 
     desktop_t *p1 = d1->prev;
     desktop_t *n1 = d1->next;
@@ -192,6 +212,24 @@ void swap_desktops(monitor_t *m, desktop_t *d1, desktop_t *d2)
     d2->prev = p1 == d2 ? d1 : p1;
     d2->next = n1 == d2 ? d1 : n1;
 
+    if (m1 != m2) {
+        for (node_t *n = first_extrema(d1->root); n != NULL; n = next_leaf(n, d1->root))
+            fit_monitor(m2, n->client);
+        for (node_t *n = first_extrema(d2->root); n != NULL; n = next_leaf(n, d2->root))
+            fit_monitor(m1, n->client);
+        history_swap_desktops(m1, d1, m2, d2);
+        arrange(m1, d2);
+        arrange(m2, d1);
+        if (d1_focused && !d2_focused) {
+            hide_desktop(d1);
+            show_desktop(d2);
+        } else if (!d1_focused && d2_focused) {
+            show_desktop(d1);
+            hide_desktop(d2);
+        }
+    }
+
+    update_input_focus();
     ewmh_update_wm_desktops();
     ewmh_update_desktop_names();
     ewmh_update_current_desktop();

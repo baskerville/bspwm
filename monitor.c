@@ -1,13 +1,14 @@
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include "settings.h"
 #include "bspwm.h"
-#include "tree.h"
 #include "desktop.h"
-#include "window.h"
-#include "query.h"
 #include "ewmh.h"
+#include "history.h"
+#include "query.h"
+#include "settings.h"
+#include "tree.h"
+#include "window.h"
 #include "monitor.h"
 
 monitor_t *make_monitor(xcb_rectangle_t rect)
@@ -15,7 +16,7 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
     monitor_t *m = malloc(sizeof(monitor_t));
     snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
     m->prev = m->next = NULL;
-    m->desk = m->last_desk = m->desk_head = m->desk_tail = NULL;
+    m->desk = m->desk_head = m->desk_tail = NULL;
     m->rectangle = rect;
     m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     m->wired = true;
@@ -73,7 +74,6 @@ void select_monitor(monitor_t *m)
 
     PRINTF("select monitor %s\n", m->name);
 
-    last_mon = mon;
     mon = m;
 
     if (pointer_follows_monitor)
@@ -107,6 +107,7 @@ void remove_monitor(monitor_t *m)
         remove_desktop(m, m->desk_head);
     monitor_t *prev = m->prev;
     monitor_t *next = m->next;
+    monitor_t *last_mon = history_get_monitor(m);
     if (prev != NULL)
         prev->next = next;
     if (next != NULL)
@@ -115,18 +116,12 @@ void remove_monitor(monitor_t *m)
         mon_head = next;
     if (mon_tail == m)
         mon_tail = prev;
-    if (last_mon == m)
-        last_mon = NULL;
     if (pri_mon == m)
         pri_mon = NULL;
     if (mon == m) {
-        monitor_t *mm = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
-        if (mm != NULL) {
-            focus_node(mm, mm->desk, mm->desk->focus);
-            last_mon = NULL;
-        } else {
-            mon = NULL;
-        }
+        mon = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
+        if (mon != NULL && mon->desk != NULL)
+            update_current();
     }
     xcb_destroy_window(dpy, m->root);
     free(m);

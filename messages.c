@@ -1,18 +1,19 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <errno.h>
-#include "settings.h"
-#include "query.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "bspwm.h"
-#include "tree.h"
 #include "desktop.h"
+#include "ewmh.h"
+#include "history.h"
 #include "monitor.h"
 #include "pointer.h"
-#include "window.h"
-#include "rule.h"
+#include "query.h"
 #include "restore.h"
-#include "ewmh.h"
+#include "rule.h"
+#include "settings.h"
+#include "tree.h"
+#include "window.h"
 #include "messages.h"
 
 bool handle_message(char *msg, int msg_len, char *rsp)
@@ -111,7 +112,7 @@ bool cmd_window(char **args, int num)
             num--, args++;
             coordinates_t dst;
             if (desktop_from_desc(*args, &trg, &dst)) {
-                transfer_node(trg.monitor, trg.desktop, dst.monitor, dst.desktop, trg.node);
+                transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus);
                 trg.monitor = dst.monitor;
                 trg.desktop = dst.desktop;
             } else {
@@ -123,7 +124,7 @@ bool cmd_window(char **args, int num)
                 return false;
             coordinates_t dst;
             if (monitor_from_desc(*args, &trg, &dst)) {
-                transfer_node(trg.monitor, trg.desktop, dst.monitor, dst.monitor->desk, trg.node);
+                transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
                 trg.monitor = dst.monitor;
                 trg.desktop = dst.monitor->desk;
             } else {
@@ -135,7 +136,7 @@ bool cmd_window(char **args, int num)
                 return false;
             coordinates_t dst;
             if (node_from_desc(*args, &trg, &dst))
-                transplant_node(trg.monitor, trg.desktop, trg.node, dst.node);
+                transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node);
             else
                 return false;
             dirty = true;
@@ -145,9 +146,11 @@ bool cmd_window(char **args, int num)
                 return false;
             coordinates_t dst;
             if (node_from_desc(*args, &trg, &dst))
-                swap_nodes(trg.node, dst.node);
+                swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node);
             else
                 return false;
+            if (trg.desktop != dst.desktop)
+                arrange(dst.monitor, dst.desktop);
             dirty = true;
         } else if (streq("-t", *args) || streq("--toggle", *args)) {
             num--, args++;
@@ -166,10 +169,10 @@ bool cmd_window(char **args, int num)
                     return false;
             }
             if (streq("fullscreen", key)) {
-                set_fullscreen(trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->fullscreen));
+                set_fullscreen(trg.node, (a == ALTER_SET ? b : !trg.node->client->fullscreen));
                 dirty = true;
             } else if (streq("floating", key)) {
-                set_floating(trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->floating));
+                set_floating(trg.node, (a == ALTER_SET ? b : !trg.node->client->floating));
                 dirty = true;
             } else if (streq("locked", key)) {
                 set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->locked));
@@ -301,8 +304,12 @@ bool cmd_desktop(char **args, int num)
                 if (!desktop_from_desc(*args, &trg, &dst))
                     return false;
             }
-            if (auto_alternate && dst.desktop == dst.monitor->desk && dst.monitor->last_desk != NULL)
-                dst.desktop = dst.monitor->last_desk;
+            if (auto_alternate && dst.desktop == dst.monitor->desk) {
+                desktop_select_t sel;
+                sel.status = DESKTOP_STATUS_ALL;
+                sel.urgency = DESKTOP_URGENCY_ALL;
+                history_last_desktop(dst.desktop, sel, &dst);
+            }
             focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
         } else if (streq("-m", *args) || streq("--to-monitor", *args)) {
             num--, args++;
@@ -322,7 +329,7 @@ bool cmd_desktop(char **args, int num)
                 return false;
             coordinates_t dst;
             if (desktop_from_desc(*args, &trg, &dst) && trg.monitor == dst.monitor)
-                swap_desktops(dst.monitor, trg.desktop, dst.desktop);
+                swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop);
             else
                 return false;
         } else if (streq("-l", *args) || streq("--layout", *args)) {
@@ -427,8 +434,12 @@ bool cmd_monitor(char **args, int num)
                 if (!monitor_from_desc(*args, &trg, &dst))
                     return false;
             }
-            if (auto_alternate && dst.monitor == mon && last_mon != NULL)
-                dst.monitor = last_mon;
+            if (auto_alternate && dst.monitor == mon) {
+                desktop_select_t sel;
+                sel.status = DESKTOP_STATUS_ALL;
+                sel.urgency = DESKTOP_URGENCY_ALL;
+                history_last_monitor(dst.monitor, sel, &dst);
+            }
             focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
         } else if (streq("-a", *args) || streq("--add-desktops", *args)) {
             num--, args++;
@@ -491,6 +502,8 @@ bool cmd_query(char **args, int num, char *rsp) {
             dom = DOMAIN_WINDOW, d++;
         } else if (streq("-H", *args) || streq("--history", *args)) {
             dom = DOMAIN_HISTORY, d++;
+        } else if (streq("-S", *args) || streq("--stack", *args)) {
+            dom = DOMAIN_STACK, d++;
         } else if (streq("-m", *args) || streq("--monitor", *args)) {
             trg.monitor = ref.monitor;
             if (num > 1 && *(args + 1)[0] != OPT_CHR) {
@@ -527,6 +540,8 @@ bool cmd_query(char **args, int num, char *rsp) {
 
     if (dom == DOMAIN_HISTORY)
         query_history(trg, rsp);
+    else if (dom == DOMAIN_STACK)
+        query_stack(rsp);
     else if (dom == DOMAIN_WINDOW)
         query_windows(trg, rsp);
     else
@@ -650,6 +665,11 @@ bool cmd_restore(char **args, int num) {
             if (num < 1)
                 return false;
             restore_history(*args);
+        } else if (streq("-S", *args) || streq("--stack", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            restore_stack(*args);
         } else {
             return false;
         }

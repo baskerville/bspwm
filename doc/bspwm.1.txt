@@ -421,6 +421,9 @@ Options
 *-H*, *--history*::
     Print the history as it relates to the query.
 
+*-S*, *--stack*::
+    Print the window stacking order.
+
 [*-m*,*--monitor* ['MONITOR_SEL']] | [*-d*,*--desktop* ['DESKTOP_SEL']] | [*-w*, *--window* ['WINDOW_SEL']]::
     Constrain matches to the selected monitor, desktop or window.
 
@@ -440,6 +443,9 @@ Options
 
 *-H*, *--history* <file_path>::
     Load the focus history from the given file.
+
+*-S*, *--stack* <file_path>::
+    Load the window stacking order from the given file.
 
 Control
 ~~~~~~~

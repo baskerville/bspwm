@@ -1,11 +1,11 @@
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #include "bspwm.h"
-#include "tree.h"
-#include "monitor.h"
 #include "desktop.h"
-#include "messages.h"
 #include "history.h"
+#include "messages.h"
+#include "monitor.h"
+#include "tree.h"
 #include "query.h"
 
 void query_monitors(coordinates_t loc, domain_t dom, char *rsp)
@@ -23,9 +23,7 @@ void query_monitors(coordinates_t loc, domain_t dom, char *rsp)
                 snprintf(line, sizeof(line), "%s %ux%u%+i%+i %i,%i,%i,%i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y, m->top_padding, m->right_padding, m->bottom_padding, m->left_padding);
                 strncat(rsp, line, REMLEN(rsp));
                 if (m == mon)
-                    strncat(rsp, " #", REMLEN(rsp));
-                else if (m == last_mon)
-                    strncat(rsp, " ~", REMLEN(rsp));
+                    strncat(rsp, " *", REMLEN(rsp));
                 strncat(rsp, "\n", REMLEN(rsp));
             }
         }
@@ -49,9 +47,7 @@ void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int 
             snprintf(line, sizeof(line), "%s %i %c", d->name, d->window_gap, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
             strncat(rsp, line, REMLEN(rsp));
             if (d == m->desk)
-                strncat(rsp, " @", REMLEN(rsp));
-            else if (d == m->last_desk)
-                strncat(rsp, " ~", REMLEN(rsp));
+                strncat(rsp, " *", REMLEN(rsp));
             strncat(rsp, "\n", REMLEN(rsp));
         }
         query_tree(d, d->root, rsp, depth + 1);
@@ -88,19 +84,26 @@ void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 void query_history(coordinates_t loc, char *rsp)
 {
     char line[MAXLEN];
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        if (loc.monitor != NULL && m != loc.monitor)
+    for (history_t *h = history_head; h != NULL; h = h->next) {
+        if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
+                || (loc.desktop != NULL && h->loc.desktop != loc.desktop))
             continue;
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-            if (loc.desktop != NULL && d != loc.desktop)
-                continue;
-            snprintf(line, sizeof(line), "%s\n", d->name);
-            strncat(rsp, line, REMLEN(rsp));
-            for (node_list_t *a = d->history->tail; a != NULL; a = a->prev) {
-                snprintf(line, sizeof(line), "  %X\n", a->node->client->window);
-                strncat(rsp, line, REMLEN(rsp));
-            }
-        }
+        xcb_window_t win = XCB_NONE;
+        if (h->loc.node != NULL)
+            win = h->loc.node->client->window;
+        snprintf(line, sizeof(line), "%s %s 0x%X", h->loc.monitor->name, h->loc.desktop->name, win);
+        strncat(rsp, line, REMLEN(rsp));
+        strncat(rsp, "\n", REMLEN(rsp));
+    }
+}
+
+void query_stack(char *rsp)
+{
+    char line[MAXLEN];
+    for (stack_t *s = stack_head; s != NULL; s = s->next) {
+        snprintf(line, sizeof(line), "0x%X", s->node->client->window);
+        strncat(rsp, line, REMLEN(rsp));
+        strncat(rsp, "\n", REMLEN(rsp));
     }
 }
 
@@ -165,7 +168,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->node = closest_node(ref->desktop, ref->node, cyc, sel);
     } else if (streq("last", desc)) {
-        dst->node = history_last(ref->desktop->history, ref->node, sel);
+        history_last_node(ref->node, sel, dst);
     } else if (streq("biggest", desc)) {
         dst->node = find_biggest(ref->desktop, ref->node, sel);
     } else if (streq("focused", desc)) {
@@ -213,10 +216,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (parse_index(desc, &idx)) {
         desktop_from_index(idx, dst);
     } else if (streq("last", desc)) {
-        if (mon->last_desk != NULL && desktop_matches(mon->last_desk, sel)) {
-            dst->monitor = mon;
-            dst->desktop = mon->last_desk;
-        }
+        history_last_desktop(ref->desktop, sel, dst);
     } else if (streq("focused", desc)) {
         if (desktop_matches(mon->desk, sel)) {
             dst->monitor = mon;
@@ -257,8 +257,7 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (parse_index(desc, &idx)) {
         monitor_from_index(idx, dst);
     } else if (streq("last", desc)) {
-        if (last_mon != NULL && desktop_matches(last_mon->desk, sel))
-            dst->monitor = last_mon;
+        history_last_monitor(ref->monitor, sel, dst);
     } else if (streq("primary", desc)) {
         if (pri_mon != NULL && desktop_matches(pri_mon->desk, sel))
             dst->monitor = pri_mon;

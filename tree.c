@@ -1,22 +1,23 @@
-#include <math.h>
-#include <limits.h>
 #include <float.h>
-#include "settings.h"
-#include "window.h"
+#include <limits.h>
 #include "bspwm.h"
-#include "ewmh.h"
-#include "tree.h"
 #include "desktop.h"
-#include "monitor.h"
+#include "ewmh.h"
 #include "history.h"
+#include "monitor.h"
 #include "query.h"
+#include "settings.h"
+#include "stack.h"
+#include "window.h"
+#include <math.h>
+#include "tree.h"
 
 void arrange(monitor_t *m, desktop_t *d)
 {
     if (d->root == NULL)
         return;
 
-    PRINTF("arrange %s%s%s\n", (num_monitors > 1 ? m->name : ""), (num_monitors > 1 ? " " : ""), d->name);
+    PRINTF("arrange %s %s\n", m->name, d->name);
 
     xcb_rectangle_t rect = m->rectangle;
     int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
@@ -115,6 +116,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
     if (f == NULL) {
         d->root = n;
+        d->focus = n;
     } else {
         node_t *c = make_node();
         node_t *p = f->parent;
@@ -206,11 +208,10 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
 void pseudo_focus(desktop_t *d, node_t *n)
 {
-    if (n == NULL || d->focus == n)
+    if (n == NULL)
         return;
     d->focus = n;
-    history_add(d->history, n);
-    stack(d, n);
+    stack(n);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -220,6 +221,11 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
     if (mon->desk != d || n == NULL)
         clear_input_focus();
+
+    if (n != NULL && d->focus != NULL && d->focus->client->fullscreen) {
+        set_fullscreen(d->focus, false);
+        arrange(m, d);
+    }
 
     if (mon != m) {
         for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
@@ -239,6 +245,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     select_desktop(m, d);
 
     if (n == NULL) {
+        history_add(m, d, NULL);
         ewmh_update_active_window();
         return;
     }
@@ -248,6 +255,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     n->client->urgent = false;
 
     pseudo_focus(d, n);
+    history_add(m, d, n);
     set_input_focus(n);
 
     if (focus_follows_pointer) {
@@ -462,13 +470,13 @@ node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir, client_select
 
     node_t *nearest = NULL;
     if (history_aware_focus)
-        nearest = nearest_from_history(d->history, n, dir, sel);
+        nearest = nearest_from_history(d, n, dir, sel);
     if (nearest == NULL)
         nearest = nearest_from_distance(d, n, dir, sel);
     return nearest;
 }
 
-node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_from_history(desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL || !is_tiled(n->client))
         return NULL;
@@ -490,7 +498,7 @@ node_t *nearest_from_history(focus_history_t *f, node_t *n, direction_t dir, cli
         if (!node_matches(n, a, sel))
             continue;
 
-        int rank = history_rank(f, a);
+        int rank = history_rank(d, a);
         if (rank >= 0 && rank < min_rank) {
             nearest = a;
             min_rank = rank;
@@ -723,8 +731,11 @@ void unlink_node(desktop_t *d, node_t *n)
         n->parent = NULL;
         free(p);
 
-        if (n == d->focus)
-            d->focus = history_get(d->history, 1);
+        if (n == d->focus) {
+            d->focus = history_get_node(d, n);
+            if (d->focus == NULL && d->root != NULL)
+                d->focus = first_extrema(d->root);
+        }
 
         update_vacant_state(b->parent);
     }
@@ -739,7 +750,8 @@ void remove_node(desktop_t *d, node_t *n)
     PRINTF("remove node %X\n", n->client->window);
 
     unlink_node(d, n);
-    history_remove(d->history, n);
+    history_remove(d, n);
+    remove_stack_node(n);
     free(n->client);
     free(n);
 
@@ -763,14 +775,13 @@ void destroy_tree(node_t *n)
     destroy_tree(second_tree);
 }
 
-void swap_nodes(node_t *n1, node_t *n2)
+void swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
     if (n1 == NULL || n2 == NULL || n1 == n2)
         return;
 
-    PUTS("swap nodes");
+    PRINTF("swap nodes %X %X", n1->client->window, n2->client->window);
 
-    /* (n1 and n2 are leaves) */
     node_t *pn1 = n1->parent;
     node_t *pn2 = n2->parent;
     bool n1_first_child = is_first_child(n1);
@@ -802,64 +813,79 @@ void swap_nodes(node_t *n1, node_t *n2)
         update_vacant_state(n2->parent);
     }
 
-    /* If we ever need to generalize: */
-    /* if (d1 != d2) { */
-    /*     if (d1->root == n1) */
-    /*         d1->root = n2; */
-    /*     if (d1->focus == n1) */
-    /*         d1->focus = n2; */
-    /*     if (d1->last_focus == n1) */
-    /*         d1->last_focus = n2; */
-    /*     if (d2->root == n2) */
-    /*         d2->root = n1; */
-    /*     if (d2->focus == n2) */
-    /*         d2->focus = n1; */
-    /*     if (d2->last_focus == n2) */
-    /*         d2->last_focus = n1; */
-    /* } */
+    if (d1 != d2) {
+        if (d1->root == n1)
+            d1->root = n2;
+        if (d1->focus == n1)
+            d1->focus = n2;
+        if (d2->root == n2)
+            d2->root = n1;
+        if (d2->focus == n2)
+            d2->focus = n1;
+
+        if (m1 != m2) {
+            fit_monitor(m1, n2->client);
+            fit_monitor(m2, n1->client);
+        }
+
+        ewmh_set_wm_desktop(n1, d2);
+        ewmh_set_wm_desktop(n2, d1);
+        history_swap_nodes(m1, d1, n1, m2, d2, n2);
+
+        if (m1->desk != d1 && m2->desk == d2) {
+            window_show(n1->client->window);
+            window_hide(n2->client->window);
+        } else if (m1->desk == d1 && m2->desk != d2) {
+            window_hide(n1->client->window);
+            window_show(n2->client->window);
+        }
+
+        update_input_focus();
+    }
 }
 
-void transfer_node(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
+void transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
 {
-    if (n == NULL || dd == ds)
+    if (ns == NULL || ns == nd)
         return;
 
-    PRINTF("transfer node %X\n", n->client->window);
+    PRINTF("transfer node %X\n", ns->client->window);
 
-    unlink_node(ds, n);
-    history_remove(ds->history, n);
-    insert_node(md, dd, n, dd->focus);
-    ewmh_set_wm_desktop(n, dd);
+    bool focused = (ns == mon->desk->focus);
+    bool active = (ns == ds->focus);
 
-    if (ds == ms->desk && dd != md->desk) {
-        if (n == ds->focus)
-            clear_input_focus();
-        window_hide(n->client->window);
+    if (focused)
+        clear_input_focus();
+
+    unlink_node(ds, ns);
+    insert_node(md, dd, ns, nd);
+
+    if (md != ms)
+        fit_monitor(md, ns->client);
+
+    if (ds != dd) {
+        ewmh_set_wm_desktop(ns, dd);
+        if (ds == ms->desk && dd != md->desk)
+            window_hide(ns->client->window);
+        else if (ds != ms->desk && dd == md->desk)
+            window_show(ns->client->window);
     }
 
-    fit_monitor(md, n->client);
+    history_transfer_node(md, dd, ns);
+    stack_under(ns);
 
-    if (ds != ms->desk && dd == md->desk)
-        window_show(n->client->window);
-
-    pseudo_focus(dd, n);
+    if (ds == dd) {
+        if (focused)
+            focus_node(md, dd, ns);
+        else if (active)
+            pseudo_focus(dd, ns);
+    } else {
+        if (focused)
+            update_current();
+    }
 
     arrange(ms, ds);
     arrange(md, dd);
-
-    if (ds == ms->desk || dd == md->desk)
-        update_current();
-}
-
-void transplant_node(monitor_t *m, desktop_t *d, node_t *n1, node_t *n2)
-{
-    if (n1 == n2)
-        return;
-    bool was_focused = (d->focus == n1);
-    unlink_node(d, n1);
-    insert_node(m, d, n1, n2);
-    if (was_focused)
-        pseudo_focus(d, n1);
 }
 
 node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
@@ -889,10 +915,10 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
     bool focus_first_child = is_first_child(d->focus);
     if (dir == CIRCULATE_FORWARD)
         for (node_t *s = second_extrema(d->root), *f = prev_leaf(s, d->root); f != NULL; s = prev_leaf(f, d->root), f = prev_leaf(s, d->root))
-            swap_nodes(f, s);
+            swap_nodes(m, d, f, m, d, s);
     else
         for (node_t *f = first_extrema(d->root), *s = next_leaf(f, d->root); s != NULL; f = next_leaf(s, d->root), s = next_leaf(f, d->root))
-            swap_nodes(f, s);
+            swap_nodes(m, d, f, m, d, s);
     if (focus_first_child)
         focus_node(m, d, p->first_child);
     else

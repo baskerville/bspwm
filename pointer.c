@@ -1,8 +1,9 @@
 #include "bspwm.h"
+#include "query.h"
 #include "settings.h"
+#include "stack.h"
 #include "tree.h"
 #include "window.h"
-#include "query.h"
 #include "pointer.h"
 
 void grab_pointer(pointer_action_t pac)
@@ -35,8 +36,8 @@ void grab_pointer(pointer_action_t pac)
                     pointer_follows_monitor = false;
                     focus_node(loc.monitor, loc.desktop, loc.node);
                     pointer_follows_monitor = backup;
-                } else if (focus_follows_pointer && is_floating(loc.node->client)) {
-                    stack(loc.desktop, loc.node);
+                } else if (focus_follows_pointer) {
+                    stack(loc.node);
                 }
                 break;
             case ACTION_MOVE:
@@ -172,7 +173,7 @@ void track_pointer(int root_x, int root_y)
                 coordinates_t loc;
                 bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
                 if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
-                    swap_nodes(n, loc.node);
+                    swap_nodes(m, d, n, m, d, loc.node);
                     arrange(m, d);
                 } else {
                     if (is_managed && loc.monitor == m) {
@@ -188,7 +189,7 @@ void track_pointer(int root_x, int root_y)
                         }
                     }
                     bool focused = (n == mon->desk->focus);
-                    transfer_node(m, d, loc.monitor, loc.desktop, n);
+                    transfer_node(m, d, n, loc.monitor, loc.desktop, loc.desktop->focus);
                     if (focused)
                         focus_node(loc.monitor, loc.desktop, n);
                     frozen_pointer->monitor = loc.monitor;
@@ -205,7 +206,7 @@ void track_pointer(int root_x, int root_y)
                 if (pmon == NULL || pmon == m)
                     return;
                 bool focused = (n == mon->desk->focus);
-                transfer_node(m, d, pmon, pmon->desk, n);
+                transfer_node(m, d, n, pmon, pmon->desk, pmon->desk->focus);
                 if (focused)
                     focus_node(pmon, pmon->desk, n);
                 frozen_pointer->monitor = pmon;
