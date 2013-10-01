@@ -112,9 +112,10 @@ bool cmd_window(char **args, int num)
             num--, args++;
             coordinates_t dst;
             if (desktop_from_desc(*args, &trg, &dst)) {
-                transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus);
-                trg.monitor = dst.monitor;
-                trg.desktop = dst.desktop;
+                if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus)) {
+                    trg.monitor = dst.monitor;
+                    trg.desktop = dst.desktop;
+                }
             } else {
                 return false;
             }
@@ -124,9 +125,10 @@ bool cmd_window(char **args, int num)
                 return false;
             coordinates_t dst;
             if (monitor_from_desc(*args, &trg, &dst)) {
-                transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
-                trg.monitor = dst.monitor;
-                trg.desktop = dst.monitor->desk;
+                if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus)) {
+                    trg.monitor = dst.monitor;
+                    trg.desktop = dst.monitor->desk;
+                }
             } else {
                 return false;
             }
@@ -135,23 +137,30 @@ bool cmd_window(char **args, int num)
             if (num < 1)
                 return false;
             coordinates_t dst;
-            if (node_from_desc(*args, &trg, &dst))
-                transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node);
-            else
+            if (node_from_desc(*args, &trg, &dst)) {
+                if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
+                    trg.monitor = dst.monitor;
+                    trg.desktop = dst.desktop;
+                }
+            } else {
                 return false;
-            dirty = true;
+            }
         } else if (streq("-s", *args) || streq("--swap", *args)) {
             num--, args++;
             if (num < 1)
                 return false;
             coordinates_t dst;
-            if (node_from_desc(*args, &trg, &dst))
-                swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node);
-            else
+            if (node_from_desc(*args, &trg, &dst)) {
+                if (swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
+                    if (trg.desktop != dst.desktop)
+                        arrange(trg.monitor, trg.desktop);
+                    trg.monitor = dst.monitor;
+                    trg.desktop = dst.desktop;
+                    dirty = true;
+                }
+            } else {
                 return false;
-            if (trg.desktop != dst.desktop)
-                arrange(dst.monitor, dst.desktop);
-            dirty = true;
+            }
         } else if (streq("-t", *args) || streq("--toggle", *args)) {
             num--, args++;
             if (num < 1)

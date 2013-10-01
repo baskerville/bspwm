@@ -793,10 +793,10 @@ void destroy_tree(node_t *n)
     destroy_tree(second_tree);
 }
 
-void swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
+bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
     if (n1 == NULL || n2 == NULL || n1 == n2 || (d1 != d2 && (n1->client->sticky || n2->client->sticky)))
-        return;
+        return false;
 
     PRINTF("swap nodes %X %X", n1->client->window, n2->client->window);
 
@@ -860,12 +860,14 @@ void swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
         update_input_focus();
     }
+
+    return true;
 }
 
-void transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
+bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
 {
     if (ns == NULL || ns == nd || (sticky_still && ns->client->sticky))
-        return;
+        return false;
 
     PRINTF("transfer node %X\n", ns->client->window);
 
@@ -906,6 +908,8 @@ void transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 
     arrange(ms, ds);
     arrange(md, dd);
+
+    return true;
 }
 
 node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
