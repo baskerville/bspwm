@@ -173,6 +173,7 @@ void init(void)
     last_motion_time = last_motion_x = last_motion_y = 0;
     randr_base = 0;
     visible = auto_raise = sticky_still = true;
+    num_sticky = 0;
     exit_status = 0;
 }
 

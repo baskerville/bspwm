@@ -297,6 +297,13 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
         else if (action == XCB_EWMH_WM_STATE_TOGGLE)
             set_fullscreen(n, !n->client->fullscreen);
         arrange(m, d);
+    } else if (state == ewmh->_NET_WM_STATE_STICKY) {
+        if (action == XCB_EWMH_WM_STATE_ADD)
+            set_sticky(m, d, n, true);
+        else if (action == XCB_EWMH_WM_STATE_REMOVE)
+            set_sticky(m, d, n, false);
+        else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+            set_sticky(m, d, n, !n->client->sticky);
     } else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
         if (action == XCB_EWMH_WM_STATE_ADD)
             set_urgency(m, d, n, true);

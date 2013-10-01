@@ -204,7 +204,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
             update_vacant_state(p);
     }
     if (n->client->sticky)
-        d->num_sticky++;
+        num_sticky++;
     put_status();
 }
 
@@ -224,7 +224,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     if (mon->desk != d || n == NULL)
         clear_input_focus();
 
-    if (mon->desk->num_sticky > 0 && d != mon->desk) {
+    if (num_sticky > 0 && d != mon->desk) {
         node_t *a = first_extrema(mon->desk->root);
         sticky_still = false;
         while (a != NULL) {
@@ -756,7 +756,7 @@ void unlink_node(desktop_t *d, node_t *n)
         update_vacant_state(b->parent);
     }
     if (n->client->sticky)
-        d->num_sticky--;
+        num_sticky--;
     put_status();
 }
 

@@ -363,12 +363,16 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
     PRINTF("set sticky %X: %s\n", c->window, BOOLSTR(value));
 
+    if (d != mon->desk)
+        transfer_node(m, d, n, mon, mon->desk, mon->desk->focus);
+
     c->sticky = value;
     if (value)
-        d->num_sticky++;
+        num_sticky++;
     else
-        d->num_sticky--;
-    window_draw_border(n, d->focus == n, m == mon);
+        num_sticky--;
+
+    window_draw_border(n, mon->desk->focus == n, true);
 }
 
 void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)

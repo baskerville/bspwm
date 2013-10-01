@@ -11,6 +11,7 @@ xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
 uint32_t num_clients;
 uint32_t num_desktops;
+int num_sticky;
 unsigned int num_monitors;
 unsigned int monitor_uid;
 unsigned int desktop_uid;
