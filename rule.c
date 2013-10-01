@@ -115,9 +115,10 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
     if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &win_state, NULL) == 1) {
         for (unsigned int i = 0; i < win_state.atoms_len; i++) {
             xcb_atom_t a = win_state.atoms[i];
-            if (a == ewmh->_NET_WM_STATE_FULLSCREEN) {
+            if (a == ewmh->_NET_WM_STATE_FULLSCREEN)
                 *fullscreen = true;
-            }
+            else if (a == ewmh->_NET_WM_STATE_STICKY)
+                *sticky = true;
         }
         xcb_ewmh_get_atoms_reply_wipe(&win_state);
     }

@@ -205,6 +205,7 @@ void setup(void)
                               ewmh->_NET_WM_DESKTOP,
                               ewmh->_NET_WM_STATE,
                               ewmh->_NET_WM_STATE_FULLSCREEN,
+                              ewmh->_NET_WM_STATE_STICKY,
                               ewmh->_NET_WM_STATE_DEMANDS_ATTENTION,
                               ewmh->_NET_WM_WINDOW_TYPE,
                               ewmh->_NET_WM_WINDOW_TYPE_DOCK,
