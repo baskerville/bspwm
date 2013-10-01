@@ -452,6 +452,27 @@ bool cmd_monitor(char **args, int num)
                 history_last_monitor(dst.monitor, sel, &dst);
             }
             focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
+        } else if (streq("-d", *args) || streq("--reset-desktops", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            desktop_t *d = trg.monitor->desk_head;
+            while (num > 0 && d != NULL) {
+                snprintf(d->name, sizeof(d->name), "%s", *args);
+                d = d->next;
+                num--, args++;
+            }
+            put_status();
+            while (num > 0) {
+                add_desktop(trg.monitor, make_desktop(*args));
+                num--, args++;
+            }
+            while (d != NULL) {
+                desktop_t *next = d->next;
+                merge_desktops(trg.monitor, d, mon, mon->desk);
+                remove_desktop(trg.monitor, d);
+                d = next;
+            }
         } else if (streq("-a", *args) || streq("--add-desktops", *args)) {
             num--, args++;
             if (num < 1)

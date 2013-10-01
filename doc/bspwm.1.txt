@@ -393,6 +393,9 @@ Options
 *-n*, *--rename* <new_name>::
     Rename the selected monitor.
 
+*-d*, *--reset-desktops* <name>...::
+    Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops.
+
 *-s*, *--swap* 'MONITOR_SEL'::
     Swap the selected monitor with the given monitor.
 

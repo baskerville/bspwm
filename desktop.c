@@ -160,6 +160,18 @@ void remove_desktop(monitor_t *m, desktop_t *d)
     put_status();
 }
 
+void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
+{
+    if (ds == NULL || dd == NULL || ds == dd)
+        return;
+    node_t *n = first_extrema(ds->root);
+    while (n != NULL) {
+        node_t *next = next_leaf(n, ds->root);
+        transfer_node(ms, ds, n, md, dd, dd->focus);
+        n = next;
+    }
+}
+
 void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 {
     if (d1 == NULL || d2 == NULL || d1 == d2)

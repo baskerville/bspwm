@@ -1,7 +1,6 @@
 #! /bin/sh
 
-bspc desktop ^1 -n I
-bspc monitor -a II III IV V VI VII VIII IX X
+bspc monitor -d I II III IV V VI VII VIII IX X
 
 bspc rule -a Gimp -d ^8 --follow --floating
 bspc rule -a Chromium -d ^2
