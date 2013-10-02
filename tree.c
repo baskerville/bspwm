@@ -904,10 +904,13 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
     } else {
         if (focused)
             update_current();
+        else if (ns == mon->desk->focus)
+            update_input_focus();
     }
 
     arrange(ms, ds);
-    arrange(md, dd);
+    if (ds != dd)
+        arrange(md, dd);
 
     return true;
 }
