@@ -469,6 +469,8 @@ bool cmd_monitor(char **args, int num)
             }
             while (d != NULL) {
                 desktop_t *next = d->next;
+                if (d == mon->desk)
+                    focus_node(trg.monitor, d->prev, d->prev->focus);
                 merge_desktops(trg.monitor, d, mon, mon->desk);
                 remove_desktop(trg.monitor, d);
                 d = next;
