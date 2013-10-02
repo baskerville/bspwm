@@ -8,9 +8,9 @@
 #include "window.h"
 #include "desktop.h"
 
-void select_desktop(monitor_t *m, desktop_t *d)
+void focus_desktop(monitor_t *m, desktop_t *d)
 {
-    select_monitor(m);
+    focus_monitor(m);
 
     if (d == mon->desk)
         return;

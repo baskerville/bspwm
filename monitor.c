@@ -67,7 +67,7 @@ void update_root(monitor_t *m)
     window_move_resize(m->root, rect.x, rect.y, rect.width, rect.height);
 }
 
-void select_monitor(monitor_t *m)
+void focus_monitor(monitor_t *m)
 {
     if (mon == m)
         return;

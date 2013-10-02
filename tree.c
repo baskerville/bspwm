@@ -258,7 +258,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
         window_draw_border(n, true, true);
     }
 
-    select_desktop(m, d);
+    focus_desktop(m, d);
 
     if (n == NULL) {
         history_add(m, d, NULL);
