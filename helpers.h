@@ -31,10 +31,10 @@
 #  define PRINTF(x,...)   ((void)0)
 #endif
 
-void warn(char *, ...);
+void warn(char *fmt, ...);
 __attribute__((noreturn))
-void err(char *, ...);
-bool get_color(char *, xcb_window_t, uint32_t *);
-double distance(xcb_point_t, xcb_point_t);
+void err(char *fmt, ...);
+bool get_color(char *col, xcb_window_t win, uint32_t *pxl);
+double distance(xcb_point_t a, xcb_point_t b);
 
 #endif

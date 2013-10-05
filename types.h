@@ -61,10 +61,9 @@ typedef struct {
 } client_select_t;
 
 typedef enum {
-    ALTER_NONE,
     ALTER_TOGGLE,
     ALTER_SET
-} state_alter_t;
+} alter_state_t;
 
 typedef enum {
     CYCLE_NEXT,
@@ -145,6 +144,7 @@ typedef struct {
     bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
+    unsigned int tags_field;
 } client_t;
 
 typedef struct node_t node_t;
@@ -172,6 +172,7 @@ struct desktop_t {
     desktop_t *next;
     int window_gap;
     unsigned int border_width;
+    unsigned int tags_field;
 };
 
 typedef struct monitor_t monitor_t;
@@ -226,6 +227,7 @@ typedef struct {
     bool focus;
     bool unmanage;
     char desc[MAXLEN];
+    char tags[MAXLEN];
 } rule_effect_t;
 
 typedef struct rule_t rule_t;

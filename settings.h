@@ -55,7 +55,7 @@ bool auto_cancel;
 bool history_aware_focus;
 bool honor_ewmh_focus;
 
-void load_settings(void);
 void run_config(void);
+void load_settings(void);
 
 #endif

@@ -60,17 +60,18 @@ void restore_tree(char *file_path)
             if (m == NULL)
                 continue;
             int wg;
-            unsigned int bw;
+            unsigned int tf, bw;
             char layout = 0, end = 0;
             name[0] = '\0';
             loc.desktop = NULL;
-            sscanf(line + level, "%s %u %i %c %c", name, &bw, &wg, &layout, &end);
+            sscanf(line + level, "%s %u %i %u %c %c", name, &bw, &wg, &tf, &layout, &end);
             locate_desktop(name, &loc);
             d = loc.desktop;
             if (d == NULL)
                 continue;
             d->border_width = bw;
             d->window_gap = wg;
+            d->tags_field = tf;
             if (layout == 'M')
                 d->layout = LAYOUT_MONOCLE;
             else if (layout == 'T')
@@ -112,7 +113,7 @@ void restore_tree(char *file_path)
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
                 char floating, transient, fullscreen, urgent, locked, sticky, sd, sm, end = 0;
-                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &sm, &end);
+                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->tags_field, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &sm, &end);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
@@ -151,7 +152,7 @@ void restore_tree(char *file_path)
             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
                 uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
                 xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-                if (n->client->floating) {
+                if (n->client->floating || !is_visible(d, n)) {
                     n->vacant = true;
                     update_vacant_state(n->parent);
                 }

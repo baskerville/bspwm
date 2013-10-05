@@ -7,6 +7,7 @@
 #include "rule.h"
 #include "settings.h"
 #include "stack.h"
+#include "tag.h"
 #include "tree.h"
 #include "window.h"
 
@@ -25,7 +26,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         return;
 
     bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, manage = true;
-    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &manage);
+    unsigned int tags_field = 0;
+    handle_rules(win, &m, &d, &tags_field, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &manage);
 
     if (!manage) {
         disable_floating_atom(win);
@@ -37,6 +39,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
+    c->tags_field = (tags_field == 0 ? d->tags_field : tags_field);
 
     xcb_icccm_get_wm_class_reply_t reply;
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
@@ -61,17 +64,22 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         set_fullscreen(d->focus, false);
 
     set_fullscreen(n, fullscreen);
-
     c->transient = transient;
+
+    tag_node(m, d, n, n->client->tags_field);
 
     bool give_focus = (takes_focus && (d == mon->desk || follow));
 
-    if (give_focus)
-        focus_node(m, d, n);
-    else if (takes_focus)
-        pseudo_focus(d, n);
-    else
-        stack(n);
+    if (is_visible(d, n)) {
+        if (give_focus)
+            focus_node(m, d, n);
+        else if (takes_focus)
+            pseudo_focus(d, n);
+        else
+            stack(n);
+    } else {
+        stack_under(n);
+    }
 
     xcb_rectangle_t *frect = &n->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
@@ -81,10 +89,12 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     arrange(m, d);
 
-    if (d == m->desk && visible)
-        window_show(c->window);
-    else
-        window_hide(c->window);
+    if (visible && is_visible(d, n)) {
+        if (d == m->desk)
+            window_show(n->client->window);
+        else
+            window_hide(n->client->window);
+    }
 
     /* the same function is already called in `focus_node` but has no effects on unmapped windows */
     if (give_focus)

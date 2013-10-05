@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/01/2013
+.\"      Date: 10/05/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.5
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/01/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "10/05/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -210,7 +210,7 @@ Selects the biggest window on the current desktop\&.
 .PP
 last
 .RS 4
-Selects the previously focused window on the current desktop\&.
+Selects the previously focused window\&.
 .RE
 .PP
 focused
@@ -635,6 +635,75 @@ Rename, add or remove desktops depending on whether the number of given names is
 Swap the selected monitor with the given monitor\&.
 .RE
 .RE
+.SS "Tag"
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBGeneral Syntax\fR
+.RS 4
+.sp
+tag \fIOPTIONS\fR
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBOptions\fR
+.RS 4
+.PP
+\fB\-l\fR, \fB\-\-list\fR
+.RS 4
+List the tags\&.
+.RE
+.PP
+\fB\-a\fR, \fB\-\-add\fR <name>\&...
+.RS 4
+Create tags with the given names\&.
+.RE
+.PP
+\fB\-r\fR, \fB\-\-remove\fR <name>|^<n>\&...
+.RS 4
+Remove tags with the given names or indexes\&.
+.RE
+.PP
+\fB\-e\fR, \fB\-\-enumerate\-tags\fR <name>\&...
+.RS 4
+Rename, add or remove tags depending on whether the number of given names is equal, superior or inferior to the number of existing tags\&.
+.RE
+.PP
+\fB\-d\fR, \fB\-\-desktop\fR \fIDESKTOP_SEL\fR
+.RS 4
+Select the given desktop as target for the
+\fB\-s\fR
+and
+\fB\-t\fR
+options\&.
+.RE
+.PP
+\fB\-w\fR, \fB\-\-window\fR \fIWINDOW_SEL\fR
+.RS 4
+Select the given window as target for the
+\fB\-s\fR
+and
+\fB\-t\fR
+options\&.
+.RE
+.PP
+\fB\-s\fR, \fB\-\-set\-tags\fR (<name>|^<n>\&...)|all
+.RS 4
+Set the tags of the selected object\&.
+.RE
+.PP
+\fB\-t\fR, \fB\-\-toggle\-tags\fR (<name>|^<n>)[=on|off]\&...
+.RS 4
+Toggle the tags of the selected object\&.
+.RE
+.RE
 .SS "Query"
 .sp
 .it 1 an-trap
@@ -815,7 +884,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <pattern> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <pattern> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
 Create a new rule (<pattern> must match the class or instance name)\&.
 .RE

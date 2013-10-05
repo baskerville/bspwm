@@ -1,5 +1,6 @@
 #include <float.h>
 #include <limits.h>
+#include <math.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -8,8 +9,8 @@
 #include "query.h"
 #include "settings.h"
 #include "stack.h"
+#include "tag.h"
 #include "window.h"
-#include <math.h>
 #include "tree.h"
 
 void arrange(monitor_t *m, desktop_t *d)
@@ -114,12 +115,20 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
     /* p: parent of focus */
     /* g: grand parent of focus */
 
+    if (f == NULL)
+        f = d->root;
+
     if (f == NULL) {
         d->root = n;
         d->focus = n;
     } else {
         node_t *c = make_node();
         node_t *p = f->parent;
+        if (p != NULL && f->split_mode == MODE_AUTOMATIC
+                && (p->first_child->vacant || p->second_child->vacant)) {
+            f = p;
+            p = f->parent;
+        }
         n->parent = c;
         c->birth_rotation = f->birth_rotation;
         switch (f->split_mode) {
@@ -210,17 +219,13 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
 void pseudo_focus(desktop_t *d, node_t *n)
 {
-    if (n == NULL)
-        return;
     d->focus = n;
-    stack(n);
+    if (n != NULL)
+        stack(n);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-    if (n == NULL && d->root != NULL)
-        return;
-
     if (mon->desk != d || n == NULL)
         clear_input_focus();
 
@@ -259,6 +264,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     }
 
     focus_desktop(m, d);
+    pseudo_focus(d, n);
 
     if (n == NULL) {
         history_add(m, d, NULL);
@@ -270,7 +276,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
     n->client->urgent = false;
 
-    pseudo_focus(d, n);
+    if (!is_visible(d, n))
+        tag_node(m, d, n, n->client->tags_field | d->tags_field);
     history_add(m, d, n);
     set_input_focus(n);
 
@@ -319,6 +326,11 @@ client_t *make_client(xcb_window_t win)
         xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
     }
     return c;
+}
+
+bool is_visible(desktop_t *d, node_t *n)
+{
+    return (d->tags_field & n->client->tags_field) != 0;
 }
 
 bool is_leaf(node_t *n)
@@ -377,6 +389,29 @@ node_t *brother_tree(node_t *n)
         return n->parent->second_child;
     else
         return n->parent->first_child;
+}
+
+node_t *closest_visible(desktop_t *d, node_t *n)
+{
+    if (n == NULL)
+        return NULL;
+    node_t *prev = prev_leaf(n, d->root);
+    node_t *next = next_leaf(n, d->root);
+    while (prev != NULL || next != NULL) {
+        if (prev != NULL) {
+            if (is_visible(d, prev))
+                return prev;
+            else
+                prev = prev_leaf(prev, d->root);
+        }
+        if (next != NULL) {
+            if (is_visible(d, next))
+                return next;
+            else
+                next = next_leaf(next, d->root);
+        }
+    }
+    return NULL;
 }
 
 node_t *first_extrema(node_t *n)
@@ -552,10 +587,12 @@ node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir, client_s
     double ds = DBL_MAX;
 
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-        if (a == n) continue;
-        if (!node_matches(n, a, sel)) continue;
-        if (is_tiled(a->client) != is_tiled(n->client)) continue;
-        if (is_tiled(a->client) && !is_adjacent(n, a, dir)) continue;
+        if (a == n ||
+                !is_visible(d, a) ||
+                !node_matches(n, a, sel) ||
+                is_tiled(a->client) != is_tiled(n->client) ||
+                (is_tiled(a->client) && !is_adjacent(n, a, dir)))
+            continue;
 
         get_side_handle(a->client, dir2, &pt2);
         double ds2 = distance(pt, pt2);
@@ -603,7 +640,7 @@ node_t *find_biggest(desktop_t *d, node_t *c, client_select_t sel)
     int r_area = tiled_area(r);
 
     for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-        if (!is_tiled(f->client) || !node_matches(c, f, sel))
+        if (!is_visible(d, f) || !is_tiled(f->client) || !node_matches(c, f, sel))
             continue;
         int f_area = tiled_area(f);
         if (r == NULL) {
@@ -722,8 +759,15 @@ void unlink_node(desktop_t *d, node_t *n)
         d->root = NULL;
         d->focus = NULL;
     } else {
+        if (n == d->focus) {
+            d->focus = history_get_node(d, n);
+            if (d->focus == NULL)
+                d->focus = closest_visible(d, n);
+        }
+
         node_t *b;
         node_t *g = p->parent;
+
         if (is_first_child(n)) {
             b = p->second_child;
             if (!n->vacant)
@@ -733,7 +777,9 @@ void unlink_node(desktop_t *d, node_t *n)
             if (!n->vacant)
                 unrotate_tree(b, n->birth_rotation);
         }
+
         b->parent = g;
+
         if (g != NULL) {
             if (is_first_child(p))
                 g->first_child = b;
@@ -746,13 +792,6 @@ void unlink_node(desktop_t *d, node_t *n)
         b->birth_rotation = p->birth_rotation;
         n->parent = NULL;
         free(p);
-
-        if (n == d->focus) {
-            d->focus = history_get_node(d, n);
-            if (d->focus == NULL && d->root != NULL)
-                d->focus = first_extrema(d->root);
-        }
-
         update_vacant_state(b->parent);
     }
     if (n->client->sticky)
@@ -858,6 +897,9 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
             window_show(n2->client->window);
         }
 
+        tag_node(m1, d1, n2, n2->client->tags_field);
+        tag_node(m2, d2, n1, n1->client->tags_field);
+
         update_input_focus();
     }
 
@@ -908,6 +950,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
             update_input_focus();
     }
 
+    tag_node(md, dd, ns, ns->client->tags_field);
     arrange(ms, ds);
     if (ds != dd)
         arrange(md, dd);

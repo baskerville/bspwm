@@ -15,7 +15,7 @@ void focus_desktop(monitor_t *m, desktop_t *d)
     if (d == mon->desk)
         return;
 
-    PRINTF("select desktop %s\n", d->name);
+    PRINTF("focus desktop %s\n", d->name);
 
     show_desktop(d);
     hide_desktop(mon->desk);
@@ -95,6 +95,7 @@ desktop_t *make_desktop(const char *name)
     d->root = d->focus = NULL;
     d->window_gap = WINDOW_GAP;
     d->border_width = BORDER_WIDTH;
+    d->tags_field = 1;
     return d;
 }
 
@@ -254,7 +255,8 @@ void show_desktop(desktop_t *d)
     if (!visible)
         return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        window_show(n->client->window);
+        if (is_visible(d, n))
+            window_show(n->client->window);
 }
 
 void hide_desktop(desktop_t *d)
@@ -262,7 +264,8 @@ void hide_desktop(desktop_t *d)
     if (!visible)
         return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        window_hide(n->client->window);
+        if (is_visible(d, n))
+            window_hide(n->client->window);
 }
 
 bool is_urgent(desktop_t *d)

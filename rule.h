@@ -2,15 +2,15 @@
 #define _RULE_H
 
 #define MATCH_ALL  "*"
+#define LST_SEP    ","
 
 rule_t *make_rule(void);
-void add_rule(rule_t *);
-void remove_rule(rule_t *);
-void remove_rule_by_uid(unsigned int);
-void prune_rules(desktop_t *);
-rule_t *find_rule(unsigned int);
-bool is_match(rule_t *, xcb_window_t);
-void handle_rules(xcb_window_t, monitor_t **, desktop_t **, bool *, bool *, bool *, bool *, bool *, bool *, bool *, bool *);
-void list_rules(char *, char *);
+void add_rule(rule_t *r);
+void remove_rule(rule_t *r);
+void remove_rule_by_uid(unsigned int uid);
+rule_t *find_rule(unsigned int uid);
+bool is_match(rule_t *r, xcb_window_t win);
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, unsigned int *tags_field, bool *floating, bool *fullscreen, bool *locked, bool *sticky, bool *follow, bool *transient, bool *takes_focus, bool *manage);
+void list_rules(char *pattern, char *rsp);
 
 #endif

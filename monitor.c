@@ -72,7 +72,7 @@ void focus_monitor(monitor_t *m)
     if (mon == m)
         return;
 
-    PRINTF("select monitor %s\n", m->name);
+    PRINTF("focus monitor %s\n", m->name);
 
     mon = m;
 

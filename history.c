@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "bspwm.h"
+#include "tree.h"
 #include "query.h"
 
 history_t *make_history(monitor_t *m, desktop_t *d, node_t *n)
@@ -114,7 +115,7 @@ void empty_history(void)
 node_t *history_get_node(desktop_t *d, node_t *n)
 {
     for (history_t *h = history_tail; h != NULL; h = h->prev)
-        if (h->latest && h->loc.node != NULL && h->loc.node != n && h->loc.desktop == d)
+        if (h->latest && h->loc.node != NULL && h->loc.node != n && h->loc.desktop == d && is_visible(h->loc.desktop, h->loc.node))
             return h->loc.node;
     return NULL;
 }
@@ -138,7 +139,9 @@ monitor_t *history_get_monitor(monitor_t *m)
 bool history_last_node(node_t *n, client_select_t sel, coordinates_t *loc)
 {
     for (history_t *h = history_tail; h != NULL; h = h->prev) {
-        if (!h->latest || h->loc.node == NULL || h->loc.node == n || !node_matches(n, h->loc.node, sel))
+        if (!h->latest || h->loc.node == NULL || h->loc.node == n
+                || !is_visible(h->loc.desktop, h->loc.node)
+                || !node_matches(n, h->loc.node, sel))
             continue;
         *loc = h->loc;
         return true;

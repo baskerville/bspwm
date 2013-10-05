@@ -44,7 +44,7 @@ void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int 
             strncat(rsp, line, REMLEN(rsp));
             continue;
         } else {
-            snprintf(line, sizeof(line), "%s %u %i %c", d->name, d->border_width, d->window_gap, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
+            snprintf(line, sizeof(line), "%s %u %i %u %c", d->name, d->border_width, d->window_gap, d->tags_field, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
             strncat(rsp, line, REMLEN(rsp));
             if (d == m->desk)
                 strncat(rsp, " *", REMLEN(rsp));
@@ -66,7 +66,7 @@ void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 
     if (is_leaf(n)) {
         client_t *c = n->client;
-        snprintf(line, sizeof(line), "%c %s 0x%X %u %ux%u%+i%+i %c %c%c%c%c%c%c%c", (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), c->class_name, c->window, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))), (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'), (n->split_mode ? 'p' : '-'));
+        snprintf(line, sizeof(line), "%c %s 0x%X %u %u %ux%u%+i%+i %c %c%c%c%c%c%c%c", (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), c->class_name, c->window, c->tags_field, c->border_width, c->floating_rectangle.width, c->floating_rectangle.height, c->floating_rectangle.x, c->floating_rectangle.y, (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))), (c->floating ? 'f' : '-'), (c->transient ? 't' : '-'), (c->fullscreen ? 'F' : '-'), (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'), (n->split_mode ? 'p' : '-'));
     } else {
         snprintf(line, sizeof(line), "%c %c %.2f", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'), (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), n->split_ratio);
     }
@@ -371,7 +371,8 @@ bool node_matches(node_t *c, node_t *t, client_select_t sel)
     return true;
 }
 
-bool desktop_matches(desktop_t *t, desktop_select_t sel) {
+bool desktop_matches(desktop_t *t, desktop_select_t sel)
+{
     if (sel.status != DESKTOP_STATUS_ALL &&
             t->root == NULL
             ? sel.status == DESKTOP_STATUS_OCCUPIED
