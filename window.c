@@ -315,16 +315,7 @@ void set_fullscreen(node_t *n, bool value)
 
     PRINTF("fullscreen %X: %s\n", c->window, BOOLSTR(value));
 
-    if (value) {
-        c->fullscreen = true;
-        xcb_atom_t values[] = {ewmh->_NET_WM_STATE_FULLSCREEN};
-        xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-    } else {
-        c->fullscreen = false;
-        xcb_atom_t values[] = {XCB_NONE};
-        xcb_ewmh_set_wm_state(ewmh, c->window, LENGTH(values), values);
-    }
-
+    c->fullscreen = value;
     stack(n);
 }
 
