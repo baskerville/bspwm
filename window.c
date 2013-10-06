@@ -66,7 +66,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     set_fullscreen(n, fullscreen);
     c->transient = transient;
 
-    tag_node(m, d, n, n->client->tags_field);
+    tag_node(m, d, n, d, n->client->tags_field);
 
     bool give_focus = (takes_focus && (d == mon->desk || follow));
 

@@ -44,7 +44,7 @@ bool remove_tag_by_index(int i)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
             tag_desktop(m, d, d->tags_field & ~tags[i]->mask);
             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-                tag_node(m, d, n, n->client->tags_field & ~tags[i]->mask);
+                tag_node(m, d, n, d, n->client->tags_field & ~tags[i]->mask);
         }
     free(tags[i]);
     for (int j = i; j < (num_tags - 1); j++)
@@ -69,16 +69,30 @@ tag_t *get_tag_by_index(int i)
     return tags[i];
 }
 
-void toggle_presence(monitor_t *m, desktop_t *d, node_t *n)
+void set_visibility(monitor_t *m, desktop_t *d, node_t *n, bool visible)
 {
-    PRINTF("toggle presence %X\n", n->client->window);
+    PRINTF("set visibilty %X: %s\n", n->client->window, BOOLSTR(visible));
 
-    n->vacant = !n->vacant;
-    update_vacant_state(n->parent);
-    if (n->vacant) {
+    if (!n->client->floating) {
+        n->vacant = !visible;
+        update_vacant_state(n->parent);
+        if (visible)
+            rotate_brother(n);
+        else
+            unrotate_brother(n);
+    }
+    if (visible) {
+        if (m->desk == d)
+            window_show(n->client->window);
+        if (d->focus == NULL) {
+            if (mon->desk == d)
+                focus_node(m, d, n);
+            else
+                pseudo_focus(d, n);
+        }
+    } else {
         if (m->desk == d)
             window_hide(n->client->window);
-        unrotate_brother(n);
         if (d->focus == n) {
             node_t *f = history_get_node(d, n);
             if (f == NULL)
@@ -88,27 +102,28 @@ void toggle_presence(monitor_t *m, desktop_t *d, node_t *n)
             else
                 pseudo_focus(d, f);
         }
-    } else {
-        if (m->desk == d)
-            window_show(n->client->window);
-        rotate_brother(n);
-        if (d->focus == NULL) {
-            if (mon->desk == d)
-                focus_node(m, d, n);
-            else
-                pseudo_focus(d, n);
-        }
     }
 }
 
-void tag_node(monitor_t *m, desktop_t *d, node_t *n, unsigned int tags_field)
+void set_presence(monitor_t *m, desktop_t *d, node_t *n, bool present)
+{
+    if (is_visible(d, n) != present) {
+        if (present)
+            tag_node(m, d, n, d, n->client->tags_field | d->tags_field);
+        else
+            tag_node(m, d, n, d, n->client->tags_field & ~d->tags_field);
+    }
+}
+
+void tag_node(monitor_t *m, desktop_t *d, node_t *n, desktop_t *ds, unsigned int tags_field)
 {
     if (num_tags < 1)
         return;
+    bool visible = is_visible(ds, n);
     n->client->tags_field = tags_field;
-    if ((n->vacant && (tags_field & d->tags_field) != 0)
-            || (!n->vacant && (tags_field & d->tags_field) == 0)) {
-        toggle_presence(m, d, n);
+    if ((visible && (tags_field & d->tags_field) == 0)
+            || (!visible && (tags_field & d->tags_field) != 0)) {
+        set_visibility(m, d, n, !visible);
         arrange(m, d);
     }
 }
@@ -117,14 +132,16 @@ void tag_desktop(monitor_t *m, desktop_t *d, unsigned int tags_field)
 {
     if (num_tags < 1)
         return;
-    d->tags_field = tags_field;
     bool dirty = false;
-    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        if ((n->vacant && (tags_field & n->client->tags_field) != 0)
-                || (!n->vacant && (tags_field & n->client->tags_field) == 0)) {
-            toggle_presence(m, d, n);
+    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+        bool visible = is_visible(d, n);
+        if ((visible && (tags_field & n->client->tags_field) == 0)
+                || (!visible && (tags_field & n->client->tags_field) != 0)) {
+            set_visibility(m, d, n, !visible);
             dirty = true;
         }
+    }
+    d->tags_field = tags_field;
     if (dirty)
         arrange(m, d);
     if (d == mon->desk)

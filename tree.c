@@ -120,7 +120,8 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
     if (f == NULL) {
         d->root = n;
-        d->focus = n;
+        if (is_visible(d, n))
+            d->focus = n;
     } else {
         node_t *c = make_node();
         node_t *p = f->parent;
@@ -277,7 +278,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     n->client->urgent = false;
 
     if (!is_visible(d, n))
-        tag_node(m, d, n, n->client->tags_field | d->tags_field);
+        tag_node(m, d, n, d, n->client->tags_field | d->tags_field);
     history_add(m, d, n);
     set_input_focus(n);
 
@@ -897,8 +898,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
             window_show(n2->client->window);
         }
 
-        tag_node(m1, d1, n2, n2->client->tags_field);
-        tag_node(m2, d2, n1, n1->client->tags_field);
+        tag_node(m1, d1, n2, d2, n2->client->tags_field);
+        tag_node(m2, d2, n1, d1, n1->client->tags_field);
 
         update_input_focus();
     }
@@ -950,7 +951,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
             update_input_focus();
     }
 
-    tag_node(md, dd, ns, ns->client->tags_field);
+    tag_node(md, dd, ns, ds, ns->client->tags_field);
     arrange(ms, ds);
     if (ds != dd)
         arrange(md, dd);

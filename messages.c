@@ -566,7 +566,7 @@ bool cmd_tag(char **args, int num, char *rsp)
             if (trg.node == NULL)
                 tag_desktop(trg.monitor, trg.desktop, tf);
             else
-                tag_node(trg.monitor, trg.desktop, trg.node, tf);
+                tag_node(trg.monitor, trg.desktop, trg.node, trg.desktop, tf);
             return true;
         } else if (streq("-t", *args) || streq("--toggle-tags", *args)) {
             num--, args++;
@@ -604,7 +604,7 @@ bool cmd_tag(char **args, int num, char *rsp)
             if (trg.node == NULL)
                 tag_desktop(trg.monitor, trg.desktop, tf);
             else
-                tag_node(trg.monitor, trg.desktop, trg.node, tf);
+                tag_node(trg.monitor, trg.desktop, trg.node, trg.desktop, tf);
             return true;
         } else if (streq("-e", *args) || streq("--enumerate-tags", *args)) {
             num--, args++;
