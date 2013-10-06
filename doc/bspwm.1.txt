@@ -141,7 +141,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused)[.floating|.tiled][.like|.unlike][.automatic|.manual][.urgent|.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|last_local|focused)[.floating|.tiled][.like|.unlike][.automatic|.manual][.urgent|.nonurgent]
 ----
 
 Primary Selectors
@@ -159,6 +159,9 @@ biggest::
 
 last::
     Selects the previously focused window.
+
+last_local::
+    Selects the previously focused window on the current desktop.
 
 focused::
     Selects the currently focused window.
@@ -198,7 +201,7 @@ Select a desktop.
 ----
 DESKTOP_SEL := <desktop_name>
              | ^<n>
-             | (CYCLE_DIR|last|focused)[.occupied|.free][.urgent|.nonurgent]
+             | (CYCLE_DIR|last|last_local|focused)[.occupied|.free][.urgent|.nonurgent]
 ----
 
 Primary Selectors
@@ -215,6 +218,9 @@ Primary Selectors
 
 last::
     Selects the previously focused desktop.
+
+last_local::
+    Selects the previously focused desktop on the current monitor.
 
 focused::
     Selects the currently focused desktop.

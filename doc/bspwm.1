@@ -179,7 +179,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|focused)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.automatic|\&.manual][\&.urgent|\&.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|last_local|focused)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.automatic|\&.manual][\&.urgent|\&.nonurgent]
 .fi
 .if n \{\
 .RE
@@ -211,6 +211,11 @@ Selects the biggest window on the current desktop\&.
 last
 .RS 4
 Selects the previously focused window\&.
+.RE
+.PP
+last_local
+.RS 4
+Selects the previously focused window on the current desktop\&.
 .RE
 .PP
 focused
@@ -278,7 +283,7 @@ Select a desktop\&.
 .nf
 DESKTOP_SEL := <desktop_name>
              | ^<n>
-             | (CYCLE_DIR|last|focused)[\&.occupied|\&.free][\&.urgent|\&.nonurgent]
+             | (CYCLE_DIR|last|last_local|focused)[\&.occupied|\&.free][\&.urgent|\&.nonurgent]
 .fi
 .if n \{\
 .RE
@@ -310,6 +315,11 @@ Selects the desktop in the given direction relative to the active desktop\&.
 last
 .RS 4
 Selects the previously focused desktop\&.
+.RE
+.PP
+last_local
+.RS 4
+Selects the previously focused desktop on the current monitor\&.
 .RE
 .PP
 focused
