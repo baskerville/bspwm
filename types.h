@@ -233,7 +233,6 @@ typedef struct {
 
 typedef struct rule_t rule_t;
 struct rule_t {
-    unsigned int uid;
     bool one_shot;
     rule_cause_t cause;
     rule_effect_t effect;

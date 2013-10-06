@@ -14,7 +14,6 @@ uint32_t num_desktops;
 unsigned int num_monitors;
 unsigned int monitor_uid;
 unsigned int desktop_uid;
-unsigned int rule_uid;
 xcb_screen_t *screen;
 xcb_window_t root;
 uint8_t root_depth;

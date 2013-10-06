@@ -756,7 +756,6 @@ bool cmd_rule(char **args, int num, char *rsp)
                     num--, args++;
                     if (num < 1) {
                         free(rule);
-                        rule_uid--;
                         return false;
                     }
                     snprintf(rule->effect.tags, sizeof(rule->effect.tags), "%s", *args);
@@ -764,13 +763,11 @@ bool cmd_rule(char **args, int num, char *rsp)
                     num--, args++;
                     if (num < 1) {
                         free(rule);
-                        rule_uid--;
                         return false;
                     }
                     snprintf(rule->effect.desc, sizeof(rule->effect.desc), "%s", *args);
                 } else {
                     free(rule);
-                    rule_uid--;
                     return false;
                 }
                 num--, args++;
@@ -780,16 +777,16 @@ bool cmd_rule(char **args, int num, char *rsp)
             num--, args++;
             if (num < 1)
                 return false;
-            unsigned int uid;
+            int idx;
             while (num > 0) {
-                if (sscanf(*args, "%X", &uid) == 1)
-                    remove_rule_by_uid(uid);
+                if (parse_index(*args, &idx))
+                    remove_rule_by_index(idx - 1);
                 else if (streq("tail", *args))
                     remove_rule(rule_tail);
                 else if (streq("head", *args))
                     remove_rule(rule_head);
                 else
-                    return false;
+                    remove_rule_by_name(*args);
                 num--, args++;
             }
         } else if (streq("-l", *args) || streq("--list", *args)) {

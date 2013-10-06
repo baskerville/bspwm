@@ -11,7 +11,6 @@
 rule_t *make_rule(void)
 {
     rule_t *r = malloc(sizeof(rule_t));
-    r->uid = ++rule_uid;
     r->effect.floating = false;
     r->effect.fullscreen = false;
     r->effect.locked = false;
@@ -55,17 +54,25 @@ void remove_rule(rule_t *r)
     free(r);
 }
 
-void remove_rule_by_uid(unsigned int uid)
+void remove_rule_by_name(char *name)
 {
-    remove_rule(find_rule(uid));
+    rule_t *r = rule_head;
+    while (r != NULL) {
+        rule_t *next = r->next;
+        if (streq(r->cause.name, name))
+            remove_rule(r);
+        r = next;
+    }
 }
 
-rule_t *find_rule(unsigned int uid)
+bool remove_rule_by_index(int idx)
 {
-    for (rule_t *r = rule_head; r != NULL; r = r->next)
-        if (r->uid == uid)
-            return r;
-    return NULL;
+    for (rule_t *r = rule_head; r != NULL; r = r->next, idx--)
+        if (idx == 0) {
+            remove_rule(r);
+            return true;
+        }
+    return false;
 }
 
 bool is_match(rule_t *r, xcb_window_t win)
@@ -193,7 +200,7 @@ void list_rules(char *pattern, char *rsp)
     for (rule_t *r = rule_head; r != NULL; r = r->next) {
         if (pattern != NULL && !streq(pattern, r->cause.name))
             continue;
-        snprintf(line, sizeof(line), "%2X %s", r->uid, r->cause.name);
+        snprintf(line, sizeof(line), "%s", r->cause.name);
         strncat(rsp, line, REMLEN(rsp));
         if (r->effect.floating)
             strncat(rsp, " --floating", REMLEN(rsp));

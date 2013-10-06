@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 void init(void)
 {
     num_monitors = num_desktops = num_clients = 0;
-    monitor_uid = desktop_uid = rule_uid = 0;
+    monitor_uid = desktop_uid = 0;
     mon = mon_head = mon_tail = pri_mon = NULL;
     rule_head = rule_tail = NULL;
     history_head = history_tail = NULL;

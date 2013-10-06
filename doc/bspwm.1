@@ -894,17 +894,17 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <pattern> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
-Create a new rule (<pattern> must match the class or instance name)\&.
+Create a new rule\&.
 .RE
 .PP
-\fB\-r\fR, \fB\-\-remove\fR <rule_uid>|tail|head\&...
+\fB\-r\fR, \fB\-\-remove\fR <name>|^<n>|tail|head\&...
 .RS 4
-Remove the rules with the given UIDs\&.
+Remove the rules with the given names or indexes\&.
 .RE
 .PP
-\fB\-l\fR, \fB\-\-list\fR [<pattern>]
+\fB\-l\fR, \fB\-\-list\fR [<name>]
 .RS 4
 List the rules\&.
 .RE
