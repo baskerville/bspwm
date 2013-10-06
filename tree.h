@@ -23,6 +23,8 @@ node_t *first_extrema(node_t *n);
 node_t *second_extrema(node_t *n);
 node_t *next_leaf(node_t *n, node_t *r);
 node_t *prev_leaf(node_t *n, node_t *r);
+node_t *next_visible_leaf(desktop_t *d, node_t *n, node_t *r);
+node_t *prev_visible_leaf(desktop_t *d, node_t *n, node_t *r);
 bool is_adjacent(node_t *a, node_t *b, direction_t dir);
 node_t *find_fence(node_t *n, direction_t dir);
 node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir, client_select_t sel);

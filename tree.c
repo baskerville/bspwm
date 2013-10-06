@@ -459,6 +459,24 @@ node_t *prev_leaf(node_t *n, node_t *r)
     return second_extrema(p->parent->first_child);
 }
 
+node_t *next_visible_leaf(desktop_t *d, node_t *n, node_t *r)
+{
+    node_t *next = next_leaf(n, r);
+    if (next == NULL || is_visible(d, next))
+        return next;
+    else
+        return next_visible_leaf(d, next, r);
+}
+
+node_t *prev_visible_leaf(desktop_t *d, node_t *n, node_t *r)
+{
+    node_t *prev = prev_leaf(n, r);
+    if (prev == NULL || is_visible(d, prev))
+        return prev;
+    else
+        return prev_visible_leaf(d, prev, r);
+}
+
 /* bool is_adjacent(node_t *a, node_t *r) */
 /* { */
 /*     node_t *f = r->parent; */
@@ -980,15 +998,22 @@ node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t s
 
 void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
 {
-    if (d == NULL || d->root == NULL || is_leaf(d->root))
+    if (d == NULL || d->root == NULL || d->focus == NULL || is_leaf(d->root))
         return;
     node_t *p = d->focus->parent;
     bool focus_first_child = is_first_child(d->focus);
+    node_t *head, *tail;
+    for (head = first_extrema(d->root); head != NULL && !is_visible(d, head); head = next_leaf(head, d->root))
+        ;
+    for (tail = second_extrema(d->root); tail != NULL && !is_visible(d, tail); tail = prev_leaf(tail, d->root))
+        ;
+    if (head == tail)
+        return;
     if (dir == CIRCULATE_FORWARD)
-        for (node_t *s = second_extrema(d->root), *f = prev_leaf(s, d->root); f != NULL; s = prev_leaf(f, d->root), f = prev_leaf(s, d->root))
+        for (node_t *s = tail, *f = prev_visible_leaf(d, s, d->root); f != NULL; s = prev_visible_leaf(d, f, d->root), f = prev_visible_leaf(d, s, d->root))
             swap_nodes(m, d, f, m, d, s);
     else
-        for (node_t *f = first_extrema(d->root), *s = next_leaf(f, d->root); s != NULL; f = next_leaf(s, d->root), s = next_leaf(f, d->root))
+        for (node_t *f = head, *s = next_visible_leaf(d, f, d->root); s != NULL; f = next_visible_leaf(d, s, d->root), s = next_visible_leaf(d, f, d->root))
             swap_nodes(m, d, f, m, d, s);
     if (focus_first_child)
         focus_node(m, d, p->first_child);
