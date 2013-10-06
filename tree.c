@@ -230,13 +230,13 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     if (mon->desk != d || n == NULL)
         clear_input_focus();
 
-    if (m->num_sticky > 0 && mon == m && d != mon->desk) {
-        node_t *a = first_extrema(mon->desk->root);
+    if (m->num_sticky > 0 && d != m->desk) {
+        node_t *a = first_extrema(m->desk->root);
         sticky_still = false;
         while (a != NULL) {
-            node_t *b = next_leaf(a, mon->desk->root);
+            node_t *b = next_leaf(a, m->desk->root);
             if (a->client->sticky)
-                transfer_node(mon, mon->desk, a, m, d, d->focus);
+                transfer_node(m, m->desk, a, m, d, d->focus);
             a = b;
         }
         sticky_still = true;
