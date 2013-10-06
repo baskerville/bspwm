@@ -190,6 +190,8 @@ bool cmd_window(char **args, int num)
                 set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->locked));
             } else if (streq("sticky", key)) {
                 set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->sticky));
+            } else if (streq("visible", key)) {
+                set_presence(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !is_visible(trg.desktop, trg.node)));
             }
         } else if (streq("-p", *args) || streq("--presel", *args)) {
             num--, args++;

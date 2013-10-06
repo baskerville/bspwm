@@ -319,7 +319,7 @@ Options
 *-R*, *--rotate* 'DIR' '90|270|180'::
     Rotate the tree holding the edge located in the given direction in relation to the selected window.
 
-*-t*, *--toggle* floating|fullscreen|locked|sticky[=on|off]::
+*-t*, *--toggle* floating|fullscreen|locked|sticky|visible[=on|off]::
     Set or toggle the given state for the selected window.
 
 *-c*, *--close*::
