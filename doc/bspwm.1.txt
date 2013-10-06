@@ -592,6 +592,9 @@ Global Settings
 'focused_sticky_border_color'::
     Color of the border of a focused sticky window of a focused monitor.
 
+'active_sticky_border_color'::
+    Color of the border of a focused sticky window of an unfocused monitor.
+
 'normal_sticky_border_color'::
     Color of the border of an unfocused sticky window.
 

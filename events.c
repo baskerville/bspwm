@@ -149,7 +149,7 @@ void destroy_notify(xcb_generic_event_t *evt)
 
     coordinates_t loc;
     if (locate_window(e->window, &loc)) {
-        remove_node(loc.desktop, loc.node);
+        remove_node(loc.monitor, loc.desktop, loc.node);
         arrange(loc.monitor, loc.desktop);
     }
 }
@@ -162,7 +162,7 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     coordinates_t loc;
     if (locate_window(e->window, &loc)) {
-        remove_node(loc.desktop, loc.node);
+        remove_node(loc.monitor, loc.desktop, loc.node);
         arrange(loc.monitor, loc.desktop);
     }
 }

@@ -15,6 +15,7 @@
 #define ACTIVE_LOCKED_BORDER_COLOR  "#545350"
 #define NORMAL_LOCKED_BORDER_COLOR  "#3F3E3B"
 #define FOCUSED_STICKY_BORDER_COLOR "#E3A5DA"
+#define ACTIVE_STICKY_BORDER_COLOR  "#545350"
 #define NORMAL_STICKY_BORDER_COLOR  "#3F3E3B"
 #define URGENT_BORDER_COLOR         "#EFA29A"
 
@@ -39,6 +40,7 @@ char focused_locked_border_color[MAXLEN];
 char active_locked_border_color[MAXLEN];
 char normal_locked_border_color[MAXLEN];
 char focused_sticky_border_color[MAXLEN];
+char active_sticky_border_color[MAXLEN];
 char normal_sticky_border_color[MAXLEN];
 char urgent_border_color[MAXLEN];
 

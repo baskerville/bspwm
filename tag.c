@@ -91,7 +91,7 @@ void set_visibility(monitor_t *m, desktop_t *d, node_t *n, bool visible)
                 pseudo_focus(d, n);
         }
     } else {
-        if (m->desk == d)
+        if (m->desk == d || n->client->sticky)
             window_hide(n->client->window);
         if (d->focus == n) {
             node_t *f = history_get_node(d, n);
@@ -133,15 +133,16 @@ void tag_desktop(monitor_t *m, desktop_t *d, unsigned int tags_field)
     if (num_tags < 1)
         return;
     bool dirty = false;
+    unsigned int old_tags_field = d->tags_field;
+    d->tags_field = tags_field;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-        bool visible = is_visible(d, n);
-        if ((visible && (tags_field & n->client->tags_field) == 0)
-                || (!visible && (tags_field & n->client->tags_field) != 0)) {
-            set_visibility(m, d, n, !visible);
+        bool old_visible = (old_tags_field & n->client->tags_field) != 0;
+        bool visible = (tags_field & n->client->tags_field) != 0;
+        if (old_visible != visible) {
+            set_visibility(m, d, n, visible);
             dirty = true;
         }
     }
-    d->tags_field = tags_field;
     if (dirty)
         arrange(m, d);
     if (d == mon->desk)

@@ -281,7 +281,7 @@ bool cmd_window(char **args, int num)
         } else if (streq("-k", *args) || streq("--kill", *args)) {
             if (num > 1)
                 return false;
-            window_kill(trg.desktop, trg.node);
+            window_kill(trg.monitor, trg.desktop, trg.node);
             dirty = true;
         } else {
             return false;
@@ -988,6 +988,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
     SETCOLOR(active_locked_border_color)
     SETCOLOR(normal_locked_border_color)
     SETCOLOR(focused_sticky_border_color)
+    SETCOLOR(active_sticky_border_color)
     SETCOLOR(normal_sticky_border_color)
     SETCOLOR(urgent_border_color)
 #undef SETCOLOR
@@ -1075,6 +1076,7 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
     GETCOLOR(active_locked_border_color)
     GETCOLOR(normal_locked_border_color)
     GETCOLOR(focused_sticky_border_color)
+    GETCOLOR(active_sticky_border_color)
     GETCOLOR(normal_sticky_border_color)
     GETCOLOR(urgent_border_color)
 #undef GETCOLOR

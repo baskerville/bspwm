@@ -191,6 +191,7 @@ struct monitor_t {
     desktop_t *desk_tail;
     monitor_t *prev;
     monitor_t *next;
+    int num_sticky;
 };
 
 typedef struct {

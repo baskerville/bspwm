@@ -30,6 +30,7 @@ void load_settings(void)
     snprintf(active_locked_border_color, sizeof(active_locked_border_color), "%s", ACTIVE_LOCKED_BORDER_COLOR);
     snprintf(normal_locked_border_color, sizeof(normal_locked_border_color), "%s", NORMAL_LOCKED_BORDER_COLOR);
     snprintf(focused_sticky_border_color, sizeof(focused_sticky_border_color), "%s", FOCUSED_STICKY_BORDER_COLOR);
+    snprintf(active_sticky_border_color, sizeof(active_sticky_border_color), "%s", ACTIVE_STICKY_BORDER_COLOR);
     snprintf(normal_sticky_border_color, sizeof(normal_sticky_border_color), "%s", NORMAL_STICKY_BORDER_COLOR);
     snprintf(urgent_border_color, sizeof(urgent_border_color), "%s", URGENT_BORDER_COLOR);
 

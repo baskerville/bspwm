@@ -19,7 +19,7 @@ monitor_t *monitor_from_point(xcb_point_t pt);
 monitor_t *underlying_monitor(client_t *c);
 void adopt_orphans(void);
 void window_close(node_t *n);
-void window_kill(desktop_t *d, node_t *n);
+void window_kill(monitor_t *m, desktop_t *d, node_t *n);
 void set_fullscreen(node_t *n, bool value);
 void set_floating(node_t *n, bool value);
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value);

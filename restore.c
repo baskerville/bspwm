@@ -133,7 +133,7 @@ void restore_tree(char *file_path)
                 if (end != 0)
                     d->focus = n;
                 if (c->sticky)
-                    num_sticky++;
+                    m->num_sticky++;
             }
             if (br == 'a')
                 n->birth_rotation = 90;

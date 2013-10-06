@@ -294,7 +294,7 @@ void window_close(node_t *n)
     send_client_message(n->client->window, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
 }
 
-void window_kill(desktop_t *d, node_t *n)
+void window_kill(monitor_t *m, desktop_t *d, node_t *n)
 {
     if (n == NULL)
         return;
@@ -303,7 +303,7 @@ void window_kill(desktop_t *d, node_t *n)
     PRINTF("kill window %X\n", win);
 
     xcb_kill_client(dpy, win);
-    remove_node(d, n);
+    remove_node(m, d, n);
 }
 
 void set_fullscreen(node_t *n, bool value)
@@ -373,16 +373,16 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
     PRINTF("set sticky %X: %s\n", c->window, BOOLSTR(value));
 
-    if (d != mon->desk)
-        transfer_node(m, d, n, mon, mon->desk, mon->desk->focus);
+    if (d != m->desk)
+        transfer_node(m, d, n, m, m->desk, m->desk->focus);
 
     c->sticky = value;
     if (value)
-        num_sticky++;
+        m->num_sticky++;
     else
-        num_sticky--;
+        m->num_sticky--;
 
-    window_draw_border(n, mon->desk->focus == n, true);
+    window_draw_border(n, mon->desk->focus == n, m == mon);
 }
 
 void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -430,6 +430,8 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
             get_color(urgent_border_color, c->window, &pxl);
         else if (c->locked)
             get_color(active_locked_border_color, c->window, &pxl);
+        else if (c->sticky)
+            get_color(active_sticky_border_color, c->window, &pxl);
         else
             get_color(active_border_color, c->window, &pxl);
     } else {
@@ -556,11 +558,13 @@ void window_set_visibility(xcb_window_t win, bool visible)
 
 void window_hide(xcb_window_t win)
 {
+    PRINTF("window hide %X\n", win);
     window_set_visibility(win, false);
 }
 
 void window_show(xcb_window_t win)
 {
+    PRINTF("window show %X\n", win);
     window_set_visibility(win, true);
 }
 
