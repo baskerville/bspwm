@@ -224,11 +224,10 @@ void restore_stack(char *file_path)
     while (fgets(line, sizeof(line), snapshot) != NULL) {
         if (sscanf(line, "%X", &win) == 1) {
             coordinates_t loc;
-            if (win != XCB_NONE && !locate_window(win, &loc)) {
+            if (locate_window(win, &loc))
+                stack_insert_after(stack_tail, loc.node);
+            else
                 warn("Can't locate window 0x%X.\n", win);
-                continue;
-            }
-            stack_insert_after(stack_tail, loc.node);
         } else {
             warn("Can't parse stack entry: '%s'\n", line);
         }

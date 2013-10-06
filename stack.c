@@ -103,9 +103,13 @@ void stack(node_t *n)
         if (latest_tiled == NULL && oldest_floating == NULL)
             return;
         if (n->client->floating) {
+            if (latest_tiled == NULL)
+                return;
             window_above(n->client->window, latest_tiled->node->client->window);
             stack_insert_after(latest_tiled, n);
         } else {
+            if (oldest_floating == NULL)
+                return;
             window_below(n->client->window, oldest_floating->node->client->window);
             stack_insert_before(oldest_floating, n);
         }
@@ -141,9 +145,13 @@ void stack_under(node_t *n)
         if (latest_tiled == NULL && oldest_floating == NULL)
             return;
         if (n->client->floating) {
+            if (latest_tiled == NULL)
+                return;
             window_above(n->client->window, latest_tiled->node->client->window);
             stack_insert_after(latest_tiled, n);
         } else {
+            if (oldest_floating == NULL)
+                return;
             window_below(n->client->window, oldest_floating->node->client->window);
             stack_insert_before(oldest_floating, n);
         }
