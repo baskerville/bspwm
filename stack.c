@@ -3,22 +3,22 @@
 #include "window.h"
 #include "stack.h"
 
-stack_t *make_stack(node_t *n)
+stacking_list_t *make_stack(node_t *n)
 {
-    stack_t *s = malloc(sizeof(stack_t));
+    stacking_list_t *s = malloc(sizeof(stacking_list_t));
     s->node = n;
     s->prev = s->next = NULL;
     return s;
 }
 
-void stack_insert_after(stack_t *a, node_t *n)
+void stack_insert_after(stacking_list_t *a, node_t *n)
 {
-    stack_t *s = make_stack(n);
+    stacking_list_t *s = make_stack(n);
     if (a == NULL) {
         stack_head = stack_tail = s;
     } else {
         remove_stack_node(n);
-        stack_t *b = a->next;
+        stacking_list_t *b = a->next;
         if (b != NULL)
             b->prev = s;
         s->next = b;
@@ -29,14 +29,14 @@ void stack_insert_after(stack_t *a, node_t *n)
     }
 }
 
-void stack_insert_before(stack_t *a, node_t *n)
+void stack_insert_before(stacking_list_t *a, node_t *n)
 {
-    stack_t *s = make_stack(n);
+    stacking_list_t *s = make_stack(n);
     if (a == NULL) {
         stack_head = stack_tail = s;
     } else {
         remove_stack_node(n);
-        stack_t *b = a->prev;
+        stacking_list_t *b = a->prev;
         if (b != NULL)
             b->next = s;
         s->prev = b;
@@ -47,12 +47,12 @@ void stack_insert_before(stack_t *a, node_t *n)
     }
 }
 
-void remove_stack(stack_t *s)
+void remove_stack(stacking_list_t *s)
 {
     if (s == NULL)
         return;
-    stack_t *a = s->prev;
-    stack_t *b = s->next;
+    stacking_list_t *a = s->prev;
+    stacking_list_t *b = s->next;
     if (a != NULL)
         a->next = b;
     if (b != NULL)
@@ -66,7 +66,7 @@ void remove_stack(stack_t *s)
 
 void remove_stack_node(node_t *n)
 {
-    for (stack_t *s = stack_head; s != NULL; s = s->next)
+    for (stacking_list_t *s = stack_head; s != NULL; s = s->next)
         if (s->node == n) {
             remove_stack(s);
             return;
@@ -85,9 +85,9 @@ void stack(node_t *n)
     } else {
         if (n->client->floating && !auto_raise)
             return;
-        stack_t *latest_tiled = NULL;
-        stack_t *oldest_floating = NULL;
-        for (stack_t *s = stack_tail; s != NULL; s = s->prev) {
+        stacking_list_t *latest_tiled = NULL;
+        stacking_list_t *oldest_floating = NULL;
+        for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
             if (s->node != n) {
                 if (s->node->client->floating == n->client->floating) {
                     stack_insert_after(s, n);
@@ -127,9 +127,9 @@ void stack_under(node_t *n)
     } else {
         if (n->client->floating && !auto_raise)
             return;
-        stack_t *latest_tiled = NULL;
-        stack_t *oldest_floating = NULL;
-        for (stack_t *s = stack_head; s != NULL; s = s->next) {
+        stacking_list_t *latest_tiled = NULL;
+        stacking_list_t *oldest_floating = NULL;
+        for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
             if (s->node != n) {
                 if (s->node->client->floating == n->client->floating) {
                     stack_insert_before(s, n);

@@ -208,11 +208,11 @@ struct history_t {
     history_t *next;
 };
 
-typedef struct stack_t stack_t;
-struct stack_t {
+typedef struct stacking_list_t stacking_list_t;
+struct stacking_list_t {
     node_t *node;
-    stack_t *prev;
-    stack_t *next;
+    stacking_list_t *prev;
+    stacking_list_t *next;
 };
 
 typedef struct {

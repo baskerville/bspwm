@@ -27,8 +27,8 @@ monitor_t *mon_tail;
 monitor_t *pri_mon;
 history_t *history_head;
 history_t *history_tail;
-stack_t *stack_head;
-stack_t *stack_tail;
+stacking_list_t *stack_head;
+stacking_list_t *stack_tail;
 rule_t *rule_head;
 rule_t *rule_tail;
 

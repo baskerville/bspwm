@@ -100,7 +100,7 @@ void query_history(coordinates_t loc, char *rsp)
 void query_stack(char *rsp)
 {
     char line[MAXLEN];
-    for (stack_t *s = stack_head; s != NULL; s = s->next) {
+    for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
         snprintf(line, sizeof(line), "0x%X", s->node->client->window);
         strncat(rsp, line, REMLEN(rsp));
         strncat(rsp, "\n", REMLEN(rsp));
