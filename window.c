@@ -316,6 +316,10 @@ void set_fullscreen(node_t *n, bool value)
     PRINTF("fullscreen %X: %s\n", c->window, BOOLSTR(value));
 
     c->fullscreen = value;
+    if (value)
+        ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);
+    else
+        ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
     stack(n);
 }
 
@@ -368,10 +372,13 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
         transfer_node(m, d, n, m, m->desk, m->desk->focus);
 
     c->sticky = value;
-    if (value)
+    if (value) {
+        ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_STICKY);
         m->num_sticky++;
-    else
+    } else {
+        ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_STICKY);
         m->num_sticky--;
+    }
 
     window_draw_border(n, mon->desk->focus == n, m == mon);
 }

@@ -15,6 +15,8 @@ void ewmh_set_wm_desktop(node_t *n, desktop_t *d);
 void ewmh_update_wm_desktops(void);
 void ewmh_update_desktop_names(void);
 void ewmh_update_client_list(void);
+bool ewmh_wm_state_add(client_t *c, xcb_atom_t state);
+bool ewmh_wm_state_remove(client_t *c, xcb_atom_t state);
 void ewmh_set_supporting(xcb_window_t win);
 
 #endif

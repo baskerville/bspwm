@@ -326,6 +326,13 @@ client_t *make_client(xcb_window_t win)
             c->icccm_focus = true;
         xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
     }
+    c->num_states = 0;
+    xcb_ewmh_get_atoms_reply_t wm_state;
+    if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
+        for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++)
+            ewmh_wm_state_add(c, wm_state.atoms[i]);
+        xcb_ewmh_get_atoms_reply_wipe(&wm_state);
+    }
     return c;
 }
 

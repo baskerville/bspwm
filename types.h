@@ -8,6 +8,7 @@
 #include "helpers.h"
 
 #define MISSING_VALUE        "N/A"
+#define MAX_STATE            4
 
 typedef enum {
     TYPE_HORIZONTAL,
@@ -145,6 +146,8 @@ typedef struct {
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
     unsigned int tags_field;
+    xcb_atom_t wm_state[MAX_STATE];
+    int num_states;
 } client_t;
 
 typedef struct node_t node_t;

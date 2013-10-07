@@ -111,6 +111,33 @@ void ewmh_update_client_list(void)
     xcb_ewmh_set_client_list_stacking(ewmh, default_screen, num_clients, wins);
 }
 
+bool ewmh_wm_state_add(client_t *c, xcb_atom_t state)
+{
+    if (c->num_states >= MAX_STATE)
+        return false;
+    for (int i = 0; i < c->num_states; i++)
+        if (c->wm_state[i] == state)
+            return false;
+    c->wm_state[c->num_states] = state;
+    c->num_states++;
+    xcb_ewmh_set_wm_state(ewmh, c->window, c->num_states, c->wm_state);
+    return true;
+}
+
+bool ewmh_wm_state_remove(client_t *c, xcb_atom_t state)
+{
+    for (int i = 0; i < c->num_states; i++)
+        if (c->wm_state[i] == state)
+        {
+            for (int j = i; j < (c->num_states - 1); j++)
+                c->wm_state[j] = c->wm_state[j + 1];
+            c->num_states--;
+            xcb_ewmh_set_wm_state(ewmh, c->window, c->num_states, c->wm_state);
+            return true;
+        }
+    return false;
+}
+
 void ewmh_set_supporting(xcb_window_t win)
 {
     pid_t wm_pid = getpid();
