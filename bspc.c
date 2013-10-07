@@ -1,4 +1,7 @@
 #include <stdlib.h>
+#ifdef __OpenBSD__
+#include <sys/types.h>
+#endif
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
