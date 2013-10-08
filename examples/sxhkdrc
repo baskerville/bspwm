@@ -23,6 +23,11 @@ super + {grave,Tab}
 super + apostrophe
     bspc window -s last
 
+super + {o,i}
+    bspc control --record-history off; \
+    bspc window {older,newer} -f; \
+    bspc control --record-history on
+
 super + y
     bspc window -w last.manual
 
