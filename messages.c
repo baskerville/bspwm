@@ -873,6 +873,15 @@ bool cmd_control(char **args, int num)
             put_status();
         } else if (streq("--toggle-visibility", *args)) {
             toggle_visibility();
+        } else if (streq("--record-history", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            bool b;
+            if (parse_bool(*args, &b))
+                record_history = b;
+            else
+                return false;
         } else {
             return false;
         }
@@ -1160,6 +1169,19 @@ bool parse_circulate_direction(char *s, circulate_dir_t *d)
     }
     return false;
 }
+
+bool parse_history_direction(char *s, history_dir_t *d)
+{
+    if (streq("older", s)) {
+        *d = HISTORY_OLDER;
+        return true;
+    } else if (streq("newer", s)) {
+        *d = HISTORY_NEWER;
+        return true;
+    }
+    return false;
+}
+
 
 bool parse_flip(char *s, flip_t *f)
 {

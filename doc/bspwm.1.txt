@@ -141,7 +141,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|last_local|focused)[.floating|.tiled][.like|.unlike][.automatic|.manual][.urgent|.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|last_local|older|newer|focused)[.floating|.tiled][.like|.unlike][.automatic|.manual][.urgent|.nonurgent]
 ----
 
 Primary Selectors
@@ -162,6 +162,12 @@ last::
 
 last_local::
     Selects the previously focused window on the current desktop.
+
+older::
+    Selects the window older than the focused window in the history.
+
+newer::
+    Selects the window newer than the focused window in the history.
 
 focused::
     Selects the currently focused window.

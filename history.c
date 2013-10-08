@@ -14,6 +14,9 @@ history_t *make_history(monitor_t *m, desktop_t *d, node_t *n)
 
 void history_add(monitor_t *m, desktop_t *d, node_t *n)
 {
+    if (!record_history)
+        return;
+    history_needle = NULL;
     history_t *h = make_history(m, d, n);
     if (history_head == NULL) {
         history_head = history_tail = h;
@@ -82,6 +85,8 @@ void history_remove(desktop_t *d, node_t *n)
                     history_t *d = c->prev;
                     if (history_head == c)
                         history_head = history_tail;
+                    if (history_needle == c)
+                        history_needle = history_tail;
                     free(c);
                     c = d;
                 }
@@ -93,6 +98,8 @@ void history_remove(desktop_t *d, node_t *n)
                 history_tail = c;
             if (history_head == b)
                 history_head = a;
+            if (history_needle == b)
+                history_needle = c;
             free(b);
             b = c;
         } else {
@@ -110,6 +117,23 @@ void empty_history(void)
         h = next;
     }
     history_head = history_tail = NULL;
+}
+
+void history_navigate(history_dir_t hdi, coordinates_t *loc)
+{
+    if (history_tail == NULL)
+        return;
+
+    if (history_needle == NULL)
+        history_needle = history_tail;
+
+    history_t *h;
+    for (h = history_needle; h != NULL && (h == history_needle || h->loc.node == NULL || !h->latest || !is_visible(h->loc.desktop, h->loc.node)); h = (hdi == HISTORY_OLDER ? h->prev : h->next))
+        ;
+    if (h != NULL) {
+        history_needle = h;
+        *loc = h->loc;
+    }
 }
 
 node_t *history_get_node(desktop_t *d, node_t *n)

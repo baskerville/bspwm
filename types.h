@@ -76,6 +76,12 @@ typedef enum {
     CIRCULATE_BACKWARD
 } circulate_dir_t;
 
+
+typedef enum {
+    HISTORY_OLDER,
+    HISTORY_NEWER
+} history_dir_t;
+
 typedef enum {
     DIR_RIGHT,
     DIR_DOWN,

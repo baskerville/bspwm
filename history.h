@@ -11,6 +11,7 @@ void history_swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2,
 void history_swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2);
 void history_remove(desktop_t *d, node_t *n);
 void empty_history(void);
+void history_navigate(circulate_dir_t cir, coordinates_t *loc);
 node_t *history_get_node(desktop_t *d, node_t *n);
 desktop_t *history_get_desktop(monitor_t *m, desktop_t *d);
 monitor_t *history_get_monitor(monitor_t *m);

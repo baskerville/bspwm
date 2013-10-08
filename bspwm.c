@@ -171,12 +171,12 @@ void init(void)
     monitor_uid = desktop_uid = 0;
     mon = mon_head = mon_tail = pri_mon = NULL;
     rule_head = rule_tail = NULL;
-    history_head = history_tail = NULL;
+    history_head = history_tail = history_needle = NULL;
     stack_head = stack_tail = NULL;
     init_tags();
     status_fifo = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
-    visible = auto_raise = sticky_still = true;
+    visible = auto_raise = sticky_still = record_history = true;
     randr_base = 0;
     exit_status = 0;
 }

@@ -27,6 +27,7 @@ bool parse_layout(char *s, layout_t *l);
 bool parse_direction(char *s, direction_t *d);
 bool parse_cycle_direction(char *s, cycle_dir_t *d);
 bool parse_circulate_direction(char *s, circulate_dir_t *d);
+bool parse_history_direction(char *s, history_dir_t *d);
 bool parse_flip(char *s, flip_t *f);
 bool parse_fence_move(char *s, fence_move_t *m);
 bool parse_pointer_action(char *s, pointer_action_t *a);

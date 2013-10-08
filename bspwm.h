@@ -27,6 +27,7 @@ monitor_t *mon_tail;
 monitor_t *pri_mon;
 history_t *history_head;
 history_t *history_tail;
+history_t *history_needle;
 stacking_list_t *stack_head;
 stacking_list_t *stack_tail;
 rule_t *rule_head;
@@ -42,6 +43,7 @@ int exit_status;
 bool visible;
 bool auto_raise;
 bool sticky_still;
+bool record_history;
 bool running;
 bool randr;
 

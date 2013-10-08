@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/06/2013
+.\"      Date: 10/08/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.5
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/06/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "10/08/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -179,7 +179,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|last_local|focused)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.automatic|\&.manual][\&.urgent|\&.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|last_local|older|newer|focused)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.automatic|\&.manual][\&.urgent|\&.nonurgent]
 .fi
 .if n \{\
 .RE
@@ -216,6 +216,16 @@ Selects the previously focused window\&.
 last_local
 .RS 4
 Selects the previously focused window on the current desktop\&.
+.RE
+.PP
+older
+.RS 4
+Selects the window older than the focused window in the history\&.
+.RE
+.PP
+newer
+.RS 4
+Selects the window newer than the focused window in the history\&.
 .RE
 .PP
 focused
