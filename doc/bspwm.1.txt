@@ -519,6 +519,9 @@ Options
 *--toggle-visibility*::
     Toggle the visibility of all the windows.
 
+*--record-history* on|off::
+    Enable or disable the recording of window focus history.
+
 Pointer
 ~~~~~~~
 
