@@ -30,7 +30,7 @@ include Sourcedeps
 $(WM_OBJ) $(CL_OBJ): Makefile
 
 .c.o:
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(OPTFLAGS) -c -o $@ $<
 
 bspwm: $(WM_OBJ)
 	$(CC) -o $@ $(WM_OBJ) $(LDFLAGS) $(LIBS)
