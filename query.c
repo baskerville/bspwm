@@ -255,9 +255,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-    desktop_select_t sel;
-    sel.status = DESKTOP_STATUS_ALL;
-    sel.urgent = false;
+    desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';

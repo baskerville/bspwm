@@ -862,6 +862,7 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 
     PRINTF("remove node %X\n", n->client->window);
 
+    bool focused = (n == mon->desk->focus);
     unlink_node(m, d, n);
     history_remove(d, n);
     remove_stack_node(n);
@@ -871,7 +872,7 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
     num_clients--;
     ewmh_update_client_list();
 
-    if (mon->desk == d)
+    if (focused)
         update_current();
 }
 
