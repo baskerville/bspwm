@@ -1,5 +1,5 @@
-#ifndef RULE_H
-#define RULE_H
+#ifndef BSPWM_RULE_H
+#define BSPWM_RULE_H
 
 #define MATCH_ALL  "*"
 #define LST_SEP    ","

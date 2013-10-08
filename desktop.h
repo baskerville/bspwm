@@ -1,5 +1,5 @@
-#ifndef DESKTOP_H
-#define DESKTOP_H
+#ifndef BSPWM_DESKTOP_H
+#define BSPWM_DESKTOP_H
 
 #define DEFAULT_DESK_NAME    "Desktop"
 #define WINDOW_GAP           6

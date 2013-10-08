@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef BSPWM_TYPES_H
+#define BSPWM_TYPES_H
 
 #include <stdbool.h>
 #include <xcb/xcb.h>

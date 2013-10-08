@@ -1,5 +1,5 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef BSPWM_STACK_H
+#define BSPWM_STACK_H
 
 stacking_list_t *make_stack(node_t *n);
 void stack_insert_after(stacking_list_t *a, node_t *n);

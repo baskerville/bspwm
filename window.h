@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef BSPWM_WINDOW_H
+#define BSPWM_WINDOW_H
 
 #include <stdarg.h>
 #include <xcb/xcb.h>

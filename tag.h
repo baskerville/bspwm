@@ -1,5 +1,5 @@
-#ifndef TAG_H
-#define TAG_H
+#ifndef BSPWM_TAG_H
+#define BSPWM_TAG_H
 
 #define MAXTAGS           32
 #define DEFAULT_TAG_NAME  "*"

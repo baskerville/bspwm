@@ -1,5 +1,5 @@
-#ifndef QUERY_H
-#define QUERY_H
+#ifndef BSPWM_QUERY_H
+#define BSPWM_QUERY_H
 
 typedef enum {
     DOMAIN_MONITOR,

@@ -1,5 +1,5 @@
-#ifndef HISTORY_H
-#define HISTORY_H
+#ifndef BSPWM_HISTORY_H
+#define BSPWM_HISTORY_H
 
 #include "types.h"
 

@@ -1,5 +1,5 @@
-#ifndef MESSAGES_H
-#define MESSAGES_H
+#ifndef BSPWM_MESSAGES_H
+#define BSPWM_MESSAGES_H
 
 #include "types.h"
 

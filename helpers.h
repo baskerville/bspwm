@@ -1,5 +1,5 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef BSPWM_HELPERS_H
+#define BSPWM_HELPERS_H
 
 #include <xcb/xcb.h>
 #include <stdarg.h>

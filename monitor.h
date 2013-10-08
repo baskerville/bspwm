@@ -1,5 +1,5 @@
-#ifndef MONITOR_H
-#define MONITOR_H
+#ifndef BSPWM_MONITOR_H
+#define BSPWM_MONITOR_H
 
 #define DEFAULT_MON_NAME     "MONITOR"
 

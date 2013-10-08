@@ -1,5 +1,5 @@
-#ifndef EVENTS_H
-#define EVENTS_H
+#ifndef BSPWM_EVENTS_H
+#define BSPWM_EVENTS_H
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
