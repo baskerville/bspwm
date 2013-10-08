@@ -1,5 +1,5 @@
-#ifndef _SETTINGS_H
-#define _SETTINGS_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 #include "types.h"
 

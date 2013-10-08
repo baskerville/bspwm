@@ -1,5 +1,5 @@
-#ifndef _TREE_H
-#define _TREE_H
+#ifndef TREE_H
+#define TREE_H
 
 void arrange(monitor_t *m, desktop_t *d);
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect);

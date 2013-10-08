@@ -1,5 +1,5 @@
-#ifndef _EWMH_H
-#define _EWMH_H
+#ifndef EWMH_H
+#define EWMH_H
 
 #include <xcb/xcb_ewmh.h>
 

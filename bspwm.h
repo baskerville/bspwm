@@ -1,5 +1,5 @@
-#ifndef _BSPWM_H
-#define _BSPWM_H
+#ifndef BSPWM_H
+#define BSPWM_H
 
 #include "types.h"
 

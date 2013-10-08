@@ -1,5 +1,5 @@
-#ifndef _TAG_H
-#define _TAG_H
+#ifndef TAG_H
+#define TAG_H
 
 #define MAXTAGS           32
 #define DEFAULT_TAG_NAME  "*"

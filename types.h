@@ -1,5 +1,5 @@
-#ifndef _TYPES_H
-#define _TYPES_H
+#ifndef TYPES_H
+#define TYPES_H
 
 #include <stdbool.h>
 #include <xcb/xcb.h>

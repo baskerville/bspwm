@@ -1,5 +1,5 @@
-#ifndef _MONITOR_H
-#define _MONITOR_H
+#ifndef MONITOR_H
+#define MONITOR_H
 
 #define DEFAULT_MON_NAME     "MONITOR"
 

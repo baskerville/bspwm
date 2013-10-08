@@ -1,5 +1,5 @@
-#ifndef _HISTORY_H
-#define _HISTORY_H
+#ifndef HISTORY_H
+#define HISTORY_H
 
 #include "types.h"
 

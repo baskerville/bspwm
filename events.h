@@ -1,5 +1,5 @@
-#ifndef _EVENTS_H
-#define _EVENTS_H
+#ifndef EVENTS_H
+#define EVENTS_H
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>

@@ -1,5 +1,5 @@
-#ifndef _DESKTOP_H
-#define _DESKTOP_H
+#ifndef DESKTOP_H
+#define DESKTOP_H
 
 #define DEFAULT_DESK_NAME    "Desktop"
 #define WINDOW_GAP           6

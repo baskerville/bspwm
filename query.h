@@ -1,5 +1,5 @@
-#ifndef _QUERY_H
-#define _QUERY_H
+#ifndef QUERY_H
+#define QUERY_H
 
 typedef enum {
     DOMAIN_MONITOR,

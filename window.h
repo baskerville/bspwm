@@ -1,5 +1,5 @@
-#ifndef _WINDOW_H
-#define _WINDOW_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
 #include <stdarg.h>
 #include <xcb/xcb.h>

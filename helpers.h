@@ -1,5 +1,5 @@
-#ifndef _HELPERS_H
-#define _HELPERS_H
+#ifndef HELPERS_H
+#define HELPERS_H
 
 #include <xcb/xcb.h>
 #include <stdarg.h>
