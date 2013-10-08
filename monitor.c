@@ -189,7 +189,8 @@ monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)
         f = (dir == CYCLE_PREV ? mon_tail : mon_head);
 
     while (f != m) {
-        if (desktop_matches(f->desk, sel))
+        coordinates_t loc = {m, m->desk, NULL};
+        if (desktop_matches(&loc, &loc, sel))
             return f;
         f = (dir == CYCLE_PREV ? m->prev : m->next);
         if (f == NULL)
@@ -207,7 +208,8 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
     for (monitor_t *f = mon_head; f != NULL; f = f->next) {
         if (f == m)
             continue;
-        if (!desktop_matches(f->desk, sel))
+        coordinates_t loc = {f, f->desk, NULL};
+        if (!desktop_matches(&loc, &loc, sel))
             continue;
         xcb_rectangle_t r = f->rectangle;
         if ((dir == DIR_LEFT && r.x < rect.x) ||

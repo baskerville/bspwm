@@ -129,11 +129,7 @@ void query_windows(coordinates_t loc, char *rsp)
 
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-    client_select_t sel;
-    sel.type = CLIENT_TYPE_ALL;
-    sel.class = CLIENT_CLASS_ALL;
-    sel.mode = CLIENT_MODE_ALL;
-    sel.urgency = CLIENT_URGENCY_ALL;
+    client_select_t sel = {CLIENT_TYPE_ALL, CLIENT_CLASS_ALL, false, false, false};
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
@@ -146,14 +142,12 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
             sel.class = CLIENT_CLASS_EQUAL;
         } else if (streq("unlike", tok)) {
             sel.class = CLIENT_CLASS_DIFFER;
-        } else if (streq("automatic", tok)) {
-            sel.mode = CLIENT_MODE_AUTOMATIC;
-        } else if (streq("manual", tok)) {
-            sel.mode = CLIENT_MODE_MANUAL;
         } else if (streq("urgent", tok)) {
-            sel.urgency = CLIENT_URGENCY_ON;
-        } else if (streq("nonurgent", tok)) {
-            sel.urgency = CLIENT_URGENCY_OFF;
+            sel.urgent = true;
+        } else if (streq("manual", tok)) {
+            sel.manual = true;
+        } else if (streq("local", tok)) {
+            sel.local = true;
         }
     }
 
@@ -165,19 +159,18 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     cycle_dir_t cyc;
     history_dir_t hdi;
     if (parse_direction(desc, &dir)) {
-        dst->node = nearest_neighbor(dst->desktop, ref->node, dir, sel);
+        dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
     } else if (parse_cycle_direction(desc, &cyc)) {
-        dst->node = closest_node(ref->desktop, ref->node, cyc, sel);
+        dst->node = closest_node(ref->monitor, ref->desktop, ref->node, cyc, sel);
     } else if (parse_history_direction(desc, &hdi)) {
-        history_navigate(hdi, dst);
+        history_find_node(hdi, ref, dst, sel);
     } else if (streq("last", desc)) {
-        history_last_node(ref->node, sel, dst);
-    } else if (streq("last_local", desc)) {
-        dst->node = history_get_node(ref->desktop, ref->node);
+        history_find_node(HISTORY_OLDER, ref, dst, sel);
     } else if (streq("biggest", desc)) {
-        dst->node = find_biggest(ref->desktop, ref->node, sel);
+        dst->node = find_biggest(ref->monitor, ref->desktop, ref->node, sel);
     } else if (streq("focused", desc)) {
-        if (node_matches(ref->node, mon->desk->focus, sel)) {
+        coordinates_t loc = {mon, mon->desk, mon->desk->focus};
+        if (node_matches(&loc, ref, sel)) {
             dst->monitor = mon;
             dst->desktop = mon->desk;
             dst->node = mon->desk->focus;
@@ -193,9 +186,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-    desktop_select_t sel;
-    sel.status = DESKTOP_STATUS_ALL;
-    sel.urgency = DESKTOP_URGENCY_ALL;
+    desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
@@ -205,31 +196,32 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
         } else if (streq("occupied", tok)) {
             sel.status = DESKTOP_STATUS_OCCUPIED;
         } else if (streq("urgent", tok)) {
-            sel.urgency = DESKTOP_URGENCY_ON;
-        } else if (streq("nonurgent", tok)) {
-            sel.urgency = DESKTOP_URGENCY_OFF;
+            sel.urgent = true;
+        } else if (streq("local", tok)) {
+            sel.local = true;
         }
     }
 
     dst->desktop = NULL;
 
     cycle_dir_t cyc;
+    history_dir_t hdi;
     int idx;
     if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = ref->monitor;
         dst->desktop = closest_desktop(ref->monitor, ref->desktop, cyc, sel);
-    } else if (parse_index(desc, &idx)) {
-        desktop_from_index(idx, dst);
+    } else if (parse_history_direction(desc, &hdi)) {
+        history_find_desktop(hdi, ref, dst, sel);
     } else if (streq("last", desc)) {
-        history_last_desktop(ref->desktop, sel, dst);
-    } else if (streq("last_local", desc)) {
-        dst->monitor = ref->monitor;
-        dst->desktop = history_get_desktop(ref->monitor, ref->desktop);
+        history_find_desktop(HISTORY_OLDER, ref, dst, sel);
     } else if (streq("focused", desc)) {
-        if (desktop_matches(mon->desk, sel)) {
+        coordinates_t loc = {mon, mon->desk, NULL};
+        if (desktop_matches(&loc, ref, sel)) {
             dst->monitor = mon;
             dst->desktop = mon->desk;
         }
+    } else if (parse_index(desc, &idx)) {
+        desktop_from_index(idx, dst);
     } else {
         locate_desktop(desc, dst);
     }
@@ -241,7 +233,7 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
     desktop_select_t sel;
     sel.status = DESKTOP_STATUS_ALL;
-    sel.urgency = DESKTOP_URGENCY_ALL;
+    sel.urgent = false;
     char *tok;
     while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
         tok[0] = '\0';
@@ -257,21 +249,26 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
     direction_t dir;
     cycle_dir_t cyc;
+    history_dir_t hdi;
     int idx;
     if (parse_direction(desc, &dir)) {
         dst->monitor = nearest_monitor(ref->monitor, dir, sel);
     } else if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = closest_monitor(ref->monitor, cyc, sel);
-    } else if (parse_index(desc, &idx)) {
-        monitor_from_index(idx, dst);
+    } else if (parse_history_direction(desc, &hdi)) {
+        history_find_monitor(hdi, ref, dst, sel);
     } else if (streq("last", desc)) {
-        history_last_monitor(ref->monitor, sel, dst);
+        history_find_monitor(HISTORY_OLDER, ref, dst, sel);
     } else if (streq("primary", desc)) {
-        if (pri_mon != NULL && desktop_matches(pri_mon->desk, sel))
+        coordinates_t loc = {pri_mon, pri_mon->desk, NULL};
+        if (pri_mon != NULL && desktop_matches(&loc, ref, sel))
             dst->monitor = pri_mon;
     } else if (streq("focused", desc)) {
-        if (desktop_matches(mon->desk, sel))
+        coordinates_t loc = {mon, mon->desk, NULL};
+        if (desktop_matches(&loc, ref, sel))
             dst->monitor = mon;
+    } else if (parse_index(desc, &idx)) {
+        monitor_from_index(idx, dst);
     } else {
         locate_monitor(desc, dst);
     }
@@ -340,58 +337,45 @@ bool monitor_from_index(int i, coordinates_t *loc)
     return false;
 }
 
-/**
- * Check if the specified node matches the selection criteria.
- *
- * Arguments:
- *  node_t *c           - the active node
- *  node_t *t           - the node to test
- *  client_sel_t sel    - the selection criteria
- *
- * Returns true if the node matches.
- **/
-bool node_matches(node_t *c, node_t *t, client_select_t sel)
+bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 {
     if (sel.type != CLIENT_TYPE_ALL &&
-            is_tiled(t->client)
+            is_tiled(loc->node->client)
             ? sel.type == CLIENT_TYPE_FLOATING
-            : sel.type == CLIENT_TYPE_TILED
-       ) return false;
-
-    if (sel.class != CLIENT_CLASS_ALL &&
-            streq(c->client->class_name, t->client->class_name)
-            ? sel.class == CLIENT_CLASS_DIFFER
-            : sel.class == CLIENT_CLASS_EQUAL
-       ) return false;
-
-    if (sel.mode != CLIENT_MODE_ALL &&
-            t->split_mode == MODE_MANUAL
-            ? sel.mode == CLIENT_MODE_AUTOMATIC
-            : sel.mode == CLIENT_MODE_MANUAL)
+            : sel.type == CLIENT_TYPE_TILED)
         return false;
 
-    if (sel.urgency != CLIENT_URGENCY_ALL &&
-            t->client->urgent
-            ? sel.urgency == CLIENT_URGENCY_OFF
-            : sel.urgency == CLIENT_URGENCY_ON
-       ) return false;
+    if (sel.class != CLIENT_CLASS_ALL &&
+            streq(loc->node->client->class_name, ref->node->client->class_name)
+            ? sel.class == CLIENT_CLASS_DIFFER
+            : sel.class == CLIENT_CLASS_EQUAL)
+        return false;
+
+    if (sel.manual && loc->node->split_mode != MODE_MANUAL)
+        return false;
+
+    if (sel.local && loc->desktop != ref->desktop)
+        return false;
+
+    if (sel.urgent && !loc->node->client->urgent)
+        return false;
 
     return true;
 }
 
-bool desktop_matches(desktop_t *t, desktop_select_t sel)
+bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t sel)
 {
     if (sel.status != DESKTOP_STATUS_ALL &&
-            t->root == NULL
+            loc->desktop->root == NULL
             ? sel.status == DESKTOP_STATUS_OCCUPIED
-            : sel.status == DESKTOP_STATUS_FREE
-       ) return false;
+            : sel.status == DESKTOP_STATUS_FREE)
+        return false;
 
-    if (sel.urgency != DESKTOP_URGENCY_ALL &&
-            is_urgent(t)
-            ? sel.urgency == DESKTOP_URGENCY_OFF
-            : sel.urgency == DESKTOP_URGENCY_ON
-       ) return false;
+    if (sel.urgent && !is_urgent(loc->desktop))
+        return false;
+
+    if (sel.local && ref->monitor != loc->monitor)
+        return false;
 
     return true;
 }

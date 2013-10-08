@@ -119,23 +119,6 @@ void empty_history(void)
     history_head = history_tail = NULL;
 }
 
-void history_navigate(history_dir_t hdi, coordinates_t *loc)
-{
-    if (history_tail == NULL)
-        return;
-
-    if (history_needle == NULL)
-        history_needle = history_tail;
-
-    history_t *h;
-    for (h = history_needle; h != NULL && (h == history_needle || h->loc.node == NULL || !h->latest || !is_visible(h->loc.desktop, h->loc.node)); h = (hdi == HISTORY_OLDER ? h->prev : h->next))
-        ;
-    if (h != NULL) {
-        history_needle = h;
-        *loc = h->loc;
-    }
-}
-
 node_t *history_get_node(desktop_t *d, node_t *n)
 {
     for (history_t *h = history_tail; h != NULL; h = h->prev)
@@ -160,36 +143,59 @@ monitor_t *history_get_monitor(monitor_t *m)
     return NULL;
 }
 
-bool history_last_node(node_t *n, client_select_t sel, coordinates_t *loc)
+bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, client_select_t sel)
 {
-    for (history_t *h = history_tail; h != NULL; h = h->prev) {
-        if (!h->latest || h->loc.node == NULL || h->loc.node == n
+    if (history_needle == NULL)
+        history_needle = history_tail;
+
+    history_t *h;
+    for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
+        if (h == history_needle
+                || !h->latest
+                || h->loc.node == NULL
                 || !is_visible(h->loc.desktop, h->loc.node)
-                || !node_matches(n, h->loc.node, sel))
+                || !node_matches(&h->loc, ref, sel))
             continue;
-        *loc = h->loc;
+        history_needle = h;
+        *dst = h->loc;
         return true;
     }
     return false;
 }
 
-bool history_last_desktop(desktop_t *d, desktop_select_t sel, coordinates_t *loc)
+bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel)
 {
-    for (history_t *h = history_tail; h != NULL; h = h->prev) {
-        if (!h->latest || h->loc.desktop == d || !desktop_matches(h->loc.desktop, sel))
+    if (history_needle == NULL)
+        history_needle = history_tail;
+
+    history_t *h;
+    for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
+        if (h == history_needle
+                || !h->latest
+                || (h->loc.desktop == ref->desktop)
+                || !desktop_matches(&h->loc, ref, sel))
             continue;
-        *loc = h->loc;
+        history_needle = h;
+        *dst = h->loc;
         return true;
     }
     return false;
 }
 
-bool history_last_monitor(monitor_t *m, desktop_select_t sel, coordinates_t *loc)
+bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel)
 {
-    for (history_t *h = history_tail; h != NULL; h = h->prev) {
-        if (!h->latest || h->loc.monitor == m || !desktop_matches(h->loc.monitor->desk, sel))
+    if (history_needle == NULL)
+        history_needle = history_tail;
+
+    history_t *h;
+    for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
+        if (h == history_needle
+                || !h->latest
+                || (h->loc.monitor == ref->monitor)
+                || !desktop_matches(&h->loc, ref, sel))
             continue;
-        *loc = h->loc;
+        history_needle = h;
+        *dst = h->loc;
         return true;
     }
     return false;

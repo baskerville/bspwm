@@ -24,7 +24,7 @@ bool locate_desktop(char *name, coordinates_t *loc);
 bool locate_monitor(char *name, coordinates_t *loc);
 bool desktop_from_index(int i, coordinates_t *loc);
 bool monitor_from_index(int i, coordinates_t *loc);
-bool node_matches(node_t *c, node_t *t, client_select_t sel);
-bool desktop_matches(desktop_t *t, desktop_select_t sel);
+bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel);
+bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t sel);
 
 #endif

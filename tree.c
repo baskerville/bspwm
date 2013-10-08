@@ -539,7 +539,7 @@ node_t *find_fence(node_t *n, direction_t dir)
 }
 
 
-node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL || n->client->fullscreen
             || (d->layout == LAYOUT_MONOCLE && is_tiled(n->client)))
@@ -547,13 +547,13 @@ node_t *nearest_neighbor(desktop_t *d, node_t *n, direction_t dir, client_select
 
     node_t *nearest = NULL;
     if (history_aware_focus)
-        nearest = nearest_from_history(d, n, dir, sel);
+        nearest = nearest_from_history(m, d, n, dir, sel);
     if (nearest == NULL)
-        nearest = nearest_from_distance(d, n, dir, sel);
+        nearest = nearest_from_distance(m, d, n, dir, sel);
     return nearest;
 }
 
-node_t *nearest_from_history(desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL || !is_tiled(n->client))
         return NULL;
@@ -568,11 +568,13 @@ node_t *nearest_from_history(desktop_t *d, node_t *n, direction_t dir, client_se
 
     node_t *nearest = NULL;
     int min_rank = INT_MAX;
+    coordinates_t ref = {m, d, n};
 
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
         if (a->vacant || !is_adjacent(n, a, dir) || a == n)
             continue;
-        if (!node_matches(n, a, sel))
+        coordinates_t loc = {m, d, a};
+        if (!node_matches(&loc, &ref, sel))
             continue;
 
         int rank = history_rank(d, a);
@@ -585,7 +587,7 @@ node_t *nearest_from_history(desktop_t *d, node_t *n, direction_t dir, client_se
     return nearest;
 }
 
-node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL)
         return NULL;
@@ -611,11 +613,13 @@ node_t *nearest_from_distance(desktop_t *d, node_t *n, direction_t dir, client_s
     get_side_handle(n->client, dir, &pt);
     get_opposite(dir, &dir2);
     double ds = DBL_MAX;
+    coordinates_t ref = {m, d, n};
 
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
+        coordinates_t loc = {m, d, a};
         if (a == n ||
                 !is_visible(d, a) ||
-                !node_matches(n, a, sel) ||
+                !node_matches(&loc, &ref, sel) ||
                 is_tiled(a->client) != is_tiled(n->client) ||
                 (is_tiled(a->client) && !is_adjacent(n, a, dir)))
             continue;
@@ -657,16 +661,18 @@ int tiled_area(node_t *n)
     return rect.width * rect.height;
 }
 
-node_t *find_biggest(desktop_t *d, node_t *c, client_select_t sel)
+node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel)
 {
     if (d == NULL)
         return NULL;
 
     node_t *r = NULL;
     int r_area = tiled_area(r);
+    coordinates_t ref = {m, d, n};
 
     for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-        if (!is_visible(d, f) || !is_tiled(f->client) || !node_matches(c, f, sel))
+        coordinates_t loc = {m, d, f};
+        if (!is_visible(d, f) || !is_tiled(f->client) || !node_matches(&loc, &ref, sel))
             continue;
         int f_area = tiled_area(f);
         if (r == NULL) {
@@ -984,7 +990,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
     return true;
 }
 
-node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
+node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
 {
     if (n == NULL)
         return NULL;
@@ -993,8 +999,10 @@ node_t *closest_node(desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t s
     if (f == NULL)
         f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
 
+    coordinates_t ref = {m, d, n};
     while (f != n) {
-        if (node_matches(n, f, sel))
+        coordinates_t loc = {m, d, f};
+        if (node_matches(&loc, &ref, sel))
             return f;
         f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
         if (f == NULL)

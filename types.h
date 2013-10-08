@@ -42,23 +42,12 @@ typedef enum {
     CLIENT_CLASS_DIFFER
 } client_class_t;
 
-typedef enum {
-    CLIENT_MODE_ALL,
-    CLIENT_MODE_AUTOMATIC,
-    CLIENT_MODE_MANUAL
-} client_mode_t;
-
-typedef enum {
-    CLIENT_URGENCY_ALL,
-    CLIENT_URGENCY_ON,
-    CLIENT_URGENCY_OFF
-} client_urgency_t;
-
 typedef struct {
     client_type_t type;
     client_class_t class;
-    client_mode_t mode;
-    client_urgency_t urgency;
+    bool urgent;
+    bool manual;
+    bool local;
 } client_select_t;
 
 typedef enum {
@@ -75,7 +64,6 @@ typedef enum {
     CIRCULATE_FORWARD,
     CIRCULATE_BACKWARD
 } circulate_dir_t;
-
 
 typedef enum {
     HISTORY_OLDER,
@@ -135,7 +123,8 @@ typedef enum {
 
 typedef struct {
     desktop_status_t status;
-    desktop_urgency_t urgency;
+    bool urgent;
+    bool local;
 } desktop_select_t;
 
 typedef struct {

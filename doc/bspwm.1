@@ -179,7 +179,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|last_local|older|newer|focused)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.automatic|\&.manual][\&.urgent|\&.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.manual][\&.urgent][\&.local]
 .fi
 .if n \{\
 .RE
@@ -213,9 +213,9 @@ last
 Selects the previously focused window\&.
 .RE
 .PP
-last_local
+focused
 .RS 4
-Selects the previously focused window on the current desktop\&.
+Selects the currently focused window\&.
 .RE
 .PP
 older
@@ -226,11 +226,6 @@ Selects the window older than the focused window in the history\&.
 newer
 .RS 4
 Selects the window newer than the focused window in the history\&.
-.RE
-.PP
-focused
-.RS 4
-Selects the currently focused window\&.
 .RE
 .RE
 .sp
@@ -262,25 +257,20 @@ unlike
 Only consider windows that have a different class than the current window\&.
 .RE
 .PP
-automatic
-.RS 4
-Only consider windows in automatic splitting mode\&.
-.RE
-.PP
 manual
 .RS 4
 Only consider windows in manual splitting mode (see
 \fB\-\-presel\fR)\&.
 .RE
 .PP
+local
+.RS 4
+Only consider windows of the current desktop\&.
+.RE
+.PP
 urgent
 .RS 4
 Only consider urgent windows\&.
-.RE
-.PP
-nonurgent
-.RS 4
-Only consider nonurgent windows\&.
 .RE
 .RE
 .SS "Desktop"
@@ -293,7 +283,7 @@ Select a desktop\&.
 .nf
 DESKTOP_SEL := <desktop_name>
              | ^<n>
-             | (CYCLE_DIR|last|last_local|focused)[\&.occupied|\&.free][\&.urgent|\&.nonurgent]
+             | (CYCLE_DIR|last|focused|older|newer)[\&.occupied|\&.free][\&.urgent][\&.local]
 .fi
 .if n \{\
 .RE
@@ -327,14 +317,19 @@ last
 Selects the previously focused desktop\&.
 .RE
 .PP
-last_local
-.RS 4
-Selects the previously focused desktop on the current monitor\&.
-.RE
-.PP
 focused
 .RS 4
 Selects the currently focused desktop\&.
+.RE
+.PP
+older
+.RS 4
+Selects the desktop older than the focused desktop in the history\&.
+.RE
+.PP
+newer
+.RS 4
+Selects the desktop newer than the focused desktop in the history\&.
 .RE
 .RE
 .sp
@@ -361,9 +356,9 @@ urgent
 Only consider urgent desktops\&.
 .RE
 .PP
-nonurgent
+local
 .RS 4
-Only consider nonurgent desktops\&.
+Only consider desktops of the current monitor\&.
 .RE
 .RE
 .SS "Monitor"
@@ -376,7 +371,7 @@ Select a monitor\&.
 .nf
 MONITOR_SEL := <monitor_name>
              | ^<n>
-             | (DIR|CYCLE_DIR|last|primary|focused)[\&.occupied|\&.free]
+             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[\&.occupied|\&.free]
 .fi
 .if n \{\
 .RE
@@ -423,6 +418,16 @@ Selects the previously focused monitor\&.
 focused
 .RS 4
 Selects the currently focused monitor\&.
+.RE
+.PP
+older
+.RS 4
+Selects the monitor older than the focused monitor in the history\&.
+.RE
+.PP
+newer
+.RS 4
+Selects the monitor newer than the focused monitor in the history\&.
 .RE
 .RE
 .sp

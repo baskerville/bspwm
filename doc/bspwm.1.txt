@@ -141,7 +141,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|last_local|older|newer|focused)[.floating|.tiled][.like|.unlike][.automatic|.manual][.urgent|.nonurgent]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual][.urgent][.local]
 ----
 
 Primary Selectors
@@ -160,17 +160,14 @@ biggest::
 last::
     Selects the previously focused window.
 
-last_local::
-    Selects the previously focused window on the current desktop.
+focused::
+    Selects the currently focused window.
 
 older::
     Selects the window older than the focused window in the history.
 
 newer::
     Selects the window newer than the focused window in the history.
-
-focused::
-    Selects the currently focused window.
 
 Modifiers
 ^^^^^^^^^
@@ -187,17 +184,14 @@ like::
 unlike::
     Only consider windows that have a different class than the current window.
 
-automatic::
-    Only consider windows in automatic splitting mode.
-
 manual::
     Only consider windows in manual splitting mode (see *--presel*).
 
+local::
+    Only consider windows of the current desktop.
+
 urgent::
     Only consider urgent windows.
-
-nonurgent::
-    Only consider nonurgent windows.
 
 Desktop
 ~~~~~~~
@@ -207,7 +201,7 @@ Select a desktop.
 ----
 DESKTOP_SEL := <desktop_name>
              | ^<n>
-             | (CYCLE_DIR|last|last_local|focused)[.occupied|.free][.urgent|.nonurgent]
+             | (CYCLE_DIR|last|focused|older|newer)[.occupied|.free][.urgent][.local]
 ----
 
 Primary Selectors
@@ -225,11 +219,14 @@ Primary Selectors
 last::
     Selects the previously focused desktop.
 
-last_local::
-    Selects the previously focused desktop on the current monitor.
-
 focused::
     Selects the currently focused desktop.
+
+older::
+    Selects the desktop older than the focused desktop in the history.
+
+newer::
+    Selects the desktop newer than the focused desktop in the history.
 
 Modifiers
 ^^^^^^^^^
@@ -243,8 +240,8 @@ free::
 urgent::
     Only consider urgent desktops.
 
-nonurgent::
-    Only consider nonurgent desktops.
+local::
+    Only consider desktops of the current monitor.
 
 Monitor
 ~~~~~~~
@@ -254,7 +251,7 @@ Select a monitor.
 ----
 MONITOR_SEL := <monitor_name>
              | ^<n>
-             | (DIR|CYCLE_DIR|last|primary|focused)[.occupied|.free]
+             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[.occupied|.free]
 ----
 
 Primary Selectors
@@ -280,6 +277,12 @@ last::
 
 focused::
     Selects the currently focused monitor.
+
+older::
+    Selects the monitor older than the focused monitor in the history.
+
+newer::
+    Selects the monitor newer than the focused monitor in the history.
 
 Modifiers
 ^^^^^^^^^

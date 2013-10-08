@@ -33,7 +33,8 @@ desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_
         f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 
     while (f != d) {
-        if (desktop_matches(f, sel))
+        coordinates_t loc = {m, f, NULL};
+        if (desktop_matches(&loc, &loc, sel))
             return f;
         f = (dir == CYCLE_PREV ? f->prev : f->next);
         if (f == NULL)

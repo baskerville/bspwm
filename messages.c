@@ -322,10 +322,8 @@ bool cmd_desktop(char **args, int num)
                     return false;
             }
             if (auto_alternate && dst.desktop == mon->desk) {
-                desktop_select_t sel;
-                sel.status = DESKTOP_STATUS_ALL;
-                sel.urgency = DESKTOP_URGENCY_ALL;
-                history_last_desktop(dst.desktop, sel, &dst);
+                desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
+                history_find_desktop(HISTORY_OLDER, &trg, &dst, sel);
             }
             focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
         } else if (streq("-m", *args) || streq("--to-monitor", *args)) {
@@ -452,10 +450,8 @@ bool cmd_monitor(char **args, int num)
                     return false;
             }
             if (auto_alternate && dst.monitor == mon) {
-                desktop_select_t sel;
-                sel.status = DESKTOP_STATUS_ALL;
-                sel.urgency = DESKTOP_URGENCY_ALL;
-                history_last_monitor(dst.monitor, sel, &dst);
+                desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
+                history_find_monitor(HISTORY_OLDER, &trg, &dst, sel);
             }
             focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
         } else if (streq("-d", *args) || streq("--reset-desktops", *args)) {
