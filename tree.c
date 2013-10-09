@@ -144,8 +144,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
     if (f == NULL) {
         d->root = n;
-        if (is_visible(d, n))
-            d->focus = n;
     } else {
         node_t *c = make_node();
         node_t *p = f->parent;
@@ -237,6 +235,8 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
         if (f->vacant)
             update_vacant_state(p);
     }
+    if (d->focus == NULL && is_visible(d, n))
+        d->focus = n;
     if (n->client->sticky)
         m->num_sticky++;
     put_status();
