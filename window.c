@@ -597,7 +597,8 @@ void toggle_visibility(void)
         clear_input_focus();
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root))
-            window_set_visibility(n->client->window, visible);
+            if (is_visible(m->desk, n))
+                window_set_visibility(n->client->window, visible);
     if (visible)
         update_input_focus();
 }
