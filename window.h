@@ -33,6 +33,7 @@
 
 void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win);
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor);
+void draw_frame_background(node_t *n, bool focused_window, bool focused_monitor);
 pointer_state_t *make_pointer_state(void);
 void center(xcb_rectangle_t a, xcb_rectangle_t *b);
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
@@ -80,5 +81,6 @@ void get_atom(char *name, xcb_atom_t *atom);
 void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value);
 bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols);
 void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value);
+uint32_t get_event_mask(client_t *c);
 
 #endif

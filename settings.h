@@ -43,6 +43,10 @@
 #define NORMAL_STICKY_BORDER_COLOR  "#3F3E3B"
 #define URGENT_BORDER_COLOR         "#EFA29A"
 
+#define FOCUSED_FRAME_OPACITY       0.5
+#define ACTIVE_FRAME_OPACITY        0.25
+#define NORMAL_FRAME_OPACITY        0.125
+
 #define SPLIT_RATIO    0.5
 #define GROWTH_FACTOR  1.1
 
@@ -67,6 +71,10 @@ char focused_sticky_border_color[MAXLEN];
 char active_sticky_border_color[MAXLEN];
 char normal_sticky_border_color[MAXLEN];
 char urgent_border_color[MAXLEN];
+
+double focused_frame_opacity;
+double active_frame_opacity;
+double normal_frame_opacity;
 
 double split_ratio;
 double growth_factor;

@@ -136,14 +136,15 @@ void restore_tree(char *file_path)
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char floating, transient, fullscreen, urgent, locked, sticky, sd, sm, end = 0;
-                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->tags_field, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &sm, &end);
+                char floating, transient, fullscreen, urgent, locked, sticky, frame, sd, sm, end = 0;
+                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->tags_field, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &frame, &sm, &end);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
                 c->urgent = (urgent == '-' ? false : true);
                 c->locked = (locked == '-' ? false : true);
                 c->sticky = (sticky == '-' ? false : true);
+                c->frame = (frame == '-' ? false : true);
                 n->split_mode = (sm == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
                 if (sd == 'U')
                     n->split_dir = DIR_UP;
@@ -174,7 +175,7 @@ void restore_tree(char *file_path)
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-                uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK_FFP : CLIENT_EVENT_MASK)};
+                uint32_t values[] = {get_event_mask(n->client)};
                 xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
                 if (n->client->floating || !is_visible(d, n)) {
                     n->vacant = true;

@@ -29,7 +29,6 @@
 
 #define ROOT_EVENT_MASK        (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY)
 #define CLIENT_EVENT_MASK      (XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_FOCUS_CHANGE)
-#define CLIENT_EVENT_MASK_FFP  (CLIENT_EVENT_MASK | XCB_EVENT_MASK_ENTER_WINDOW)
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
@@ -61,6 +60,7 @@ pointer_state_t *frozen_pointer;
 xcb_window_t motion_recorder;
 xcb_atom_t WM_TAKE_FOCUS;
 xcb_atom_t WM_DELETE_WINDOW;
+xcb_atom_t _NET_WM_WINDOW_OPACITY;
 xcb_atom_t _BSPWM_FLOATING_WINDOW;
 int exit_status;
 

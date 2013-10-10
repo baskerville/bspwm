@@ -550,7 +550,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name> [-d 'DESKTOP_SEL' [--follow]] [--tags <name>|^<n>[,...]][--floating] [--fullscreen] [--locked] [--sticky] [--focus] [--unmanage] [--one-shot]::
+*-a*, *--add* <class_name>|<instance_name> [-d 'DESKTOP_SEL' [--follow]] [--tags <name>|^<n>[,...]][--floating] [--fullscreen] [--locked] [--sticky] [--focus] [--frame] [--unmanage] [--one-shot]::
     Create a new rule.
 
 *-r*, *--remove* <name>|^<n>|tail|head...::
@@ -618,6 +618,15 @@ Global Settings
 
 'urgent_border_color'::
     Color of the border of an urgent window.
+
+'focused_frame_opacity'::
+    Opacity of a focused frame of a focused monitor.
+
+'active_frame_opacity'::
+    Opacity of a focused frame of an unfocused monitor.
+
+'normal_frame_opacity'::
+    Opacity of an unfocused frame.
 
 'split_ratio'::
     Default split ratio.

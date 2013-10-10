@@ -40,6 +40,7 @@ void unmap_notify(xcb_generic_event_t *evt);
 void property_notify(xcb_generic_event_t *evt);
 void client_message(xcb_generic_event_t *evt);
 void focus_in(xcb_generic_event_t *evt);
+void expose(xcb_generic_event_t *evt);
 void enter_notify(xcb_generic_event_t *evt);
 void motion_notify(xcb_generic_event_t *evt);
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action);

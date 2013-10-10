@@ -58,6 +58,10 @@ void load_settings(void)
     snprintf(normal_sticky_border_color, sizeof(normal_sticky_border_color), "%s", NORMAL_STICKY_BORDER_COLOR);
     snprintf(urgent_border_color, sizeof(urgent_border_color), "%s", URGENT_BORDER_COLOR);
 
+    focused_frame_opacity = FOCUSED_FRAME_OPACITY;
+    active_frame_opacity = ACTIVE_FRAME_OPACITY;
+    normal_frame_opacity = NORMAL_FRAME_OPACITY;
+
     split_ratio = SPLIT_RATIO;
     growth_factor = GROWTH_FACTOR;
 

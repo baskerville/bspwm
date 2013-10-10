@@ -768,6 +768,8 @@ bool cmd_rule(char **args, int num, char *rsp)
                     rule->effect.follow = true;
                 } else if (streq("--focus", *args)) {
                     rule->effect.focus = true;
+                } else if (streq("--frame", *args)) {
+                    rule->effect.frame = true;
                 } else if (streq("--unmanage", *args)) {
                     rule->effect.unmanage = true;
                 } else if (streq("--one-shot", *args)) {
@@ -1003,6 +1005,21 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         else
             return false;
         return true;
+#define SETOPACITY(s) \
+    } else if (streq(#s, name)) { \
+        double o; \
+        if (sscanf(value, "%lf", &o) == 1 && o >= 0 && o <= 1) \
+            s = o; \
+        else \
+            return false; \
+        for (monitor_t *m = mon_head; m != NULL; m = m->next) \
+            for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root)) \
+                if (is_visible(m->desk, n) && n->client->frame) \
+                    draw_frame_background(n, m->desk->focus == n, m == mon);
+    SETOPACITY(focused_frame_opacity)
+    SETOPACITY(active_frame_opacity)
+    SETOPACITY(normal_frame_opacity)
+#undef SETOPACITY
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
         snprintf(s, sizeof(s), "%s", value);
@@ -1021,21 +1038,22 @@ bool set_setting(coordinates_t loc, char *name, char *value)
     } else if (streq("focus_follows_pointer", name)) {
         bool b;
         if (parse_bool(value, &b) && b != focus_follows_pointer) {
-            uint32_t values[] = {(focus_follows_pointer ? CLIENT_EVENT_MASK : CLIENT_EVENT_MASK_FFP)};
+            focus_follows_pointer = b;
             for (monitor_t *m = mon_head; m != NULL; m = m->next)
                 for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-                    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+                    for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+                        uint32_t values[] = {get_event_mask(n->client)};
                         xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+                    }
             if (focus_follows_pointer) {
-                for (monitor_t *m = mon_head; m != NULL; m = m->next)
-                    window_hide(m->root);
-                disable_motion_recorder();
-            } else {
                 for (monitor_t *m = mon_head; m != NULL; m = m->next)
                     window_show(m->root);
                 enable_motion_recorder();
+            } else {
+                for (monitor_t *m = mon_head; m != NULL; m = m->next)
+                    window_hide(m->root);
+                disable_motion_recorder();
             }
-            focus_follows_pointer = b;
             return true;
         } else {
             return false;
@@ -1091,6 +1109,13 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
     MONGET(bottom_padding)
     MONGET(left_padding)
 #undef MONGET
+#define GETOPACITY(s) \
+    else if (streq(#s, name)) \
+        snprintf(rsp, BUFSIZ, "%lf", s);
+    GETOPACITY(focused_frame_opacity)
+    GETOPACITY(active_frame_opacity)
+    GETOPACITY(normal_frame_opacity)
+#undef GETOPACITY
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \
         snprintf(rsp, BUFSIZ, "%s", s);

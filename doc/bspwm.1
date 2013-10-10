@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/08/2013
+.\"      Date: 10/10/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.5
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/08/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "10/10/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -914,7 +914,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
 Create a new rule\&.
 .RE
@@ -1021,6 +1021,21 @@ Color of the border of an unfocused sticky window\&.
 \fIurgent_border_color\fR
 .RS 4
 Color of the border of an urgent window\&.
+.RE
+.PP
+\fIfocused_frame_opacity\fR
+.RS 4
+Opacity of a focused frame of a focused monitor\&.
+.RE
+.PP
+\fIactive_frame_opacity\fR
+.RS 4
+Opacity of a focused frame of an unfocused monitor\&.
+.RE
+.PP
+\fInormal_frame_opacity\fR
+.RS 4
+Opacity of an unfocused frame\&.
 .RE
 .PP
 \fIsplit_ratio\fR
