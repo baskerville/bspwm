@@ -62,12 +62,6 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 
     if (is_leaf(n)) {
 
-        if (is_floating(n->client) && n->client->border_width != d->border_width) {
-            int ds = 2 * (d->border_width - n->client->border_width);
-            n->client->floating_rectangle.width += ds;
-            n->client->floating_rectangle.height += ds;
-        }
-
         if ((borderless_monocle && is_tiled(n->client) && d->layout == LAYOUT_MONOCLE)
                 || n->client->fullscreen
                 || n->client->frame)
