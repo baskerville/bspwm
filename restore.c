@@ -29,6 +29,7 @@
 #include "ewmh.h"
 #include "history.h"
 #include "monitor.h"
+#include "window.h"
 #include "query.h"
 #include "settings.h"
 #include "stack.h"
