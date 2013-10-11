@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/10/2013
+.\"      Date: 10/11/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.5
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/10/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "10/11/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1118,6 +1118,68 @@ Size of the gap that separates windows\&.
 \fIborder_width\fR
 .RS 4
 Window border width\&.
+.RE
+.SH "INTERNAL STATE FORMAT"
+.sp
+If a \fIPANEL_FIFO\fR is specified, \fBbspwm\fR will write informations regarding its current state to it\&.
+.sp
+Those informations are composed of items separated by colons\&.
+.sp
+Each item as the form \fI<type><value>\fR where \fI<type>\fR is the first character of the item\&.
+.PP
+\fIM<monitor_name>\fR
+.RS 4
+Focused monitor\&.
+.RE
+.PP
+\fIm<monitor_name>\fR
+.RS 4
+Unfocused monitor\&.
+.RE
+.PP
+\fIO<desktop_name>\fR
+.RS 4
+Occupied focused desktop\&.
+.RE
+.PP
+\fIo<desktop_name>\fR
+.RS 4
+Occupied unfocused desktop\&.
+.RE
+.PP
+\fIF<desktop_name>\fR
+.RS 4
+Free focused desktop\&.
+.RE
+.PP
+\fIf<desktop_name>\fR
+.RS 4
+Free unfocused desktop\&.
+.RE
+.PP
+\fIU<desktop_name>\fR
+.RS 4
+Urgent focused desktop\&.
+.RE
+.PP
+\fIu<desktop_name>\fR
+.RS 4
+Urgent unfocused desktop\&.
+.RE
+.PP
+\fIL(tiled|monocle)\fR
+.RS 4
+Layout of the focused desktop of the focused monitor\&.
+.RE
+.PP
+\fIT<tag_name>\fR
+.RS 4
+Selected tag of the focused desktop of the focused monitor\&.
+.RE
+.PP
+\fIt<tag_name>\fR
+.RS 4
+Non\-selected tag of the focused desktop of the focused monitor\&.
 .RE
 .SH "ENVIRONMENT VARIABLES"
 .PP

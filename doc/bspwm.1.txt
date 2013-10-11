@@ -680,6 +680,48 @@ Desktop Settings
     Window border width.
 
 
+Internal State Format
+---------------------
+
+If a 'PANEL_FIFO' is specified, *bspwm* will write informations regarding its current state to it.
+
+Those informations are composed of items separated by colons.
+
+Each item as the form '<type><value>' where '<type>' is the first character of the item.
+
+'M<monitor_name>'::
+    Focused monitor.
+
+'m<monitor_name>'::
+    Unfocused monitor.
+
+'O<desktop_name>'::
+    Occupied focused desktop.
+
+'o<desktop_name>'::
+    Occupied unfocused desktop.
+
+'F<desktop_name>'::
+    Free focused desktop.
+
+'f<desktop_name>'::
+    Free unfocused desktop.
+
+'U<desktop_name>'::
+    Urgent focused desktop.
+
+'u<desktop_name>'::
+    Urgent unfocused desktop.
+
+'L(tiled|monocle)'::
+    Layout of the focused desktop of the focused monitor.
+
+'T<tag_name>'::
+    Selected tag of the focused desktop of the focused monitor.
+
+'t<tag_name>'::
+    Non-selected tag of the focused desktop of the focused monitor.
+
 Environment Variables
 ---------------------
 
