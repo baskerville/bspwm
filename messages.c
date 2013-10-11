@@ -1011,11 +1011,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         if (sscanf(value, "%lf", &o) == 1 && o >= 0 && o <= 1) \
             s = o; \
         else \
-            return false; \
-        for (monitor_t *m = mon_head; m != NULL; m = m->next) \
-            for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root)) \
-                if (is_visible(m->desk, n) && n->client->frame) \
-                    draw_frame_background(n, m->desk->focus == n, m == mon);
+            return false;
     SETOPACITY(focused_frame_opacity)
     SETOPACITY(active_frame_opacity)
     SETOPACITY(normal_frame_opacity)
