@@ -174,9 +174,9 @@ bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst
 
     history_t *h;
     for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
-        if (h == history_needle
-                || !h->latest
+        if (!h->latest
                 || h->loc.node == NULL
+                || h->loc.node == ref->node
                 || !is_visible(h->loc.desktop, h->loc.node)
                 || !node_matches(&h->loc, ref, sel))
             continue;
@@ -195,9 +195,8 @@ bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *
 
     history_t *h;
     for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
-        if (h == history_needle
-                || !h->latest
-                || (h->loc.desktop == ref->desktop)
+        if (!h->latest
+                || h->loc.desktop == ref->desktop
                 || !desktop_matches(&h->loc, ref, sel))
             continue;
         if (!record_history)
@@ -215,9 +214,8 @@ bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *
 
     history_t *h;
     for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
-        if (h == history_needle
-                || !h->latest
-                || (h->loc.monitor == ref->monitor)
+        if (!h->latest
+                || h->loc.monitor == ref->monitor
                 || !desktop_matches(&h->loc, ref, sel))
             continue;
         if (!record_history)
