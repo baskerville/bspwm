@@ -31,17 +31,20 @@
 #define CONFIG_NAME         WM_NAME "rc"
 #define CONFIG_HOME_ENV     "XDG_CONFIG_HOME"
 
-#define FOCUSED_BORDER_COLOR        "#7E7F89"
-#define ACTIVE_BORDER_COLOR         "#545350"
-#define NORMAL_BORDER_COLOR         "#3F3E3B"
-#define PRESEL_BORDER_COLOR         "#E8E8F4"
-#define FOCUSED_LOCKED_BORDER_COLOR "#C7B579"
-#define ACTIVE_LOCKED_BORDER_COLOR  "#545350"
-#define NORMAL_LOCKED_BORDER_COLOR  "#3F3E3B"
-#define FOCUSED_STICKY_BORDER_COLOR "#E3A5DA"
-#define ACTIVE_STICKY_BORDER_COLOR  "#545350"
-#define NORMAL_STICKY_BORDER_COLOR  "#3F3E3B"
-#define URGENT_BORDER_COLOR         "#EFA29A"
+#define FOCUSED_BORDER_COLOR          "#7E7F89"
+#define ACTIVE_BORDER_COLOR           "#545350"
+#define NORMAL_BORDER_COLOR           "#3F3E3B"
+#define PRESEL_BORDER_COLOR           "#E8E8F4"
+#define FOCUSED_LOCKED_BORDER_COLOR   "#C7B579"
+#define ACTIVE_LOCKED_BORDER_COLOR    "#545350"
+#define NORMAL_LOCKED_BORDER_COLOR    "#3F3E3B"
+#define FOCUSED_STICKY_BORDER_COLOR   "#E3A5DA"
+#define ACTIVE_STICKY_BORDER_COLOR    "#545350"
+#define NORMAL_STICKY_BORDER_COLOR    "#3F3E3B"
+#define FOCUSED_PRIVATE_BORDER_COLOR  "#42CAD9"
+#define ACTIVE_PRIVATE_BORDER_COLOR   "#5C5955"
+#define NORMAL_PRIVATE_BORDER_COLOR   "#34322E"
+#define URGENT_BORDER_COLOR           "#EFA29A"
 
 #define FOCUSED_FRAME_OPACITY       0.5
 #define ACTIVE_FRAME_OPACITY        0.25
@@ -70,6 +73,9 @@ char normal_locked_border_color[MAXLEN];
 char focused_sticky_border_color[MAXLEN];
 char active_sticky_border_color[MAXLEN];
 char normal_sticky_border_color[MAXLEN];
+char focused_private_border_color[MAXLEN];
+char active_private_border_color[MAXLEN];
+char normal_private_border_color[MAXLEN];
 char urgent_border_color[MAXLEN];
 
 double focused_frame_opacity;

@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/11/2013
+.\"      Date: 10/12/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.5
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/11/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "10/12/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -518,7 +518,7 @@ Set the splitting ratio (or pull, or push) the edge located in the given directi
 Rotate the tree holding the edge located in the given direction in relation to the selected window\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked|sticky|visible[=on|off]
+\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked|sticky|private|visible[=on|off]
 .RS 4
 Set or toggle the given state for the selected window\&.
 .RE
@@ -914,7 +914,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-private] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
 Create a new rule\&.
 .RE
@@ -1016,6 +1016,21 @@ Color of the border of a focused sticky window of an unfocused monitor\&.
 \fInormal_sticky_border_color\fR
 .RS 4
 Color of the border of an unfocused sticky window\&.
+.RE
+.PP
+\fIfocused_private_border_color\fR
+.RS 4
+Color of the border of a focused private window of a focused monitor\&.
+.RE
+.PP
+\fIactive_private_border_color\fR
+.RS 4
+Color of the border of a focused private window of an unfocused monitor\&.
+.RE
+.PP
+\fInormal_private_border_color\fR
+.RS 4
+Color of the border of an unfocused private window\&.
 .RE
 .PP
 \fIurgent_border_color\fR

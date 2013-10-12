@@ -43,6 +43,7 @@ void change_split_ratio(node_t *n, value_change_t chg);
 void reset_mode(coordinates_t *loc);
 node_t *brother_tree(node_t *n);
 node_t *closest_visible(desktop_t *d, node_t *n);
+void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public);
 node_t *first_extrema(node_t *n);
 node_t *second_extrema(node_t *n);
 node_t *next_leaf(node_t *n, node_t *r);
@@ -72,5 +73,6 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel);
 void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir);
 void update_vacant_state(node_t *n);
+void update_privacy_level(node_t *n, bool value);
 
 #endif

@@ -162,6 +162,7 @@ typedef struct {
     bool sticky;
     bool urgent;
     bool frame;
+    bool private;
     bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
@@ -179,6 +180,7 @@ struct node_t {
     int birth_rotation;
     xcb_rectangle_t rectangle;
     bool vacant;          /* vacant nodes only hold floating clients */
+    int privacy_level;
     node_t *first_child;
     node_t *second_child;
     node_t *parent;
@@ -251,6 +253,7 @@ typedef struct {
     bool focus;
     bool unmanage;
     bool frame;
+    bool private;
     char desc[MAXLEN];
     char tags[MAXLEN];
 } rule_effect_t;

@@ -137,8 +137,8 @@ void restore_tree(char *file_path)
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char floating, transient, fullscreen, urgent, locked, sticky, frame, sd, sm, end = 0;
-                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->tags_field, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &frame, &sm, &end);
+                char floating, transient, fullscreen, urgent, locked, sticky, frame, private, sd, sm, end = 0;
+                sscanf(line + level, "%c %s %X %u %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->tags_field, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &frame, &private, &sm, &end);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
@@ -146,6 +146,7 @@ void restore_tree(char *file_path)
                 c->locked = (locked == '-' ? false : true);
                 c->sticky = (sticky == '-' ? false : true);
                 c->frame = (frame == '-' ? false : true);
+                c->private = (private == '-' ? false : true);
                 n->split_mode = (sm == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
                 if (sd == 'U')
                     n->split_dir = DIR_UP;
@@ -182,6 +183,8 @@ void restore_tree(char *file_path)
                     n->vacant = true;
                     update_vacant_state(n->parent);
                 }
+                if (n->client->private)
+                    update_privacy_level(n, true);
             }
     ewmh_update_current_desktop();
 }

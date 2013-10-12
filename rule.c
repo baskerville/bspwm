@@ -42,6 +42,7 @@ rule_t *make_rule(void)
     r->effect.follow = false;
     r->effect.focus = false;
     r->effect.frame = false;
+    r->effect.private = false;
     r->effect.unmanage = false;
     r->one_shot = false;
     r->effect.desc[0] = '\0';
@@ -115,7 +116,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, unsigned int *tags_field, bool *floating, bool *fullscreen, bool *locked, bool *sticky, bool *follow, bool *transient, bool *takes_focus, bool *frame, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, unsigned int *tags_field, bool *floating, bool *fullscreen, bool *locked, bool *sticky, bool *follow, bool *transient, bool *takes_focus, bool *frame, bool *private, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -183,6 +184,8 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, unsigned int *
                 *takes_focus = true;
             if (efc.frame)
                 *frame = true;
+            if (efc.private)
+                *private = private;
             if (efc.unmanage)
                 *manage = false;
             if (efc.desc[0] != '\0') {
@@ -243,6 +246,8 @@ void list_rules(char *pattern, char *rsp)
             strncat(rsp, " --focus", REMLEN(rsp));
         if (r->effect.frame)
             strncat(rsp, " --frame", REMLEN(rsp));
+        if (r->effect.private)
+            strncat(rsp, " --private", REMLEN(rsp));
         if (r->effect.unmanage)
             strncat(rsp, " --unmanage", REMLEN(rsp));
         if (r->one_shot)

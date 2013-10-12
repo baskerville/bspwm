@@ -56,6 +56,9 @@ void load_settings(void)
     snprintf(focused_sticky_border_color, sizeof(focused_sticky_border_color), "%s", FOCUSED_STICKY_BORDER_COLOR);
     snprintf(active_sticky_border_color, sizeof(active_sticky_border_color), "%s", ACTIVE_STICKY_BORDER_COLOR);
     snprintf(normal_sticky_border_color, sizeof(normal_sticky_border_color), "%s", NORMAL_STICKY_BORDER_COLOR);
+    snprintf(focused_private_border_color, sizeof(focused_private_border_color), "%s", FOCUSED_PRIVATE_BORDER_COLOR);
+    snprintf(active_private_border_color, sizeof(active_private_border_color), "%s", ACTIVE_PRIVATE_BORDER_COLOR);
+    snprintf(normal_private_border_color, sizeof(normal_private_border_color), "%s", NORMAL_PRIVATE_BORDER_COLOR);
     snprintf(urgent_border_color, sizeof(urgent_border_color), "%s", URGENT_BORDER_COLOR);
 
     focused_frame_opacity = FOCUSED_FRAME_OPACITY;

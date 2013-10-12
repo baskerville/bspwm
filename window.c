@@ -49,9 +49,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, manage = true;
+    bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, private = false, manage = true;
     unsigned int tags_field = 0;
-    handle_rules(win, &m, &d, &tags_field, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &manage);
+    handle_rules(win, &m, &d, &tags_field, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &manage);
 
     if (!manage) {
         disable_floating_atom(win);
@@ -84,6 +84,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     set_floating(n, floating);
     set_locked(m, d, n, locked);
     set_sticky(m, d, n, sticky);
+    set_private(m, d, n, private);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
         set_fullscreen(d->focus, false);
@@ -465,6 +466,20 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
     window_draw_border(n, d->focus == n, m == mon);
 }
 
+void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+    if (n == NULL || n->client->private == value)
+        return;
+
+    client_t *c = n->client;
+
+    PRINTF("set private %X: %s\n", c->window, BOOLSTR(value));
+
+    c->private = value;
+    update_privacy_level(n, value);
+    window_draw_border(n, d->focus == n, m == mon);
+}
+
 void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
     if (value && mon->desk->focus == n)
@@ -503,6 +518,8 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
             get_color(focused_locked_border_color, c->window, &pxl);
         else if (c->sticky)
             get_color(focused_sticky_border_color, c->window, &pxl);
+        else if (c->private)
+            get_color(focused_private_border_color, c->window, &pxl);
         else
             get_color(focused_border_color, c->window, &pxl);
     } else if (focused_window) {
@@ -512,6 +529,8 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
             get_color(active_locked_border_color, c->window, &pxl);
         else if (c->sticky)
             get_color(active_sticky_border_color, c->window, &pxl);
+        else if (c->private)
+            get_color(active_private_border_color, c->window, &pxl);
         else
             get_color(active_border_color, c->window, &pxl);
     } else {
@@ -521,6 +540,8 @@ uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor
             get_color(normal_locked_border_color, c->window, &pxl);
         else if (c->sticky)
             get_color(normal_sticky_border_color, c->window, &pxl);
+        else if (c->private)
+            get_color(normal_private_border_color, c->window, &pxl);
         else
             get_color(normal_border_color, c->window, &pxl);
     }

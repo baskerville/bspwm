@@ -147,6 +147,28 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
             f = p;
             p = f->parent;
         }
+        if (((f->client != NULL && f->client->private) || (p != NULL && p->privacy_level > 0))
+                    && f->split_mode == MODE_AUTOMATIC) {
+            node_t *closest = NULL;
+            node_t *public = NULL;
+            closest_public(d, f, &closest, &public);
+            if (public != NULL) {
+                f = public;
+                p = f->parent;
+            } else {
+                if (closest != NULL) {
+                    f = closest;
+                    p = f->parent;
+                }
+                f->split_mode = MODE_MANUAL;
+                xcb_rectangle_t rect = f->client->tiled_rectangle;
+                f->split_dir = (rect.width >= rect.height ? DIR_LEFT : DIR_UP);
+                if (f->client->private) {
+                    get_opposite(f->split_dir, &f->split_dir);
+                    update_privacy_level(f, false);
+                }
+            }
+        }
         n->parent = c;
         c->birth_rotation = f->birth_rotation;
         switch (f->split_mode) {
@@ -229,7 +251,11 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
         }
         if (f->vacant)
             update_vacant_state(p);
+        if (f->client != NULL && f->client->private)
+            update_privacy_level(f, true);
     }
+    if (n->client->private)
+        update_privacy_level(n, true);
     if (d->focus == NULL && is_visible(d, n))
         d->focus = n;
     if (n->client->sticky)
@@ -326,6 +352,7 @@ node_t *make_node(void)
     n->split_mode = MODE_AUTOMATIC;
     n->split_type = TYPE_VERTICAL;
     n->birth_rotation = 0;
+    n->privacy_level = 0;
     n->client = NULL;
     n->vacant = false;
     return n;
@@ -338,7 +365,7 @@ client_t *make_client(xcb_window_t win)
     c->border_width = BORDER_WIDTH;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->sticky = c->urgent = false;
-    c->frame = c->icccm_focus = false;
+    c->frame = c->private = c->icccm_focus = false;
     xcb_icccm_get_wm_protocols_reply_t protocols;
     if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
         if (has_proto(WM_TAKE_FOCUS, &protocols))
@@ -439,6 +466,33 @@ node_t *closest_visible(desktop_t *d, node_t *n)
         }
     }
     return NULL;
+}
+
+void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public)
+{
+    if (n == NULL)
+        return;
+    node_t *prev = prev_leaf(n, d->root);
+    node_t *next = next_leaf(n, d->root);
+    while (prev != NULL || next != NULL) {
+#define TESTLOOP(n) \
+        if (n != NULL) { \
+            if (is_visible(d, n) && is_tiled(n->client)) { \
+                if (n->privacy_level == 0) { \
+                    if (n->parent == NULL || n->parent->privacy_level == 0) { \
+                        *public = n; \
+                        return; \
+                    } else if (*closest == NULL) { \
+                        *closest = n; \
+                    } \
+                } \
+            } \
+            n = n##_leaf(n, d->root); \
+        }
+        TESTLOOP(prev)
+        TESTLOOP(next)
+#undef TESTLOOP
+    }
 }
 
 node_t *first_extrema(node_t *n)
@@ -816,6 +870,9 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
                 d->focus = closest_visible(d, n);
         }
 
+        if (n->client->private)
+            update_privacy_level(n, false);
+
         node_t *b;
         node_t *g = p->parent;
 
@@ -897,6 +954,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
     bool n2_first_child = is_first_child(n2);
     int br1 = n1->birth_rotation;
     int br2 = n2->birth_rotation;
+    int pl1 = n1->privacy_level;
+    int pl2 = n2->privacy_level;
 
     if (pn1 != NULL) {
         if (n1_first_child)
@@ -916,10 +975,17 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
     n2->parent = pn1;
     n1->birth_rotation = br2;
     n2->birth_rotation = br1;
+    n1->privacy_level = pl2;
+    n2->privacy_level = pl1;
 
     if (n1->vacant != n2->vacant) {
         update_vacant_state(n1->parent);
         update_vacant_state(n2->parent);
+    }
+
+    if (n1->client->private != n2->client->private) {
+        n1->client->private = !n1->client->private;
+        n2->client->private = !n2->client->private;
     }
 
     if (d1 != d2) {
@@ -1070,4 +1136,11 @@ void update_vacant_state(node_t *n)
         p->vacant = (p->first_child->vacant && p->second_child->vacant);
         p = p->parent;
     }
+}
+
+void update_privacy_level(node_t *n, bool value)
+{
+    int v = (value ? 1 : -1);
+    for (node_t *p = n; p != NULL; p = p->parent)
+        p->privacy_level += v;
 }
