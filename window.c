@@ -92,7 +92,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     set_fullscreen(n, fullscreen);
     c->transient = transient;
 
-    tag_node(m, d, n, d, n->client->tags_field);
+    if (!is_visible(d, n))
+        set_visibility(m, d, n, false);
 
     xcb_rectangle_t *frect = &n->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
