@@ -61,6 +61,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
+    fit_monitor(m, c);
     c->frame = frame;
 
     xcb_icccm_get_wm_class_reply_t reply;
@@ -88,11 +89,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     set_fullscreen(n, fullscreen);
     c->transient = transient;
-
-    xcb_rectangle_t *frect = &n->client->floating_rectangle;
-    if (frect->x == 0 && frect->y == 0)
-        center(m->rectangle, frect);
-    fit_monitor(m, n->client);
 
     arrange(m, d);
 
@@ -270,10 +266,8 @@ pointer_state_t *make_pointer_state(void)
 
 void center(xcb_rectangle_t a, xcb_rectangle_t *b)
 {
-    if (b->width < a.width)
-        b->x = a.x + (a.width - b->width) / 2;
-    if (b->height < a.height)
-        b->y = a.y + (a.height - b->height) / 2;
+    b->x = a.x + (a.width - b->width) / 2;
+    b->y = a.y + (a.height - b->height) / 2;
 }
 
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
@@ -547,7 +541,7 @@ void update_floating_rectangle(client_t *c)
     if (geo != NULL)
         c->floating_rectangle = (xcb_rectangle_t) {geo->x, geo->y, geo->width, geo->height};
     else
-        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 32, 24};
+        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 320, 240};
 
     free(geo);
 }
