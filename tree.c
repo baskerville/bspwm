@@ -1017,6 +1017,8 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
             else if (ds != ms->desk && dd == md->desk)
                 window_show(ns->client->window);
         }
+        if (ns->client->fullscreen && dd->focus != ns)
+            set_fullscreen(ns, false);
     }
 
     history_transfer_node(md, dd, ns);
