@@ -31,7 +31,6 @@
 #include "ewmh.h"
 #include "history.h"
 #include "monitor.h"
-#include "tag.h"
 #include "pointer.h"
 #include "query.h"
 #include "restore.h"
@@ -87,8 +86,6 @@ bool process_message(char **args, int num, char *rsp)
         return cmd_monitor(++args, --num);
     } else if (streq("query", *args)) {
         return cmd_query(++args, --num, rsp);
-    } else if (streq("tag", *args)) {
-        return cmd_tag(++args, --num, rsp);
     } else if (streq("restore", *args)) {
         return cmd_restore(++args, --num);
     } else if (streq("control", *args)) {
@@ -216,8 +213,6 @@ bool cmd_window(char **args, int num)
                 set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->sticky));
             } else if (streq("private", key)) {
                 set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->private));
-            } else if (streq("visible", key)) {
-                set_presence(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !is_visible(trg.desktop, trg.node)));
             }
         } else if (streq("-p", *args) || streq("--presel", *args)) {
             num--, args++;
@@ -547,138 +542,6 @@ bool cmd_monitor(char **args, int num)
     return true;
 }
 
-bool cmd_tag(char **args, int num, char *rsp)
-{
-    if (num < 1)
-        return false;
-
-    coordinates_t ref = {mon, mon->desk, mon->desk->focus};
-    coordinates_t trg = {NULL, NULL, NULL};
-
-    while (num > 0) {
-        if (streq("-d", *args) || streq("--desktop", *args)) {
-            num--, args++;
-            if (num < 1)
-                return false;
-            if (!desktop_from_desc(*args, &ref, &trg))
-                return false;
-        } else if (streq("-w", *args) || streq("--window", *args)) {
-            num--, args++;
-            if (num < 1)
-                return false;
-            if (!node_from_desc(*args, &ref, &trg))
-                return false;
-        } else if (streq("-s", *args) || streq("--set-tags", *args)) {
-            num--, args++;
-            if (num < 1 || trg.desktop == NULL)
-                return false;
-            unsigned int tf = 0;
-            if (streq("all", *args))
-                tf = (1 << num_tags) - 1;
-            else
-                while (num > 0) {
-                    tag_t *tag = NULL;
-                    int idx;
-                    if (parse_index(*args, &idx))
-                        tag = get_tag_by_index(idx - 1);
-                    else
-                        tag = get_tag(*args);
-                    if (tag != NULL)
-                        tf |= tag->mask;
-                    num--, args++;
-                }
-            if (trg.node == NULL)
-                tag_desktop(trg.monitor, trg.desktop, tf);
-            else
-                tag_node(trg.monitor, trg.desktop, trg.node, trg.desktop, tf);
-            return true;
-        } else if (streq("-t", *args) || streq("--toggle-tags", *args)) {
-            num--, args++;
-            if (num < 1 || trg.desktop == NULL)
-                return false;
-            unsigned int tf;
-            if (trg.node == NULL)
-                tf = trg.desktop->tags_field;
-            else
-                tf = trg.node->client->tags_field;
-            while (num > 0) {
-                char *key;
-                bool value;
-                alter_state_t alt;
-                if (parse_bool_declaration(*args, &key, &value, &alt)) {
-                    tag_t *tag = NULL;
-                    int idx;
-                    if (parse_index(key, &idx))
-                        tag = get_tag_by_index(idx - 1);
-                    else
-                        tag = get_tag(key);
-                    if (tag != NULL) {
-                        if (alt == ALTER_SET) {
-                            if (value)
-                                tf |= tag->mask;
-                            else
-                                tf &= ~tag->mask;
-                        } else {
-                            tf ^= tag->mask;
-                        }
-                    }
-                }
-                num--, args++;
-            }
-            if (trg.node == NULL)
-                tag_desktop(trg.monitor, trg.desktop, tf);
-            else
-                tag_node(trg.monitor, trg.desktop, trg.node, trg.desktop, tf);
-            return true;
-        } else if (streq("-e", *args) || streq("--enumerate-tags", *args)) {
-            num--, args++;
-            if (num < 1)
-                return false;
-            int i = 0;
-            while (i < num_tags && num > 0) {
-                snprintf(tags[i]->name, sizeof(tags[i]->name), "%s", *args);
-                tags[i]->mask = 1 << i;
-                i++, num--, args++;
-            }
-            while (i < num_tags) {
-                remove_tag_by_index(i);
-            }
-            while (num > 0) {
-                add_tag(*args);
-                num--, args++;
-            }
-            put_status();
-        } else if (streq("-a", *args) || streq("--add", *args)) {
-            num--, args++;
-            if (num < 1)
-                return false;
-            while (num > 0) {
-                add_tag(*args);
-                num--, args++;
-            }
-        } else if (streq("-r", *args) || streq("--remove", *args)) {
-            num--, args++;
-            if (num < 1)
-                return false;
-            int idx;
-            while (num > 0) {
-                if (parse_index(*args, &idx))
-                    remove_tag_by_index(idx - 1);
-                else
-                    remove_tag(*args);
-                num--, args++;
-            }
-        } else if (streq("-l", *args) || streq("--list", *args)) {
-            list_tags(rsp);
-        } else {
-            return false;
-        }
-        num--, args++;
-    }
-
-    return true;
-}
-
 bool cmd_query(char **args, int num, char *rsp)
 {
     coordinates_t ref = {mon, mon->desk, mon->desk->focus};
@@ -778,13 +641,6 @@ bool cmd_rule(char **args, int num, char *rsp)
                     rule->effect.unmanage = true;
                 } else if (streq("--one-shot", *args)) {
                     rule->one_shot = true;
-                } else if (streq("--tags", *args)) {
-                    num--, args++;
-                    if (num < 1) {
-                        free(rule);
-                        return false;
-                    }
-                    snprintf(rule->effect.tags, sizeof(rule->effect.tags), "%s", *args);
                 } else if (streq("-d", *args) || streq("--desktop", *args)) {
                     num--, args++;
                     if (num < 1) {

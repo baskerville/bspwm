@@ -120,7 +120,6 @@ desktop_t *make_desktop(const char *name)
     d->root = d->focus = NULL;
     d->window_gap = WINDOW_GAP;
     d->border_width = BORDER_WIDTH;
-    d->tags_field = 1;
     return d;
 }
 
@@ -280,8 +279,7 @@ void show_desktop(desktop_t *d)
     if (!visible)
         return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        if (is_visible(d, n))
-            window_show(n->client->window);
+        window_show(n->client->window);
 }
 
 void hide_desktop(desktop_t *d)
@@ -289,8 +287,7 @@ void hide_desktop(desktop_t *d)
     if (!visible)
         return;
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        if (is_visible(d, n))
-            window_hide(n->client->window);
+        window_hide(n->client->window);
 }
 
 bool is_urgent(desktop_t *d)

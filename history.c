@@ -146,7 +146,7 @@ void empty_history(void)
 node_t *history_get_node(desktop_t *d, node_t *n)
 {
     for (history_t *h = history_tail; h != NULL; h = h->prev)
-        if (h->latest && h->loc.node != NULL && h->loc.node != n && h->loc.desktop == d && is_visible(h->loc.desktop, h->loc.node))
+        if (h->latest && h->loc.node != NULL && h->loc.node != n && h->loc.desktop == d)
             return h->loc.node;
     return NULL;
 }
@@ -177,7 +177,6 @@ bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst
         if (!h->latest
                 || h->loc.node == NULL
                 || h->loc.node == ref->node
-                || !is_visible(h->loc.desktop, h->loc.node)
                 || !node_matches(&h->loc, ref, sel))
             continue;
         if (!record_history)

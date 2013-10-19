@@ -33,7 +33,6 @@
 #include "query.h"
 #include "settings.h"
 #include "stack.h"
-#include "tag.h"
 #include "window.h"
 #include "tree.h"
 
@@ -256,7 +255,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
     }
     if (n->client->private)
         update_privacy_level(n, true);
-    if (d->focus == NULL && is_visible(d, n))
+    if (d->focus == NULL)
         d->focus = n;
     if (n->client->sticky)
         m->num_sticky++;
@@ -285,7 +284,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
             a = b;
         }
         sticky_still = true;
-        if (n == NULL && d->focus != NULL && is_visible(d, d->focus))
+        if (n == NULL && d->focus != NULL)
             n = d->focus;
     }
 
@@ -322,8 +321,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
     n->client->urgent = false;
 
-    if (!is_visible(d, n))
-        tag_node(m, d, n, d, n->client->tags_field | d->tags_field);
     history_add(m, d, n);
     set_input_focus(n);
 
@@ -380,11 +377,6 @@ client_t *make_client(xcb_window_t win)
         xcb_ewmh_get_atoms_reply_wipe(&wm_state);
     }
     return c;
-}
-
-bool is_visible(desktop_t *d, node_t *n)
-{
-    return (d->tags_field & n->client->tags_field) != 0;
 }
 
 bool is_leaf(node_t *n)
@@ -445,29 +437,6 @@ node_t *brother_tree(node_t *n)
         return n->parent->first_child;
 }
 
-node_t *closest_visible(desktop_t *d, node_t *n)
-{
-    if (n == NULL)
-        return NULL;
-    node_t *prev = prev_leaf(n, d->root);
-    node_t *next = next_leaf(n, d->root);
-    while (prev != NULL || next != NULL) {
-        if (prev != NULL) {
-            if (is_visible(d, prev))
-                return prev;
-            else
-                prev = prev_leaf(prev, d->root);
-        }
-        if (next != NULL) {
-            if (is_visible(d, next))
-                return next;
-            else
-                next = next_leaf(next, d->root);
-        }
-    }
-    return NULL;
-}
-
 void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public)
 {
     if (n == NULL)
@@ -477,7 +446,7 @@ void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public)
     while (prev != NULL || next != NULL) {
 #define TESTLOOP(n) \
         if (n != NULL) { \
-            if (is_visible(d, n) && is_tiled(n->client)) { \
+            if (is_tiled(n->client)) { \
                 if (n->privacy_level == 0) { \
                     if (n->parent == NULL || n->parent->privacy_level == 0) { \
                         *public = n; \
@@ -539,22 +508,22 @@ node_t *prev_leaf(node_t *n, node_t *r)
     return second_extrema(p->parent->first_child);
 }
 
-node_t *next_visible_leaf(desktop_t *d, node_t *n, node_t *r)
+node_t *next_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 {
     node_t *next = next_leaf(n, r);
-    if (next == NULL || is_visible(d, next))
+    if (next == NULL || is_tiled(next->client))
         return next;
     else
-        return next_visible_leaf(d, next, r);
+        return next_tiled_leaf(d, next, r);
 }
 
-node_t *prev_visible_leaf(desktop_t *d, node_t *n, node_t *r)
+node_t *prev_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 {
     node_t *prev = prev_leaf(n, r);
-    if (prev == NULL || is_visible(d, prev))
+    if (prev == NULL || is_tiled(prev->client))
         return prev;
     else
-        return prev_visible_leaf(d, prev, r);
+        return prev_tiled_leaf(d, prev, r);
 }
 
 /* bool is_adjacent(node_t *a, node_t *r) */
@@ -610,7 +579,6 @@ node_t *find_fence(node_t *n, direction_t dir)
 
     return NULL;
 }
-
 
 node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
@@ -691,7 +659,6 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
     for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
         coordinates_t loc = {m, d, a};
         if (a == n ||
-                !is_visible(d, a) ||
                 !node_matches(&loc, &ref, sel) ||
                 is_tiled(a->client) != is_tiled(n->client) ||
                 (is_tiled(a->client) && !is_adjacent(n, a, dir)))
@@ -745,7 +712,7 @@ node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel)
 
     for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
         coordinates_t loc = {m, d, f};
-        if (!is_visible(d, f) || !is_tiled(f->client) || !node_matches(&loc, &ref, sel))
+        if (!is_tiled(f->client) || !node_matches(&loc, &ref, sel))
             continue;
         int f_area = tiled_area(f);
         if (r == NULL) {
@@ -867,7 +834,7 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
         if (n == d->focus) {
             d->focus = history_get_node(d, n);
             if (d->focus == NULL)
-                d->focus = closest_visible(d, n);
+                d->focus = first_extrema(d->root);
         }
 
         if (n->client->private)
@@ -1015,9 +982,6 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
             window_show(n2->client->window);
         }
 
-        tag_node(m1, d1, n2, d2, n2->client->tags_field);
-        tag_node(m2, d2, n1, d1, n1->client->tags_field);
-
         update_input_focus();
     }
 
@@ -1068,7 +1032,6 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
             update_input_focus();
     }
 
-    tag_node(md, dd, ns, ds, ns->client->tags_field);
     arrange(ms, ds);
     if (ds != dd)
         arrange(md, dd);
@@ -1104,17 +1067,17 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
     node_t *p = d->focus->parent;
     bool focus_first_child = is_first_child(d->focus);
     node_t *head, *tail;
-    for (head = first_extrema(d->root); head != NULL && !is_visible(d, head); head = next_leaf(head, d->root))
+    for (head = first_extrema(d->root); head != NULL; head = next_leaf(head, d->root))
         ;
-    for (tail = second_extrema(d->root); tail != NULL && !is_visible(d, tail); tail = prev_leaf(tail, d->root))
+    for (tail = second_extrema(d->root); tail != NULL; tail = prev_leaf(tail, d->root))
         ;
     if (head == tail)
         return;
     if (dir == CIRCULATE_FORWARD)
-        for (node_t *s = tail, *f = prev_visible_leaf(d, s, d->root); f != NULL; s = prev_visible_leaf(d, f, d->root), f = prev_visible_leaf(d, s, d->root))
+        for (node_t *s = tail, *f = prev_tiled_leaf(d, s, d->root); f != NULL; s = prev_tiled_leaf(d, f, d->root), f = prev_tiled_leaf(d, s, d->root))
             swap_nodes(m, d, f, m, d, s);
     else
-        for (node_t *f = head, *s = next_visible_leaf(d, f, d->root); s != NULL; f = next_visible_leaf(d, s, d->root), s = next_visible_leaf(d, f, d->root))
+        for (node_t *f = head, *s = next_tiled_leaf(d, f, d->root); s != NULL; f = next_tiled_leaf(d, s, d->root), s = next_tiled_leaf(d, f, d->root))
             swap_nodes(m, d, f, m, d, s);
     if (focus_first_child)
         focus_node(m, d, p->first_child);

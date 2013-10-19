@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/12/2013
+.\"      Date: 10/19/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.5
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/12/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "10/19/2013" "Bspwm 0\&.8\&.5" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -518,7 +518,7 @@ Set the splitting ratio (or pull, or push) the edge located in the given directi
 Rotate the tree holding the edge located in the given direction in relation to the selected window\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked|sticky|private|visible[=on|off]
+\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked|sticky|private[=on|off]
 .RS 4
 Set or toggle the given state for the selected window\&.
 .RE
@@ -658,75 +658,6 @@ Rename, add or remove desktops depending on whether the number of given names is
 \fB\-s\fR, \fB\-\-swap\fR \fIMONITOR_SEL\fR
 .RS 4
 Swap the selected monitor with the given monitor\&.
-.RE
-.RE
-.SS "Tag"
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBGeneral Syntax\fR
-.RS 4
-.sp
-tag \fIOPTIONS\fR
-.RE
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBOptions\fR
-.RS 4
-.PP
-\fB\-l\fR, \fB\-\-list\fR
-.RS 4
-List the tags\&.
-.RE
-.PP
-\fB\-a\fR, \fB\-\-add\fR <name>\&...
-.RS 4
-Create tags with the given names\&.
-.RE
-.PP
-\fB\-r\fR, \fB\-\-remove\fR <name>|^<n>\&...
-.RS 4
-Remove tags with the given names or indexes\&.
-.RE
-.PP
-\fB\-e\fR, \fB\-\-enumerate\-tags\fR <name>\&...
-.RS 4
-Rename, add or remove tags depending on whether the number of given names is equal, superior or inferior to the number of existing tags\&.
-.RE
-.PP
-\fB\-d\fR, \fB\-\-desktop\fR \fIDESKTOP_SEL\fR
-.RS 4
-Select the given desktop as target for the
-\fB\-s\fR
-and
-\fB\-t\fR
-options\&.
-.RE
-.PP
-\fB\-w\fR, \fB\-\-window\fR \fIWINDOW_SEL\fR
-.RS 4
-Select the given window as target for the
-\fB\-s\fR
-and
-\fB\-t\fR
-options\&.
-.RE
-.PP
-\fB\-s\fR, \fB\-\-set\-tags\fR (<name>|^<n>\&...)|all
-.RS 4
-Set the tags of the selected object\&.
-.RE
-.PP
-\fB\-t\fR, \fB\-\-toggle\-tags\fR (<name>|^<n>)[=on|off]\&...
-.RS 4
-Toggle the tags of the selected object\&.
 .RE
 .RE
 .SS "Query"
@@ -914,7 +845,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-tags <name>|^<n>[,\&...]][\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-private] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-private] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
 Create a new rule\&.
 .RE
@@ -1185,16 +1116,6 @@ Urgent unfocused desktop\&.
 \fIL(tiled|monocle)\fR
 .RS 4
 Layout of the focused desktop of the focused monitor\&.
-.RE
-.PP
-\fIT<tag_name>\fR
-.RS 4
-Selected tag of the focused desktop of the focused monitor\&.
-.RE
-.PP
-\fIt<tag_name>\fR
-.RS 4
-Non\-selected tag of the focused desktop of the focused monitor\&.
 .RE
 .SH "ENVIRONMENT VARIABLES"
 .PP

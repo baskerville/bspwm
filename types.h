@@ -166,7 +166,6 @@ typedef struct {
     bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
-    unsigned int tags_field;
     xcb_atom_t wm_state[MAX_STATE];
     int num_states;
 } client_t;
@@ -197,7 +196,6 @@ struct desktop_t {
     desktop_t *next;
     int window_gap;
     unsigned int border_width;
-    unsigned int tags_field;
 };
 
 typedef struct monitor_t monitor_t;
@@ -255,7 +253,6 @@ typedef struct {
     bool frame;
     bool private;
     char desc[MAXLEN];
-    char tags[MAXLEN];
 } rule_effect_t;
 
 typedef struct rule_t rule_t;

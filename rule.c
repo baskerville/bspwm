@@ -29,7 +29,6 @@
 #include "window.h"
 #include "messages.h"
 #include "query.h"
-#include "tag.h"
 #include "rule.h"
 
 rule_t *make_rule(void)
@@ -46,7 +45,6 @@ rule_t *make_rule(void)
     r->effect.unmanage = false;
     r->one_shot = false;
     r->effect.desc[0] = '\0';
-    r->effect.tags[0] = '\0';
     r->prev = NULL;
     r->next = NULL;
     return r;
@@ -116,7 +114,7 @@ bool is_match(rule_t *r, xcb_window_t win)
     return false;
 }
 
-void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, unsigned int *tags_field, bool *floating, bool *fullscreen, bool *locked, bool *sticky, bool *follow, bool *transient, bool *takes_focus, bool *frame, bool *private, bool *manage)
+void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating, bool *fullscreen, bool *locked, bool *sticky, bool *follow, bool *transient, bool *takes_focus, bool *frame, bool *private, bool *manage)
 {
     xcb_ewmh_get_atoms_reply_t win_type;
 
@@ -196,20 +194,6 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, unsigned int *
                     *d = loc.desktop;
                 }
             }
-            if (efc.tags[0] != '\0') {
-                char *name = strtok(efc.tags, LST_SEP);
-                while (name != NULL) {
-                    int idx;
-                    tag_t *tag = NULL;
-                    if (parse_index(name, &idx))
-                        tag = get_tag_by_index(idx - 1);
-                    else
-                        tag = get_tag(name);
-                    if (tag != NULL)
-                        *tags_field |= tag->mask;
-                    name = strtok(NULL, LST_SEP);
-                }
-            }
         }
         rule_t *next = rule->next;
         if (rule->one_shot)
@@ -254,10 +238,6 @@ void list_rules(char *pattern, char *rsp)
             strncat(rsp, " --one-shot", REMLEN(rsp));
         if (r->effect.desc[0] != '\0') {
             snprintf(line, sizeof(line), " -d %s", r->effect.desc);
-            strncat(rsp, line, REMLEN(rsp));
-        }
-        if (r->effect.tags[0] != '\0') {
-            snprintf(line, sizeof(line), " --tags %s", r->effect.tags);
             strncat(rsp, line, REMLEN(rsp));
         }
         strncat(rsp, "\n", REMLEN(rsp));

@@ -45,7 +45,6 @@
 #include "window.h"
 #include "history.h"
 #include "stack.h"
-#include "tag.h"
 #include "rule.h"
 #include "ewmh.h"
 #include "bspwm.h"
@@ -197,7 +196,6 @@ void init(void)
     rule_head = rule_tail = NULL;
     history_head = history_tail = history_needle = NULL;
     stack_head = stack_tail = NULL;
-    init_tags();
     status_fifo = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
     visible = auto_raise = sticky_still = record_history = true;
@@ -301,8 +299,6 @@ void cleanup(void)
         remove_rule(rule_head);
     while (stack_head != NULL)
         remove_stack(stack_head);
-    while (num_tags > 0)
-        remove_tag_by_index(num_tags - 1);
     empty_history();
     free(frozen_pointer);
 }
@@ -325,11 +321,8 @@ void put_status(void)
             fprintf(status_fifo, "%c%s:", c, d->name);
         }
     }
-    if (mon != NULL && mon->desk != NULL) {
-        for (int i = 0; i < num_tags; i++)
-            fprintf(status_fifo, "%c%s:", (tags[i]->mask & mon->desk->tags_field) != 0 ? 'T' : 't', tags[i]->name);
+    if (mon != NULL && mon->desk != NULL)
         fprintf(status_fifo, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
-    }
     fprintf(status_fifo, "\n");
     fflush(status_fifo);
 }

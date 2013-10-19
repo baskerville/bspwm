@@ -31,7 +31,6 @@
 #include "rule.h"
 #include "settings.h"
 #include "stack.h"
-#include "tag.h"
 #include "tree.h"
 #include "window.h"
 
@@ -50,8 +49,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         return;
 
     bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, private = false, manage = true;
-    unsigned int tags_field = 0;
-    handle_rules(win, &m, &d, &tags_field, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &manage);
+    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &manage);
 
     if (!manage) {
         disable_floating_atom(win);
@@ -63,7 +61,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
-    c->tags_field = (tags_field == 0 ? d->tags_field : tags_field);
     c->frame = frame;
 
     xcb_icccm_get_wm_class_reply_t reply;
@@ -92,9 +89,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     set_fullscreen(n, fullscreen);
     c->transient = transient;
 
-    if (!is_visible(d, n))
-        set_visibility(m, d, n, false);
-
     xcb_rectangle_t *frect = &n->client->floating_rectangle;
     if (frect->x == 0 && frect->y == 0)
         center(m->rectangle, frect);
@@ -104,21 +98,17 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     bool give_focus = (takes_focus && (d == mon->desk || follow));
 
-    if (is_visible(d, n)) {
-        if (give_focus)
-            focus_node(m, d, n);
-        else if (takes_focus)
-            pseudo_focus(d, n);
-        else
-            stack(n);
-    } else {
-        stack_under(n);
-    }
+    if (give_focus)
+        focus_node(m, d, n);
+    else if (takes_focus)
+        pseudo_focus(d, n);
+    else
+        stack(n);
 
     uint32_t values[] = {get_event_mask(n->client)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
-    if (visible && is_visible(d, n)) {
+    if (visible) {
         if (d == m->desk)
             window_show(n->client->window);
         else
@@ -677,8 +667,7 @@ void toggle_visibility(void)
         clear_input_focus();
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (node_t *n = first_extrema(m->desk->root); n != NULL; n = next_leaf(n, m->desk->root))
-            if (is_visible(m->desk, n))
-                window_set_visibility(n->client->window, visible);
+            window_set_visibility(n->client->window, visible);
     if (visible)
         update_input_focus();
 }
