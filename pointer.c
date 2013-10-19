@@ -61,7 +61,7 @@ void grab_pointer(pointer_action_t pac)
                     focus_node(loc.monitor, loc.desktop, loc.node);
                     pointer_follows_monitor = backup;
                 } else if (focus_follows_pointer) {
-                    stack(loc.node);
+                    stack(loc.node, STACK_ABOVE);
                 }
                 break;
             case ACTION_MOVE:

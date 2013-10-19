@@ -97,71 +97,36 @@ void remove_stack_node(node_t *n)
         }
 }
 
-void stack(node_t *n)
+void stack(node_t *n, stack_flavor_t f)
 {
     PRINTF("stack %X\n", n->client->window);
 
     if (stack_head == NULL) {
         stack_insert_after(NULL, n);
     } else if (n->client->fullscreen) {
-        stack_insert_after(stack_tail, n);
-        window_raise(n->client->window);
+        if (f == STACK_ABOVE) {
+            stack_insert_after(stack_tail, n);
+            window_raise(n->client->window);
+        }
     } else {
-        if (n->client->floating && !auto_raise)
+        if (f == STACK_ABOVE && n->client->floating && !auto_raise)
             return;
         stacking_list_t *latest_tiled = NULL;
         stacking_list_t *oldest_floating = NULL;
-        for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
+        for (stacking_list_t *s = (f == STACK_ABOVE ? stack_tail : stack_head); s != NULL; s = (f == STACK_ABOVE ? s->prev : s->next)) {
             if (s->node != n) {
                 if (s->node->client->floating == n->client->floating) {
-                    stack_insert_after(s, n);
-                    window_above(n->client->window, s->node->client->window);
+                    if (f == STACK_ABOVE) {
+                        stack_insert_after(s, n);
+                        window_above(n->client->window, s->node->client->window);
+                    } else {
+                        stack_insert_before(s, n);
+                        window_below(n->client->window, s->node->client->window);
+                    }
                     return;
-                } else if (latest_tiled == NULL && !s->node->client->floating) {
+                } else if ((f != STACK_ABOVE || latest_tiled == NULL) && !s->node->client->floating) {
                     latest_tiled = s;
-                } else if (s->node->client->floating) {
-                    oldest_floating = s;
-                }
-            }
-        }
-        if (latest_tiled == NULL && oldest_floating == NULL)
-            return;
-        if (n->client->floating) {
-            if (latest_tiled == NULL)
-                return;
-            window_above(n->client->window, latest_tiled->node->client->window);
-            stack_insert_after(latest_tiled, n);
-        } else {
-            if (oldest_floating == NULL)
-                return;
-            window_below(n->client->window, oldest_floating->node->client->window);
-            stack_insert_before(oldest_floating, n);
-        }
-    }
-}
-
-void stack_under(node_t *n)
-{
-    PRINTF("stack under %X\n", n->client->window);
-
-    if (stack_head == NULL) {
-        stack_insert_after(NULL, n);
-    } else if (n->client->fullscreen) {
-        ;
-    } else {
-        if (n->client->floating && !auto_raise)
-            return;
-        stacking_list_t *latest_tiled = NULL;
-        stacking_list_t *oldest_floating = NULL;
-        for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-            if (s->node != n) {
-                if (s->node->client->floating == n->client->floating) {
-                    stack_insert_before(s, n);
-                    window_below(n->client->window, s->node->client->window);
-                    return;
-                } else if (!s->node->client->floating) {
-                    latest_tiled = s;
-                } else if (oldest_floating == NULL && s->node->client->floating) {
+                } else if ((f == STACK_ABOVE || oldest_floating == NULL) && s->node->client->floating) {
                     oldest_floating = s;
                 }
             }

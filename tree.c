@@ -266,7 +266,7 @@ void pseudo_focus(desktop_t *d, node_t *n)
 {
     d->focus = n;
     if (n != NULL)
-        stack(n);
+        stack(n, STACK_ABOVE);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -1020,7 +1020,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
     }
 
     history_transfer_node(md, dd, ns);
-    stack_under(ns);
+    stack(ns, STACK_BELOW);
 
     if (ds == dd) {
         if (focused)

@@ -103,7 +103,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     else if (takes_focus)
         pseudo_focus(d, n);
     else
-        stack(n);
+        stack(n, STACK_ABOVE);
 
     uint32_t values[] = {get_event_mask(n->client)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
@@ -394,7 +394,7 @@ void set_fullscreen(node_t *n, bool value)
         ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);
     else
         ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
-    stack(n);
+    stack(n, STACK_ABOVE);
 }
 
 void set_floating(node_t *n, bool value)
@@ -417,7 +417,7 @@ void set_floating(node_t *n, bool value)
         rotate_brother(n);
     }
 
-    stack(n);
+    stack(n, STACK_ABOVE);
 }
 
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
