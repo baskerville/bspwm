@@ -706,6 +706,8 @@ bool cmd_pointer(char **args, int num)
                 grab_pointer(pac);
             else
                 return false;
+        } else if (streq("-u", *args) || streq("--ungrab", *args)) {
+            ungrab_pointer();
         } else {
             return false;
         }

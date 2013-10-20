@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/19/2013
+.\"      Date: 10/20/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.6
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/19/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
+.TH "BSPWM" "1" "10/20/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -814,14 +814,19 @@ pointer \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
+\fB\-g\fR, \fB\-\-grab\fR focus|move|resize_side|resize_corner
+.RS 4
+Initiate the given pointer action\&.
+.RE
+.PP
 \fB\-t\fR, \fB\-\-track\fR <x> <y>
 .RS 4
 Pass the pointer root coordinates for the current pointer action\&.
 .RE
 .PP
-\fB\-g\fR, \fB\-\-grab\fR focus|move|resize_side|resize_corner
+\fB\-u\fR, \fB\-\-ungrab\fR
 .RS 4
-Perform the given pointer action\&.
+Terminate the current pointer action\&.
 .RE
 .RE
 .SS "Rule"

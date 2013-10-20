@@ -63,6 +63,7 @@ void grab_pointer(pointer_action_t pac)
                 } else if (focus_follows_pointer) {
                     stack(loc.node, STACK_ABOVE);
                 }
+                frozen_pointer->action = ACTION_NONE;
                 break;
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:
@@ -325,4 +326,9 @@ void track_pointer(int root_x, int root_y)
         case ACTION_NONE:
             break;
     }
+}
+
+void ungrab_pointer(void)
+{
+    frozen_pointer->action = ACTION_NONE;
 }

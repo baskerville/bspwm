@@ -93,7 +93,7 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
     }
 
     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-        fit_monitor(md, n->client);
+        fit_monitor(ms, md, n);
 
     arrange(md, d);
 
@@ -252,9 +252,9 @@ void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 
     if (m1 != m2) {
         for (node_t *n = first_extrema(d1->root); n != NULL; n = next_leaf(n, d1->root))
-            fit_monitor(m2, n->client);
+            fit_monitor(m1, m2, n);
         for (node_t *n = first_extrema(d2->root); n != NULL; n = next_leaf(n, d2->root))
-            fit_monitor(m1, n->client);
+            fit_monitor(m2, m1, n);
         history_swap_desktops(m1, d1, m2, d2);
         arrange(m1, d2);
         arrange(m2, d1);

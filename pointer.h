@@ -27,5 +27,6 @@
 
 void grab_pointer(pointer_action_t pac);
 void track_pointer(int root_x, int root_y);
+void ungrab_pointer(void);
 
 #endif

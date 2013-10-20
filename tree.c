@@ -968,8 +968,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
             d2->focus = n1;
 
         if (m1 != m2) {
-            fit_monitor(m1, n2->client);
-            fit_monitor(m2, n1->client);
+            fit_monitor(m2, m1, n2);
+            fit_monitor(m1, m2, n1);
         }
 
         ewmh_set_wm_desktop(n1, d2);
@@ -1007,7 +1007,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
     insert_node(md, dd, ns, nd);
 
     if (md != ms)
-        fit_monitor(md, ns->client);
+        fit_monitor(ms, md, ns);
 
     if (ds != dd) {
         ewmh_set_wm_desktop(ns, dd);

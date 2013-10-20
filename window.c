@@ -76,7 +76,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     n->client = c;
 
     insert_node(m, d, n, d->focus);
-    fit_monitor(m, n->client);
+    fit_monitor(m, m, n);
 
     disable_floating_atom(c->window);
     set_floating(n, floating);
@@ -261,6 +261,7 @@ pointer_state_t *make_pointer_state(void)
     p->node = p->vertical_fence = p->horizontal_fence = NULL;
     p->client = NULL;
     p->window = XCB_NONE;
+    p->action = ACTION_NONE;
     return p;
 }
 

@@ -71,21 +71,32 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t id)
     return NULL;
 }
 
-void fit_monitor(monitor_t *m, client_t *c)
+void fit_monitor(monitor_t *ms, monitor_t *md, node_t *n)
 {
-    xcb_rectangle_t a = m->rectangle;
-    xcb_rectangle_t *b = &c->floating_rectangle;
-    if (b->x <= a.x || (b->x + b->width) >= (a.x + a.width)) {
-        if (b->width >= a.width)
-            b->x = 0;
-        else
-            b->x = a.x + (a.width - b->width) / 2;
+    if (frozen_pointer->action != ACTION_NONE)
+        return;
+    xcb_rectangle_t a = ms->rectangle;
+    xcb_rectangle_t b = md->rectangle;
+    xcb_rectangle_t *r = &n->client->floating_rectangle;
+    if (ms != md) {
+        double w = b.width;
+        double h = b.height;
+        int dx = (r->x - a.x) * (w / a.width);
+        int dy = (r->y - a.y) * (h / a.height);
+        r->x = b.x + dx;
+        r->y = b.y + dy;
     }
-    if (b->y <= a.y || (b->y + b->height) >= (a.y + a.height)) {
-        if (b->height >= a.height)
-            b->y = 0;
+    if (r->x <= b.x || (r->x + r->width) >= (b.x + b.width)) {
+        if (r->width >= b.width)
+            r->x = b.x;
         else
-            b->y = a.y + (a.height - b->height) / 2;
+            r->x = b.x + (b.width - r->width) / 2;
+    }
+    if (r->y <= b.y || (r->y + r->height) >= (b.y + b.height)) {
+        if (r->height >= b.height)
+            r->y = b.y;
+        else
+            r->y = b.y + (b.height - r->height) / 2;
     }
 }
 
@@ -286,7 +297,7 @@ bool import_monitors(void)
                         update_root(mm);
                         for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
                             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-                                fit_monitor(mm, n->client);
+                                fit_monitor(mm, mm, n);
                         arrange(mm, mm->desk);
                         mm->wired = true;
                         PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);

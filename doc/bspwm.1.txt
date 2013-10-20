@@ -499,11 +499,14 @@ pointer 'OPTIONS'
 Options
 ^^^^^^^
 
+*-g*, *--grab* focus|move|resize_side|resize_corner::
+    Initiate the given pointer action.
+
 *-t*, *--track* <x> <y>::
     Pass the pointer root coordinates for the current pointer action.
 
-*-g*, *--grab* focus|move|resize_side|resize_corner::
-    Perform the given pointer action.
+*-u*, *--ungrab*::
+    Terminate the current pointer action.
 
 Rule
 ~~~~

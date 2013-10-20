@@ -73,6 +73,9 @@ super + button{1-3}
 super + !button{1-3}
     bspc pointer -t %i %i
 
+super + @button{1-3}
+    bspc pointer -u
+
 #
 # wm independent hotkeys
 #
