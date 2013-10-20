@@ -73,17 +73,20 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t id)
 
 void fit_monitor(monitor_t *m, client_t *c)
 {
-    xcb_rectangle_t crect = c->floating_rectangle;
-    xcb_rectangle_t mrect = m->rectangle;
-    while (crect.x < mrect.x)
-        crect.x += mrect.width;
-    while (crect.x > (mrect.x + mrect.width - 1))
-        crect.x -= mrect.width;
-    while (crect.y < mrect.y)
-        crect.y += mrect.height;
-    while (crect.y > (mrect.y + mrect.height - 1))
-        crect.y -= mrect.height;
-    c->floating_rectangle = crect;
+    xcb_rectangle_t a = m->rectangle;
+    xcb_rectangle_t *b = &c->floating_rectangle;
+    if (b->x <= a.x || (b->x + b->width) >= (a.x + a.width)) {
+        if (b->width >= a.width)
+            b->x = 0;
+        else
+            b->x = a.x + (a.width - b->width) / 2;
+    }
+    if (b->y <= a.y || (b->y + b->height) >= (a.y + a.height)) {
+        if (b->height >= a.height)
+            b->y = 0;
+        else
+            b->y = a.y + (a.height - b->height) / 2;
+    }
 }
 
 void update_root(monitor_t *m)

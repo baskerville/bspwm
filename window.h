@@ -35,7 +35,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win);
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor);
 void draw_frame_background(node_t *n, bool focused_window, bool focused_monitor);
 pointer_state_t *make_pointer_state(void);
-void center(xcb_rectangle_t a, xcb_rectangle_t *b);
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
 bool is_inside(monitor_t *m, xcb_point_t pt);
 xcb_rectangle_t get_rectangle(client_t *c);
