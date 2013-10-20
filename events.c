@@ -91,7 +91,39 @@ void configure_request(xcb_generic_event_t *evt)
     coordinates_t loc;
     bool is_managed = locate_window(e->window, &loc);
 
-    if (!is_managed || is_floating(loc.node->client)) {
+    if (is_managed && !is_floating(loc.node->client)) {
+        if (e->value_mask & XCB_CONFIG_WINDOW_X)
+            loc.node->client->floating_rectangle.x = e->x;
+        if (e->value_mask & XCB_CONFIG_WINDOW_Y)
+            loc.node->client->floating_rectangle.y = e->y;
+        if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH)
+            loc.node->client->floating_rectangle.width = e->width;
+        if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
+            loc.node->client->floating_rectangle.height = e->height;
+
+        xcb_configure_notify_event_t evt;
+        xcb_rectangle_t rect;
+        xcb_window_t win = loc.node->client->window;
+        unsigned int bw = loc.node->client->border_width;
+
+        if (loc.node->client->fullscreen)
+            rect = loc.monitor->rectangle;
+        else
+            rect = loc.node->client->tiled_rectangle;
+
+        evt.response_type = XCB_CONFIGURE_NOTIFY;
+        evt.event = win;
+        evt.window = win;
+        evt.above_sibling = XCB_NONE;
+        evt.x = rect.x;
+        evt.y = rect.y;
+        evt.width = rect.width;
+        evt.height = rect.height;
+        evt.border_width = bw;
+        evt.override_redirect = false;
+
+        xcb_send_event(dpy, false, win, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
+    } else {
         uint16_t mask = 0;
         uint32_t values[7];
         unsigned short i = 0;
@@ -140,31 +172,6 @@ void configure_request(xcb_generic_event_t *evt)
         }
 
         xcb_configure_window(dpy, e->window, mask, values);
-        if (is_managed)
-            window_draw_border(loc.node, loc.node == loc.desktop->focus, loc.monitor == mon);
-    } else {
-        xcb_configure_notify_event_t evt;
-        xcb_rectangle_t rect;
-        xcb_window_t win = loc.node->client->window;
-        unsigned int bw = loc.node->client->border_width;
-
-        if (loc.node->client->fullscreen)
-            rect = loc.monitor->rectangle;
-        else
-            rect = loc.node->client->tiled_rectangle;
-
-        evt.response_type = XCB_CONFIGURE_NOTIFY;
-        evt.event = win;
-        evt.window = win;
-        evt.above_sibling = XCB_NONE;
-        evt.x = rect.x;
-        evt.y = rect.y;
-        evt.width = rect.width;
-        evt.height = rect.height;
-        evt.border_width = bw;
-        evt.override_redirect = false;
-
-        xcb_send_event(dpy, false, win, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
     }
 }
 
