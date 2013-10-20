@@ -2,3 +2,4 @@ tags
 bspwm
 bspc
 *.o
+*.taghl
