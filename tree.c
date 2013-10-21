@@ -1070,18 +1070,11 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
         return;
     node_t *p = d->focus->parent;
     bool focus_first_child = is_first_child(d->focus);
-    node_t *head, *tail;
-    for (head = first_extrema(d->root); head != NULL; head = next_leaf(head, d->root))
-        ;
-    for (tail = second_extrema(d->root); tail != NULL; tail = prev_leaf(tail, d->root))
-        ;
-    if (head == tail)
-        return;
     if (dir == CIRCULATE_FORWARD)
-        for (node_t *s = tail, *f = prev_tiled_leaf(d, s, d->root); f != NULL; s = prev_tiled_leaf(d, f, d->root), f = prev_tiled_leaf(d, s, d->root))
+        for (node_t *s = second_extrema(d->root), *f = prev_tiled_leaf(d, s, d->root); f != NULL; s = prev_tiled_leaf(d, f, d->root), f = prev_tiled_leaf(d, s, d->root))
             swap_nodes(m, d, f, m, d, s);
     else
-        for (node_t *f = head, *s = next_tiled_leaf(d, f, d->root); s != NULL; f = next_tiled_leaf(d, s, d->root), s = next_tiled_leaf(d, f, d->root))
+        for (node_t *f = first_extrema(d->root), *s = next_tiled_leaf(d, f, d->root); s != NULL; f = next_tiled_leaf(d, s, d->root), s = next_tiled_leaf(d, f, d->root))
             swap_nodes(m, d, f, m, d, s);
     if (focus_first_child)
         focus_node(m, d, p->first_child);
