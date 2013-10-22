@@ -61,6 +61,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
+    c->floating_rectangle.x += m->rectangle.x;
+    c->floating_rectangle.y += m->rectangle.y;
     c->frame = frame;
 
     xcb_icccm_get_wm_class_reply_t reply;
