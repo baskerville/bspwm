@@ -16,7 +16,7 @@ clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 
 case "$flavor" in
     bar)
-        cat "$PANEL_FIFO" | panel_bar | bar-aint-recursive &
+        cat "$PANEL_FIFO" | panel_bar | bar &
         ;;
     dzen2)
         . panel_colors
