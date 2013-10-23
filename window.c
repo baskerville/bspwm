@@ -48,6 +48,17 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
+    bool fresh = true;
+    uint32_t idx;
+    if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
+        coordinates_t loc;
+        if (ewmh_locate_desktop(idx, &loc)) {
+            m = loc.monitor;
+            d = loc.desktop;
+        }
+        fresh = false;
+    }
+
     bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, private = false, manage = true;
     handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &manage);
 
@@ -61,8 +72,10 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
-    c->floating_rectangle.x += m->rectangle.x;
-    c->floating_rectangle.y += m->rectangle.y;
+    if (fresh) {
+        c->floating_rectangle.x += m->rectangle.x;
+        c->floating_rectangle.y += m->rectangle.y;
+    }
     c->frame = frame;
 
     xcb_icccm_get_wm_class_reply_t reply;
