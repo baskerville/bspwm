@@ -30,7 +30,7 @@
 monitor_t *make_monitor(xcb_rectangle_t rect);
 monitor_t *find_monitor(char *name);
 monitor_t *get_monitor_by_id(xcb_randr_output_t id);
-void fit_monitor(monitor_t *ms, monitor_t *md, node_t *n);
+void translate_position(monitor_t *ms, monitor_t *md, node_t *n);
 void update_root(monitor_t *m);
 void focus_monitor(monitor_t *m);
 monitor_t *add_monitor(xcb_rectangle_t rect);

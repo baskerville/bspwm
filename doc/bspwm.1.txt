@@ -639,6 +639,9 @@ Global Settings
 'honor_ewmh_focus'::
     Honor EWMH requests to focus a window.
 
+'fit_monitor'::
+    Keep floating windows inside their monitor.
+
 Monitor Settings
 ~~~~~~~~~~~~~~~~
 
