@@ -275,8 +275,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
         clear_input_focus();
 
     if (m->num_sticky > 0 && d != m->desk) {
-        if (m->desk->focus->client->sticky)
-            n = m->desk->focus;
         node_t *a = first_extrema(m->desk->root);
         sticky_still = false;
         while (a != NULL) {
