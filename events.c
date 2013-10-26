@@ -249,6 +249,8 @@ void client_message(xcb_generic_event_t *evt)
         coordinates_t dloc;
         if (ewmh_locate_desktop(e->data.data32[0], &dloc))
             transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus);
+    } else if (e->type == ewmh->_NET_CLOSE_WINDOW) {
+        window_close(loc.node);
     }
 }
 
