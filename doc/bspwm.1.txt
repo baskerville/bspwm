@@ -636,8 +636,8 @@ Global Settings
 'apply_floating_atom'::
     Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
 
-'honor_ewmh_focus'::
-    Honor EWMH requests to focus a window.
+'ignore_ewmh_focus'::
+    Ignore EWMH requests to focus a window.
 
 'fit_monitor'::
     Keep floating windows inside their monitor.
