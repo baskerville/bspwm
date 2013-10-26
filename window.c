@@ -73,8 +73,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     client_t *c = make_client(win);
     update_floating_rectangle(c);
     if (fresh) {
-        c->floating_rectangle.x += m->rectangle.x;
-        c->floating_rectangle.y += m->rectangle.y;
+        translate_client(underlying_monitor(c), m, c);
     }
     c->frame = frame;
 

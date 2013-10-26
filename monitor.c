@@ -105,6 +105,26 @@ void translate_position(monitor_t *ms, monitor_t *md, node_t *n)
     }
 }
 
+void translate_client(monitor_t *ms, monitor_t *md, client_t *c) {
+
+    int xoff = c->floating_rectangle.x - ms->rectangle.x;
+    int yoff = c->floating_rectangle.y - ms->rectangle.y;
+
+    int xnum = xoff*(md->rectangle.width - c->floating_rectangle.width);
+    int ynum = yoff*(md->rectangle.height - c->floating_rectangle.height);
+
+    int xden = ms->rectangle.width - c->floating_rectangle.width;
+    int yden = ms->rectangle.height - c->floating_rectangle.height;
+
+    /* xden and yden can be zero if the window is fullscreen */
+    int xoff_new = xden == 0 ? 0 : xnum/xden;
+    int yoff_new = yden == 0 ? 0 : ynum/yden;
+
+    c->floating_rectangle.x = md->rectangle.x + xoff_new;
+    c->floating_rectangle.y = md->rectangle.y + yoff_new;
+}
+
+
 void update_root(monitor_t *m)
 {
     xcb_rectangle_t rect = m->rectangle;
