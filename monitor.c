@@ -76,6 +76,18 @@ void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
     if (frozen_pointer->action != ACTION_NONE || ms == md)
         return;
 
+    /* Clip the rectangle to fit into the monitor.  Without this, the fitting
+     * algorithm doesn't work as expected. This also conserves the
+     * out-of-bounds regions */
+    int left_adjust = MAX((ms->rectangle.x - c->floating_rectangle.x), 0);
+    int top_adjust = MAX((ms->rectangle.y - c->floating_rectangle.y), 0);
+    int right_adjust = MAX((c->floating_rectangle.x + c->floating_rectangle.width) - (ms->rectangle.x + ms->rectangle.width), 0);
+    int bottom_adjust = MAX((c->floating_rectangle.y + c->floating_rectangle.height) - (ms->rectangle.y + ms->rectangle.height), 0);
+    c->floating_rectangle.x += left_adjust;
+    c->floating_rectangle.y += top_adjust;
+    c->floating_rectangle.width -= (left_adjust + right_adjust);
+    c->floating_rectangle.height -= (top_adjust + bottom_adjust);
+
     int dx_s = c->floating_rectangle.x - ms->rectangle.x;
     int dy_s = c->floating_rectangle.y - ms->rectangle.y;
 
@@ -88,8 +100,11 @@ void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
     int dx_d = (deno_x == 0 ? 0 : nume_x / deno_x);
     int dy_d = (deno_y == 0 ? 0 : nume_y / deno_y);
 
-    c->floating_rectangle.x = md->rectangle.x + dx_d;
-    c->floating_rectangle.y = md->rectangle.y + dy_d;
+    /* Translate and undo clipping */
+    c->floating_rectangle.width += left_adjust + right_adjust;
+    c->floating_rectangle.height += top_adjust + bottom_adjust;
+    c->floating_rectangle.x = md->rectangle.x + dx_d - left_adjust;
+    c->floating_rectangle.y = md->rectangle.y + dy_d - top_adjust;
 }
 
 void update_root(monitor_t *m)
