@@ -71,59 +71,26 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t id)
     return NULL;
 }
 
-void translate_position(monitor_t *ms, monitor_t *md, node_t *n)
+void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
 {
-    if (frozen_pointer->action != ACTION_NONE)
+    if (frozen_pointer->action != ACTION_NONE || ms == md)
         return;
 
-    xcb_rectangle_t a = ms->rectangle;
-    xcb_rectangle_t b = md->rectangle;
-    xcb_rectangle_t *r = &n->client->floating_rectangle;
+    int dx_s = c->floating_rectangle.x - ms->rectangle.x;
+    int dy_s = c->floating_rectangle.y - ms->rectangle.y;
 
-    if (ms != md) {
-        double w = b.width;
-        double h = b.height;
-        int dx = (r->x - a.x) * (w / a.width);
-        int dy = (r->y - a.y) * (h / a.height);
-        r->x = b.x + dx;
-        r->y = b.y + dy;
-    }
+    int nume_x = dx_s * (md->rectangle.width - c->floating_rectangle.width);
+    int nume_y = dy_s * (md->rectangle.height - c->floating_rectangle.height);
 
-    if (fit_monitor) {
-        if (r->x <= b.x || (r->x + r->width) >= (b.x + b.width)) {
-            if (r->width >= b.width)
-                r->x = b.x;
-            else
-                r->x = b.x + (b.width - r->width) / 2;
-        }
-        if (r->y <= b.y || (r->y + r->height) >= (b.y + b.height)) {
-            if (r->height >= b.height)
-                r->y = b.y;
-            else
-                r->y = b.y + (b.height - r->height) / 2;
-        }
-    }
+    int deno_x = ms->rectangle.width - c->floating_rectangle.width;
+    int deno_y = ms->rectangle.height - c->floating_rectangle.height;
+
+    int dx_d = (deno_x == 0 ? 0 : nume_x / deno_x);
+    int dy_d = (deno_y == 0 ? 0 : nume_y / deno_y);
+
+    c->floating_rectangle.x = md->rectangle.x + dx_d;
+    c->floating_rectangle.y = md->rectangle.y + dy_d;
 }
-
-void translate_client(monitor_t *ms, monitor_t *md, client_t *c) {
-
-    int xoff = c->floating_rectangle.x - ms->rectangle.x;
-    int yoff = c->floating_rectangle.y - ms->rectangle.y;
-
-    int xnum = xoff*(md->rectangle.width - c->floating_rectangle.width);
-    int ynum = yoff*(md->rectangle.height - c->floating_rectangle.height);
-
-    int xden = ms->rectangle.width - c->floating_rectangle.width;
-    int yden = ms->rectangle.height - c->floating_rectangle.height;
-
-    /* xden and yden can be zero if the window is fullscreen */
-    int xoff_new = xden == 0 ? 0 : xnum/xden;
-    int yoff_new = yden == 0 ? 0 : ynum/yden;
-
-    c->floating_rectangle.x = md->rectangle.x + xoff_new;
-    c->floating_rectangle.y = md->rectangle.y + yoff_new;
-}
-
 
 void update_root(monitor_t *m)
 {
@@ -263,6 +230,41 @@ monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)
     return NULL;
 }
 
+bool is_inside_monitor(monitor_t *m, xcb_point_t pt)
+{
+    xcb_rectangle_t r = m->rectangle;
+    return (r.x <= pt.x && pt.x < (r.x + r.width)
+            && r.y <= pt.y && pt.y < (r.y + r.height));
+}
+
+monitor_t *monitor_from_point(xcb_point_t pt)
+{
+    for (monitor_t *m = mon_head; m != NULL; m = m->next)
+        if (is_inside_monitor(m, pt))
+            return m;
+    return NULL;
+}
+
+monitor_t *monitor_from_client(client_t *c)
+{
+    xcb_point_t pt = {c->floating_rectangle.x, c->floating_rectangle.y};
+    monitor_t *nearest = monitor_from_point(pt);
+    if (nearest == NULL) {
+        int x = (c->floating_rectangle.x + c->floating_rectangle.width) / 2;
+        int y = (c->floating_rectangle.y + c->floating_rectangle.height) / 2;
+        int dmin = INT_MAX;
+        for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+            xcb_rectangle_t r = m->rectangle;
+            int d = abs((r.x + r.width / 2) - x) + abs((r.y + r.height / 2) - y);
+            if (d < dmin) {
+                dmin = d;
+                nearest = m;
+            }
+        }
+    }
+    return nearest;
+}
+
 monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
 {
     int dmin = INT_MAX;
@@ -322,7 +324,7 @@ bool import_monitors(void)
                         update_root(mm);
                         for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
                             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
-                                translate_position(mm, mm, n);
+                                translate_client(mm, mm, n->client);
                         arrange(mm, mm->desk);
                         mm->wired = true;
                         PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);

@@ -637,6 +637,8 @@ bool cmd_rule(char **args, int num, char *rsp)
                     rule->effect.frame = true;
                 } else if (streq("--private", *args)) {
                     rule->effect.private = true;
+                } else if (streq("--center", *args)) {
+                    rule->effect.center = true;
                 } else if (streq("--unmanage", *args)) {
                     rule->effect.unmanage = true;
                 } else if (streq("--one-shot", *args)) {
@@ -931,7 +933,6 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         SETBOOL(auto_cancel)
         SETBOOL(history_aware_focus)
         SETBOOL(ignore_ewmh_focus)
-        SETBOOL(fit_monitor)
 #undef SETBOOL
     } else {
         return false;
@@ -1005,7 +1006,6 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
     GETBOOL(auto_cancel)
     GETBOOL(history_aware_focus)
     GETBOOL(ignore_ewmh_focus)
-    GETBOOL(fit_monitor)
 #undef GETBOOL
     else
         return false;

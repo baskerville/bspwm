@@ -173,6 +173,8 @@ void configure_request(xcb_generic_event_t *evt)
 
         xcb_configure_window(dpy, e->window, mask, values);
     }
+    if (is_managed)
+        translate_client(monitor_from_client(loc.node->client), loc.monitor, loc.node->client);
 }
 
 void destroy_notify(xcb_generic_event_t *evt)

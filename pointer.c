@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "tree.h"
+#include "monitor.h"
 #include "window.h"
 #include "pointer.h"
 

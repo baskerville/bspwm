@@ -249,9 +249,10 @@ typedef struct {
     bool sticky;
     bool follow;
     bool focus;
-    bool unmanage;
     bool frame;
     bool private;
+    bool center;
+    bool unmanage;
     char desc[MAXLEN];
 } rule_effect_t;
 

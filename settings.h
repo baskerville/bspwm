@@ -62,7 +62,6 @@
 #define AUTO_CANCEL              false
 #define APPLY_FLOATING_ATOM      false
 #define IGNORE_EWMH_FOCUS        false
-#define FIT_MONITOR              false
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];
@@ -95,7 +94,6 @@ bool auto_alternate;
 bool auto_cancel;
 bool history_aware_focus;
 bool ignore_ewmh_focus;
-bool fit_monitor;
 
 void run_config(void);
 void load_settings(void);

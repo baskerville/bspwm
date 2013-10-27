@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/26/2013
+.\"      Date: 10/27/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.6
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/26/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
+.TH "BSPWM" "1" "10/27/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -850,7 +850,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-private] [\-\-unmanage] [\-\-one\-shot]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-private] [\-\-center] [\-\-unmanage] [\-\-one\-shot]
 .RS 4
 Create a new rule\&.
 .RE
@@ -1052,11 +1052,6 @@ atom of each window according to its floating state\&.
 \fIignore_ewmh_focus\fR
 .RS 4
 Ignore EWMH requests to focus a window\&.
-.RE
-.PP
-\fIfit_monitor\fR
-.RS 4
-Keep floating windows inside their monitor\&.
 .RE
 .SS "Monitor Settings"
 .PP

@@ -48,19 +48,8 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool fresh = true;
-    uint32_t idx;
-    if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
-        coordinates_t loc;
-        if (ewmh_locate_desktop(idx, &loc)) {
-            m = loc.monitor;
-            d = loc.desktop;
-        }
-        fresh = false;
-    }
-
-    bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, private = false, manage = true;
-    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &manage);
+    bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, private = false, center = false, manage = true;
+    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &center, &manage);
 
     if (!manage) {
         disable_floating_atom(win);
@@ -72,9 +61,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
-    if (fresh) {
-        translate_client(underlying_monitor(c), m, c);
-    }
+    translate_client(monitor_from_client(c), m, c);
+    if (center)
+        window_center(m, c);
     c->frame = frame;
 
     xcb_icccm_get_wm_class_reply_t reply;
@@ -90,7 +79,6 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     n->client = c;
 
     insert_node(m, d, n, d->focus);
-    translate_position(m, m, n);
 
     disable_floating_atom(c->window);
     set_floating(n, floating);
@@ -285,13 +273,6 @@ bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
             && a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
 }
 
-bool is_inside(monitor_t *m, xcb_point_t pt)
-{
-    xcb_rectangle_t r = m->rectangle;
-    return (r.x <= pt.x && pt.x < (r.x + r.width)
-            && r.y <= pt.y && pt.y < (r.y + r.height));
-}
-
 xcb_rectangle_t get_rectangle(client_t *c)
 {
     if (is_tiled(c))
@@ -321,20 +302,6 @@ void get_side_handle(client_t *c, direction_t dir, xcb_point_t *pt)
             pt->y = rect.y;
             break;
     }
-}
-
-monitor_t *monitor_from_point(xcb_point_t pt)
-{
-    for (monitor_t *m = mon_head; m != NULL; m = m->next)
-        if (is_inside(m, pt))
-            return m;
-    return NULL;
-}
-
-monitor_t *underlying_monitor(client_t *c)
-{
-    xcb_point_t pt = (xcb_point_t) {c->floating_rectangle.x, c->floating_rectangle.y};
-    return monitor_from_point(pt);
 }
 
 void adopt_orphans(void)
@@ -612,6 +579,20 @@ void window_raise(xcb_window_t win)
 {
     uint32_t values[] = {XCB_STACK_MODE_ABOVE};
     xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
+}
+
+void window_center(monitor_t *m, client_t *c)
+{
+    xcb_rectangle_t *r = &c->floating_rectangle;
+    xcb_rectangle_t a = m->rectangle;
+    if (r->width >= a.width)
+        r->x = a.x;
+    else
+        r->x = a.x + (a.width - r->width) / 2;
+    if (r->height >= a.height)
+        r->y = a.y;
+    else
+        r->y = a.y + (a.height - r->height) / 2;
 }
 
 void window_stack(xcb_window_t w1, xcb_window_t w2, uint32_t mode)
