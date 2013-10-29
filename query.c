@@ -282,9 +282,11 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
     } else if (streq("last", desc)) {
         history_find_monitor(HISTORY_OLDER, ref, dst, sel);
     } else if (streq("primary", desc)) {
-        coordinates_t loc = {pri_mon, pri_mon->desk, NULL};
-        if (pri_mon != NULL && desktop_matches(&loc, ref, sel))
-            dst->monitor = pri_mon;
+        if (pri_mon != NULL) {
+            coordinates_t loc = {pri_mon, pri_mon->desk, NULL};
+            if (desktop_matches(&loc, ref, sel))
+                dst->monitor = pri_mon;
+        }
     } else if (streq("focused", desc)) {
         coordinates_t loc = {mon, mon->desk, NULL};
         if (desktop_matches(&loc, ref, sel))
