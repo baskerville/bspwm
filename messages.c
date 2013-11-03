@@ -213,6 +213,8 @@ bool cmd_window(char **args, int num)
                 set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->sticky));
             } else if (streq("private", key)) {
                 set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->private));
+            } else {
+                return false;
             }
         } else if (streq("-p", *args) || streq("--presel", *args)) {
             num--, args++;
