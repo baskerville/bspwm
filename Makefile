@@ -58,10 +58,13 @@ uninstall:
 	rm -f "$(DESTDIR)$(BASHCPL)"/bspc
 	rm -f "$(DESTDIR)$(ZSHCPL)"/_bspc
 
+deps:
+	$(CC) -MM *.c > Sourcedeps
+
 doc:
 	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt
 
 clean:
 	rm -f $(WM_OBJ) $(CL_OBJ) bspwm bspc
 
-.PHONY: all debug install uninstall doc clean 
+.PHONY: all debug install uninstall doc deps clean
