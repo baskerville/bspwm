@@ -120,6 +120,7 @@ desktop_t *make_desktop(const char *name)
     d->root = d->focus = NULL;
     d->window_gap = WINDOW_GAP;
     d->border_width = BORDER_WIDTH;
+    d->floating = false;
     return d;
 }
 

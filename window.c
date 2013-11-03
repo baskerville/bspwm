@@ -74,6 +74,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
 
     if (c->transient)
         floating = true;
+    floating = floating || d->floating;
 
     node_t *n = make_node();
     n->client = c;

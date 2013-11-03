@@ -435,6 +435,26 @@ bool cmd_desktop(char **args, int num)
             } else {
                 return false;
             }
+        } else if (streq("-t", *args) || streq("--toggle", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            char *key = strtok(*args, EQL_TOK);
+            char *val = strtok(NULL, EQL_TOK);
+            alter_state_t a;
+            bool b;
+            if (val == NULL) {
+                a = ALTER_TOGGLE;
+            } else {
+                if (parse_bool(val, &b))
+                    a = ALTER_SET;
+                else
+                    return false;
+            }
+            if (streq("floating", key))
+                trg.desktop->floating = (a == ALTER_SET ? b : !trg.desktop->floating);
+            else
+                return false;
         } else {
             return false;
         }

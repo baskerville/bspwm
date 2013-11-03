@@ -68,7 +68,7 @@ void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int 
             strncat(rsp, line, REMLEN(rsp));
             continue;
         } else {
-            snprintf(line, sizeof(line), "%s %u %i %c", d->name, d->border_width, d->window_gap, (d->layout == LAYOUT_TILED ? 'T' : 'M'));
+            snprintf(line, sizeof(line), "%s %u %i %c %c", d->name, d->border_width, d->window_gap, (d->layout == LAYOUT_TILED ? 'T' : 'M'), (d->floating ? 'f' : '-'));
             strncat(rsp, line, REMLEN(rsp));
             if (d == m->desk)
                 strncat(rsp, " *", REMLEN(rsp));

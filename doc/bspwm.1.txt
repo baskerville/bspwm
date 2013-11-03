@@ -386,6 +386,10 @@ Options
 *-C*, *--circulate* forward|backward::
     Circulate the leaves of the tree of the selected desktop.
 
+*-t*, *--toggle* floating[=on|off]::
+    Set or toggle the given state for the selected desktop.
+
+
 Monitor
 ~~~~~~~
 
