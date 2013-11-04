@@ -46,6 +46,7 @@ rule_t *make_rule(void)
     r->effect.unmanage = false;
     r->one_shot = false;
     r->effect.desc[0] = '\0';
+    r->effect.mon[0] = '\0';
     r->prev = NULL;
     r->next = NULL;
     return r;
@@ -197,6 +198,14 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, bool *floating
                     *d = loc.desktop;
                 }
             }
+            if (efc.mon[0] != '\0') {
+                coordinates_t ref = {*m, *d, NULL};
+                coordinates_t loc;
+                if (monitor_from_desc(efc.mon, &ref, &loc)) {
+                    *m = loc.monitor;
+                    *d = loc.monitor->desk;
+                }
+            }
         }
         rule_t *next = rule->next;
         if (rule->one_shot)
@@ -243,6 +252,10 @@ void list_rules(char *pattern, char *rsp)
             strncat(rsp, " --one-shot", REMLEN(rsp));
         if (r->effect.desc[0] != '\0') {
             snprintf(line, sizeof(line), " -d %s", r->effect.desc);
+            strncat(rsp, line, REMLEN(rsp));
+        }
+        if (r->effect.mon[0] != '\0') {
+            snprintf(line, sizeof(line), " -m %s", r->effect.mon);
             strncat(rsp, line, REMLEN(rsp));
         }
         strncat(rsp, "\n", REMLEN(rsp));

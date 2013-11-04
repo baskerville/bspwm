@@ -672,6 +672,13 @@ bool cmd_rule(char **args, int num, char *rsp)
                         return false;
                     }
                     snprintf(rule->effect.desc, sizeof(rule->effect.desc), "%s", *args);
+				} else if (streq("-m", *args) || streq("--monitor", *args)) {
+					num--, args++;
+                    if (num < 1) {
+                        free(rule);
+                        return false;
+                    }
+					snprintf(rule->effect.mon, sizeof(rule->effect.mon), "%s", *args);
                 } else {
                     free(rule);
                     return false;
