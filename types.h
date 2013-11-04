@@ -255,6 +255,7 @@ typedef struct {
     bool center;
     bool unmanage;
     char desc[MAXLEN];
+	char mon[MAXLEN];
 } rule_effect_t;
 
 typedef struct rule_t rule_t;
