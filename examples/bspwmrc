@@ -2,14 +2,16 @@
 
 bspc monitor -d I II III IV V VI VII VIII IX X
 
-bspc rule -a Gimp -d ^8 --follow --floating
-bspc rule -a Chromium -d ^2
-bspc rule -a mplayer2 --floating
-bspc rule -a Kupfer.py --focus
-bspc rule -a Screenkey --unmanage
-
 bspc config border_width        2
 bspc config window_gap          12
 bspc config split_ratio         0.52
 bspc config borderless_monocle  true
 bspc config gapless_monocle     true
+
+bspc config rule_command "xwinfo -cints 0x%X | xargs -d '\n' rulc -t"
+
+rulc -a 'class=="Gimp"' 'desktop=^8 follow=on floating=on'
+rulc -a 'class=="Chromium"' 'desktop=^2'
+rulc -a 'instance=="mpv"' 'floating=on'
+rulc -a 'class=="Kupfer.py"' 'focus=on'
+rulc -a 'class=="Screenkey"' 'manage=off'

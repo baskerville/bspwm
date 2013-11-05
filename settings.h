@@ -30,6 +30,7 @@
 #define WM_NAME             "bspwm"
 #define CONFIG_NAME         WM_NAME "rc"
 #define CONFIG_HOME_ENV     "XDG_CONFIG_HOME"
+#define RULE_COMMAND        "true"
 
 #define FOCUSED_BORDER_COLOR          "#7E7F89"
 #define ACTIVE_BORDER_COLOR           "#545350"
@@ -62,6 +63,8 @@
 #define AUTO_CANCEL              false
 #define APPLY_FLOATING_ATOM      false
 #define IGNORE_EWMH_FOCUS        false
+
+char rule_command[MAXLEN];
 
 char focused_border_color[MAXLEN];
 char active_border_color[MAXLEN];

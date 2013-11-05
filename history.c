@@ -24,7 +24,6 @@
 
 #include <stdlib.h>
 #include "bspwm.h"
-#include "tree.h"
 #include "query.h"
 
 history_t *make_history(monitor_t *m, desktop_t *d, node_t *n)

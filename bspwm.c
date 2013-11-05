@@ -45,7 +45,6 @@
 #include "window.h"
 #include "history.h"
 #include "stack.h"
-#include "rule.h"
 #include "ewmh.h"
 #include "bspwm.h"
 
@@ -193,7 +192,6 @@ void init(void)
     num_monitors = num_desktops = num_clients = 0;
     monitor_uid = desktop_uid = 0;
     mon = mon_head = mon_tail = pri_mon = NULL;
-    rule_head = rule_tail = NULL;
     history_head = history_tail = history_needle = NULL;
     stack_head = stack_tail = NULL;
     status_fifo = NULL;
@@ -296,8 +294,6 @@ void cleanup(void)
 {
     while (mon_head != NULL)
         remove_monitor(mon_head);
-    while (rule_head != NULL)
-        remove_rule(rule_head);
     while (stack_head != NULL)
         remove_stack(stack_head);
     empty_history();

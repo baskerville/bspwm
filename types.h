@@ -240,31 +240,21 @@ struct stacking_list_t {
 };
 
 typedef struct {
-    char name[SMALEN];
-} rule_cause_t;
-
-typedef struct {
+    char desktop_desc[MAXLEN];
+    char monitor_desc[MAXLEN];
     bool floating;
+    bool transient;
     bool fullscreen;
     bool locked;
     bool sticky;
-    bool follow;
-    bool focus;
-    bool frame;
     bool private;
+    bool frame;
     bool center;
-    bool unmanage;
-    char desc[MAXLEN];
-} rule_effect_t;
-
-typedef struct rule_t rule_t;
-struct rule_t {
-    bool one_shot;
-    rule_cause_t cause;
-    rule_effect_t effect;
-    rule_t *prev;
-    rule_t *next;
-};
+    bool lower;
+    bool follow;
+    bool manage;
+    bool focus;
+} rule_consequence_t;
 
 typedef struct {
     xcb_point_t position;

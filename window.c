@@ -48,10 +48,13 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    bool floating = false, fullscreen = false, locked = false, sticky = false, follow = false, transient = false, takes_focus = true, frame = false, private = false, center = false, manage = true;
-    handle_rules(win, &m, &d, &floating, &fullscreen, &locked, &sticky, &follow, &transient, &takes_focus, &frame, &private, &center, &manage);
+    rule_consequence_t *csq = make_rule_conquence();
+    handle_rules(win, &m, &d, csq);
 
-    if (!manage) {
+    if (csq->lower)
+        window_lower(win);
+
+    if (!csq->manage) {
         disable_floating_atom(win);
         window_show(win);
         return;
@@ -62,9 +65,9 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     client_t *c = make_client(win);
     update_floating_rectangle(c);
     translate_client(monitor_from_client(c), m, c);
-    if (center)
+    if (csq->center)
         window_center(m, c);
-    c->frame = frame;
+    c->frame = csq->frame;
 
     xcb_icccm_get_wm_class_reply_t reply;
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
@@ -72,9 +75,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         xcb_icccm_get_wm_class_reply_wipe(&reply);
     }
 
-    if (c->transient)
-        floating = true;
-    floating = floating || d->floating;
+    csq->floating = csq->floating || d->floating;
 
     node_t *n = make_node();
     n->client = c;
@@ -82,24 +83,24 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     insert_node(m, d, n, d->focus);
 
     disable_floating_atom(c->window);
-    set_floating(n, floating);
-    set_locked(m, d, n, locked);
-    set_sticky(m, d, n, sticky);
-    set_private(m, d, n, private);
+    set_floating(n, csq->floating);
+    set_locked(m, d, n, csq->locked);
+    set_sticky(m, d, n, csq->sticky);
+    set_private(m, d, n, csq->private);
 
     if (d->focus != NULL && d->focus->client->fullscreen)
         set_fullscreen(d->focus, false);
 
-    set_fullscreen(n, fullscreen);
-    c->transient = transient;
+    set_fullscreen(n, csq->fullscreen);
+    c->transient = csq->transient;
 
     arrange(m, d);
 
-    bool give_focus = (takes_focus && (d == mon->desk || follow));
+    bool give_focus = (csq->focus && (d == mon->desk || csq->follow));
 
     if (give_focus)
         focus_node(m, d, n);
-    else if (takes_focus)
+    else if (csq->focus)
         pseudo_focus(d, n);
     else
         stack(n, STACK_ABOVE);
@@ -118,6 +119,7 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (give_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
+    free(csq);
     num_clients++;
     ewmh_set_wm_desktop(n, d);
     ewmh_update_client_list();

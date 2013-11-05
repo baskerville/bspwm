@@ -31,7 +31,6 @@
 #include "monitor.h"
 #include "window.h"
 #include "query.h"
-#include "settings.h"
 #include "stack.h"
 #include "tree.h"
 #include "restore.h"

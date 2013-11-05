@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 11/03/2013
+.\"      Date: 11/05/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.6
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/03/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
+.TH "BSPWM" "1" "11/05/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -834,42 +834,6 @@ Pass the pointer root coordinates for the current pointer action\&.
 Terminate the current pointer action\&.
 .RE
 .RE
-.SS "Rule"
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBGeneral Syntax\fR
-.RS 4
-.sp
-rule \fIOPTIONS\fR
-.RE
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBOptions\fR
-.RS 4
-.PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name> [\-d \fIDESKTOP_SEL\fR [\-\-follow]] [\-\-floating] [\-\-fullscreen] [\-\-locked] [\-\-sticky] [\-\-focus] [\-\-frame] [\-\-private] [\-\-center] [\-\-unmanage] [\-\-one\-shot]
-.RS 4
-Create a new rule\&.
-.RE
-.PP
-\fB\-r\fR, \fB\-\-remove\fR <name>|^<n>|tail|head\&...
-.RS 4
-Remove the rules with the given names or indexes\&.
-.RE
-.PP
-\fB\-l\fR, \fB\-\-list\fR [<name>]
-.RS 4
-List the rules\&.
-.RE
-.RE
 .SS "Config"
 .sp
 .it 1 an-trap
@@ -906,6 +870,28 @@ Colors are either X color names or \fI#RRGGBB\fR, booleans are \fItrue\fR or \fI
 .sp
 All the boolean settings are \fIfalse\fR by default\&.
 .SS "Global Settings"
+.PP
+\fIrule_command\fR
+.RS 4
+External command used to retrieve rule consequences\&. It must contain at least one integer format directive which will be replaced by the ID of the window being processed\&. The output of that command must have the following format:
+\fBkey1=value1 key2=value2 \&...\fR, where
+\fBkeyN\fR
+is one of
+\fIfloating\fR,
+\fIfullscreen\fR,
+\fIlocked\fR,
+\fIsticky\fR,
+\fIprivate\fR,
+\fIframe\fR,
+\fIcenter\fR,
+\fIlower\fR,
+\fIfollow\fR,
+\fImanage\fR,
+\fIfocus\fR,
+\fIdesktop\fR
+or
+\fImonitor\fR\&.
+.RE
 .PP
 \fIfocused_border_color\fR
 .RS 4

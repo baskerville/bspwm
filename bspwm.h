@@ -53,8 +53,6 @@ history_t *history_tail;
 history_t *history_needle;
 stacking_list_t *stack_head;
 stacking_list_t *stack_tail;
-rule_t *rule_head;
-rule_t *rule_tail;
 
 pointer_state_t *frozen_pointer;
 xcb_window_t motion_recorder;

@@ -1,0 +1,42 @@
+Synopsis
+--------
+
+Server
+~~~~~~
+
+*ruld* [*-h*|*-p* 'PORT']
+
+Client
+~~~~~~
+
+*rulc* [*-h*|*-p* 'PORT'|*-a*|*-r*|*-l*|*-t*|*-q*] 'DATA' ...
+
+Options
+-------
+
+Shared
+~~~~~~
+
+*-h*::
+    Print the synopsis and exit.
+
+*-p* 'PORT'::
+    Set the socket port.
+
+Client
+~~~~~~
+
+*-a* 'HYPOT' 'CONSEQ' ['[duration=DURATION][,delay=DELAY]']::
+    Create a new rule. 'HYPOT' is a Lua expression that represent the rule hypothesis and involves the following strings: 'class', 'instance', 'title', 'type' and 'state'.
+
+*-r* 'STRING'|head|tail::
+    Remove the rules containing 'STRING' in their hypothesis or remove the first or last rule.
+
+*-l*::
+    List the rules.
+
+*-t* 'CLASS' 'INSTANCE' 'TITLE' 'TYPE' 'STATE'::
+    Test the rules for the given window informations.
+
+*-q*::
+    Kill the server.

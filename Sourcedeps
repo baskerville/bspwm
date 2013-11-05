@@ -1,16 +1,16 @@
 bspc.o: bspc.c helpers.h common.h
 bspwm.o: bspwm.c types.h helpers.h desktop.h monitor.h settings.h \
- messages.h events.h common.h tree.h window.h history.h stack.h rule.h \
- ewmh.h bspwm.h
+ messages.h events.h common.h tree.h window.h history.h stack.h ewmh.h \
+ bspwm.h
 desktop.o: desktop.c bspwm.h types.h helpers.h ewmh.h history.h monitor.h \
  query.h tree.h window.h desktop.h
 events.o: events.c bspwm.h types.h helpers.h ewmh.h monitor.h query.h \
  settings.h tree.h window.h events.h
 ewmh.o: ewmh.c bspwm.h types.h helpers.h settings.h tree.h ewmh.h
 helpers.o: helpers.c bspwm.h types.h helpers.h
-history.o: history.c bspwm.h types.h helpers.h tree.h query.h
+history.o: history.c bspwm.h types.h helpers.h query.h
 messages.o: messages.c bspwm.h types.h helpers.h desktop.h ewmh.h \
- history.h monitor.h pointer.h query.h restore.h rule.h settings.h tree.h \
+ history.h monitor.h pointer.h query.h restore.h settings.h tree.h \
  window.h messages.h
 monitor.o: monitor.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
  query.h settings.h tree.h window.h monitor.h
@@ -19,9 +19,9 @@ pointer.o: pointer.c bspwm.h types.h helpers.h query.h settings.h stack.h \
 query.o: query.c bspwm.h types.h helpers.h desktop.h history.h messages.h \
  monitor.h tree.h query.h
 restore.o: restore.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
- monitor.h window.h query.h settings.h stack.h tree.h restore.h
+ monitor.h window.h query.h stack.h tree.h restore.h
 rule.o: rule.c bspwm.h types.h helpers.h ewmh.h window.h messages.h \
- query.h rule.h
+ settings.h query.h rule.h
 settings.o: settings.c bspwm.h types.h helpers.h settings.h
 stack.o: stack.c bspwm.h types.h helpers.h window.h stack.h
 tree.o: tree.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \

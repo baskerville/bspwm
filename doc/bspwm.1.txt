@@ -512,26 +512,6 @@ Options
 *-u*, *--ungrab*::
     Terminate the current pointer action.
 
-Rule
-~~~~
-
-General Syntax
-^^^^^^^^^^^^^^
-
-rule 'OPTIONS'
-
-Options
-^^^^^^^
-
-*-a*, *--add* <class_name>|<instance_name> [-d 'DESKTOP_SEL' [--follow]] [--floating] [--fullscreen] [--locked] [--sticky] [--focus] [--frame] [--private] [--center] [--unmanage] [--one-shot]::
-    Create a new rule.
-
-*-r*, *--remove* <name>|^<n>|tail|head...::
-    Remove the rules with the given names or indexes.
-
-*-l*, *--list* [<name>]::
-    List the rules.
-
 Config
 ~~~~~~
 
@@ -558,6 +538,9 @@ All the boolean settings are 'false' by default.
 
 Global Settings
 ~~~~~~~~~~~~~~~
+
+'rule_command'::
+    External command used to retrieve rule consequences. It must contain at least one integer format directive which will be replaced by the ID of the window being processed. The output of that command must have the following format: *key1=value1 key2=value2 ...*, where *keyN* is one of 'floating', 'fullscreen', 'locked', 'sticky', 'private', 'frame', 'center', 'lower', 'follow', 'manage', 'focus', 'desktop' or 'monitor'.
 
 'focused_border_color'::
     Color of the border of a focused window of a focused monitor.
