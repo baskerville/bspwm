@@ -39,6 +39,10 @@ for opt, optarg, optind, longind in p.getopt(arg, short, long) do
     data_idx = optind
 end
 
+if not cmd then
+    os.exit(1)
+end
+
 local msg = cmd
 if cmd == "test" then
     msg = string.format("%s {class=%q, instance=%q, title=%q, type=%q, state=%q}", msg, arg[data_idx], arg[data_idx+1], arg[data_idx+2], arg[data_idx+3], arg[data_idx+4])
