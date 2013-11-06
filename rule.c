@@ -55,6 +55,9 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequen
         csq->transient = csq->floating = true;
     char cmd[MAXLEN];
     snprintf(cmd, sizeof(cmd), rule_command, win);
+
+    pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock( &mutex1 );
     FILE *results = popen(cmd, "r");
     if (results == NULL) {
         warn("Failed to run rule command: '%s'.", cmd);
@@ -113,4 +116,6 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequen
         *m = mon;
         *d = mon->desk;
     }
+    pclose(results);
+    pthread_mutex_unlock(&mutex1);
 }
