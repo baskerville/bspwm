@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 11/05/2013
+.\"      Date: 11/07/2013
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.6
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/05/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
+.TH "BSPWM" "1" "11/07/2013" "Bspwm 0\&.8\&.6" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,7 +31,7 @@
 bspwm \- Binary space partitioning window manager
 .SH "SYNOPSIS"
 .sp
-\fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-c\fR \fICONFIG_PATH\fR|\fB\-s\fR \fIPANEL_FIFO\fR|\fB\-p\fR \fIPANEL_PREFIX\fR]
+\fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-c\fR \fICONFIG_PATH\fR]
 .sp
 \fBbspc\fR \fICOMMAND\fR [\fIARGUMENTS\fR]
 .SH "DESCRIPTION"
@@ -54,18 +54,6 @@ Print the version and exit\&.
 \fB\-c\fR \fICONFIG_PATH\fR
 .RS 4
 Use the given configuration file\&.
-.RE
-.PP
-\fB\-s\fR \fIPANEL_FIFO\fR
-.RS 4
-Write the internal state to the given FIFO\&.
-.RE
-.PP
-\fB\-p\fR \fIPANEL_PREFIX\fR
-.RS 4
-Start every line written to the
-\fIPANEL_FIFO\fR
-with the given prefix\&.
 .RE
 .SH "CONFIGURATION"
 .sp
@@ -783,11 +771,6 @@ control \fIOPTIONS\fR
 Manage all the unmanaged windows remaining from a previous session\&.
 .RE
 .PP
-\fB\-\-put\-status\fR
-.RS 4
-Write the current internal state to the panel FIFO\&.
-.RE
-.PP
 \fB\-\-toggle\-visibility\fR
 .RS 4
 Toggle the visibility of all the windows\&.
@@ -796,6 +779,11 @@ Toggle the visibility of all the windows\&.
 \fB\-\-record\-history\fR on|off
 .RS 4
 Enable or disable the recording of window focus history\&.
+.RE
+.PP
+\fB\-\-subscribe\fR
+.RS 4
+Continuously print status informations on standard output\&.
 .RE
 .RE
 .SS "Pointer"
@@ -891,6 +879,11 @@ is one of
 \fIdesktop\fR
 or
 \fImonitor\fR\&.
+.RE
+.PP
+\fIstatus_prefix\fR
+.RS 4
+Prefix prepended to each of the status lines\&.
 .RE
 .PP
 \fIfocused_border_color\fR
@@ -1061,11 +1054,9 @@ Size of the gap that separates windows\&.
 .RS 4
 Window border width\&.
 .RE
-.SH "INTERNAL STATE FORMAT"
+.SH "STATUS FORMAT"
 .sp
-If a \fIPANEL_FIFO\fR is specified, \fBbspwm\fR will write informations regarding its current state to it\&.
-.sp
-Those informations are composed of items separated by colons\&.
+Status informations are composed of items separated by colons\&.
 .sp
 Each item as the form \fI<type><value>\fR where \fI<type>\fR is the first character of the item\&.
 .PP

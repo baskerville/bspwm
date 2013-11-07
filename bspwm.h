@@ -40,8 +40,6 @@ unsigned int desktop_uid;
 xcb_screen_t *screen;
 xcb_window_t root;
 uint8_t root_depth;
-FILE *status_fifo;
-char *status_prefix;
 char config_path[MAXLEN];
 
 monitor_t *mon;
@@ -53,6 +51,8 @@ history_t *history_tail;
 history_t *history_needle;
 stacking_list_t *stack_head;
 stacking_list_t *stack_tail;
+subscriber_list_t *subscribe_head;
+subscriber_list_t *subscribe_tail;
 
 pointer_state_t *frozen_pointer;
 xcb_window_t motion_recorder;

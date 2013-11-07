@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ctype.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,15 +31,16 @@
 #endif
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <signal.h>
 #include <unistd.h>
 #include "types.h"
 #include "desktop.h"
 #include "monitor.h"
 #include "settings.h"
 #include "messages.h"
+#include "subscribe.h"
 #include "events.h"
 #include "common.h"
-#include "tree.h"
 #include "window.h"
 #include "history.h"
 #include "stack.h"
@@ -52,9 +51,7 @@ int main(int argc, char *argv[])
 {
     fd_set descriptors;
     char socket_path[MAXLEN];
-    char *fifo_path = NULL;
     config_path[0] = '\0';
-    status_prefix = NULL;
     int sock_fd, ret_fd, dpy_fd, sel, n;
     struct sockaddr_un sock_address;
     size_t rsp_len = 0;
@@ -63,10 +60,10 @@ int main(int argc, char *argv[])
     xcb_generic_event_t *event;
     char opt;
 
-    while ((opt = getopt(argc, argv, "hvc:s:p:")) != -1) {
+    while ((opt = getopt(argc, argv, "hvc:")) != -1) {
         switch (opt) {
             case 'h':
-                printf(WM_NAME " [-h|-v|-c CONFIG_PATH|-s PANEL_FIFO|-p PANEL_PREFIX]\n");
+                printf(WM_NAME " [-h|-v|-c CONFIG_PATH]\n");
                 exit(EXIT_SUCCESS);
                 break;
             case 'v':
@@ -75,12 +72,6 @@ int main(int argc, char *argv[])
                 break;
             case 'c':
                 snprintf(config_path, sizeof(config_path), "%s", optarg);
-                break;
-            case 's':
-                fifo_path = optarg;
-                break;
-            case 'p':
-                status_prefix = optarg;
                 break;
         }
     }
@@ -122,14 +113,7 @@ int main(int argc, char *argv[])
 
     sel = MAX(sock_fd, dpy_fd) + 1;
 
-    if (fifo_path != NULL) {
-        int fifo_fd = open(fifo_path, O_RDWR | O_NONBLOCK);
-        if (fifo_fd != -1)
-            status_fifo = fdopen(fifo_fd, "w");
-        else
-            warn("Couldn't open status fifo.\n");
-    }
-
+    signal(SIGPIPE, SIG_IGN);
     load_settings();
     run_config();
     running = true;
@@ -156,8 +140,12 @@ int main(int argc, char *argv[])
                         rsp[0] = MESSAGE_FAILURE;
                         rsp_len = 1;
                     }
-                    send(ret_fd, rsp, rsp_len, 0);
-                    close(ret_fd);
+                    if (rsp_len == 1 && rsp[0] == MESSAGE_SUBSCRIBE) {
+                        add_subscriber(ret_fd);
+                    } else {
+                        send(ret_fd, rsp, rsp_len, 0);
+                        close(ret_fd);
+                    }
                     rsp[0] = '\0';
                 }
             }
@@ -177,8 +165,6 @@ int main(int argc, char *argv[])
 
     cleanup();
     close(sock_fd);
-    if (status_fifo != NULL)
-        fclose(status_fifo);
     xcb_ewmh_connection_wipe(ewmh);
     xcb_destroy_window(dpy, motion_recorder);
     free(ewmh);
@@ -194,7 +180,7 @@ void init(void)
     mon = mon_head = mon_tail = pri_mon = NULL;
     history_head = history_tail = history_needle = NULL;
     stack_head = stack_tail = NULL;
-    status_fifo = NULL;
+    subscribe_head = subscribe_tail = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
     visible = auto_raise = sticky_still = record_history = true;
     randr_base = 0;
@@ -296,30 +282,18 @@ void cleanup(void)
         remove_monitor(mon_head);
     while (stack_head != NULL)
         remove_stack(stack_head);
+    while (subscribe_head != NULL)
+        remove_subscriber(subscribe_head);
     empty_history();
     free(frozen_pointer);
 }
 
 void put_status(void)
 {
-    if (status_fifo == NULL)
-        return;
-    if (status_prefix != NULL)
-        fprintf(status_fifo, "%s", status_prefix);
-    bool urgent = false;
-    for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-        fprintf(status_fifo, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
-        for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-            for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
-                urgent |= n->client->urgent;
-            char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
-            if (m->desk == d)
-                c = toupper(c);
-            fprintf(status_fifo, "%c%s:", c, d->name);
-        }
+    subscriber_list_t *sb = subscribe_head;
+    while (sb != NULL) {
+        subscriber_list_t *next = sb->next;
+        feed_subscriber(sb);
+        sb = next;
     }
-    if (mon != NULL && mon->desk != NULL)
-        fprintf(status_fifo, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
-    fprintf(status_fifo, "\n");
-    fflush(status_fifo);
 }

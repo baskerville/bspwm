@@ -34,10 +34,9 @@
 
 int main(int argc, char *argv[])
 {
-    int sock_fd;
+    int fd;
     struct sockaddr_un sock_address;
-    char msg[BUFSIZ];
-    char rsp[BUFSIZ];
+    char msg[BUFSIZ], rsp[BUFSIZ];
 
     if (argc < 2)
         err("No arguments given.\n");
@@ -55,31 +54,26 @@ int main(int argc, char *argv[])
         msg_len += n;
     }
 
-    if ((sock_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+    if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
         err("Failed to create the socket.\n");
 
-    if (connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
+    if (connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
         err("Failed to connect to the socket.\n");
 
-    if (send(sock_fd, msg, msg_len, 0) == -1)
+    if (send(fd, msg, msg_len, 0) == -1)
         err("Failed to send the data.\n");
 
-    int ret = EXIT_SUCCESS;
-
-    int n = recv(sock_fd, rsp, sizeof(rsp), 0);
-    if (n == -1) {
-        err("Failed to get the response.\n");
-    } else if (n > 0) {
-        if (n == 1 && rsp[0] == MESSAGE_FAILURE) {
+    int ret = EXIT_SUCCESS, nb;
+    while ((nb = recv(fd, rsp, sizeof(rsp), 0)) > 0) {
+        if (nb == 1 && rsp[0] == MESSAGE_FAILURE) {
             ret = EXIT_FAILURE;
         } else {
-            rsp[n] = '\0';
+            rsp[nb] = '\0';
             printf("%s\n", rsp);
+            fflush(stdout);
         }
     }
 
-    if (sock_fd)
-        close(sock_fd);
-
+    close(fd);
     return ret;
 }

@@ -31,6 +31,8 @@
 #define CAT_CHR  '.'
 #define EQL_TOK  "="
 
+#define MESSAGE_SUBSCRIBE  '\x01'
+
 bool handle_message(char *msg, int msg_len, char *rsp);
 bool process_message(char **args, int num, char *rsp);
 bool cmd_window(char **args, int num);
@@ -39,7 +41,7 @@ bool cmd_monitor(char **args, int num);
 bool cmd_query(char **args, int num, char *rsp);
 bool cmd_pointer(char **args, int num);
 bool cmd_restore(char **args, int num);
-bool cmd_control(char **args, int num);
+bool cmd_control(char **args, int num, char *rsp);
 bool cmd_config(char **args, int num, char *rsp);
 bool cmd_quit(char **args, int num);
 bool set_setting(coordinates_t loc, char *name, char *value);

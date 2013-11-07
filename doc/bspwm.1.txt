@@ -13,7 +13,7 @@ bspwm - Binary space partitioning window manager
 Synopsis
 --------
 
-*bspwm* [*-h*|*-v*|*-c* 'CONFIG_PATH'|*-s* 'PANEL_FIFO'|*-p* 'PANEL_PREFIX']
+*bspwm* [*-h*|*-v*|*-c* 'CONFIG_PATH']
 
 *bspc* 'COMMAND' ['ARGUMENTS']
 
@@ -36,13 +36,6 @@ Options
 
 *-c* 'CONFIG_PATH'::
     Use the given configuration file.
-
-*-s* 'PANEL_FIFO'::
-    Write the internal state to the given FIFO.
-
-*-p* 'PANEL_PREFIX'::
-    Start every line written to the 'PANEL_FIFO' with the given prefix.
-
 
 Configuration
 -------------
@@ -483,14 +476,14 @@ Options
 *--adopt-orphans*::
     Manage all the unmanaged windows remaining from a previous session.
 
-*--put-status*::
-    Write the current internal state to the panel FIFO.
-
 *--toggle-visibility*::
     Toggle the visibility of all the windows.
 
 *--record-history* on|off::
     Enable or disable the recording of window focus history.
+
+*--subscribe*::
+    Continuously print status informations on standard output.
 
 Pointer
 ~~~~~~~
@@ -541,6 +534,9 @@ Global Settings
 
 'rule_command'::
     External command used to retrieve rule consequences. It must contain at least one integer format directive which will be replaced by the ID of the window being processed. The output of that command must have the following format: *key1=value1 key2=value2 ...*, where *keyN* is one of 'floating', 'fullscreen', 'locked', 'sticky', 'private', 'frame', 'center', 'lower', 'follow', 'manage', 'focus', 'desktop' or 'monitor'.
+
+'status_prefix'::
+    Prefix prepended to each of the status lines.
 
 'focused_border_color'::
     Color of the border of a focused window of a focused monitor.
@@ -645,12 +641,10 @@ Desktop Settings
     Window border width.
 
 
-Internal State Format
----------------------
+Status Format
+-------------
 
-If a 'PANEL_FIFO' is specified, *bspwm* will write informations regarding its current state to it.
-
-Those informations are composed of items separated by colons.
+Status informations are composed of items separated by colons.
 
 Each item as the form '<type><value>' where '<type>' is the first character of the item.
 

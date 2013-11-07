@@ -88,7 +88,7 @@ bool process_message(char **args, int num, char *rsp)
     } else if (streq("restore", *args)) {
         return cmd_restore(++args, --num);
     } else if (streq("control", *args)) {
-        return cmd_control(++args, --num);
+        return cmd_control(++args, --num, rsp);
     } else if (streq("pointer", *args)) {
         return cmd_pointer(++args, --num);
     } else if (streq("config", *args)) {
@@ -690,7 +690,7 @@ bool cmd_restore(char **args, int num)
     return true;
 }
 
-bool cmd_control(char **args, int num)
+bool cmd_control(char **args, int num, char *rsp)
 {
     if (num < 1)
         return false;
@@ -701,6 +701,8 @@ bool cmd_control(char **args, int num)
             put_status();
         } else if (streq("--toggle-visibility", *args)) {
             toggle_visibility();
+        } else if (streq("--subscribe", *args)) {
+            snprintf(rsp, BUFSIZ, "%c", MESSAGE_SUBSCRIBE);
         } else if (streq("--record-history", *args)) {
             num--, args++;
             if (num < 1)
@@ -797,8 +799,12 @@ bool set_setting(coordinates_t loc, char *name, char *value)
     MONSET(bottom_padding)
     MONSET(left_padding)
 #undef MONSET
-    } else if (streq("rule_command", name)) {
-        return snprintf(rule_command, sizeof(rule_command), "%s", value) >= 0;
+#define SETSTR(s) \
+    } else if (streq(#s, name)) { \
+        return snprintf(s, sizeof(s), "%s", value) >= 0;
+    SETSTR(rule_command)
+    SETSTR(status_prefix)
+#undef SETSTR
     } else if (streq("split_ratio", name)) {
         double r;
         if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1)
@@ -907,6 +913,8 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
             snprintf(rsp, BUFSIZ, "%u", loc.desktop->border_width);
     else if (streq("rule_command", name))
         snprintf(rsp, BUFSIZ, "%s", rule_command);
+    else if (streq("status_prefix", name))
+        snprintf(rsp, BUFSIZ, "%s", status_prefix);
 #define MONGET(k) \
     else if (streq(#k, name)) \
         if (loc.monitor == NULL) \

@@ -47,6 +47,7 @@ void run_config(void)
 void load_settings(void)
 {
     snprintf(rule_command, sizeof(rule_command), "%s", RULE_COMMAND);
+    snprintf(status_prefix, sizeof(status_prefix), "%s", STATUS_PREFIX);
 
     snprintf(normal_border_color, sizeof(normal_border_color), "%s", NORMAL_BORDER_COLOR);
     snprintf(focused_border_color, sizeof(focused_border_color), "%s", FOCUSED_BORDER_COLOR);

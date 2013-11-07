@@ -34,9 +34,6 @@ if [ $? -ne 0 ]; then
 fi
 
 export BSPWM_SOCKET=${state_path}/bspwm-socket
-export PANEL_FIFO=${state_path}/panel-fifo
-
-mkfifo "${PANEL_FIFO}"
 
 # Trap: make sure everything started in ~/.config/bspwm/autostart is
 # signalled when this script exits or dies. Also clean up $state_path.
@@ -66,4 +63,4 @@ sxhkdrc_path=${XDG_CONFIG_HOME:-"$HOME/.config"}/bspwm/sxhkdrc
 [ -r "${sxhkdrc_path}" ] && sxhkd -c "${sxhkdrc_path}" &
 
 # Launch bspwm:
-bspwm -s "${PANEL_FIFO}" -p W
+bspwm

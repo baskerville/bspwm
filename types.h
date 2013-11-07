@@ -239,6 +239,14 @@ struct stacking_list_t {
     stacking_list_t *next;
 };
 
+typedef struct subscriber_list_t subscriber_list_t;
+struct subscriber_list_t {
+    int fd;
+    FILE *stream;
+    subscriber_list_t *prev;
+    subscriber_list_t *next;
+};
+
 typedef struct {
     char desktop_desc[MAXLEN];
     char monitor_desc[MAXLEN];
