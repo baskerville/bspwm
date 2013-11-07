@@ -109,6 +109,7 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequen
             value = strtok(NULL, CSQ_BLK);
         }
     }
+    pclose(results);
     if (csq->sticky) {
         *m = mon;
         *d = mon->desk;
