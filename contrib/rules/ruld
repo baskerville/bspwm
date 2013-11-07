@@ -9,14 +9,7 @@ local long = {
     {"port", "required", 'p'},
 }
 
-local rules = {
-    {'type:find("toolbar") or type:find("utility")', 'focus=off'},
-    {'type:find("dialog")', 'floating=on'},
-    {'type:find("dock") or type:find("desktop") or type:find("notification")', 'manage=off'},
-    {'type:find("desktop")', 'lower=on'},
-    {'state:find("fullscreen")', 'fullscreen=on'},
-    {'state:find("sticky")', 'sticky=on'}
-}
+local rules = {}
 
 for opt, optarg, optind, longind in p.getopt(arg, short, long) do
     if opt == '?' then

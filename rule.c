@@ -42,6 +42,39 @@ rule_consequence_t *make_rule_conquence(void)
 
 void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequence_t *csq)
 {
+
+    xcb_ewmh_get_atoms_reply_t win_type;
+
+    if (xcb_ewmh_get_wm_window_type_reply(ewmh, xcb_ewmh_get_wm_window_type(ewmh, win), &win_type, NULL) == 1) {
+        for (unsigned int i = 0; i < win_type.atoms_len; i++) {
+            xcb_atom_t a = win_type.atoms[i];
+            if (a == ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR
+                    || a == ewmh->_NET_WM_WINDOW_TYPE_UTILITY) {
+                csq->focus = false;
+            } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
+                csq->floating = true;
+            } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK || a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP || a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {
+                csq->manage = false;
+                if (a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
+                    window_lower(win);
+            }
+        }
+        xcb_ewmh_get_atoms_reply_wipe(&win_type);
+    }
+
+    xcb_ewmh_get_atoms_reply_t win_state;
+
+    if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &win_state, NULL) == 1) {
+        for (unsigned int i = 0; i < win_state.atoms_len; i++) {
+            xcb_atom_t a = win_state.atoms[i];
+            if (a == ewmh->_NET_WM_STATE_FULLSCREEN)
+                csq->fullscreen = true;
+            else if (a == ewmh->_NET_WM_STATE_STICKY)
+                csq->sticky = true;
+        }
+        xcb_ewmh_get_atoms_reply_wipe(&win_state);
+    }
+
     xcb_size_hints_t size_hints;
     if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
         if (size_hints.min_width > 0 && size_hints.min_height > 0
@@ -49,10 +82,12 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequen
                 && size_hints.min_height == size_hints.max_height)
             csq->floating = true;
     }
+
     xcb_window_t transient_for = XCB_NONE;
     xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
     if (transient_for != XCB_NONE)
         csq->transient = csq->floating = true;
+
     char cmd[MAXLEN];
     snprintf(cmd, sizeof(cmd), rule_command, win);
     FILE *results = popen(cmd, "r");
