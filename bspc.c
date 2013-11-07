@@ -29,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "helpers.h"
 #include "common.h"
 
@@ -68,7 +69,10 @@ int main(int argc, char *argv[])
         if (nb == 1 && rsp[0] == MESSAGE_FAILURE) {
             ret = EXIT_FAILURE;
         } else {
-            rsp[nb] = '\0';
+            int end = MIN(nb, (int) sizeof(rsp) - 1);
+            rsp[end--] = '\0';
+            while (end >= 0 && isspace(rsp[end]))
+                rsp[end--] = '\0';
             printf("%s\n", rsp);
             fflush(stdout);
         }

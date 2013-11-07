@@ -134,8 +134,6 @@ int main(int argc, char *argv[])
                     msg[n] = '\0';
                     if (handle_message(msg, n, rsp)) {
                         rsp_len = strlen(rsp);
-                        if (rsp[rsp_len - 1] == '\n')
-                            rsp[--rsp_len] = '\0';
                     } else {
                         rsp[0] = MESSAGE_FAILURE;
                         rsp_len = 1;

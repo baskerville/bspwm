@@ -71,6 +71,7 @@ void feed_subscriber(subscriber_list_t *sb)
     }
     if (mon != NULL && mon->desk != NULL)
         fprintf(sb->stream, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
+    fprintf(sb->stream, "%s", "\n");
     int ret = fflush(sb->stream);
     if (ret != 0)
         remove_subscriber(sb);
