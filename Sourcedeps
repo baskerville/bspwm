@@ -1,7 +1,7 @@
 bspc.o: bspc.c helpers.h common.h
 bspwm.o: bspwm.c types.h helpers.h desktop.h monitor.h settings.h \
- messages.h events.h common.h tree.h window.h history.h stack.h ewmh.h \
- bspwm.h
+ messages.h subscribe.h events.h common.h window.h history.h stack.h \
+ ewmh.h bspwm.h
 desktop.o: desktop.c bspwm.h types.h helpers.h ewmh.h history.h monitor.h \
  query.h tree.h window.h desktop.h
 events.o: events.c bspwm.h types.h helpers.h ewmh.h monitor.h query.h \
@@ -24,6 +24,8 @@ rule.o: rule.c bspwm.h types.h helpers.h ewmh.h window.h messages.h \
  settings.h query.h rule.h
 settings.o: settings.c bspwm.h types.h helpers.h settings.h
 stack.o: stack.c bspwm.h types.h helpers.h window.h stack.h
+subscribe.o: subscribe.c bspwm.h types.h helpers.h tree.h settings.h \
+ subscribe.h
 tree.o: tree.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
  monitor.h query.h settings.h stack.h window.h tree.h
 window.o: window.c bspwm.h types.h helpers.h ewmh.h monitor.h query.h \
