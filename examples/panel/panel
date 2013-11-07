@@ -7,8 +7,6 @@ fi
 
 trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
 
-sleep 0.1
-
 flavor=${1:-bar}
 
 [ -e "$PANEL_FIFO" ] && rm "$PANEL_FIFO"
