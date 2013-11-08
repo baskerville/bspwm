@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "window.h"
@@ -141,16 +142,20 @@ bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
     if (pid == 0) {
         if (dpy != NULL)
             close(xcb_get_file_descriptor(dpy));
-        dup2(fds[1], 1);
-        close(fds[0]);
-        char wid[SMALEN];
-        snprintf(wid, sizeof(wid), "%i", win);
-        execl(rule_command, rule_command, wid, NULL);
-        err("Couldn't spawn rule command.\n");
+        if (fork() == 0) {
+            dup2(fds[1], 1);
+            close(fds[0]);
+            char wid[SMALEN];
+            snprintf(wid, sizeof(wid), "%i", win);
+            execl(rule_command, rule_command, wid, NULL);
+            err("Couldn't spawn rule command.\n");
+        }
+        exit(EXIT_SUCCESS);
     } else if (pid > 0) {
         close(fds[1]);
         pending_rule_t *pr = make_pending_rule(fds[0], win, csq);
         add_pending_rule(pr);
+        wait(NULL);
     }
     return (pid != -1);
 }
