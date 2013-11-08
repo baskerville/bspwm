@@ -264,6 +264,15 @@ typedef struct {
     bool focus;
 } rule_consequence_t;
 
+typedef struct pending_rule_t pending_rule_t;
+struct pending_rule_t {
+    int fd;
+    xcb_window_t win;
+    rule_consequence_t *csq;
+    pending_rule_t *prev;
+    pending_rule_t *next;
+};
+
 typedef struct {
     xcb_point_t position;
     pointer_action_t action;

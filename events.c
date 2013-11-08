@@ -79,7 +79,7 @@ void map_request(xcb_generic_event_t *evt)
 
     PRINTF("map request %X\n", e->window);
 
-    manage_window(mon, mon->desk, e->window);
+    schedule_window(e->window);
 }
 
 void configure_request(xcb_generic_event_t *evt)
@@ -183,11 +183,7 @@ void destroy_notify(xcb_generic_event_t *evt)
 
     PRINTF("destroy notify %X\n", e->window);
 
-    coordinates_t loc;
-    if (locate_window(e->window, &loc)) {
-        remove_node(loc.monitor, loc.desktop, loc.node);
-        arrange(loc.monitor, loc.desktop);
-    }
+    unmanage_window(e->window);
 }
 
 void unmap_notify(xcb_generic_event_t *evt)
@@ -196,11 +192,7 @@ void unmap_notify(xcb_generic_event_t *evt)
 
     PRINTF("unmap notify %X\n", e->window);
 
-    coordinates_t loc;
-    if (locate_window(e->window, &loc)) {
-        remove_node(loc.monitor, loc.desktop, loc.node);
-        arrange(loc.monitor, loc.desktop);
-    }
+    unmanage_window(e->window);
 }
 
 void property_notify(xcb_generic_event_t *evt)

@@ -30,7 +30,7 @@
 #define WM_NAME             "bspwm"
 #define CONFIG_NAME         WM_NAME "rc"
 #define CONFIG_HOME_ENV     "XDG_CONFIG_HOME"
-#define RULE_COMMAND        "true"
+#define RULE_COMMAND        "/bin/true"
 #define STATUS_PREFIX       "W"
 
 #define FOCUSED_BORDER_COLOR          "#7E7F89"

@@ -53,6 +53,8 @@ stacking_list_t *stack_head;
 stacking_list_t *stack_tail;
 subscriber_list_t *subscribe_head;
 subscriber_list_t *subscribe_tail;
+pending_rule_t *pending_rule_head;
+pending_rule_t *pending_rule_tail;
 
 pointer_state_t *frozen_pointer;
 xcb_window_t motion_recorder;

@@ -45,6 +45,7 @@
 #include "history.h"
 #include "stack.h"
 #include "ewmh.h"
+#include "rule.h"
 #include "bspwm.h"
 
 int main(int argc, char *argv[])
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
     fd_set descriptors;
     char socket_path[MAXLEN];
     config_path[0] = '\0';
-    int sock_fd, ret_fd, dpy_fd, sel, n;
+    int sock_fd, cli_fd, dpy_fd, max_fd, n;
     struct sockaddr_un sock_address;
     size_t rsp_len = 0;
     char msg[BUFSIZ] = {0};
@@ -111,8 +112,6 @@ int main(int argc, char *argv[])
     if (listen(sock_fd, SOMAXCONN) == -1)
         err("Couldn't listen to the socket.\n");
 
-    sel = MAX(sock_fd, dpy_fd) + 1;
-
     signal(SIGPIPE, SIG_IGN);
     load_settings();
     run_config();
@@ -125,12 +124,28 @@ int main(int argc, char *argv[])
         FD_ZERO(&descriptors);
         FD_SET(sock_fd, &descriptors);
         FD_SET(dpy_fd, &descriptors);
+        max_fd = MAX(sock_fd, dpy_fd);
+        for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
+            FD_SET(pr->fd, &descriptors);
+            if (pr->fd > max_fd)
+                max_fd = pr->fd;
+        }
 
-        if (select(sel, &descriptors, NULL, NULL, NULL) > 0) {
+        if (select(max_fd + 1, &descriptors, NULL, NULL, NULL) > 0) {
+
+            pending_rule_t *pr = pending_rule_head;
+            while (pr != NULL) {
+                pending_rule_t *next = pr->next;
+                if (FD_ISSET(pr->fd, &descriptors)) {
+                    manage_window(pr->win, pr->csq, pr->fd);
+                    remove_pending_rule(pr);
+                }
+                pr = next;
+            }
 
             if (FD_ISSET(sock_fd, &descriptors)) {
-                ret_fd = accept(sock_fd, NULL, 0);
-                if (ret_fd > 0 && (n = recv(ret_fd, msg, sizeof(msg), 0)) > 0) {
+                cli_fd = accept(sock_fd, NULL, 0);
+                if (cli_fd > 0 && (n = recv(cli_fd, msg, sizeof(msg), 0)) > 0) {
                     msg[n] = '\0';
                     if (handle_message(msg, n, rsp)) {
                         rsp_len = strlen(rsp);
@@ -139,10 +154,10 @@ int main(int argc, char *argv[])
                         rsp_len = 1;
                     }
                     if (rsp_len == 1 && rsp[0] == MESSAGE_SUBSCRIBE) {
-                        add_subscriber(ret_fd);
+                        add_subscriber(cli_fd);
                     } else {
-                        send(ret_fd, rsp, rsp_len, 0);
-                        close(ret_fd);
+                        send(cli_fd, rsp, rsp_len, 0);
+                        close(cli_fd);
                     }
                     rsp[0] = '\0';
                 }
@@ -154,7 +169,6 @@ int main(int argc, char *argv[])
                     free(event);
                 }
             }
-
         }
 
         if (xcb_connection_has_error(dpy))
@@ -179,6 +193,7 @@ void init(void)
     history_head = history_tail = history_needle = NULL;
     stack_head = stack_tail = NULL;
     subscribe_head = subscribe_tail = NULL;
+    pending_rule_head = pending_rule_tail = NULL;
     last_motion_time = last_motion_x = last_motion_y = 0;
     visible = auto_raise = sticky_still = record_history = true;
     randr_base = 0;
@@ -282,6 +297,8 @@ void cleanup(void)
         remove_stack(stack_head);
     while (subscribe_head != NULL)
         remove_subscriber(subscribe_head);
+    while (pending_rule_head != NULL)
+        remove_pending_rule(pending_rule_head);
     empty_history();
     free(frozen_pointer);
 }

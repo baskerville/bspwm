@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+#include <unistd.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "window.h"
@@ -35,14 +35,57 @@
 
 rule_consequence_t *make_rule_conquence(void)
 {
-    rule_consequence_t *r = calloc(1, sizeof(rule_consequence_t));
-    r->manage = r->focus = true;
-    return r;
+    rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
+    rc->manage = rc->focus = true;
+    return rc;
 }
 
-void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequence_t *csq)
+pending_rule_t *make_pending_rule(int fd, xcb_window_t win, rule_consequence_t *csq)
 {
+    pending_rule_t *pr = malloc(sizeof(pending_rule_t));
+    pr->prev = pr->next = NULL;
+    pr->fd = fd;
+    pr->win = win;
+    pr->csq = csq;
+    return pr;
+}
 
+void add_pending_rule(pending_rule_t *pr)
+{
+    if (pr == NULL)
+        return;
+    PRINTF("add pending rule %i\n", pr->fd);
+    if (pending_rule_head == NULL) {
+        pending_rule_head = pending_rule_tail = pr;
+    } else {
+        pending_rule_tail->next = pr;
+        pr->prev = pending_rule_tail;
+        pending_rule_tail = pr;
+    }
+}
+
+void remove_pending_rule(pending_rule_t *pr)
+{
+    if (pr == NULL)
+        return;
+    PRINTF("remove pending rule %i\n", pr->fd);
+    pending_rule_t *a = pr->prev;
+    pending_rule_t *b = pr->next;
+    if (a != NULL)
+        a->next = b;
+    if (b != NULL)
+        b->prev = a;
+    if (pr == pending_rule_head)
+        pending_rule_head = b;
+    if (pr == pending_rule_tail)
+        pending_rule_tail = a;
+    close(pr->fd);
+    free(pr->csq);
+    free(pr);
+}
+
+void apply_rules(xcb_window_t win, rule_consequence_t *csq)
+{
     xcb_ewmh_get_atoms_reply_t win_type;
 
     if (xcb_ewmh_get_wm_window_type_reply(ewmh, xcb_ewmh_get_wm_window_type(ewmh, win), &win_type, NULL) == 1) {
@@ -87,23 +130,42 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequen
     xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
     if (transient_for != XCB_NONE)
         csq->transient = csq->floating = true;
+}
 
-    char cmd[MAXLEN];
-    snprintf(cmd, sizeof(cmd), rule_command, win);
-    FILE *results = popen(cmd, "r");
-    if (results == NULL) {
-        warn("Failed to run rule command: '%s'.", cmd);
-        return;
+bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
+{
+    int fds[2];
+    if (pipe(fds) == -1)
+        return false;
+    pid_t pid = fork();
+    if (pid == 0) {
+        if (dpy != NULL)
+            close(xcb_get_file_descriptor(dpy));
+        dup2(fds[1], 1);
+        close(fds[0]);
+        char wid[SMALEN];
+        snprintf(wid, sizeof(wid), "%i", win);
+        execl(rule_command, rule_command, wid, NULL);
+        err("Couldn't spawn rule command.\n");
+    } else if (pid > 0) {
+        close(fds[1]);
+        pending_rule_t *pr = make_pending_rule(fds[0], win, csq);
+        add_pending_rule(pr);
     }
-    char line[MAXLEN];
+    return (pid != -1);
+}
+
+void parse_rule_consequence(int fd, rule_consequence_t *csq, monitor_t **m, desktop_t **d)
+{
+    if (fd == -1)
+        return;
+    char data[BUFSIZ];
+    int nb;
     bool v;
-    while (fgets(line, sizeof(line), results) != NULL) {
-        size_t i = strlen(line) - 1;
-        while (i > 0 && isspace(line[i])) {
-            line[i] = '\0';
-            i--;
-        }
-        char *key = strtok(line, CSQ_BLK);
+    while ((nb = read(fd, data, sizeof(data))) > 0) {
+        int end = MIN(nb, (int) sizeof(data) - 1);
+        data[end] = '\0';
+        char *key = strtok(data, CSQ_BLK);
         char *value = strtok(NULL, CSQ_BLK);
         while (key != NULL && value != NULL) {
             PRINTF("%s = %s\n", key, value);
@@ -144,7 +206,6 @@ void handle_rules(xcb_window_t win, monitor_t **m, desktop_t **d, rule_consequen
             value = strtok(NULL, CSQ_BLK);
         }
     }
-    pclose(results);
     if (csq->sticky) {
         *m = mon;
         *d = mon->desk;

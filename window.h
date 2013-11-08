@@ -31,7 +31,9 @@
 #include <xcb/xcb_icccm.h>
 #include "types.h"
 
-void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win);
+void schedule_window(xcb_window_t win);
+void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd);
+void unmanage_window(xcb_window_t win);
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor);
 void draw_frame_background(node_t *n, bool focused_window, bool focused_monitor);
 pointer_state_t *make_pointer_state(void);

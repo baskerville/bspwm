@@ -533,7 +533,7 @@ Global Settings
 ~~~~~~~~~~~~~~~
 
 'rule_command'::
-    External command used to retrieve rule consequences. It must contain at least one integer format directive which will be replaced by the ID of the window being processed. The output of that command must have the following format: *key1=value1 key2=value2 ...*, where *keyN* is one of 'floating', 'fullscreen', 'locked', 'sticky', 'private', 'frame', 'center', 'lower', 'follow', 'manage', 'focus', 'desktop' or 'monitor'.
+    External command used to retrieve rule consequences. The command will receive the the ID of the window being processed as its first argument. The output of that command must have the following format: *key1=value1 key2=value2 ...*, where *keyN* is one of 'floating', 'fullscreen', 'locked', 'sticky', 'private', 'frame', 'center', 'lower', 'follow', 'manage', 'focus', 'desktop' or 'monitor'.
 
 'status_prefix'::
     Prefix prepended to each of the status lines.

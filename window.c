@@ -34,11 +34,11 @@
 #include "tree.h"
 #include "window.h"
 
-void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
+void schedule_window(xcb_window_t win)
 {
     coordinates_t loc;
-    xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
     uint8_t override_redirect = 0;
+    xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
 
     if (wa != NULL) {
         override_redirect = wa->override_redirect;
@@ -49,7 +49,19 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
         return;
 
     rule_consequence_t *csq = make_rule_conquence();
-    handle_rules(win, &m, &d, csq);
+    apply_rules(win, csq);
+    if (!schedule_rules(win, csq)) {
+        manage_window(win, csq, -1);
+        free(csq);
+    }
+}
+
+void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
+{
+    monitor_t *m = mon;
+    desktop_t *d = mon->desk;
+
+    parse_rule_consequence(fd, csq, &m, &d);
 
     if (csq->lower)
         window_lower(win);
@@ -119,10 +131,26 @@ void manage_window(monitor_t *m, desktop_t *d, xcb_window_t win)
     if (give_focus)
         xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 
-    free(csq);
     num_clients++;
     ewmh_set_wm_desktop(n, d);
     ewmh_update_client_list();
+}
+
+void unmanage_window(xcb_window_t win)
+{
+    coordinates_t loc;
+    if (locate_window(win, &loc)) {
+        PRINTF("unmanage %X\n", win);
+        remove_node(loc.monitor, loc.desktop, loc.node);
+        arrange(loc.monitor, loc.desktop);
+    } else {
+        for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
+            if (pr->win == win) {
+                remove_pending_rule(pr);
+                return;
+            }
+        }
+    }
 }
 
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
@@ -320,14 +348,10 @@ void adopt_orphans(void)
     for (int i = 0; i < len; i++) {
         uint32_t idx;
         xcb_window_t win = wins[i];
-        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1) {
-            coordinates_t loc;
-            if (ewmh_locate_desktop(idx, &loc))
-                manage_window(loc.monitor, loc.desktop, win);
-            else
-                manage_window(mon, mon->desk, win);
-        }
+        if (xcb_ewmh_get_wm_desktop_reply(ewmh, xcb_ewmh_get_wm_desktop(ewmh, win), &idx, NULL) == 1)
+            schedule_window(win);
     }
+
     free(qtr);
 }
 

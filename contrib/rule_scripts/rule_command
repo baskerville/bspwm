@@ -1,0 +1,3 @@
+#! /bin/dash
+
+xwinfo -cints $1 | xargs -d '\n' rulc -t
