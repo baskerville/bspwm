@@ -48,6 +48,12 @@ void schedule_window(xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
+    /* Ignore pending windows */
+    for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
+        if (pr->win == win)
+            return;
+    }
+
     rule_consequence_t *csq = make_rule_conquence();
     apply_rules(win, csq);
     if (!schedule_rules(win, csq)) {
