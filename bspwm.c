@@ -29,6 +29,7 @@
 #ifdef __OpenBSD__
 #include <sys/types.h>
 #endif
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <signal.h>
@@ -112,6 +113,7 @@ int main(int argc, char *argv[])
     if (listen(sock_fd, SOMAXCONN) == -1)
         err("Couldn't listen to the socket.\n");
 
+    signal(SIGCHLD, sig_handler);
     signal(SIGPIPE, SIG_IGN);
     load_settings();
     run_config();
@@ -311,4 +313,12 @@ void put_status(void)
         feed_subscriber(sb);
         sb = next;
     }
+}
+
+void sig_handler(int sig)
+{
+    signal(sig, sig_handler);
+    if (sig == SIGCHLD)
+        while (waitpid(-1, 0, WNOHANG) > 0)
+            ;
 }

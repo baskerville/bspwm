@@ -22,9 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
 #include <unistd.h>
-#include <sys/wait.h>
 #include "bspwm.h"
 #include "settings.h"
 
@@ -33,15 +31,10 @@ void run_config(void)
     if (fork() == 0) {
         if (dpy != NULL)
             close(xcb_get_file_descriptor(dpy));
-        if (fork() == 0) {
-            setsid();
-            execl(config_path, config_path, NULL);
-            err("Couldn't execute the configuration file.\n");
-        }
-        exit(EXIT_SUCCESS);
+        setsid();
+        execl(config_path, config_path, NULL);
+        err("Couldn't execute the configuration file.\n");
     }
-
-    wait(NULL);
 }
 
 void load_settings(void)
