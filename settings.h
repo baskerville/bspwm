@@ -64,6 +64,7 @@
 #define AUTO_CANCEL              false
 #define APPLY_FLOATING_ATOM      false
 #define IGNORE_EWMH_FOCUS        false
+#define REMOVE_DISABLED_MONITOR  false
 
 char rule_command[MAXLEN];
 char status_prefix[MAXLEN];
@@ -99,6 +100,7 @@ bool auto_alternate;
 bool auto_cancel;
 bool history_aware_focus;
 bool ignore_ewmh_focus;
+bool remove_disabled_monitor;
 
 void run_config(void);
 void load_settings(void);
