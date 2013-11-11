@@ -66,6 +66,7 @@ function test(env)
 end
 
 local fd = p.socket(p.AF_INET, p.SOCK_STREAM, 0)
+p.setsockopt(fd, p.SOL_SOCKET, p.SO_REUSEADDR, 1)
 p.bind(fd, {family=p.AF_INET, addr="127.0.0.1", port=port})
 p.listen(fd, p.SOMAXCONN)
 local running = true
