@@ -1,3 +1,5 @@
 - Pseudo-tiled windows.
+- Invisible state.
+- Restore built-in pointer grabbing?
 - `FILE *` instead of `char *` for writing the server response?
 - Use BSD `sys/{queue/tree}.h` for {list,tree} structures?
