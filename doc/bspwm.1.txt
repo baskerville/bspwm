@@ -622,6 +622,9 @@ Global Settings
 'ignore_ewmh_focus'::
     Ignore EWMH requests to focus a window.
 
+'remove_disabled_monitor'::
+    Consider disabled monitors as disconnected.
+
 Monitor Settings
 ~~~~~~~~~~~~~~~~
 
