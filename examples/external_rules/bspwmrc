@@ -1,0 +1,4 @@
+#! /bin/sh
+
+bspc config rule_command "$(which rule_command)"
+bspwm_rules

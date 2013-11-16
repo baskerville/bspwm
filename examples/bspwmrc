@@ -7,11 +7,3 @@ bspc config window_gap          12
 bspc config split_ratio         0.52
 bspc config borderless_monocle  true
 bspc config gapless_monocle     true
-
-bspc config rule_command "$(which rule_command)"
-
-rulc -a 'class=="Gimp"' 'desktop=^8, follow=on, floating=on'
-rulc -a 'class=="Chromium"' 'desktop=^2'
-rulc -a 'instance=="mpv"' 'floating=on'
-rulc -a 'class=="Kupfer.py"' 'focus=on'
-rulc -a 'class=="Screenkey"' 'manage=off'
