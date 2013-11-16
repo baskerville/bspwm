@@ -913,7 +913,7 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
     if (n1 == NULL || n2 == NULL || n1 == n2 || (d1 != d2 && (n1->client->sticky || n2->client->sticky)))
         return false;
 
-    PRINTF("swap nodes %X %X", n1->client->window, n2->client->window);
+    PRINTF("swap nodes %X %X\n", n1->client->window, n2->client->window);
 
     node_t *pn1 = n1->parent;
     node_t *pn2 = n2->parent;
