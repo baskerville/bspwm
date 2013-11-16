@@ -249,7 +249,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
                 break;
         }
         if (f->vacant)
-            update_vacant_state(p);
+            update_vacant_state(f->parent);
         if (f->client != NULL && f->client->private)
             update_privacy_level(f, true);
     }
