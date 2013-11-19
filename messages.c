@@ -537,6 +537,22 @@ bool cmd_monitor(char **args, int num)
                 }
                 num--, args++;
             }
+        } else if (streq("-o", *args) || streq("--order-desktops", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            desktop_t *d = trg.monitor->desk_head;
+            while (d != NULL && num > 0) {
+                desktop_t *next = d->next;
+                coordinates_t dst;
+                if (locate_desktop(*args, &dst) && dst.monitor == trg.monitor) {
+                    swap_desktops(trg.monitor, d, dst.monitor, dst.desktop);
+                    if (next == dst.desktop)
+                        next = d;
+                }
+                d = next;
+                num--, args++;
+            }
         } else if (streq("-n", *args) || streq("--rename", *args)) {
             num--, args++;
             if (num < 1)

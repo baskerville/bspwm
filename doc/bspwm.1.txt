@@ -402,11 +402,14 @@ Options
 *-r*, *--remove-desktops* <name>...::
     Remove desktops with the given names.
 
-*-n*, *--rename* <new_name>::
-    Rename the selected monitor.
+*-o*, *--reorder-desktops* <name>...::
+    Reorder the desktops of the selected monitor to match the given order.
 
 *-d*, *--reset-desktops* <name>...::
     Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops.
+
+*-n*, *--rename* <new_name>::
+    Rename the selected monitor.
 
 *-s*, *--swap* 'MONITOR_SEL'::
     Swap the selected monitor with the given monitor.
