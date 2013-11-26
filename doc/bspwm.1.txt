@@ -652,7 +652,7 @@ Status Format
 
 Status informations are composed of items separated by colons.
 
-Each item as the form '<type><value>' where '<type>' is the first character of the item.
+Each item has the form '<type><value>' where '<type>' is the first character of the item.
 
 'M<monitor_name>'::
     Focused monitor.
