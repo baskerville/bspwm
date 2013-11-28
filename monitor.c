@@ -71,6 +71,18 @@ monitor_t *get_monitor_by_id(xcb_randr_output_t id)
     return NULL;
 }
 
+void embrace_client(monitor_t *m, client_t *c)
+{
+    if ((c->floating_rectangle.x + c->floating_rectangle.width) <= m->rectangle.x)
+        c->floating_rectangle.x = m->rectangle.x;
+    else if (c->floating_rectangle.x >= (m->rectangle.x + m->rectangle.width))
+        c->floating_rectangle.x = (m->rectangle.x + m->rectangle.width) - c->floating_rectangle.width;
+    if ((c->floating_rectangle.y + c->floating_rectangle.height) <= m->rectangle.y)
+        c->floating_rectangle.y = m->rectangle.y;
+    else if (c->floating_rectangle.y >= (m->rectangle.y + m->rectangle.height))
+        c->floating_rectangle.y = (m->rectangle.y + m->rectangle.height) - c->floating_rectangle.height;
+}
+
 void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
 {
     if (frozen_pointer->action != ACTION_NONE || ms == md)

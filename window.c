@@ -82,7 +82,9 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
-    translate_client(monitor_from_client(c), m, c);
+    monitor_t *mm = monitor_from_client(c);
+    embrace_client(mm, c);
+    translate_client(mm, m, c);
     if (csq->center)
         window_center(m, c);
     c->frame = csq->frame;
