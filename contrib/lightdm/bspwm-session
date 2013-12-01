@@ -59,8 +59,7 @@ for file in "${source_these[@]}"; do
 done
 
 # Launch sxhkd:
-sxhkdrc_path=${XDG_CONFIG_HOME:-"$HOME/.config"}/bspwm/sxhkdrc
-[ -r "${sxhkdrc_path}" ] && sxhkd -c "${sxhkdrc_path}" &
+sxhkd &
 
 # Launch bspwm:
 bspwm
