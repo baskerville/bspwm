@@ -38,20 +38,20 @@ export BSPWM_SOCKET=${state_path}/bspwm-socket
 # Trap: make sure everything started in ~/.config/bspwm/autostart is
 # signalled when this script exits or dies. Also clean up $state_path.
 function on_exit {
-for child in $(jobs -p); do
-    jobs -p | grep -q $child && kill $child
-done
-# Extra paranoia
-[[ -d "${state_path}" && -w "${state_path}" ]] && rm -rf -- "${state_path}"
+    for child in $(jobs -p); do
+        jobs -p | grep -q $child && kill $child
+    done
+    # Extra paranoia
+    [[ -d "${state_path}" && -w "${state_path}" ]] && rm -rf -- "${state_path}"
 }
 
 trap on_exit EXIT SIGHUP SIGINT SIGTERM
 
 # Environment and autostart:
 source_these=(
-"/etc/profile",
-"${HOME}/.profile",
-"${XDG_CONFIG_HOME:-"$HOME/.config"}/bspwm/autostart"
+    "/etc/profile",
+    "${HOME}/.profile",
+    "${XDG_CONFIG_HOME:-"$HOME/.config"}/bspwm/autostart"
 )
 
 for file in "${source_these[@]}"; do
