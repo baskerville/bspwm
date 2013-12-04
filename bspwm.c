@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     xcb_generic_event_t *event;
     char opt;
 
-    while ((opt = getopt(argc, argv, "hvc:")) != -1) {
+    while ((opt = getopt(argc, argv, "hvc:")) != (char)-1) {
         switch (opt) {
             case 'h':
                 printf(WM_NAME " [-h|-v|-c CONFIG_PATH]\n");
