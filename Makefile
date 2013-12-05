@@ -1,4 +1,4 @@
-VERSION = 0.8.6
+VERSION = 0.8.7
 
 CC      ?= gcc
 LIBS     = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-randr
