@@ -33,6 +33,64 @@
 #include "query.h"
 #include "rule.h"
 
+rule_t *make_rule(void)
+{
+    rule_t *r = malloc(sizeof(rule_t));
+    r->cause[0] = r->effect[0] = '\0';
+    r->next = r->prev = NULL;
+    r->one_shot = false;
+    return r;
+}
+
+void add_rule(rule_t *r)
+ {
+    if (rule_head == NULL) {
+        rule_head = rule_tail = r;
+    } else {
+        rule_tail->next = r;
+        r->prev = rule_tail;
+        rule_tail = r;
+    }
+}
+
+void remove_rule(rule_t *r)
+{
+    if (r == NULL)
+        return;
+    rule_t *prev = r->prev;
+    rule_t *next = r->next;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    if (r == rule_head)
+        rule_head = next;
+    if (r == rule_tail)
+        rule_tail = prev;
+    free(r);
+}
+
+void remove_rule_by_cause(char *cause)
+{
+    rule_t *r = rule_head;
+    while (r != NULL) {
+        rule_t *next = r->next;
+        if (streq(r->cause, cause))
+            remove_rule(r);
+        r = next;
+    }
+}
+
+bool remove_rule_by_index(int idx)
+{
+    for (rule_t *r = rule_head; r != NULL; r = r->next, idx--)
+        if (idx == 0) {
+            remove_rule(r);
+            return true;
+        }
+    return false;
+}
+
 rule_consequence_t *make_rule_conquence(void)
 {
     rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
@@ -130,10 +188,40 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
     xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
     if (transient_for != XCB_NONE)
         csq->transient = csq->floating = true;
+
+    xcb_icccm_get_wm_class_reply_t reply;
+    if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
+        snprintf(csq->class_name, sizeof(csq->class_name), "%s", reply.class_name);
+        snprintf(csq->instance_name, sizeof(csq->instance_name), "%s", reply.instance_name);
+        xcb_icccm_get_wm_class_reply_wipe(&reply);
+    }
+
+    rule_t *rule = rule_head;
+    while (rule != NULL) {
+        rule_t *next = rule->next;
+        if (streq(rule->cause, MATCH_ANY)
+                || streq(rule->cause, csq->class_name)
+                || streq(rule->cause, csq->instance_name)) {
+            char effect[MAXLEN];
+            snprintf(effect, sizeof(effect), "%s", rule->effect);
+            char *key = strtok(effect, CSQ_BLK);
+            char *value = strtok(NULL, CSQ_BLK);
+            while (key != NULL && value != NULL) {
+                parse_key_value(key, value, csq);
+                key = strtok(NULL, CSQ_BLK);
+                value = strtok(NULL, CSQ_BLK);
+            }
+            if (rule->one_shot)
+                remove_rule(rule);
+        }
+        rule = next;
+    }
 }
 
 bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
 {
+    if (external_rules_command[0] == '\0')
+        return false;
     int fds[2];
     if (pipe(fds) == -1)
         return false;
@@ -146,7 +234,7 @@ bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
         char wid[SMALEN];
         snprintf(wid, sizeof(wid), "%i", win);
         setsid();
-        execl(rule_command, rule_command, wid, NULL);
+        execl(external_rules_command, external_rules_command, wid, csq->class_name, csq->instance_name, NULL);
         err("Couldn't spawn rule command.\n");
     } else if (pid > 0) {
         close(fds[1]);
@@ -156,59 +244,59 @@ bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
     return (pid != -1);
 }
 
-void parse_rule_consequence(int fd, rule_consequence_t *csq, monitor_t **m, desktop_t **d)
+void parse_rule_consequence(int fd, rule_consequence_t *csq)
 {
     if (fd == -1)
         return;
     char data[BUFSIZ];
     int nb;
-    bool v;
     while ((nb = read(fd, data, sizeof(data))) > 0) {
         int end = MIN(nb, (int) sizeof(data) - 1);
         data[end] = '\0';
         char *key = strtok(data, CSQ_BLK);
         char *value = strtok(NULL, CSQ_BLK);
         while (key != NULL && value != NULL) {
-            PRINTF("%s = %s\n", key, value);
-            if (streq("desktop", key)) {
-                coordinates_t ref = {mon, mon->desk, NULL};
-                coordinates_t trg = {NULL, NULL, NULL};
-                if (desktop_from_desc(value, &ref, &trg)) {
-                    *m = trg.monitor;
-                    *d = trg.desktop;
-                }
-            } else if (streq("monitor", key)) {
-                coordinates_t ref = {mon, NULL, NULL};
-                coordinates_t trg = {NULL, NULL, NULL};
-                if (monitor_from_desc(value, &ref, &trg)) {
-                    *m = trg.monitor;
-                    *d = trg.monitor->desk;
-                }
-            } else if (parse_bool(value, &v)) {
-                if (streq("floating", key))
-                    csq->floating = v;
-#define SETCSQ(name) \
-                else if (streq(#name, key)) \
-                    csq->name = v;
-                SETCSQ(fullscreen)
-                SETCSQ(locked)
-                SETCSQ(sticky)
-                SETCSQ(private)
-                SETCSQ(frame)
-                SETCSQ(center)
-                SETCSQ(lower)
-                SETCSQ(follow)
-                SETCSQ(manage)
-                SETCSQ(focus)
-#undef SETCSQ
-
-            }
+            parse_key_value(key, value, csq);
             key = strtok(NULL, CSQ_BLK);
             value = strtok(NULL, CSQ_BLK);
         }
     }
-    if (csq->sticky) {
-        *m = mon;
-        *d = mon->desk;
+}
+
+void parse_key_value(char *key, char *value, rule_consequence_t *csq)
+{
+    bool v;
+    if (streq("desktop", key)) {
+        snprintf(csq->desktop_desc, sizeof(csq->desktop_desc), "%s", value);
+    } else if (streq("monitor", key)) {
+        snprintf(csq->monitor_desc, sizeof(csq->monitor_desc), "%s", value);
+    } else if (parse_bool(value, &v)) {
+        if (streq("floating", key))
+            csq->floating = v;
+#define SETCSQ(name) \
+        else if (streq(#name, key)) \
+            csq->name = v;
+        SETCSQ(fullscreen)
+        SETCSQ(locked)
+        SETCSQ(sticky)
+        SETCSQ(private)
+        SETCSQ(frame)
+        SETCSQ(center)
+        SETCSQ(lower)
+        SETCSQ(follow)
+        SETCSQ(manage)
+        SETCSQ(focus)
+#undef SETCSQ
+    }
+}
+
+void list_rules(char *pattern, char *rsp)
+{
+    char line[MAXLEN];
+    for (rule_t *r = rule_head; r != NULL; r = r->next) {
+        if (pattern != NULL && !streq(pattern, r->cause))
+            continue;
+        snprintf(line, sizeof(line), "%s => %s\n", r->cause, r->effect);
+        strncat(rsp, line, REMLEN(rsp));
     }
 }

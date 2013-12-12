@@ -33,6 +33,7 @@
 #include "monitor.h"
 #include "pointer.h"
 #include "query.h"
+#include "rule.h"
 #include "restore.h"
 #include "settings.h"
 #include "tree.h"
@@ -89,6 +90,8 @@ bool process_message(char **args, int num, char *rsp)
         return cmd_restore(++args, --num);
     } else if (streq("control", *args)) {
         return cmd_control(++args, --num, rsp);
+    } else if (streq("rule", *args)) {
+        return cmd_rule(++args, --num, rsp);
     } else if (streq("pointer", *args)) {
         return cmd_pointer(++args, --num);
     } else if (streq("config", *args)) {
@@ -108,7 +111,7 @@ bool cmd_window(char **args, int num)
     coordinates_t ref = {mon, mon->desk, mon->desk->focus};
     coordinates_t trg = ref;
 
-    if (*args[0] != OPT_CHR) {
+    if ((*args)[0] != OPT_CHR) {
         if (node_from_desc(*args, &ref, &trg))
             num--, args++;
         else
@@ -324,7 +327,7 @@ bool cmd_desktop(char **args, int num)
     coordinates_t ref = {mon, mon->desk, NULL};
     coordinates_t trg = ref;
 
-    if (*args[0] != OPT_CHR) {
+    if ((*args)[0] != OPT_CHR) {
         if (desktop_from_desc(*args, &ref, &trg))
             num--, args++;
         else
@@ -474,7 +477,7 @@ bool cmd_monitor(char **args, int num)
     coordinates_t ref = {mon, NULL, NULL};
     coordinates_t trg = ref;
 
-    if (*args[0] != OPT_CHR) {
+    if ((*args)[0] != OPT_CHR) {
         if (monitor_from_desc(*args, &ref, &trg))
             num--, args++;
         else
@@ -643,6 +646,63 @@ bool cmd_query(char **args, int num, char *rsp)
     return true;
 }
 
+bool cmd_rule(char **args, int num, char *rsp)
+{
+    if (num < 1)
+        return false;
+    while (num > 0) {
+        if (streq("-a", *args) || streq("--add", *args)) {
+            num--, args++;
+            if (num < 2)
+                return false;
+            rule_t *rule = make_rule();
+            snprintf(rule->cause, sizeof(rule->cause), "%s", *args);
+            num--, args++;
+            size_t i = 0;
+            while (num > 0) {
+                if (streq("-o", *args) || streq("--one-shot", *args)) {
+                    rule->one_shot = true;
+                } else {
+                    PRINTF("%s %i\n", *args, (int)strlen(*args));
+                    for (size_t j = 0; i < sizeof(rule->effect) && j < strlen(*args); i++, j++) {
+                        PRINTF("i %i, j %i\n", (int)i, (int)j);
+                        rule->effect[i] = (*args)[j];
+                    }
+                    if (num > 1 && i < sizeof(rule->effect))
+                        rule->effect[i++] = ' ';
+                }
+                num--, args++;
+            }
+            rule->effect[MIN(i, sizeof(rule->effect) - 1)] = '\0';
+            add_rule(rule);
+        } else if (streq("-r", *args) || streq("--remove", *args)) {
+            num--, args++;
+            if (num < 1)
+                return false;
+            int idx;
+            while (num > 0) {
+                if (parse_index(*args, &idx))
+                    remove_rule_by_index(idx - 1);
+                else if (streq("tail", *args))
+                    remove_rule(rule_tail);
+                else if (streq("head", *args))
+                    remove_rule(rule_head);
+                else
+                    remove_rule_by_cause(*args);
+                num--, args++;
+            }
+        } else if (streq("-l", *args) || streq("--list", *args)) {
+            num--, args++;
+            list_rules(num > 0 ? *args : NULL, rsp);
+        } else {
+            return false;
+        }
+        num--, args++;
+    }
+
+    return true;
+}
+
 bool cmd_pointer(char **args, int num)
 {
     if (num < 1)
@@ -743,7 +803,7 @@ bool cmd_config(char **args, int num, char *rsp)
         return false;
     coordinates_t ref = {mon, mon->desk, mon->desk->focus};
     coordinates_t trg = {NULL, NULL, NULL};
-    if (*args[0] == OPT_CHR) {
+    if ((*args)[0] == OPT_CHR) {
         if (streq("-d", *args) || streq("--desktop", *args)) {
             num--, args++;
             if (num < 1)
@@ -818,7 +878,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 #define SETSTR(s) \
     } else if (streq(#s, name)) { \
         return snprintf(s, sizeof(s), "%s", value) >= 0;
-    SETSTR(rule_command)
+    SETSTR(external_rules_command)
     SETSTR(status_prefix)
 #undef SETSTR
     } else if (streq("split_ratio", name)) {
@@ -928,8 +988,8 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
             return false;
         else
             snprintf(rsp, BUFSIZ, "%u", loc.desktop->border_width);
-    else if (streq("rule_command", name))
-        snprintf(rsp, BUFSIZ, "%s", rule_command);
+    else if (streq("external_rules_command", name))
+        snprintf(rsp, BUFSIZ, "%s", external_rules_command);
     else if (streq("status_prefix", name))
         snprintf(rsp, BUFSIZ, "%s", status_prefix);
 #define MONGET(k) \

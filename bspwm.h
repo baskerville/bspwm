@@ -49,6 +49,8 @@ monitor_t *pri_mon;
 history_t *history_head;
 history_t *history_tail;
 history_t *history_needle;
+rule_t *rule_head;
+rule_t *rule_tail;
 stacking_list_t *stack_head;
 stacking_list_t *stack_tail;
 subscriber_list_t *subscribe_head;

@@ -193,6 +193,7 @@ void init(void)
     monitor_uid = desktop_uid = 0;
     mon = mon_head = mon_tail = pri_mon = NULL;
     history_head = history_tail = history_needle = NULL;
+    rule_head = rule_tail = NULL;
     stack_head = stack_tail = NULL;
     subscribe_head = subscribe_tail = NULL;
     pending_rule_head = pending_rule_tail = NULL;
@@ -295,6 +296,8 @@ void cleanup(void)
 {
     while (mon_head != NULL)
         remove_monitor(mon_head);
+    while (rule_head != NULL)
+        remove_rule(rule_head);
     while (stack_head != NULL)
         remove_stack(stack_head);
     while (subscribe_head != NULL)

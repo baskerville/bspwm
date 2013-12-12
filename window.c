@@ -48,11 +48,10 @@ void schedule_window(xcb_window_t win)
     if (override_redirect || locate_window(win, &loc))
         return;
 
-    /* Ignore pending windows */
-    for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
+    /* ignore pending windows */
+    for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next)
         if (pr->win == win)
             return;
-    }
 
     rule_consequence_t *csq = make_rule_conquence();
     apply_rules(win, csq);
@@ -67,7 +66,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
     monitor_t *m = mon;
     desktop_t *d = mon->desk;
 
-    parse_rule_consequence(fd, csq, &m, &d);
+    parse_rule_consequence(fd, csq);
 
     if (csq->lower)
         window_lower(win);
@@ -80,6 +79,27 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
     PRINTF("manage %X\n", win);
 
+    if (csq->desktop_desc[0] != '\0') {
+        coordinates_t ref = {m, d, NULL};
+        coordinates_t trg = {NULL, NULL, NULL};
+        if (desktop_from_desc(csq->desktop_desc, &ref, &trg)) {
+            m = trg.monitor;
+            d = trg.desktop;
+        }
+    } else if (csq->monitor_desc[0] != '\0') {
+        coordinates_t ref = {m, NULL, NULL};
+        coordinates_t trg = {NULL, NULL, NULL};
+        if (monitor_from_desc(csq->monitor_desc, &ref, &trg)) {
+            m = trg.monitor;
+            d = trg.monitor->desk;
+        }
+    }
+
+    if (csq->sticky) {
+        m = mon;
+        d = mon->desk;
+    }
+
     client_t *c = make_client(win);
     update_floating_rectangle(c);
     monitor_t *mm = monitor_from_client(c);
@@ -89,11 +109,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
         window_center(m, c);
     c->frame = csq->frame;
 
-    xcb_icccm_get_wm_class_reply_t reply;
-    if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
-        snprintf(c->class_name, sizeof(c->class_name), "%s", reply.class_name);
-        xcb_icccm_get_wm_class_reply_wipe(&reply);
-    }
+    snprintf(c->class_name, sizeof(c->class_name), "%s", csq->class_name);
 
     csq->floating = csq->floating || d->floating;
 

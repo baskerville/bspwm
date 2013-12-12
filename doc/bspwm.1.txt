@@ -508,6 +508,26 @@ Options
 *-u*, *--ungrab*::
     Terminate the current pointer action.
 
+Rule
+~~~~
+
+General Syntax
+^^^^^^^^^^^^^^
+
+rule 'OPTIONS'
+
+Options
+^^^^^^^
+
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|locked|sticky|private|frame|center|lower|follow|manage|focus)=(true|false)]::
+    Create a new rule.
+
+*-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::
+    Remove the given rules.
+
+*-l*, *--list* [<class_name>|<instance_name>|*]::
+    List the rules.
+
 Config
 ~~~~~~
 
@@ -534,12 +554,6 @@ All the boolean settings are 'false' by default.
 
 Global Settings
 ~~~~~~~~~~~~~~~
-
-'rule_command'::
-    External command used to retrieve rule consequences. The command will receive the the ID of the window being processed as its first argument. The output of that command must have the following format: *key1=value1 key2=value2 ...*, where *keyN* is one of 'floating', 'fullscreen', 'locked', 'sticky', 'private', 'frame', 'center', 'lower', 'follow', 'manage', 'focus', 'desktop' or 'monitor'.
-
-'status_prefix'::
-    Prefix prepended to each of the status lines.
 
 'focused_border_color'::
     Color of the border of a focused window of a focused monitor.
@@ -597,6 +611,12 @@ Global Settings
 
 'growth_factor'::
     Intensity of the growth involved in pulling or pushing an edge.
+
+'status_prefix'::
+    Prefix prepended to each of the status lines.
+
+'external_rules_command'::
+    External command used to retrieve rule consequences. The command will receive the the ID of the window being processed as its first argument and the class and instance names as second and third arguments. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
 
 'history_aware_focus'::
     Give priority to the focus history when focusing nodes.

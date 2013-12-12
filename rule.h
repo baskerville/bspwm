@@ -25,14 +25,22 @@
 #ifndef BSPWM_RULE_H
 #define BSPWM_RULE_H
 
-#define CSQ_BLK  " =,\n"
+#define MATCH_ANY  "*"
+#define CSQ_BLK    " =,\n"
 
+rule_t *make_rule(void);
+void add_rule(rule_t *r);
+void remove_rule(rule_t *r);
+void remove_rule_by_cause(char *cause);
+bool remove_rule_by_index(int idx);
 rule_consequence_t *make_rule_conquence(void);
 pending_rule_t *make_pending_rule(int fd, xcb_window_t win, rule_consequence_t *csq);
 void add_pending_rule(pending_rule_t *pr);
 void remove_pending_rule(pending_rule_t *pr);
 void apply_rules(xcb_window_t win, rule_consequence_t *csq);
 bool schedule_rules(xcb_window_t win, rule_consequence_t *csq);
-void parse_rule_consequence(int fd, rule_consequence_t *csq, monitor_t **m, desktop_t **d);
+void parse_rule_consequence(int fd, rule_consequence_t *csq);
+void parse_key_value(char *key, char *value, rule_consequence_t *csq);
+void list_rules(char *pattern, char *rsp);
 
 #endif

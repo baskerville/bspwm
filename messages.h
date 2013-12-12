@@ -39,6 +39,7 @@ bool cmd_window(char **args, int num);
 bool cmd_desktop(char **args, int num);
 bool cmd_monitor(char **args, int num);
 bool cmd_query(char **args, int num, char *rsp);
+bool cmd_rule(char **args, int num, char *rsp);
 bool cmd_pointer(char **args, int num);
 bool cmd_restore(char **args, int num);
 bool cmd_control(char **args, int num, char *rsp);

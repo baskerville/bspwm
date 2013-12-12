@@ -247,7 +247,18 @@ struct subscriber_list_t {
     subscriber_list_t *next;
 };
 
+typedef struct rule_t rule_t;
+struct rule_t {
+    char cause[MAXLEN];
+    char effect[MAXLEN];
+    bool one_shot;
+    rule_t *prev;
+    rule_t *next;
+};
+
 typedef struct {
+    char class_name[SMALEN];
+    char instance_name[SMALEN];
     char desktop_desc[MAXLEN];
     char monitor_desc[MAXLEN];
     bool floating;

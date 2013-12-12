@@ -27,11 +27,11 @@
 
 #include "types.h"
 
-#define WM_NAME             "bspwm"
-#define CONFIG_NAME         WM_NAME "rc"
-#define CONFIG_HOME_ENV     "XDG_CONFIG_HOME"
-#define RULE_COMMAND        "/bin/true"
-#define STATUS_PREFIX       "W"
+#define WM_NAME                 "bspwm"
+#define CONFIG_NAME             WM_NAME "rc"
+#define CONFIG_HOME_ENV         "XDG_CONFIG_HOME"
+#define EXTERNAL_RULES_COMMAND  ""
+#define STATUS_PREFIX           "W"
 
 #define FOCUSED_BORDER_COLOR          "#7E7F89"
 #define ACTIVE_BORDER_COLOR           "#545350"
@@ -66,7 +66,7 @@
 #define IGNORE_EWMH_FOCUS        false
 #define REMOVE_DISABLED_MONITOR  false
 
-char rule_command[MAXLEN];
+char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
 
 char focused_border_color[MAXLEN];
