@@ -1,7 +1,7 @@
 bspc.o: bspc.c helpers.h common.h
 bspwm.o: bspwm.c types.h helpers.h desktop.h monitor.h settings.h \
  messages.h subscribe.h events.h common.h window.h history.h stack.h \
- ewmh.h bspwm.h
+ ewmh.h rule.h bspwm.h
 desktop.o: desktop.c bspwm.h types.h helpers.h ewmh.h history.h monitor.h \
  query.h tree.h window.h desktop.h
 events.o: events.c bspwm.h types.h helpers.h ewmh.h monitor.h query.h \
@@ -10,7 +10,7 @@ ewmh.o: ewmh.c bspwm.h types.h helpers.h settings.h tree.h ewmh.h
 helpers.o: helpers.c bspwm.h types.h helpers.h
 history.o: history.c bspwm.h types.h helpers.h query.h
 messages.o: messages.c bspwm.h types.h helpers.h desktop.h ewmh.h \
- history.h monitor.h pointer.h query.h restore.h settings.h tree.h \
+ history.h monitor.h pointer.h query.h rule.h restore.h settings.h tree.h \
  window.h messages.h
 monitor.o: monitor.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
  query.h settings.h tree.h window.h monitor.h
