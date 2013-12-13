@@ -663,11 +663,8 @@ bool cmd_rule(char **args, int num, char *rsp)
                 if (streq("-o", *args) || streq("--one-shot", *args)) {
                     rule->one_shot = true;
                 } else {
-                    PRINTF("%s %i\n", *args, (int)strlen(*args));
-                    for (size_t j = 0; i < sizeof(rule->effect) && j < strlen(*args); i++, j++) {
-                        PRINTF("i %i, j %i\n", (int)i, (int)j);
+                    for (size_t j = 0; i < sizeof(rule->effect) && j < strlen(*args); i++, j++)
                         rule->effect[i] = (*args)[j];
-                    }
                     if (num > 1 && i < sizeof(rule->effect))
                         rule->effect[i++] = ' ';
                 }
