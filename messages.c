@@ -261,11 +261,26 @@ bool cmd_window(char **args, int num)
             if (parse_fence_move(*args, &fmo)) {
                 move_fence(n, dir, fmo);
             } else {
-                double rat;
-                if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
-                    n->split_ratio = rat;
-                else
-                    return false;
+                if ((*args)[0] == '+' || (*args)[0] == '-') {
+                    int pix;
+                    if (sscanf(*args, "%i", &pix) == 1) {
+                        int max = (n->split_type == TYPE_HORIZONTAL ? n->rectangle.height : n->rectangle.width);
+                        double rat = ((max * n->split_ratio) + pix) / max;
+                        if (rat > 0 && rat < 1)
+                            n->split_ratio = rat;
+                        else
+                            return false;
+
+                    } else {
+                        return false;
+                    }
+                } else {
+                    double rat;
+                    if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
+                        n->split_ratio = rat;
+                    else
+                        return false;
+                }
             }
             dirty = true;
         } else if (streq("-r", *args) || streq("--ratio", *args)) {
