@@ -437,6 +437,34 @@ free
 Only consider monitors where the focused desktop is free\&.
 .RE
 .RE
+.SH "WINDOW STATES"
+.PP
+floating
+.RS 4
+Is above any tiled window and can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
+.RE
+.PP
+fullscreen
+.RS 4
+Fills its monitor rectangle, is above all the other windows and has no borders\&.
+.RE
+.PP
+locked
+.RS 4
+Ignores the
+\fBclose\fR
+message\&.
+.RE
+.PP
+sticky
+.RS 4
+Stays in the focused desktop of its monitor\&.
+.RE
+.PP
+private
+.RS 4
+Tries to keep the same tiling position/size\&.
+.RE
 .SH "COMMANDS"
 .SS "Window"
 .sp

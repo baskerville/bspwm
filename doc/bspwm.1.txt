@@ -287,6 +287,25 @@ free::
     Only consider monitors where the focused desktop is free.
 
 
+Window States
+-------------
+
+floating::
+    Is above any tiled window and can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+
+fullscreen::
+    Fills its monitor rectangle, is above all the other windows and has no borders.
+
+locked::
+    Ignores the *close* message.
+
+sticky::
+    Stays in the focused desktop of its monitor.
+
+private::
+    Tries to keep the same tiling position/size.
+
+
 Commands
 --------
 
