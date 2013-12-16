@@ -280,7 +280,7 @@ void setup(void)
                 xcb_xinerama_screen_info_t info = xsi[i];
                 xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
                 monitor_t *m = add_monitor(rect);
-		add_desktop(m, make_desktop(NULL));
+                add_desktop(m, make_desktop(NULL));
             }
             free(xsq);
         } else {
