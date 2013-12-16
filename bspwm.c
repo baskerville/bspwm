@@ -34,6 +34,7 @@
 #include <sys/un.h>
 #include <signal.h>
 #include <unistd.h>
+#include <xcb/xinerama.h>
 #include "types.h"
 #include "desktop.h"
 #include "monitor.h"
@@ -262,9 +263,32 @@ void setup(void)
     } else {
         randr = false;
         warn("Couldn't retrieve monitors via RandR.\n");
-        xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-        monitor_t *m = add_monitor(rect);
-        add_desktop(m, make_desktop(NULL));
+        bool xinerama_is_active = false;
+        if (xcb_get_extension_data(dpy, &xcb_xinerama_id)->present) {
+            xcb_xinerama_is_active_reply_t *xia = xcb_xinerama_is_active_reply(dpy, xcb_xinerama_is_active(dpy), NULL);
+            if (xia != NULL) {
+                xinerama_is_active = xia->state;
+                free(xia);
+            }
+        }
+
+        if (xinerama_is_active) {
+            xcb_xinerama_query_screens_reply_t *xsq = xcb_xinerama_query_screens_reply(dpy, xcb_xinerama_query_screens(dpy), NULL);
+            xcb_xinerama_screen_info_t *xsi = xcb_xinerama_query_screens_screen_info(xsq);
+            int n = xcb_xinerama_query_screens_screen_info_length(xsq);
+            for (int i = 0; i < n; i++) {
+                xcb_xinerama_screen_info_t info = xsi[i];
+                xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
+                monitor_t *m = add_monitor(rect);
+                add_desktop(m, make_desktop(NULL));
+            }
+            free(xsq);
+        } else {
+            warn("Xinerama is inactive.\n");
+            xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
+            monitor_t *m = add_monitor(rect);
+            add_desktop(m, make_desktop(NULL));
+        }
     }
 
     ewmh_update_number_of_desktops();
