@@ -270,7 +270,6 @@ bool cmd_window(char **args, int num)
                             n->split_ratio = rat;
                         else
                             return false;
-
                     } else {
                         return false;
                     }
