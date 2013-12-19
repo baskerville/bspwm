@@ -54,7 +54,6 @@ void restore_tree(char *file_path)
     monitor_t *m = NULL;
     desktop_t *d = NULL;
     node_t *n = NULL;
-    num_clients = 0;
     unsigned int level, last_level = 0;
 
     while (fgets(line, sizeof(line), snapshot) != NULL) {

@@ -901,8 +901,10 @@ void destroy_tree(node_t *n)
         return;
     node_t *first_tree = n->first_child;
     node_t *second_tree = n->second_child;
-    if (n->client != NULL)
+    if (n->client != NULL) {
         free(n->client);
+        num_clients--;
+    }
     free(n);
     destroy_tree(first_tree);
     destroy_tree(second_tree);
