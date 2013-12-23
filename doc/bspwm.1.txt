@@ -724,7 +724,7 @@ Environment Variables
 ---------------------
 
 'BSPWM_SOCKET'::
-  The path of the socket used for the communication between *bspc* and *bspwm*. If it isn't defined, then the following path is used: '/tmp/bspwm${DISPLAY}-socket'.
+  The path of the socket used for the communication between *bspc* and *bspwm*. If it isn't defined, then the following path is used: '/tmp/bspwm<display_name>-socket'.
 
 Panels
 ------
