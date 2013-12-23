@@ -42,10 +42,12 @@ int main(int argc, char *argv[])
     if (argc < 2)
         err("No arguments given.\n");
 
-    char *sp = getenv(SOCKET_ENV_VAR);
-
     sock_address.sun_family = AF_UNIX;
-    snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
+    char *sp = getenv(SOCKET_ENV_VAR);
+    if (sp != NULL)
+        snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", sp);
+    else
+        snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, getenv("DISPLAY"));
 
     argc--, argv++;
     int msg_len = 0;

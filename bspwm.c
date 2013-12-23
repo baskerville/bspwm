@@ -97,11 +97,13 @@ int main(int argc, char *argv[])
     dpy_fd = xcb_get_file_descriptor(dpy);
 
     char *sp = getenv(SOCKET_ENV_VAR);
-    snprintf(socket_path, sizeof(socket_path), "%s", (sp == NULL ? DEFAULT_SOCKET_PATH : sp));
+    if (sp != NULL)
+        snprintf(socket_path, sizeof(socket_path), "%s", sp);
+    else
+        snprintf(socket_path, sizeof(socket_path), SOCKET_PATH_TPL, getenv("DISPLAY"));
 
     sock_address.sun_family = AF_UNIX;
     snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", socket_path);
-    unlink(socket_path);
 
     sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -180,6 +182,7 @@ int main(int argc, char *argv[])
 
     cleanup();
     close(sock_fd);
+    unlink(socket_path);
     xcb_ewmh_connection_wipe(ewmh);
     xcb_destroy_window(dpy, motion_recorder);
     free(ewmh);
