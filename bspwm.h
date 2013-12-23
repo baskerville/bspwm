@@ -76,7 +76,6 @@ bool randr;
 void init(void);
 void setup(void);
 void register_events(void);
-void quit(void);
 void cleanup(void);
 void put_status(void);
 void sig_handler(int sig);

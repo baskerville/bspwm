@@ -176,8 +176,10 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (xcb_connection_has_error(dpy))
-            err("The server has closed the connection.\n");
+        if (xcb_connection_has_error(dpy)) {
+            warn("The server closed the connection.\n");
+            running = false;
+        }
     }
 
     cleanup();
@@ -312,11 +314,6 @@ void register_events(void)
         xcb_disconnect(dpy);
         err("Another window manager is already running.\n");
     }
-}
-
-void quit(void)
-{
-    running = false;
 }
 
 void cleanup(void)

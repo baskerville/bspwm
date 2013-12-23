@@ -844,7 +844,7 @@ bool cmd_quit(char **args, int num)
 {
     if (num > 0 && sscanf(*args, "%i", &exit_status) != 1)
         return false;
-    quit();
+    running = false;
     return true;
 }
 
