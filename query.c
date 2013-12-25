@@ -44,7 +44,7 @@ void query_monitors(coordinates_t loc, domain_t dom, char *rsp)
                 strncat(rsp, line, REMLEN(rsp));
                 continue;
             } else {
-                snprintf(line, sizeof(line), "%s %ux%u%+i%+i %i,%i,%i,%i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y, m->top_padding, m->right_padding, m->bottom_padding, m->left_padding);
+                snprintf(line, sizeof(line), "%s %ux%u%+i%+i", m->name, m->rectangle.width, m->rectangle.height, m->rectangle.x, m->rectangle.y);
                 strncat(rsp, line, REMLEN(rsp));
                 if (m == mon)
                     strncat(rsp, " *", REMLEN(rsp));
@@ -68,7 +68,7 @@ void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int 
             strncat(rsp, line, REMLEN(rsp));
             continue;
         } else {
-            snprintf(line, sizeof(line), "%s %u %i %c %c", d->name, d->border_width, d->window_gap, (d->layout == LAYOUT_TILED ? 'T' : 'M'), (d->floating ? 'f' : '-'));
+            snprintf(line, sizeof(line), "%s %u %i %i,%i,%i,%i %c %c", d->name, d->border_width, d->window_gap, d->top_padding, d->right_padding, d->bottom_padding, d->left_padding, (d->layout == LAYOUT_TILED ? 'T' : 'M'), (d->floating ? 'f' : '-'));
             strncat(rsp, line, REMLEN(rsp));
             if (d == m->desk)
                 strncat(rsp, " *", REMLEN(rsp));

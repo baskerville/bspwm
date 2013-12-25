@@ -64,36 +64,36 @@ void restore_tree(char *file_path)
             level++;
 
         if (level == 0) {
-            int x, y, left, right, top, bottom;
+            int x, y;
             unsigned int w, h;
             char end = 0;
             name[0] = '\0';
-            sscanf(line + level, "%s %ux%u%i%i %i,%i,%i,%i %c", name, &w, &h, &x, &y, &top, &right, &bottom, &left, &end);
+            sscanf(line + level, "%s %ux%u%i%i %c", name, &w, &h, &x, &y, &end);
             m = find_monitor(name);
             if (m == NULL)
                 continue;
             m->rectangle = (xcb_rectangle_t) {x, y, w, h};
-            m->top_padding = top;
-            m->right_padding = right;
-            m->bottom_padding = bottom;
-            m->left_padding = left;
             if (end != 0)
                 mon = m;
         } else if (level == 2) {
             if (m == NULL)
                 continue;
-            int wg;
+            int wg, top, right, bottom, left;
             unsigned int bw;
             char floating, layout = 0, end = 0;
             name[0] = '\0';
             loc.desktop = NULL;
-            sscanf(line + level, "%s %u %i %c %c %c", name, &bw, &wg, &layout, &floating, &end);
+            sscanf(line + level, "%s %u %i %i,%i,%i,%i %c %c %c", name, &bw, &wg, &top, &right, &bottom, &left, &layout, &floating, &end);
             locate_desktop(name, &loc);
             d = loc.desktop;
             if (d == NULL)
                 continue;
             d->border_width = bw;
             d->window_gap = wg;
+            d->top_padding = top;
+            d->right_padding = right;
+            d->bottom_padding = bottom;
+            d->left_padding = left;
             if (layout == 'M')
                 d->layout = LAYOUT_MONOCLE;
             else if (layout == 'T')
@@ -101,7 +101,6 @@ void restore_tree(char *file_path)
             d->floating = (floating == '-' ? false : true);
             if (end != 0)
                 m->desk = d;
-
         } else {
             if (m == NULL || d == NULL)
                 continue;
@@ -123,7 +122,6 @@ void restore_tree(char *file_path)
                 birth->parent = n;
             }
             n = birth;
-
             char br;
             if (isupper(line[level])) {
                 char st;

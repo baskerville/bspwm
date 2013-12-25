@@ -118,6 +118,7 @@ desktop_t *make_desktop(const char *name)
     d->layout = LAYOUT_TILED;
     d->prev = d->next = NULL;
     d->root = d->focus = NULL;
+    d->top_padding = d->right_padding = d->bottom_padding = d->left_padding = 0;
     d->window_gap = WINDOW_GAP;
     d->border_width = BORDER_WIDTH;
     d->floating = false;

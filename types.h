@@ -194,6 +194,10 @@ struct desktop_t {
     node_t *focus;
     desktop_t *prev;
     desktop_t *next;
+    int top_padding;
+    int right_padding;
+    int bottom_padding;
+    int left_padding;
     int window_gap;
     unsigned int border_width;
     bool floating;
@@ -206,10 +210,6 @@ struct monitor_t {
     xcb_rectangle_t rectangle;
     xcb_window_t root;
     bool wired;
-    int top_padding;
-    int right_padding;
-    int bottom_padding;
-    int left_padding;
     desktop_t *desk;
     desktop_t *desk_head;
     desktop_t *desk_tail;

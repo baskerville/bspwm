@@ -42,7 +42,6 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
     m->prev = m->next = NULL;
     m->desk = m->desk_head = m->desk_tail = NULL;
     m->rectangle = rect;
-    m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
     m->wired = true;
     m->num_sticky = 0;
     uint32_t mask = XCB_CW_EVENT_MASK;
