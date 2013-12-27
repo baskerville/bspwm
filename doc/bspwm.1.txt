@@ -343,8 +343,8 @@ Options
 *-r*, *--ratio* 'RATIO'::
     Set the splitting ratio of the selected window (0 < 'RATIO' < 1).
 
-*-e*, *--edge* 'DIR' 'RATIO'|±'PIXELS'|pull|push::
-    Set and change the splitting ratio of (or pull, or push) the edge located in the given direction in relation to the selected window.
+*-e*, *--edge* 'DIR' 'RATIO'|±'PIXELS'::
+    Set or change the splitting ratio of the edge located in the given direction in relation to the selected window.
 
 *-R*, *--rotate* 'DIR' '90|270|180'::
     Rotate the tree holding the edge located in the given direction in relation to the selected window.
@@ -621,9 +621,6 @@ Global Settings
 
 'split_ratio'::
     Default split ratio.
-
-'growth_factor'::
-    Intensity of the growth involved in pulling or pushing an edge.
 
 'status_prefix'::
     Prefix prepended to each of the status lines.

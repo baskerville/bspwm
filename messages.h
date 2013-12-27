@@ -54,7 +54,6 @@ bool parse_cycle_direction(char *s, cycle_dir_t *d);
 bool parse_circulate_direction(char *s, circulate_dir_t *d);
 bool parse_history_direction(char *s, history_dir_t *d);
 bool parse_flip(char *s, flip_t *f);
-bool parse_fence_move(char *s, fence_move_t *m);
 bool parse_pointer_action(char *s, pointer_action_t *a);
 bool parse_degree(char *s, int *d);
 bool parse_window_id(char *s, long int *i);

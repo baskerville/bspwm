@@ -49,7 +49,6 @@
 #define URGENT_BORDER_COLOR           "#EFA29A"
 
 #define SPLIT_RATIO    0.5
-#define GROWTH_FACTOR  1.1
 
 #define HISTORY_AWARE_FOCUS      false
 #define BORDERLESS_MONOCLE       false
@@ -81,7 +80,6 @@ char normal_private_border_color[MAXLEN];
 char urgent_border_color[MAXLEN];
 
 double split_ratio;
-double growth_factor;
 
 bool borderless_monocle;
 bool gapless_monocle;

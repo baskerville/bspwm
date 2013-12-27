@@ -45,16 +45,6 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
-    MOVE_PULL,
-    MOVE_PUSH
-} fence_move_t;
-
-typedef enum {
-    CHANGE_INCREASE,
-    CHANGE_DECREASE
-} value_change_t;
-
-typedef enum {
     CLIENT_TYPE_ALL,
     CLIENT_TYPE_FLOATING,
     CLIENT_TYPE_TILED

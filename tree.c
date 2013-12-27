@@ -408,12 +408,6 @@ bool is_second_child(node_t *n)
     return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
 
-void change_split_ratio(node_t *n, value_change_t chg)
-{
-    n->split_ratio = pow(n->split_ratio,
-            (chg == CHANGE_INCREASE ? (1 / growth_factor) : growth_factor));
-}
-
 void reset_mode(coordinates_t *loc)
 {
     if (loc->node != NULL) {
@@ -725,18 +719,6 @@ node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel)
     }
 
     return r;
-}
-
-void move_fence(node_t *n, direction_t dir, fence_move_t mov)
-{
-    if (n == NULL)
-        return;
-
-    if ((mov == MOVE_PUSH && (dir == DIR_RIGHT || dir == DIR_DOWN))
-            || (mov == MOVE_PULL && (dir == DIR_LEFT || dir == DIR_UP)))
-        change_split_ratio(n, CHANGE_INCREASE);
-    else
-        change_split_ratio(n, CHANGE_DECREASE);
 }
 
 void rotate_tree(node_t *n, int deg)

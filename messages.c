@@ -260,29 +260,24 @@ bool cmd_window(char **args, int num)
             if (n == NULL)
                 return false;
             num--, args++;
-            fence_move_t fmo;
-            if (parse_fence_move(*args, &fmo)) {
-                move_fence(n, dir, fmo);
-            } else {
-                if ((*args)[0] == '+' || (*args)[0] == '-') {
-                    int pix;
-                    if (sscanf(*args, "%i", &pix) == 1) {
-                        int max = (n->split_type == TYPE_HORIZONTAL ? n->rectangle.height : n->rectangle.width);
-                        double rat = ((max * n->split_ratio) + pix) / max;
-                        if (rat > 0 && rat < 1)
-                            n->split_ratio = rat;
-                        else
-                            return false;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    double rat;
-                    if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
+            if ((*args)[0] == '+' || (*args)[0] == '-') {
+                int pix;
+                if (sscanf(*args, "%i", &pix) == 1) {
+                    int max = (n->split_type == TYPE_HORIZONTAL ? n->rectangle.height : n->rectangle.width);
+                    double rat = ((max * n->split_ratio) + pix) / max;
+                    if (rat > 0 && rat < 1)
                         n->split_ratio = rat;
                     else
                         return false;
+                } else {
+                    return false;
                 }
+            } else {
+                double rat;
+                if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
+                    n->split_ratio = rat;
+                else
+                    return false;
             }
             dirty = true;
         } else if (streq("-r", *args) || streq("--ratio", *args)) {
@@ -907,13 +902,6 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         else
             return false;
         return true;
-    } else if (streq("growth_factor", name)) {
-        double g;
-        if (sscanf(value, "%lf", &g) == 1 && g > 1)
-            growth_factor = g;
-        else
-            return false;
-        return true;
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
         snprintf(s, sizeof(s), "%s", value);
@@ -984,8 +972,6 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
 {
     if (streq("split_ratio", name))
         snprintf(rsp, BUFSIZ, "%lf", split_ratio);
-    else if (streq("growth_factor", name))
-        snprintf(rsp, BUFSIZ, "%lf", growth_factor);
     else if (streq("window_gap", name))
         if (loc.desktop == NULL)
             return false;
@@ -1131,18 +1117,6 @@ bool parse_flip(char *s, flip_t *f)
         return true;
     } else if (streq("vertical", s)) {
         *f = FLIP_VERTICAL;
-        return true;
-    }
-    return false;
-}
-
-bool parse_fence_move(char *s, fence_move_t *m)
-{
-    if (streq("push", s)) {
-        *m = MOVE_PUSH;
-        return true;
-    } else if (streq("pull", s)) {
-        *m = MOVE_PULL;
         return true;
     }
     return false;

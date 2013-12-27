@@ -38,7 +38,6 @@ bool is_tiled(client_t *c);
 bool is_floating(client_t *c);
 bool is_first_child(node_t *n);
 bool is_second_child(node_t *n);
-void change_split_ratio(node_t *n, value_change_t chg);
 void reset_mode(coordinates_t *loc);
 node_t *brother_tree(node_t *n);
 void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public);
@@ -56,7 +55,6 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 void get_opposite(direction_t src, direction_t *dst);
 int tiled_area(node_t *n);
 node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel);
-void move_fence(node_t *n, direction_t dir, fence_move_t mov);
 void rotate_tree(node_t *n, int deg);
 void rotate_brother(node_t *n);
 void unrotate_tree(node_t *n, int rot);
