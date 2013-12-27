@@ -29,7 +29,6 @@
 #include "ewmh.h"
 #include "history.h"
 #include "monitor.h"
-#include "window.h"
 #include "query.h"
 #include "stack.h"
 #include "tree.h"

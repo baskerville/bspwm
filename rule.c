@@ -30,7 +30,6 @@
 #include "window.h"
 #include "messages.h"
 #include "settings.h"
-#include "query.h"
 #include "rule.h"
 
 rule_t *make_rule(void)

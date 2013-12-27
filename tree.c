@@ -24,7 +24,6 @@
 
 #include <float.h>
 #include <limits.h>
-#include <math.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
