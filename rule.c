@@ -276,6 +276,7 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 #define SETCSQ(name) \
         else if (streq(#name, key)) \
             csq->name = v;
+        SETCSQ(pseudo_tiled)
         SETCSQ(fullscreen)
         SETCSQ(locked)
         SETCSQ(sticky)

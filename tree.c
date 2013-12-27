@@ -70,17 +70,18 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
         xcb_rectangle_t r;
         if (!n->client->fullscreen) {
             if (!n->client->floating) {
-                /* tiled clients */
-                if (d->layout == LAYOUT_TILED)
+                if (n->client->pseudo_tiled) {
+                /* pseudo-tiled clients */
+                    r = n->client->floating_rectangle;
+                    center_rectangle(&r, rect);
+                } else {
+                    /* tiled clients */
                     r = rect;
-                else if (d->layout == LAYOUT_MONOCLE)
-                    r = root_rect;
-                else
-                    return;
-                int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
-                int bleed = wg + 2 * n->client->border_width;
-                r.width = (bleed < r.width ? r.width - bleed : 1);
-                r.height = (bleed < r.height ? r.height - bleed : 1);
+                    int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+                    int bleed = wg + 2 * n->client->border_width;
+                    r.width = (bleed < r.width ? r.width - bleed : 1);
+                    r.height = (bleed < r.height ? r.height - bleed : 1);
+                }
                 n->client->tiled_rectangle = r;
             } else {
                 /* floating clients */
@@ -99,7 +100,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
         xcb_rectangle_t first_rect;
         xcb_rectangle_t second_rect;
 
-        if (n->first_child->vacant || n->second_child->vacant) {
+        if (d->layout == LAYOUT_MONOCLE || n->first_child->vacant || n->second_child->vacant) {
             first_rect = second_rect = rect;
         } else {
             unsigned int fence;
@@ -360,8 +361,8 @@ client_t *make_client(xcb_window_t win)
     snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
     c->border_width = BORDER_WIDTH;
     c->window = win;
-    c->floating = c->transient = c->fullscreen = c->locked = c->sticky = c->urgent = false;
-    c->private = c->icccm_focus = false;
+    c->pseudo_tiled = c->floating = c->transient = c->fullscreen = false;
+    c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
     xcb_icccm_get_wm_protocols_reply_t protocols;
     if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
         if (has_proto(WM_TAKE_FOCUS, &protocols))

@@ -444,6 +444,11 @@ floating
 Is above any tiled window and can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
 .RE
 .PP
+pseudo_tiled
+.RS 4
+Has a libre size while being centered in its tiling space\&.
+.RE
+.PP
 fullscreen
 .RS 4
 Fills its monitor rectangle, is above all the other windows and has no borders\&.
@@ -534,7 +539,7 @@ Set and change the splitting ratio of (or pull, or push) the edge located in the
 Rotate the tree holding the edge located in the given direction in relation to the selected window\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|locked|sticky|private[=on|off]
+\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]
 .RS 4
 Set or toggle the given state for the selected window\&.
 .RE
@@ -876,7 +881,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name>|* [\fB\-o\fR|\fB\-\-one\-shot\fR] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name>|* [\fB\-o\fR|\fB\-\-one\-shot\fR] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]
 .RS 4
 Create a new rule\&.
 .RE

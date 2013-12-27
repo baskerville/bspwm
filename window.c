@@ -118,6 +118,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
     insert_node(m, d, n, d->focus);
 
     disable_floating_atom(c->window);
+    set_pseudo_tiled(n, csq->pseudo_tiled);
     set_floating(n, csq->floating);
     set_locked(m, d, n, csq->locked);
     set_sticky(m, d, n, csq->sticky);
@@ -358,6 +359,16 @@ void set_fullscreen(node_t *n, bool value)
     else
         ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
     stack(n, STACK_ABOVE);
+}
+
+void set_pseudo_tiled(node_t *n, bool value)
+{
+    if (n == NULL || n->client->transient || n->client->pseudo_tiled == value)
+        return;
+
+    PRINTF("pseudo-tiled %X: %s\n", n->client->window, BOOLSTR(value));
+
+    n->client->pseudo_tiled = value;
 }
 
 void set_floating(node_t *n, bool value)

@@ -293,6 +293,9 @@ Window States
 floating::
     Is above any tiled window and can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
 
+pseudo_tiled::
+    Has a libre size while being centered in its tiling space.
+
 fullscreen::
     Fills its monitor rectangle, is above all the other windows and has no borders.
 
@@ -346,7 +349,7 @@ Options
 *-R*, *--rotate* 'DIR' '90|270|180'::
     Rotate the tree holding the edge located in the given direction in relation to the selected window.
 
-*-t*, *--toggle* floating|fullscreen|locked|sticky|private[=on|off]::
+*-t*, *--toggle* floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]::
     Set or toggle the given state for the selected window.
 
 *-c*, *--close*::
@@ -538,7 +541,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]::
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]::
     Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::

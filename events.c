@@ -120,6 +120,9 @@ void configure_request(xcb_generic_event_t *evt)
         evt.override_redirect = false;
 
         xcb_send_event(dpy, false, win, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
+
+        if (loc.node->client->pseudo_tiled)
+            arrange(loc.monitor, loc.desktop);
     } else {
         uint16_t mask = 0;
         uint32_t values[7];
@@ -170,8 +173,12 @@ void configure_request(xcb_generic_event_t *evt)
 
         xcb_configure_window(dpy, e->window, mask, values);
     }
-    if (is_managed)
-        translate_client(monitor_from_client(loc.node->client), loc.monitor, loc.node->client);
+
+    if (is_managed) {
+        monitor_t *m = monitor_from_client(loc.node->client);
+        if (m != NULL && m != loc.monitor)
+            transfer_node(loc.monitor, loc.desktop, loc.node, m, m->desk, m->desk->focus);
+    }
 }
 
 void destroy_notify(xcb_generic_event_t *evt)

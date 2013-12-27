@@ -204,6 +204,9 @@ bool cmd_window(char **args, int num)
             if (streq("fullscreen", key)) {
                 set_fullscreen(trg.node, (a == ALTER_SET ? b : !trg.node->client->fullscreen));
                 dirty = true;
+            } else if (streq("pseudo_tiled", key)) {
+                set_pseudo_tiled(trg.node, (a == ALTER_SET ? b : !trg.node->client->pseudo_tiled));
+                dirty = true;
             } else if (streq("floating", key)) {
                 set_floating(trg.node, (a == ALTER_SET ? b : !trg.node->client->floating));
                 dirty = true;

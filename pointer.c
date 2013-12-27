@@ -69,12 +69,12 @@ void grab_pointer(pointer_action_t pac)
             case ACTION_MOVE:
             case ACTION_RESIZE_SIDE:
             case ACTION_RESIZE_CORNER:
-                if (is_tiled(c)) {
-                    frozen_pointer->rectangle = c->tiled_rectangle;
-                    frozen_pointer->is_tiled = true;
-                } else if (is_floating(c)) {
+                if (is_floating(c)) {
                     frozen_pointer->rectangle = c->floating_rectangle;
                     frozen_pointer->is_tiled = false;
+                } else if (is_tiled(c)) {
+                    frozen_pointer->rectangle = c->tiled_rectangle;
+                    frozen_pointer->is_tiled = true;
                 } else {
                     frozen_pointer->action = ACTION_NONE;
                     return;
@@ -254,7 +254,7 @@ void track_pointer(int root_x, int root_y)
                     sr = MIN(1, sr);
                     horizontal_fence->split_ratio = sr;
                 }
-                arrange(mon, mon->desk);
+                arrange(m, d);
             } else {
                 if (pac == ACTION_RESIZE_SIDE) {
                     switch (frozen_pointer->side) {
@@ -283,11 +283,6 @@ void track_pointer(int root_x, int root_y)
                             h = rect.height;
                             break;
                     }
-                    width = MAX(1, w);
-                    height = MAX(1, h);
-                    window_move_resize(win, x, y, width, height);
-                    c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
-                    window_draw_border(n, d->focus == n, mon == m);
                 } else if (pac == ACTION_RESIZE_CORNER) {
                     switch (frozen_pointer->corner) {
                         case CORNER_TOP_LEFT:
@@ -315,12 +310,11 @@ void track_pointer(int root_x, int root_y)
                             h = rect.height + delta_y;
                             break;
                     }
-                    width = MAX(1, w);
-                    height = MAX(1, h);
-                    window_move_resize(win, x, y, width, height);
-                    c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
-                    window_draw_border(n, d->focus == n, mon == m);
                 }
+                width = MAX(1, w);
+                height = MAX(1, h);
+                window_move_resize(win, x, y, width, height);
+                c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
             }
             break;
         case ACTION_FOCUS:

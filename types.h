@@ -155,6 +155,7 @@ typedef struct {
     xcb_window_t window;
     char class_name[SMALEN];
     unsigned int border_width;
+    bool pseudo_tiled;
     bool floating;
     bool transient;    /* transient window are always floating */
     bool fullscreen;
@@ -260,6 +261,7 @@ typedef struct {
     char instance_name[SMALEN];
     char desktop_desc[MAXLEN];
     char monitor_desc[MAXLEN];
+    bool pseudo_tiled;
     bool floating;
     bool transient;
     bool fullscreen;
