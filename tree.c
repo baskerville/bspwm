@@ -62,8 +62,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
     if (is_leaf(n)) {
 
         if ((borderless_monocle && is_tiled(n->client) && d->layout == LAYOUT_MONOCLE)
-                || n->client->fullscreen
-                || n->client->frame)
+                || n->client->fullscreen)
             n->client->border_width = 0;
         else
             n->client->border_width = d->border_width;
@@ -362,7 +361,7 @@ client_t *make_client(xcb_window_t win)
     c->border_width = BORDER_WIDTH;
     c->window = win;
     c->floating = c->transient = c->fullscreen = c->locked = c->sticky = c->urgent = false;
-    c->frame = c->private = c->icccm_focus = false;
+    c->private = c->icccm_focus = false;
     xcb_icccm_get_wm_protocols_reply_t protocols;
     if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
         if (has_proto(WM_TAKE_FOCUS, &protocols))

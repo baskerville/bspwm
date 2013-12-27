@@ -19,7 +19,7 @@ pointer.o: pointer.c bspwm.h types.h helpers.h query.h settings.h stack.h \
 query.o: query.c bspwm.h types.h helpers.h desktop.h history.h messages.h \
  monitor.h tree.h query.h
 restore.o: restore.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
- monitor.h window.h query.h stack.h tree.h restore.h
+ monitor.h window.h query.h stack.h tree.h settings.h restore.h
 rule.o: rule.c bspwm.h types.h helpers.h ewmh.h window.h messages.h \
  settings.h query.h rule.h
 settings.o: settings.c bspwm.h types.h helpers.h settings.h

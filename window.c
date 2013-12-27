@@ -107,7 +107,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
     translate_client(mm, m, c);
     if (csq->center)
         window_center(m, c);
-    c->frame = csq->frame;
 
     snprintf(c->class_name, sizeof(c->class_name), "%s", csq->class_name);
 
@@ -141,7 +140,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
     else
         stack(n, STACK_ABOVE);
 
-    uint32_t values[] = {get_event_mask(n->client)};
+    uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
     xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
     if (visible) {
@@ -179,12 +178,7 @@ void unmanage_window(xcb_window_t win)
 
 void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 {
-    if (n == NULL || (n->client->border_width < 1 && !n->client->frame)) {
-        return;
-    }
-
-    if (n->client->frame) {
-        draw_frame_background(n, focused_window, focused_monitor);
+    if (n == NULL || n->client->border_width < 1) {
         return;
     }
 
@@ -256,58 +250,6 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
         xcb_free_gc(dpy, gc);
         xcb_free_pixmap(dpy, pixmap);
     }
-}
-
-void draw_frame_background(node_t *n, bool focused_window, bool focused_monitor)
-{
-    if (n == NULL)
-        return;
-
-    xcb_window_t win = n->client->window;
-    uint32_t border_color_pxl = get_border_color(n->client, focused_window, focused_monitor);
-    uint32_t opacity = (focused_window ? (focused_monitor ? focused_frame_opacity : active_frame_opacity) : normal_frame_opacity) * 0xffffffff;
-    xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, _NET_WM_WINDOW_OPACITY, XCB_ATOM_CARDINAL, 32, 1, &opacity);
-    uint8_t win_depth = root_depth;
-    xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
-    if (geo != NULL)
-        win_depth = geo->depth;
-    free(geo);
-    xcb_rectangle_t rectangle = get_rectangle(n->client);
-    rectangle.x = rectangle.y = 0;
-    uint16_t width = rectangle.width;
-    uint16_t height = rectangle.height;
-    xcb_pixmap_t pixmap = xcb_generate_id(dpy);
-    xcb_create_pixmap(dpy, win_depth, pixmap, win, width, height);
-    xcb_gcontext_t gc = xcb_generate_id(dpy);
-    xcb_create_gc(dpy, gc, pixmap, 0, NULL);
-    xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &border_color_pxl);
-    xcb_poly_fill_rectangle(dpy, pixmap, gc, 1, &rectangle);
-    if (n->split_mode == MODE_MANUAL) {
-        xcb_rectangle_t presel_rectangle = rectangle;
-        uint32_t presel_border_color_pxl;
-        get_color(presel_border_color, win, &presel_border_color_pxl);
-        xcb_change_gc(dpy, gc, XCB_GC_FOREGROUND, &presel_border_color_pxl);
-        switch (n->split_dir) {
-            case DIR_UP:
-                presel_rectangle.height = n->split_ratio * rectangle.height;
-                break;
-            case DIR_RIGHT:
-                presel_rectangle.width = (1 - n->split_ratio) * rectangle.width;
-                presel_rectangle.x = rectangle.width - presel_rectangle.width;
-                break;
-            case DIR_DOWN:
-                presel_rectangle.height = (1 - n->split_ratio) * rectangle.height;
-                presel_rectangle.y = rectangle.height - presel_rectangle.height;
-                break;
-            case DIR_LEFT:
-                presel_rectangle.width = n->split_ratio * rectangle.width;
-                break;
-        }
-        xcb_poly_fill_rectangle(dpy, pixmap, gc, 1, &presel_rectangle);
-    }
-    xcb_copy_area(dpy, pixmap, win, gc, 0, 0, 0, 0, width, height);
-    xcb_free_gc(dpy, gc);
-    xcb_free_pixmap(dpy, pixmap);
 }
 
 pointer_state_t *make_pointer_state(void)
@@ -403,7 +345,7 @@ void window_kill(monitor_t *m, desktop_t *d, node_t *n)
 
 void set_fullscreen(node_t *n, bool value)
 {
-    if (n == NULL || n->client->frame || n->client->fullscreen == value)
+    if (n == NULL || n->client->fullscreen == value)
         return;
 
     client_t *c = n->client;
@@ -420,7 +362,7 @@ void set_fullscreen(node_t *n, bool value)
 
 void set_floating(node_t *n, bool value)
 {
-    if (n == NULL || n->client->transient || n->client->fullscreen || n->client->frame || n->client->floating == value)
+    if (n == NULL || n->client->transient || n->client->fullscreen || n->client->floating == value)
         return;
 
     PRINTF("floating %X: %s\n", n->client->window, BOOLSTR(value));
@@ -798,9 +740,4 @@ void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value
     e.data.data32[1] = XCB_CURRENT_TIME;
 
     xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
-}
-
-uint32_t get_event_mask(client_t *c)
-{
-    return CLIENT_EVENT_MASK | (c->frame ? XCB_EVENT_MASK_EXPOSURE : 0) | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0);
 }

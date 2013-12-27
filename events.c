@@ -63,9 +63,6 @@ void handle_event(xcb_generic_event_t *evt)
         case XCB_FOCUS_IN:
             focus_in(evt);
             break;
-        case XCB_EXPOSE:
-            expose(evt);
-            break;
         default:
             if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
                 import_monitors();
@@ -265,17 +262,6 @@ void focus_in(xcb_generic_event_t *evt)
             (mon->desk->focus == NULL
              || mon->desk->focus->client->window != e->event))
         update_input_focus();
-}
-
-void expose(xcb_generic_event_t *evt)
-{
-    xcb_expose_event_t *e = (xcb_expose_event_t *) evt;
-
-    PRINTF("expose %X\n", e->window);
-
-    coordinates_t loc;
-    if (locate_window(e->window, &loc) && loc.node->client->frame)
-        draw_frame_background(loc.node, loc.desktop->focus == loc.node, loc.monitor == mon);
 }
 
 void enter_notify(xcb_generic_event_t *evt)

@@ -911,17 +911,6 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         else
             return false;
         return true;
-#define SETOPACITY(s) \
-    } else if (streq(#s, name)) { \
-        double o; \
-        if (sscanf(value, "%lf", &o) == 1 && o >= 0 && o <= 1) \
-            s = o; \
-        else \
-            return false;
-    SETOPACITY(focused_frame_opacity)
-    SETOPACITY(active_frame_opacity)
-    SETOPACITY(normal_frame_opacity)
-#undef SETOPACITY
 #define SETCOLOR(s) \
     } else if (streq(#s, name)) { \
         snprintf(s, sizeof(s), "%s", value);
@@ -947,7 +936,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
             for (monitor_t *m = mon_head; m != NULL; m = m->next)
                 for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
                     for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-                        uint32_t values[] = {get_event_mask(n->client)};
+                        uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
                         xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
                     }
             if (focus_follows_pointer) {
@@ -1019,13 +1008,6 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
     DESKGET(bottom_padding)
     DESKGET(left_padding)
 #undef DESKGET
-#define GETOPACITY(s) \
-    else if (streq(#s, name)) \
-        snprintf(rsp, BUFSIZ, "%lf", s);
-    GETOPACITY(focused_frame_opacity)
-    GETOPACITY(active_frame_opacity)
-    GETOPACITY(normal_frame_opacity)
-#undef GETOPACITY
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \
         snprintf(rsp, BUFSIZ, "%s", s);

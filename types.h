@@ -161,7 +161,6 @@ typedef struct {
     bool locked;       /* protects window from being closed */
     bool sticky;
     bool urgent;
-    bool frame;
     bool private;
     bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
@@ -267,7 +266,6 @@ typedef struct {
     bool locked;
     bool sticky;
     bool private;
-    bool frame;
     bool center;
     bool lower;
     bool follow;

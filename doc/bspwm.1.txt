@@ -538,7 +538,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|locked|sticky|private|frame|center|lower|follow|manage|focus)=(true|false)]::
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]::
     Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::
@@ -615,15 +615,6 @@ Global Settings
 
 'urgent_border_color'::
     Color of the border of an urgent window.
-
-'focused_frame_opacity'::
-    Opacity of a focused frame of a focused monitor.
-
-'active_frame_opacity'::
-    Opacity of a focused frame of an unfocused monitor.
-
-'normal_frame_opacity'::
-    Opacity of an unfocused frame.
 
 'split_ratio'::
     Default split ratio.

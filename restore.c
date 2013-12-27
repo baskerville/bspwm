@@ -33,6 +33,7 @@
 #include "query.h"
 #include "stack.h"
 #include "tree.h"
+#include "settings.h"
 #include "restore.h"
 
 void restore_tree(char *file_path)
@@ -133,15 +134,14 @@ void restore_tree(char *file_path)
             } else {
                 client_t *c = make_client(XCB_NONE);
                 num_clients++;
-                char floating, transient, fullscreen, urgent, locked, sticky, frame, private, sd, sm, end = 0;
-                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &frame, &private, &sm, &end);
+                char floating, transient, fullscreen, urgent, locked, sticky, private, sd, sm, end = 0;
+                sscanf(line + level, "%c %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c %c", &br, c->class_name, &c->window, &c->border_width, &c->floating_rectangle.width, &c->floating_rectangle.height, &c->floating_rectangle.x, &c->floating_rectangle.y, &sd, &floating, &transient, &fullscreen, &urgent, &locked, &sticky, &private, &sm, &end);
                 c->floating = (floating == '-' ? false : true);
                 c->transient = (transient == '-' ? false : true);
                 c->fullscreen = (fullscreen == '-' ? false : true);
                 c->urgent = (urgent == '-' ? false : true);
                 c->locked = (locked == '-' ? false : true);
                 c->sticky = (sticky == '-' ? false : true);
-                c->frame = (frame == '-' ? false : true);
                 c->private = (private == '-' ? false : true);
                 n->split_mode = (sm == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
                 if (sd == 'U')
@@ -173,7 +173,7 @@ void restore_tree(char *file_path)
     for (monitor_t *m = mon_head; m != NULL; m = m->next)
         for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
             for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-                uint32_t values[] = {get_event_mask(n->client)};
+                uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
                 xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
                 if (n->client->floating) {
                     n->vacant = true;
