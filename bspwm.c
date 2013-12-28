@@ -257,7 +257,6 @@ void setup(void)
     GETATOM(WM_DELETE_WINDOW)
     GETATOM(WM_TAKE_FOCUS)
     GETATOM(_BSPWM_FLOATING_WINDOW)
-    GETATOM(_NET_WM_WINDOW_OPACITY)
 #undef GETATOM
 
     const xcb_query_extension_reply_t *qep = xcb_get_extension_data(dpy, &xcb_randr_id);
