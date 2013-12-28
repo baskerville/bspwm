@@ -658,17 +658,20 @@ Global Settings
 'remove_disabled_monitor'::
     Consider disabled monitors as disconnected.
 
-Desktop Settings
-~~~~~~~~~~~~~~~~
-
-'window_gap'::
-    Size of the gap that separates windows.
+Monitor and Desktop Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 'top_padding'::
 'right_padding'::
 'bottom_padding'::
 'left_padding'::
-    Padding space added at the sides of the desktop.
+    Padding space added at the sides of the monitor or desktop.
+
+Desktop Settings
+~~~~~~~~~~~~~~~~
+
+'window_gap'::
+    Size of the gap that separates windows.
 
 'border_width'::
     Window border width.

@@ -64,15 +64,19 @@ void restore_tree(char *file_path)
             level++;
 
         if (level == 0) {
-            int x, y;
+            int x, y, top, right, bottom, left;
             unsigned int w, h;
             char end = 0;
             name[0] = '\0';
-            sscanf(line + level, "%s %ux%u%i%i %c", name, &w, &h, &x, &y, &end);
+            sscanf(line + level, "%s %ux%u%i%i %i,%i,%i,%i %c", name, &w, &h, &x, &y, &top, &right, &bottom, &left, &end);
             m = find_monitor(name);
             if (m == NULL)
                 continue;
             m->rectangle = (xcb_rectangle_t) {x, y, w, h};
+            m->top_padding = top;
+            m->right_padding = right;
+            m->bottom_padding = bottom;
+            m->left_padding = left;
             if (end != 0)
                 mon = m;
         } else if (level == 2) {

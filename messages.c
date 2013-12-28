@@ -863,32 +863,41 @@ bool set_setting(coordinates_t loc, char *name, char *value)
         if (sscanf(value, "%u", &bw) != 1)
             return false;
         DESKSET(border_width, bw)
-    } else if (streq("top_padding", name)) {
-        int tp;
-        if (sscanf(value, "%i", &tp) != 1)
-            return false;
-        DESKSET(top_padding, tp)
-    } else if (streq("right_padding", name)) {
-        int rp;
-        if (sscanf(value, "%i", &rp) != 1)
-            return false;
-        DESKSET(right_padding, rp)
-    } else if (streq("bottom_padding", name)) {
-        int bp;
-        if (sscanf(value, "%i", &bp) != 1)
-            return false;
-        DESKSET(bottom_padding, bp)
-    } else if (streq("left_padding", name)) {
-        int lp;
-        if (sscanf(value, "%i", &lp) != 1)
-            return false;
-        DESKSET(left_padding, lp)
     } else if (streq("window_gap", name)) {
         int wg;
         if (sscanf(value, "%i", &wg) != 1)
             return false;
         DESKSET(window_gap, wg)
 #undef DESKSET
+#define MONDESKSET(k, v) \
+        if (loc.desktop != NULL) \
+            loc.desktop->k = v; \
+        else if (loc.monitor != NULL) \
+            loc.monitor->k = v; \
+        else \
+            for (monitor_t *m = mon_head; m != NULL; m = m->next) \
+                m->k = v;
+    } else if (streq("top_padding", name)) {
+        int tp;
+        if (sscanf(value, "%i", &tp) != 1)
+            return false;
+        MONDESKSET(top_padding, tp)
+    } else if (streq("right_padding", name)) {
+        int rp;
+        if (sscanf(value, "%i", &rp) != 1)
+            return false;
+        MONDESKSET(right_padding, rp)
+    } else if (streq("bottom_padding", name)) {
+        int bp;
+        if (sscanf(value, "%i", &bp) != 1)
+            return false;
+        MONDESKSET(bottom_padding, bp)
+    } else if (streq("left_padding", name)) {
+        int lp;
+        if (sscanf(value, "%i", &lp) != 1)
+            return false;
+        MONDESKSET(left_padding, lp)
+#undef MONDESKSET
 #define SETSTR(s) \
     } else if (streq(#s, name)) { \
         return snprintf(s, sizeof(s), "%s", value) >= 0;
@@ -986,16 +995,18 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
         snprintf(rsp, BUFSIZ, "%s", external_rules_command);
     else if (streq("status_prefix", name))
         snprintf(rsp, BUFSIZ, "%s", status_prefix);
-#define DESKGET(k) \
+#define MONDESKGET(k) \
     else if (streq(#k, name)) \
-        if (loc.desktop == NULL) \
-            return false; \
+        if (loc.desktop != NULL) \
+            snprintf(rsp, BUFSIZ, "%i", loc.desktop->k); \
+        else if (loc.monitor != NULL) \
+            snprintf(rsp, BUFSIZ, "%i", loc.monitor->k); \
         else \
-            snprintf(rsp, BUFSIZ, "%i", loc.desktop->k);
-    DESKGET(top_padding)
-    DESKGET(right_padding)
-    DESKGET(bottom_padding)
-    DESKGET(left_padding)
+            return false;
+    MONDESKGET(top_padding)
+    MONDESKGET(right_padding)
+    MONDESKGET(bottom_padding)
+    MONDESKGET(left_padding)
 #undef DESKGET
 #define GETCOLOR(s) \
     else if (streq(#s, name)) \

@@ -200,6 +200,10 @@ struct monitor_t {
     xcb_rectangle_t rectangle;
     xcb_window_t root;
     bool wired;
+    int top_padding;
+    int right_padding;
+    int bottom_padding;
+    int left_padding;
     desktop_t *desk;
     desktop_t *desk_head;
     desktop_t *desk_tail;
