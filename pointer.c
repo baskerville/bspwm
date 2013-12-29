@@ -74,7 +74,7 @@ void grab_pointer(pointer_action_t pac)
                     frozen_pointer->is_tiled = false;
                 } else if (is_tiled(c)) {
                     frozen_pointer->rectangle = c->tiled_rectangle;
-                    frozen_pointer->is_tiled = true;
+                    frozen_pointer->is_tiled = (pac == ACTION_MOVE || !c->pseudo_tiled);
                 } else {
                     frozen_pointer->action = ACTION_NONE;
                     return;
@@ -313,8 +313,14 @@ void track_pointer(int root_x, int root_y)
                 }
                 width = MAX(1, w);
                 height = MAX(1, h);
-                window_move_resize(win, x, y, width, height);
-                c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
+                if (c->pseudo_tiled) {
+                    c->floating_rectangle.width = width;
+                    c->floating_rectangle.height = height;
+                    arrange(m, d);
+                } else {
+                    c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
+                    window_move_resize(win, x, y, width, height);
+                }
             }
             break;
         case ACTION_FOCUS:
