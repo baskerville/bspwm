@@ -186,7 +186,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
     xcb_window_t transient_for = XCB_NONE;
     xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
     if (transient_for != XCB_NONE)
-        csq->transient = csq->floating = true;
+        csq->floating = true;
 
     xcb_icccm_get_wm_class_reply_t reply;
     if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {

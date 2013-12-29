@@ -128,7 +128,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
         set_fullscreen(d->focus, false);
 
     set_fullscreen(n, csq->fullscreen);
-    c->transient = csq->transient;
 
     arrange(m, d);
 
@@ -363,7 +362,7 @@ void set_fullscreen(node_t *n, bool value)
 
 void set_pseudo_tiled(node_t *n, bool value)
 {
-    if (n == NULL || n->client->transient || n->client->pseudo_tiled == value)
+    if (n == NULL || n->client->pseudo_tiled == value)
         return;
 
     PRINTF("pseudo-tiled %X: %s\n", n->client->window, BOOLSTR(value));
@@ -373,7 +372,7 @@ void set_pseudo_tiled(node_t *n, bool value)
 
 void set_floating(node_t *n, bool value)
 {
-    if (n == NULL || n->client->transient || n->client->fullscreen || n->client->floating == value)
+    if (n == NULL || n->client->fullscreen || n->client->floating == value)
         return;
 
     PRINTF("floating %X: %s\n", n->client->window, BOOLSTR(value));

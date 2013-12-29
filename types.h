@@ -147,7 +147,6 @@ typedef struct {
     unsigned int border_width;
     bool pseudo_tiled;
     bool floating;
-    bool transient;    /* transient window are always floating */
     bool fullscreen;
     bool locked;       /* protects window from being closed */
     bool sticky;
@@ -257,7 +256,6 @@ typedef struct {
     char monitor_desc[MAXLEN];
     bool pseudo_tiled;
     bool floating;
-    bool transient;
     bool fullscreen;
     bool locked;
     bool sticky;
