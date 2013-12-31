@@ -378,7 +378,7 @@ bool cmd_desktop(char **args, int num)
             if (num < 1)
                 return false;
             coordinates_t dst;
-            if (desktop_from_desc(*args, &trg, &dst) && trg.monitor == dst.monitor)
+            if (desktop_from_desc(*args, &trg, &dst))
                 swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop);
             else
                 return false;
