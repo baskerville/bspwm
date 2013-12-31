@@ -23,6 +23,7 @@
  */
 
 #include <stdio.h>
+#include <strings.h>
 #include <string.h>
 #include "bspwm.h"
 #include "desktop.h"
@@ -230,6 +231,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
     cycle_dir_t cyc;
     history_dir_t hdi;
+    char *colon;
     int idx;
     if (parse_cycle_direction(desc, &cyc)) {
         dst->monitor = ref->monitor;
@@ -244,6 +246,11 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
             dst->monitor = mon;
             dst->desktop = mon->desk;
         }
+    } else if ((colon = index(desc, ':')) != NULL) {
+        *colon = '\0';
+        if (streq("focused", desc))
+            if (monitor_from_desc(colon + 1, ref, dst))
+                dst->desktop = dst->monitor->desk;
     } else if (parse_index(desc, &idx)) {
         desktop_from_index(idx, dst);
     } else {

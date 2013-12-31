@@ -194,7 +194,7 @@ Select a desktop.
 ----
 DESKTOP_SEL := <desktop_name>
              | ^<n>
-             | (CYCLE_DIR|last|focused|older|newer)[.occupied|.free][.urgent][.local]
+             | (CYCLE_DIR|last|focused[:MONITOR_SEL]|older|newer)[.occupied|.free][.urgent][.local]
 ----
 
 Primary Selectors
