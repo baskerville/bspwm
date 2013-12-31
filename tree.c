@@ -812,12 +812,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
         d->root = NULL;
         d->focus = NULL;
     } else {
-        if (n == d->focus) {
-            d->focus = history_get_node(d, n);
-            if (d->focus == NULL)
-                d->focus = first_extrema(d->root);
-        }
-
         if (n->client->private)
             update_privacy_level(n, false);
 
@@ -849,6 +843,13 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
         n->parent = NULL;
         free(p);
         update_vacant_state(b->parent);
+
+        if (n == d->focus) {
+            d->focus = history_get_node(d, n);
+            // fallback to the first extrema (`n` is not reachable)
+            if (d->focus == NULL)
+                d->focus = first_extrema(d->root);
+        }
     }
     if (n->client->sticky)
         m->num_sticky--;
