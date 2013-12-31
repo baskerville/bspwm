@@ -261,11 +261,16 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
     put_status();
 }
 
-void pseudo_focus(desktop_t *d, node_t *n)
+void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n)
 {
-    d->focus = n;
-    if (n != NULL)
+    if (n != NULL) {
         stack(n, STACK_ABOVE);
+        if (d->focus != n) {
+            window_draw_border(d->focus, false, m == mon);
+            window_draw_border(n, true, m == mon);
+        }
+    }
+    d->focus = n;
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -308,12 +313,15 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     }
 
     focus_desktop(m, d);
-    pseudo_focus(d, n);
+
+    d->focus = n;
 
     if (n == NULL) {
         history_add(m, d, NULL);
         ewmh_update_active_window();
         return;
+    } else {
+        stack(n, STACK_ABOVE);
     }
 
     PRINTF("focus node %X\n", n->client->window);
@@ -1010,7 +1018,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
         if (focused)
             focus_node(md, dd, ns);
         else if (active)
-            pseudo_focus(dd, ns);
+            pseudo_focus(md, dd, ns);
     } else {
         if (focused)
             update_current();
