@@ -116,6 +116,9 @@ int main(int argc, char *argv[])
     if (listen(sock_fd, SOMAXCONN) == -1)
         err("Couldn't listen to the socket.\n");
 
+    signal(SIGINT, sig_handler);
+    signal(SIGHUP, sig_handler);
+    signal(SIGTERM, sig_handler);
     signal(SIGCHLD, sig_handler);
     signal(SIGPIPE, SIG_IGN);
     load_settings();
@@ -343,8 +346,11 @@ void put_status(void)
 
 void sig_handler(int sig)
 {
-    signal(sig, sig_handler);
-    if (sig == SIGCHLD)
+    if (sig == SIGCHLD) {
+        signal(sig, sig_handler);
         while (waitpid(-1, 0, WNOHANG) > 0)
             ;
+    } else if (sig == SIGINT || sig == SIGHUP || sig == SIGTERM) {
+        running = false;
+    }
 }
