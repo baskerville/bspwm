@@ -1,4 +1,4 @@
-- Pseudo-tiled windows.
+- Desktops as nodes?
 - Invisible state.
 - Restore built-in pointer grabbing?
 - `FILE *` instead of `char *` for writing the server response?
