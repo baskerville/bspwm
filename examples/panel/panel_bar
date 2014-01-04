@@ -6,11 +6,11 @@ while read -r line ; do
     case $line in
         S*)
             # clock output
-            sys_infos="\\br\\f6${line#?}"
+            sys_infos="\\br\\f7${line#?}"
             ;;
         T*)
             # xtitle output
-            title="\\br\\f7${line#?}"
+            title="\\br\\f4${line#?}"
             ;;
         W*)
             # bspwm internal state
@@ -48,7 +48,7 @@ while read -r line ; do
                     L*)
                         # layout
                         layout=$(printf "%s" "${name}" | sed 's/\(.\).*/\U\1/')
-                        wm_infos="$wm_infos    \\br\\f6$layout"
+                        wm_infos="$wm_infos    \\br\\f2$layout"
                         ;;
                 esac
                 shift
