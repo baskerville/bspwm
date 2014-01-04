@@ -60,6 +60,7 @@ void rotate_brother(node_t *n);
 void unrotate_tree(node_t *n, int rot);
 void unrotate_brother(node_t *n);
 void flip_tree(node_t *n, flip_t flp);
+void equalize_tree(node_t *n);
 int balance_tree(node_t *n);
 void unlink_node(monitor_t *m, desktop_t *d, node_t *n);
 void remove_node(monitor_t *m, desktop_t *d, node_t *n);

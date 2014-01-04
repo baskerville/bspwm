@@ -435,6 +435,9 @@ bool cmd_desktop(char **args, int num)
             } else {
                 return false;
             }
+        } else if (streq("-E", *args) || streq("--equalize", *args)) {
+            equalize_tree(trg.desktop->root);
+            dirty = true;
         } else if (streq("-B", *args) || streq("--balance", *args)) {
             balance_tree(trg.desktop->root);
             dirty = true;

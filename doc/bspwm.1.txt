@@ -395,6 +395,9 @@ Options
 *-R*, *--rotate* '90|270|180'::
     Rotate the tree of the selected desktop.
 
+*-E*, *--equalize*::
+    Reset the split ratios of the tree of the selected desktop.
+
 *-B*, *--balance*::
     Adjust the split ratios of the tree of the selected desktop so that all windows occupy the same area.
 

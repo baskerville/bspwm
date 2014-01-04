@@ -792,6 +792,17 @@ void flip_tree(node_t *n, flip_t flp)
     flip_tree(n->second_child, flp);
 }
 
+void equalize_tree(node_t *n)
+{
+    if (n == NULL || n->vacant) {
+        return;
+    } else {
+        n->split_ratio = split_ratio;
+        equalize_tree(n->first_child);
+        equalize_tree(n->second_child);
+    }
+}
+
 int balance_tree(node_t *n)
 {
     if (n == NULL || n->vacant) {
