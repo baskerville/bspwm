@@ -109,6 +109,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
         window_center(m, c);
 
     snprintf(c->class_name, sizeof(c->class_name), "%s", csq->class_name);
+    snprintf(c->instance_name, sizeof(c->instance_name), "%s", csq->instance_name);
 
     csq->floating = csq->floating || d->floating;
 

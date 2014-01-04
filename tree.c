@@ -366,6 +366,7 @@ client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
     snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
+    snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
     c->border_width = BORDER_WIDTH;
     c->window = win;
     c->pseudo_tiled = c->floating = c->fullscreen = false;

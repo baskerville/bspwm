@@ -144,6 +144,7 @@ typedef struct {
 typedef struct {
     xcb_window_t window;
     char class_name[SMALEN];
+    char instance_name[SMALEN];
     unsigned int border_width;
     bool pseudo_tiled;
     bool floating;
