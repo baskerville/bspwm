@@ -65,6 +65,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 {
     monitor_t *m = mon;
     desktop_t *d = mon->desk;
+    node_t *f = mon->desk->focus;
 
     parse_rule_consequence(fd, csq);
 
@@ -79,7 +80,15 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
     PRINTF("manage %X\n", win);
 
-    if (csq->desktop_desc[0] != '\0') {
+    if (csq->node_desc[0] != '\0') {
+        coordinates_t ref = {m, d, f};
+        coordinates_t trg = {NULL, NULL, NULL};
+        if (node_from_desc(csq->node_desc, &ref, &trg)) {
+            m = trg.monitor;
+            d = trg.desktop;
+            f = trg.node;
+        }
+    } else if (csq->desktop_desc[0] != '\0') {
         coordinates_t ref = {m, d, NULL};
         coordinates_t trg = {NULL, NULL, NULL};
         if (desktop_from_desc(csq->desktop_desc, &ref, &trg)) {
@@ -116,7 +125,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
     node_t *n = make_node();
     n->client = c;
 
-    insert_node(m, d, n, d->focus);
+    insert_node(m, d, n, f);
 
     disable_floating_atom(c->window);
     set_pseudo_tiled(n, csq->pseudo_tiled);

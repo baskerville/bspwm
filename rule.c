@@ -265,10 +265,12 @@ void parse_rule_consequence(int fd, rule_consequence_t *csq)
 void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 {
     bool v;
-    if (streq("desktop", key)) {
-        snprintf(csq->desktop_desc, sizeof(csq->desktop_desc), "%s", value);
-    } else if (streq("monitor", key)) {
+    if (streq("monitor", key)) {
         snprintf(csq->monitor_desc, sizeof(csq->monitor_desc), "%s", value);
+    } else if (streq("desktop", key)) {
+        snprintf(csq->desktop_desc, sizeof(csq->desktop_desc), "%s", value);
+    } else if (streq("window", key)) {
+        snprintf(csq->node_desc, sizeof(csq->node_desc), "%s", value);
     } else if (parse_bool(value, &v)) {
         if (streq("floating", key))
             csq->floating = v;

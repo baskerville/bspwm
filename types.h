@@ -253,8 +253,9 @@ struct rule_t {
 typedef struct {
     char class_name[SMALEN];
     char instance_name[SMALEN];
-    char desktop_desc[MAXLEN];
     char monitor_desc[MAXLEN];
+    char desktop_desc[MAXLEN];
+    char node_desc[MAXLEN];
     bool pseudo_tiled;
     bool floating;
     bool fullscreen;

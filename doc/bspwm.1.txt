@@ -544,7 +544,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [desktop=DESKTOP_SEL|monitor=MONITOR_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]::
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]::
     Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::
