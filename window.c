@@ -94,6 +94,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
         if (desktop_from_desc(csq->desktop_desc, &ref, &trg)) {
             m = trg.monitor;
             d = trg.desktop;
+            f = trg.desktop->focus;
         }
     } else if (csq->monitor_desc[0] != '\0') {
         coordinates_t ref = {m, NULL, NULL};
@@ -101,12 +102,14 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
         if (monitor_from_desc(csq->monitor_desc, &ref, &trg)) {
             m = trg.monitor;
             d = trg.monitor->desk;
+            f = trg.monitor->desk->focus;
         }
     }
 
     if (csq->sticky) {
         m = mon;
         d = mon->desk;
+        f = mon->desk->focus;
     }
 
     client_t *c = make_client(win);
