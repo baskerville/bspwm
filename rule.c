@@ -153,6 +153,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
                 csq->focus = false;
             } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
                 csq->floating = true;
+                csq->center = true;
             } else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK || a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP || a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {
                 csq->manage = false;
                 if (a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
