@@ -107,7 +107,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
                 fence = rect.width * n->split_ratio;
                 first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
                 second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
-            } else if (n->split_type == TYPE_HORIZONTAL) {
+            } else {
                 fence = rect.height * n->split_ratio;
                 first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
                 second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
