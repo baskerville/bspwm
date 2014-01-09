@@ -1,4 +1,5 @@
-- Desktops as nodes?
+- Set more attributes in `make_client` (instead of doing it in `apply_rules`) and don't pass `XCB_NONE` as argument.
+- Internal nodes selectors/actions: labels?
 - Invisible state.
 - Restore built-in pointer grabbing?
 - `FILE *` instead of `char *` for writing the server response?
