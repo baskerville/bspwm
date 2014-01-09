@@ -114,6 +114,10 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
     client_t *c = make_client(win);
     update_floating_rectangle(c);
+    c->min_width = csq->min_width;
+    c->max_width = csq->max_width;
+    c->min_height = csq->min_height;
+    c->max_height = csq->max_height;
     monitor_t *mm = monitor_from_client(c);
     embrace_client(mm, c);
     translate_client(mm, m, c);
@@ -532,12 +536,35 @@ void update_floating_rectangle(client_t *c)
 
     if (geo != NULL)
         c->floating_rectangle = (xcb_rectangle_t) {geo->x, geo->y, geo->width, geo->height};
-    else
-        c->floating_rectangle = (xcb_rectangle_t) {0, 0, 32, 24};
 
     free(geo);
 }
 
+void restrain_floating_width(client_t *c, int *width)
+{
+    if (*width < 1)
+        *width = 1;
+    if (c->min_width > 0 && *width < c->min_width)
+        *width = c->min_width;
+    else if (c->max_width > 0 && *width > c->max_width)
+        *width = c->max_width;
+}
+
+void restrain_floating_height(client_t *c, int *height)
+{
+    if (*height < 1)
+        *height = 1;
+    if (c->min_height > 0 && *height < c->min_height)
+        *height = c->min_height;
+    else if (c->max_height > 0 && *height > c->max_height)
+        *height = c->max_height;
+}
+
+void restrain_floating_size(client_t *c, int *width, int *height)
+{
+    restrain_floating_width(c, width);
+    restrain_floating_height(c, height);
+}
 
 void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {

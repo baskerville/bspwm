@@ -156,6 +156,10 @@ typedef struct {
     bool icccm_focus;
     xcb_rectangle_t floating_rectangle;
     xcb_rectangle_t tiled_rectangle;
+    uint16_t min_width;
+    uint16_t max_width;
+    uint16_t min_height;
+    uint16_t max_height;
     xcb_atom_t wm_state[MAX_STATE];
     int num_states;
 } client_t;
@@ -256,6 +260,10 @@ typedef struct {
     char monitor_desc[MAXLEN];
     char desktop_desc[MAXLEN];
     char node_desc[MAXLEN];
+    uint16_t min_width;
+    uint16_t max_width;
+    uint16_t min_height;
+    uint16_t max_height;
     bool pseudo_tiled;
     bool floating;
     bool fullscreen;

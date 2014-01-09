@@ -87,26 +87,38 @@ void configure_request(xcb_generic_event_t *evt)
 
     coordinates_t loc;
     bool is_managed = locate_window(e->window, &loc);
+    client_t *c = (is_managed ? loc.node->client : NULL);
+    int w = 0, h = 0;
 
-    if (is_managed && !is_floating(loc.node->client)) {
+    if (is_managed && !is_floating(c)) {
         if (e->value_mask & XCB_CONFIG_WINDOW_X)
-            loc.node->client->floating_rectangle.x = e->x;
+            c->floating_rectangle.x = e->x;
         if (e->value_mask & XCB_CONFIG_WINDOW_Y)
-            loc.node->client->floating_rectangle.y = e->y;
+            c->floating_rectangle.y = e->y;
         if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH)
-            loc.node->client->floating_rectangle.width = e->width;
+            w = e->width;
         if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
-            loc.node->client->floating_rectangle.height = e->height;
+            h = e->height;
+
+        if (w != 0) {
+            restrain_floating_width(c, &w);
+            c->floating_rectangle.width = w;
+        }
+
+        if (h != 0) {
+            restrain_floating_height(c, &h);
+            c->floating_rectangle.height = h;
+        }
 
         xcb_configure_notify_event_t evt;
         xcb_rectangle_t rect;
-        xcb_window_t win = loc.node->client->window;
-        unsigned int bw = loc.node->client->border_width;
+        xcb_window_t win = c->window;
+        unsigned int bw = c->border_width;
 
-        if (loc.node->client->fullscreen)
+        if (c->fullscreen)
             rect = loc.monitor->rectangle;
         else
-            rect = loc.node->client->tiled_rectangle;
+            rect = c->tiled_rectangle;
 
         evt.response_type = XCB_CONFIGURE_NOTIFY;
         evt.event = win;
@@ -121,7 +133,7 @@ void configure_request(xcb_generic_event_t *evt)
 
         xcb_send_event(dpy, false, win, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
 
-        if (loc.node->client->pseudo_tiled)
+        if (c->pseudo_tiled)
             arrange(loc.monitor, loc.desktop);
     } else {
         uint16_t mask = 0;
@@ -132,28 +144,34 @@ void configure_request(xcb_generic_event_t *evt)
             mask |= XCB_CONFIG_WINDOW_X;
             values[i++] = e->x;
             if (is_managed)
-                loc.node->client->floating_rectangle.x = e->x;
+                c->floating_rectangle.x = e->x;
         }
 
         if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
             mask |= XCB_CONFIG_WINDOW_Y;
             values[i++] = e->y;
             if (is_managed)
-                loc.node->client->floating_rectangle.y = e->y;
+                c->floating_rectangle.y = e->y;
         }
 
         if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
             mask |= XCB_CONFIG_WINDOW_WIDTH;
-            values[i++] = e->width;
-            if (is_managed)
-                loc.node->client->floating_rectangle.width = e->width;
+            w = e->width;
+            if (is_managed) {
+                restrain_floating_width(c, &w);
+                c->floating_rectangle.width = w;
+            }
+            values[i++] = w;
         }
 
         if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
             mask |= XCB_CONFIG_WINDOW_HEIGHT;
-            values[i++] = e->height;
-            if (is_managed)
-                loc.node->client->floating_rectangle.height = e->height;
+            h = e->height;
+            if (is_managed) {
+                restrain_floating_height(c, &h);
+                c->floating_rectangle.height = h;
+            }
+            values[i++] = h;
         }
 
         if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) {
@@ -175,7 +193,7 @@ void configure_request(xcb_generic_event_t *evt)
     }
 
     if (is_managed)
-        translate_client(monitor_from_client(loc.node->client), loc.monitor, loc.node->client);
+        translate_client(monitor_from_client(c), loc.monitor, c);
 }
 
 void destroy_notify(xcb_generic_event_t *evt)

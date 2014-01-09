@@ -182,6 +182,10 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
                 && size_hints.min_width == size_hints.max_width
                 && size_hints.min_height == size_hints.max_height)
             csq->floating = true;
+        csq->min_width = size_hints.min_width;
+        csq->max_width = size_hints.max_width;
+        csq->min_height = size_hints.min_height;
+        csq->max_height = size_hints.max_height;
     }
 
     xcb_window_t transient_for = XCB_NONE;

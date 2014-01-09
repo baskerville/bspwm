@@ -365,10 +365,10 @@ node_t *make_node(void)
 client_t *make_client(xcb_window_t win)
 {
     client_t *c = malloc(sizeof(client_t));
+    c->window = win;
     snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
     snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
     c->border_width = BORDER_WIDTH;
-    c->window = win;
     c->pseudo_tiled = c->floating = c->fullscreen = false;
     c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
     xcb_icccm_get_wm_protocols_reply_t protocols;

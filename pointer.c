@@ -173,8 +173,7 @@ void track_pointer(int root_x, int root_y)
     if (frozen_pointer->action == ACTION_NONE)
         return;
 
-    int16_t delta_x, delta_y, x = 0, y = 0, w = 1, h = 1;
-    uint16_t width, height;
+    int delta_x, delta_y, x = 0, y = 0, w = 1, h = 1;
 
     pointer_action_t pac = frozen_pointer->action;
     monitor_t *m = frozen_pointer->monitor;
@@ -311,15 +310,27 @@ void track_pointer(int root_x, int root_y)
                             break;
                     }
                 }
-                width = MAX(1, w);
-                height = MAX(1, h);
+
+                int oldw = w, oldh = h;
+                restrain_floating_size(c, &w, &h);
+
                 if (c->pseudo_tiled) {
-                    c->floating_rectangle.width = width;
-                    c->floating_rectangle.height = height;
+                    c->floating_rectangle.width = w;
+                    c->floating_rectangle.height = h;
                     arrange(m, d);
                 } else {
-                    c->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
-                    window_move_resize(win, x, y, width, height);
+                    if (oldw == w) {
+                        c->floating_rectangle.x = x;
+                        c->floating_rectangle.width = w;
+                    }
+                    if (oldh == h) {
+                        c->floating_rectangle.y = y;
+                        c->floating_rectangle.height = h;
+                    }
+                    window_move_resize(win, c->floating_rectangle.x,
+                                            c->floating_rectangle.y,
+                                            c->floating_rectangle.width,
+                                            c->floating_rectangle.height);
                 }
             }
             break;
