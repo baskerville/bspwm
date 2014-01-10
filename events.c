@@ -217,17 +217,38 @@ void unmap_notify(xcb_generic_event_t *evt)
 void property_notify(xcb_generic_event_t *evt)
 {
     xcb_property_notify_event_t *e = (xcb_property_notify_event_t *) evt;
-    xcb_icccm_wm_hints_t hints;
 
     /* PRINTF("property notify %X\n", e->window); */
 
-    if (e->atom != XCB_ATOM_WM_HINTS)
+    if (e->atom != XCB_ATOM_WM_HINTS && e->atom != XCB_ATOM_WM_NORMAL_HINTS)
         return;
 
     coordinates_t loc;
-    if (locate_window(e->window, &loc)
-            && xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1)
-        set_urgency(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
+    if (!locate_window(e->window, &loc))
+            return;
+
+    if (e->atom == XCB_ATOM_WM_HINTS) {
+        xcb_icccm_wm_hints_t hints;
+        if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1
+                && (hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY))
+            set_urgency(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
+    } else if (e->atom == XCB_ATOM_WM_NORMAL_HINTS) {
+        client_t *c = loc.node->client;
+        xcb_size_hints_t size_hints;
+        if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, e->window), &size_hints, NULL) == 1
+                && (size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE))) {
+            c->min_width = size_hints.min_width;
+            c->max_width = size_hints.max_width;
+            c->min_height = size_hints.min_height;
+            c->max_height = size_hints.max_height;
+            int w = c->floating_rectangle.width;
+            int h = c->floating_rectangle.height;
+            restrain_floating_size(c, &w, &h);
+            c->floating_rectangle.width = w;
+            c->floating_rectangle.height = h;
+            arrange(loc.monitor, loc.desktop);
+        }
+    }
 }
 
 void client_message(xcb_generic_event_t *evt)
