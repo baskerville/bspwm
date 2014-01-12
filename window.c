@@ -182,6 +182,8 @@ void unmanage_window(xcb_window_t win)
     if (locate_window(win, &loc)) {
         PRINTF("unmanage %X\n", win);
         remove_node(loc.monitor, loc.desktop, loc.node);
+        if (frozen_pointer->window == win)
+            frozen_pointer->action = ACTION_NONE;
         arrange(loc.monitor, loc.desktop);
     } else {
         for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
