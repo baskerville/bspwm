@@ -292,9 +292,15 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
             n = d->focus;
     }
 
-    if (n != NULL && d->focus != NULL && n != d->focus && d->focus->client->fullscreen) {
-        set_fullscreen(d->focus, false);
-        arrange(m, d);
+    if (n != NULL) {
+        if (d->focus != NULL && n != d->focus && d->focus->client->fullscreen) {
+            set_fullscreen(d->focus, false);
+            arrange(m, d);
+        }
+        if (n->client->urgent) {
+            n->client->urgent = false;
+            put_status();
+        }
     }
 
     if (mon != m) {
@@ -325,8 +331,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
     }
 
     PRINTF("focus node %X\n", n->client->window);
-
-    n->client->urgent = false;
 
     history_add(m, d, n);
     set_input_focus(n);
