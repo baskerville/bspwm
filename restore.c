@@ -84,7 +84,7 @@ void restore_tree(char *file_path)
 			m->left_padding = left;
 			if (end != 0)
 				mon = m;
-		} else if (level == 2) {
+		} else if (level == 1) {
 			if (m == NULL)
 				continue;
 			int wg, top, right, bottom, left;
@@ -115,7 +115,7 @@ void restore_tree(char *file_path)
 			if (m == NULL || d == NULL)
 				continue;
 			node_t *birth = make_node();
-			if (level == 4) {
+			if (level == 2) {
 				empty_desktop(d);
 				d->root = birth;
 			} else if (n != NULL) {

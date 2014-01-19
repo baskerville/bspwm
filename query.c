@@ -69,7 +69,7 @@ void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int 
 		if (loc.desktop != NULL && d != loc.desktop)
 			continue;
 		for (unsigned int i = 0; i < depth; i++)
-			strncat(rsp, "	", REMLEN(rsp));
+			strncat(rsp, "\t", REMLEN(rsp));
 		if (dom == DOMAIN_DESKTOP) {
 			snprintf(line, sizeof(line), "%s\n", d->name);
 			strncat(rsp, line, REMLEN(rsp));
@@ -95,7 +95,7 @@ void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 	char line[MAXLEN];
 
 	for (unsigned int i = 0; i < depth; i++)
-		strncat(rsp, "	", REMLEN(rsp));
+		strncat(rsp, "\t", REMLEN(rsp));
 
 	if (is_leaf(n)) {
 		client_t *c = n->client;
