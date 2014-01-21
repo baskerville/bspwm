@@ -1,16 +1,16 @@
 #! /bin/sh
 
 if ! rulc -l > /dev/null ; then
-    (setsid ruld &)
-    while ! rulc -l > /dev/null ; do
-        sleep 0.1
-    done
+	(setsid ruld &)
+	while ! rulc -l > /dev/null ; do
+		sleep 0.1
+	done
 fi
 rules=$(rulc -l)
 if [ -z "$rules" ] ; then
-    rulc -a 'class=="Gimp"' 'desktop=^8, follow=on, floating=on'
-    rulc -a 'class=="Chromium"' 'desktop=^2'
-    rulc -a 'instance=="mpv"' 'floating=on'
-    rulc -a 'class=="Kupfer.py"' 'focus=on'
-    rulc -a 'class=="Screenkey"' 'manage=off'
+	rulc -a 'class=="Gimp"' 'desktop=^8, follow=on, floating=on'
+	rulc -a 'class=="Chromium"' 'desktop=^2'
+	rulc -a 'instance=="mpv"' 'floating=on'
+	rulc -a 'class=="Kupfer.py"' 'focus=on'
+	rulc -a 'class=="Screenkey"' 'manage=off'
 fi

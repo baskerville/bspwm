@@ -1,5 +1,5 @@
 #! /bin/sh
 
 while true ; do
-  bspwm || break
+	bspwm || break
 done

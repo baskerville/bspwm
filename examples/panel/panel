@@ -1,8 +1,8 @@
 #! /bin/sh
 
 if [ $(pgrep -cx panel) -gt 1 ] ; then
-    printf "%s\n" "The panel is already running." >&2
-    exit 1
+	printf "%s\n" "The panel is already running." >&2
+	exit 1
 fi
 
 trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
@@ -19,15 +19,15 @@ xtitle -sf 'T%s' > "$PANEL_FIFO" &
 clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 
 case "$flavor" in
-    bar)
-        cat "$PANEL_FIFO" | panel_bar | bar &
-        ;;
-    dzen2)
-        . panel_colors
-        FONT_FAMILY='DejaVu Sans'
-        FONT_SIZE=11
-        cat "$PANEL_FIFO" | panel_dzen2 -f "$FONT_FAMILY" -s "$FONT_SIZE" | dzen2 -h $PANEL_HEIGHT -dock -ta l -title-name panel -fn "${FONT_FAMILY}:pixelsize=${FONT_SIZE}" -fg "$COLOR_FOREGROUND" -bg "$COLOR_BACKGROUND" &
-        ;;
+	bar)
+		cat "$PANEL_FIFO" | panel_bar | bar &
+		;;
+	dzen2)
+		. panel_colors
+		FONT_FAMILY='DejaVu Sans'
+		FONT_SIZE=11
+		cat "$PANEL_FIFO" | panel_dzen2 -f "$FONT_FAMILY" -s "$FONT_SIZE" | dzen2 -h $PANEL_HEIGHT -dock -ta l -title-name panel -fn "${FONT_FAMILY}:pixelsize=${FONT_SIZE}" -fg "$COLOR_FOREGROUND" -bg "$COLOR_BACKGROUND" &
+		;;
 esac
 
 wait

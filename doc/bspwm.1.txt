@@ -29,13 +29,13 @@ Options
 -------
 
 *-h*::
-    Print the synopsis and exit.
+	Print the synopsis and exit.
 
 *-v*::
-    Print the version and exit.
+	Print the version and exit.
 
 *-c* 'CONFIG_PATH'::
-    Use the given configuration file.
+	Use the given configuration file.
 
 Configuration
 -------------
@@ -122,7 +122,7 @@ can either describe the target relatively or name it globally.
 Descriptive (relative) selectors consist of a primary selector and any number
 of non-conflicting modifiers as follows:
 
-    PRIMARY_SELECTOR[.MODIFIER]*
+	PRIMARY_SELECTOR[.MODIFIER]*
 
 For obvious reasons, neither desktops nor monitors names may be valid
 descriptive selectors.
@@ -141,50 +141,49 @@ Primary Selectors
 ^^^^^^^^^^^^^^^^^
 
 'DIR'::
-    Selects the window in the given (spacial) direction relative to the active
-    window.
+	Selects the window in the given (spacial) direction relative to the active window.
 
 'CYCLE_DIR'::
-    Selects the window in the given (cyclic) direction.
+	Selects the window in the given (cyclic) direction.
 
 biggest::
-    Selects the biggest window on the current desktop.
+	Selects the biggest window on the current desktop.
 
 last::
-    Selects the previously focused window.
+	Selects the previously focused window.
 
 focused::
-    Selects the currently focused window.
+	Selects the currently focused window.
 
 older::
-    Selects the window older than the focused window in the history.
+	Selects the window older than the focused window in the history.
 
 newer::
-    Selects the window newer than the focused window in the history.
+	Selects the window newer than the focused window in the history.
 
 Modifiers
 ^^^^^^^^^
 
 floating::
-    Only consider floating windows.
+	Only consider floating windows.
 
 tiled::
-    Only consider tiled windows.
+	Only consider tiled windows.
 
 like::
-    Only consider windows that have the same class as the current window.
-    
+	Only consider windows that have the same class as the current window.
+
 unlike::
-    Only consider windows that have a different class than the current window.
+	Only consider windows that have a different class than the current window.
 
 manual::
-    Only consider windows in manual splitting mode (see *--presel*).
+	Only consider windows in manual splitting mode (see *--presel*).
 
 local::
-    Only consider windows of the current desktop.
+	Only consider windows of the current desktop.
 
 urgent::
-    Only consider urgent windows.
+	Only consider urgent windows.
 
 Desktop
 ~~~~~~~
@@ -201,40 +200,40 @@ Primary Selectors
 ^^^^^^^^^^^^^^^^^
 
 <desktop_name>::
-    Selects the desktop with the given name.
+	Selects the desktop with the given name.
 
 ^<n>::
-    Selects the nth desktop.
+	Selects the nth desktop.
 
 'CYCLE_DIR'::
-    Selects the desktop in the given direction relative to the active desktop.
+	Selects the desktop in the given direction relative to the active desktop.
 
 last::
-    Selects the previously focused desktop.
+	Selects the previously focused desktop.
 
 focused::
-    Selects the currently focused desktop.
+	Selects the currently focused desktop.
 
 older::
-    Selects the desktop older than the focused desktop in the history.
+	Selects the desktop older than the focused desktop in the history.
 
 newer::
-    Selects the desktop newer than the focused desktop in the history.
+	Selects the desktop newer than the focused desktop in the history.
 
 Modifiers
 ^^^^^^^^^
 
 occupied::
-    Only consider occupied desktops.
+	Only consider occupied desktops.
 
 free::
-    Only consider free desktops.
+	Only consider free desktops.
 
 urgent::
-    Only consider urgent desktops.
+	Only consider urgent desktops.
 
 local::
-    Only consider desktops of the current monitor.
+	Only consider desktops of the current monitor.
 
 Monitor
 ~~~~~~~
@@ -251,62 +250,62 @@ Primary Selectors
 ^^^^^^^^^^^^^^^^^
 
 <monitor_name>::
-    Selects the monitor with the given name.
+	Selects the monitor with the given name.
 
 ^<n>::
-    Selects the nth monitor.
+	Selects the nth monitor.
 
 'DIR'::
-    Selects the monitor in the given (spacial) direction relative to the active monitor.
+	Selects the monitor in the given (spacial) direction relative to the active monitor.
 
 'CYCLE_DIR'::
-    Selects the monitor in the given (cyclic) direction relative to the active monitor.
+	Selects the monitor in the given (cyclic) direction relative to the active monitor.
 
 primary::
-    Selects the primary monitor.
+	Selects the primary monitor.
 
 last::
-    Selects the previously focused monitor.
+	Selects the previously focused monitor.
 
 focused::
-    Selects the currently focused monitor.
+	Selects the currently focused monitor.
 
 older::
-    Selects the monitor older than the focused monitor in the history.
+	Selects the monitor older than the focused monitor in the history.
 
 newer::
-    Selects the monitor newer than the focused monitor in the history.
+	Selects the monitor newer than the focused monitor in the history.
 
 Modifiers
 ^^^^^^^^^
 
 occupied::
-    Only consider monitors where the focused desktop is occupied.
+	Only consider monitors where the focused desktop is occupied.
 
 free::
-    Only consider monitors where the focused desktop is free.
+	Only consider monitors where the focused desktop is free.
 
 
 Window States
 -------------
 
 floating::
-    Is above any tiled window and can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+	Is above any tiled window and can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
 
 pseudo_tiled::
-    Has a libre size while being centered in its tiling space.
+	Has a libre size while being centered in its tiling space.
 
 fullscreen::
-    Fills its monitor rectangle, is above all the other windows and has no borders.
+	Fills its monitor rectangle, is above all the other windows and has no borders.
 
 locked::
-    Ignores the *close* message.
+	Ignores the *close* message.
 
 sticky::
-    Stays in the focused desktop of its monitor.
+	Stays in the focused desktop of its monitor.
 
 private::
-    Tries to keep the same tiling position/size.
+	Tries to keep the same tiling position/size.
 
 
 Commands
@@ -323,40 +322,40 @@ window ['WINDOW_SEL'] 'OPTIONS'
 Options
 ^^^^^^^
 *-f*, *--focus* ['WINDOW_SEL']::
-    Focus the selected or given window.
+	Focus the selected or given window.
 
 *-d*, *--to-desktop* 'DESKTOP_SEL'::
-    Send the selected window to the given desktop.
+	Send the selected window to the given desktop.
 
 *-m*, *--to-monitor* 'MONITOR_SEL'::
-    Send the selected window to the given monitor.
+	Send the selected window to the given monitor.
 
 *-w*, *--to-window* 'WINDOW_SEL'::
-    Transplant the selected window to the given window.
+	Transplant the selected window to the given window.
 
 *-s*, *--swap* 'WINDOW_SEL'::
-    Swap the selected window with the given window.
+	Swap the selected window with the given window.
 
 *-p*, *--presel* 'DIR'|cancel::
-    Preselect the splitting area of the selected window (or cancel the preselection).
+	Preselect the splitting area of the selected window (or cancel the preselection).
 
 *-r*, *--ratio* 'RATIO'::
-    Set the splitting ratio of the selected window (0 < 'RATIO' < 1).
+	Set the splitting ratio of the selected window (0 < 'RATIO' < 1).
 
 *-e*, *--edge* 'DIR' 'RATIO'|±'PIXELS'::
-    Set or change the splitting ratio of the edge located in the given direction in relation to the selected window.
+	Set or change the splitting ratio of the edge located in the given direction in relation to the selected window.
 
 *-R*, *--rotate* 'DIR' '90|270|180'::
-    Rotate the tree holding the edge located in the given direction in relation to the selected window.
+	Rotate the tree holding the edge located in the given direction in relation to the selected window.
 
 *-t*, *--toggle* floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]::
-    Set or toggle the given state for the selected window.
+	Set or toggle the given state for the selected window.
 
 *-c*, *--close*::
-    Close the selected window.
+	Close the selected window.
 
 *-k*, *--kill*::
-    Kill the selected window.
+	Kill the selected window.
 
 Desktop
 ~~~~~~~
@@ -369,43 +368,43 @@ desktop ['DESKTOP_SEL'] 'OPTIONS'
 Options
 ^^^^^^^
 *-f*, *--focus* ['DESKTOP_SEL']::
-    Focus the selected or given desktop.
+	Focus the selected or given desktop.
 
 *-m*, *--to-monitor* 'MONITOR_SEL'::
-    Send the selected desktop to the given monitor.
+	Send the selected desktop to the given monitor.
 
 *-l*, *--layout* 'CYCLE_DIR'|monocle|tiled::
-    Set or cycle the layout of the selected desktop.
+	Set or cycle the layout of the selected desktop.
 
 *-n*, *--rename* <new_name>::
-    Rename the selected desktop.
+	Rename the selected desktop.
 
 *-s*, *--swap* 'DESKTOP_SEL'::
-    Swap the selected desktop with the given desktop.
+	Swap the selected desktop with the given desktop.
 
 *-r*, *--remove*::
-    Remove the selected desktop.
+	Remove the selected desktop.
 
 *-c*, *--cancel-presel*::
-    Cancel the preselection of all the windows of the selected desktop.
+	Cancel the preselection of all the windows of the selected desktop.
 
 *-F*, *--flip* 'horizontal|vertical'::
-    Flip the tree of the selected desktop.
+	Flip the tree of the selected desktop.
 
 *-R*, *--rotate* '90|270|180'::
-    Rotate the tree of the selected desktop.
+	Rotate the tree of the selected desktop.
 
 *-E*, *--equalize*::
-    Reset the split ratios of the tree of the selected desktop.
+	Reset the split ratios of the tree of the selected desktop.
 
 *-B*, *--balance*::
-    Adjust the split ratios of the tree of the selected desktop so that all windows occupy the same area.
+	Adjust the split ratios of the tree of the selected desktop so that all windows occupy the same area.
 
 *-C*, *--circulate* forward|backward::
-    Circulate the leaves of the tree of the selected desktop.
+	Circulate the leaves of the tree of the selected desktop.
 
 *-t*, *--toggle* floating[=on|off]::
-    Set or toggle the given state for the selected desktop.
+	Set or toggle the given state for the selected desktop.
 
 
 Monitor
@@ -419,25 +418,25 @@ monitor ['MONITOR_SEL'] 'OPTIONS'
 Options
 ^^^^^^^
 *-f*, *--focus* ['MONITOR_SEL']::
-    Focus the selected or given monitor.
+	Focus the selected or given monitor.
 
 *-a*, *--add-desktops* <name>...::
-    Create desktops with the given names in the selected monitor.
+	Create desktops with the given names in the selected monitor.
 
 *-r*, *--remove-desktops* <name>...::
-    Remove desktops with the given names.
+	Remove desktops with the given names.
 
 *-o*, *--reorder-desktops* <name>...::
-    Reorder the desktops of the selected monitor to match the given order.
+	Reorder the desktops of the selected monitor to match the given order.
 
 *-d*, *--reset-desktops* <name>...::
-    Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops.
+	Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops.
 
 *-n*, *--rename* <new_name>::
-    Rename the selected monitor.
+	Rename the selected monitor.
 
 *-s*, *--swap* 'MONITOR_SEL'::
-    Swap the selected monitor with the given monitor.
+	Swap the selected monitor with the given monitor.
 
 Query
 ~~~~~
@@ -450,25 +449,25 @@ query 'OPTIONS'
 Options
 ^^^^^^^
 *-W*, *--windows*::
-    List matching windows.
+	List matching windows.
 
 *-D*, *--desktops*::
-    List matching desktops.
+	List matching desktops.
 
 *-M*, *--monitors*::
-    List matching monitors.
+	List matching monitors.
 
 *-T*, *--tree*::
-    Print tree rooted at query.
+	Print tree rooted at query.
 
 *-H*, *--history*::
-    Print the history as it relates to the query.
+	Print the history as it relates to the query.
 
 *-S*, *--stack*::
-    Print the window stacking order.
+	Print the window stacking order.
 
 [*-m*,*--monitor* ['MONITOR_SEL']] | [*-d*,*--desktop* ['DESKTOP_SEL']] | [*-w*, *--window* ['WINDOW_SEL']]::
-    Constrain matches to the selected monitor, desktop or window.
+	Constrain matches to the selected monitor, desktop or window.
 
 Restore
 ~~~~~~~
@@ -482,13 +481,13 @@ Options
 ^^^^^^^
 
 *-T*, *--tree* <file_path>::
-    Load the desktop trees from the given file.
+	Load the desktop trees from the given file.
 
 *-H*, *--history* <file_path>::
-    Load the focus history from the given file.
+	Load the focus history from the given file.
 
 *-S*, *--stack* <file_path>::
-    Load the window stacking order from the given file.
+	Load the window stacking order from the given file.
 
 Control
 ~~~~~~~
@@ -502,16 +501,16 @@ Options
 ^^^^^^^
 
 *--adopt-orphans*::
-    Manage all the unmanaged windows remaining from a previous session.
+	Manage all the unmanaged windows remaining from a previous session.
 
 *--toggle-visibility*::
-    Toggle the visibility of all the windows.
+	Toggle the visibility of all the windows.
 
 *--record-history* on|off::
-    Enable or disable the recording of window focus history.
+	Enable or disable the recording of window focus history.
 
 *--subscribe*::
-    Continuously print status informations on standard output.
+	Continuously print status informations on standard output.
 
 Pointer
 ~~~~~~~
@@ -525,13 +524,13 @@ Options
 ^^^^^^^
 
 *-g*, *--grab* focus|move|resize_side|resize_corner::
-    Initiate the given pointer action.
+	Initiate the given pointer action.
 
 *-t*, *--track* <x> <y>::
-    Pass the pointer root coordinates for the current pointer action.
+	Pass the pointer root coordinates for the current pointer action.
 
 *-u*, *--ungrab*::
-    Terminate the current pointer action.
+	Terminate the current pointer action.
 
 Rule
 ~~~~
@@ -545,13 +544,13 @@ Options
 ^^^^^^^
 
 *-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|lower|follow|manage|focus)=(true|false)]::
-    Create a new rule.
+	Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::
-    Remove the given rules.
+	Remove the given rules.
 
 *-l*, *--list* [<class_name>|<instance_name>|*]::
-    List the rules.
+	List the rules.
 
 Config
 ~~~~~~
@@ -560,7 +559,7 @@ General Syntax
 ^^^^^^^^^^^^^^
 
 config [-m 'MONITOR_SEL'|-d 'DESKTOP_SEL'] <key> [<value>]::
-    Get or set the value of <key>.
+	Get or set the value of <key>.
 
 Quit
 ~~~~
@@ -569,7 +568,7 @@ General Syntax
 ^^^^^^^^^^^^^^
 
 quit [<status>]::
-    Quit with an optional exit status.
+	Quit with an optional exit status.
 
 Settings
 --------
@@ -581,85 +580,85 @@ Global Settings
 ~~~~~~~~~~~~~~~
 
 'focused_border_color'::
-    Color of the border of a focused window of a focused monitor.
+	Color of the border of a focused window of a focused monitor.
 
 'active_border_color'::
-    Color of the border of a focused window of an unfocused monitor.
+	Color of the border of a focused window of an unfocused monitor.
 
 'normal_border_color'::
-    Color of the border of an unfocused window.
+	Color of the border of an unfocused window.
 
 'presel_border_color'::
-    Color of the *presel* message feedback.
+	Color of the *presel* message feedback.
 
 'focused_locked_border_color'::
-    Color of the border of a focused locked window of a focused monitor.
+	Color of the border of a focused locked window of a focused monitor.
 
 'active_locked_border_color'::
-    Color of the border of a focused locked window of an unfocused monitor.
+	Color of the border of a focused locked window of an unfocused monitor.
 
 'normal_locked_border_color'::
-    Color of the border of an unfocused locked window.
+	Color of the border of an unfocused locked window.
 
 'focused_sticky_border_color'::
-    Color of the border of a focused sticky window of a focused monitor.
+	Color of the border of a focused sticky window of a focused monitor.
 
 'active_sticky_border_color'::
-    Color of the border of a focused sticky window of an unfocused monitor.
+	Color of the border of a focused sticky window of an unfocused monitor.
 
 'normal_sticky_border_color'::
-    Color of the border of an unfocused sticky window.
+	Color of the border of an unfocused sticky window.
 
 'focused_private_border_color'::
-    Color of the border of a focused private window of a focused monitor.
+	Color of the border of a focused private window of a focused monitor.
 
 'active_private_border_color'::
-    Color of the border of a focused private window of an unfocused monitor.
+	Color of the border of a focused private window of an unfocused monitor.
 
 'normal_private_border_color'::
-    Color of the border of an unfocused private window.
+	Color of the border of an unfocused private window.
 
 'urgent_border_color'::
-    Color of the border of an urgent window.
+	Color of the border of an urgent window.
 
 'split_ratio'::
-    Default split ratio.
+	Default split ratio.
 
 'status_prefix'::
-    Prefix prepended to each of the status lines.
+	Prefix prepended to each of the status lines.
 
 'external_rules_command'::
-    External command used to retrieve rule consequences. The command will receive the the ID of the window being processed as its first argument and the class and instance names as second and third arguments. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
+	External command used to retrieve rule consequences. The command will receive the the ID of the window being processed as its first argument and the class and instance names as second and third arguments. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
 
 'history_aware_focus'::
-    Give priority to the focus history when focusing nodes.
+	Give priority to the focus history when focusing nodes.
 
 'borderless_monocle'::
-    Remove borders for tiled windows in monocle mode.
+	Remove borders for tiled windows in monocle mode.
 
 'gapless_monocle'::
-    Remove gaps for tiled windows in monocle mode.
+	Remove gaps for tiled windows in monocle mode.
 
 'focus_follows_pointer'::
-    Focus the window under the pointer.
+	Focus the window under the pointer.
 
 'pointer_follows_monitor'::
-    When focusing a monitor, put the pointer at its center.
+	When focusing a monitor, put the pointer at its center.
 
 'auto_alternate'::
-    Interpret two consecutive identical *use* messages as an *alternate* message.
+	Interpret two consecutive identical *use* messages as an *alternate* message.
 
 'auto_cancel'::
-    Interpret two consecutive identical *presel* messages as a *cancel* message.
+	Interpret two consecutive identical *presel* messages as a *cancel* message.
 
 'apply_floating_atom'::
-    Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
+	Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
 
 'ignore_ewmh_focus'::
-    Ignore EWMH requests to focus a window.
+	Ignore EWMH requests to focus a window.
 
 'remove_disabled_monitor'::
-    Consider disabled monitors as disconnected.
+	Consider disabled monitors as disconnected.
 
 Monitor and Desktop Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -668,16 +667,16 @@ Monitor and Desktop Settings
 'right_padding'::
 'bottom_padding'::
 'left_padding'::
-    Padding space added at the sides of the monitor or desktop.
+	Padding space added at the sides of the monitor or desktop.
 
 Desktop Settings
 ~~~~~~~~~~~~~~~~
 
 'window_gap'::
-    Size of the gap that separates windows.
+	Size of the gap that separates windows.
 
 'border_width'::
-    Window border width.
+	Window border width.
 
 
 Status Format
@@ -688,37 +687,37 @@ Status informations are composed of items separated by colons.
 Each item has the form '<type><value>' where '<type>' is the first character of the item.
 
 'M<monitor_name>'::
-    Focused monitor.
+	Focused monitor.
 
 'm<monitor_name>'::
-    Unfocused monitor.
+	Unfocused monitor.
 
 'O<desktop_name>'::
-    Occupied focused desktop.
+	Occupied focused desktop.
 
 'o<desktop_name>'::
-    Occupied unfocused desktop.
+	Occupied unfocused desktop.
 
 'F<desktop_name>'::
-    Free focused desktop.
+	Free focused desktop.
 
 'f<desktop_name>'::
-    Free unfocused desktop.
+	Free unfocused desktop.
 
 'U<desktop_name>'::
-    Urgent focused desktop.
+	Urgent focused desktop.
 
 'u<desktop_name>'::
-    Urgent unfocused desktop.
+	Urgent unfocused desktop.
 
 'L(tiled|monocle)'::
-    Layout of the focused desktop of the focused monitor.
+	Layout of the focused desktop of the focused monitor.
 
 Environment Variables
 ---------------------
 
 'BSPWM_SOCKET'::
-  The path of the socket used for the communication between *bspc* and *bspwm*. If it isn't defined, then the following path is used: '/tmp/bspwm<display_name>-socket'.
+	The path of the socket used for the communication between *bspc* and *bspwm*. If it isn't defined, then the following path is used: '/tmp/bspwm<display_name>-socket'.
 
 Panels
 ------

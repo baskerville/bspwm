@@ -5,10 +5,10 @@ class=$2
 instance=$3
 
 if [ "$instance" = fontforge ] ; then
-    title=$(xtitle "$wid")
-    case "$title" in
-        Layers|Tools|Warning)
-            echo "focus = off"
-            ;;
-    esac
+	title=$(xtitle "$wid")
+	case "$title" in
+		Layers|Tools|Warning)
+			echo "focus = off"
+			;;
+	esac
 fi

@@ -6,17 +6,17 @@
 
 # Installation
 
-    make && make install
+	make && make install
 
 # Removal
 
-    make uninstall
+	make uninstall
 
 # Packages
 
 - Arch Linux
-    - [bspwm-git](https://aur.archlinux.org/packages/bspwm-git)
-    - [bspwm](https://aur.archlinux.org/packages/bspwm)
+	- [bspwm-git](https://aur.archlinux.org/packages/bspwm-git)
+	- [bspwm](https://aur.archlinux.org/packages/bspwm)
 
 - Gentoo Linux
-    - [bspwm-git](https://github.com/milomouse/ebuilds)
+	- [bspwm-git](https://github.com/milomouse/ebuilds)
