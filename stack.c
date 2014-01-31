@@ -45,6 +45,8 @@ void stack_insert_after(stacking_list_t *a, node_t *n)
 	if (a == NULL) {
 		stack_head = stack_tail = s;
 	} else {
+		if (a->node == n)
+			return;
 		remove_stack_node(n);
 		stacking_list_t *b = a->next;
 		if (b != NULL)
@@ -63,6 +65,8 @@ void stack_insert_before(stacking_list_t *a, node_t *n)
 	if (a == NULL) {
 		stack_head = stack_tail = s;
 	} else {
+		if (a->node == n)
+			return;
 		remove_stack_node(n);
 		stacking_list_t *b = a->prev;
 		if (b != NULL)
@@ -117,8 +121,14 @@ void stack(node_t *n, stack_flavor_t f)
 			return;
 		stacking_list_t *latest_tiled = NULL;
 		stacking_list_t *oldest_floating = NULL;
+		stacking_list_t *oldest_fullscreen = NULL;
 		for (stacking_list_t *s = (f == STACK_ABOVE ? stack_tail : stack_head); s != NULL; s = (f == STACK_ABOVE ? s->prev : s->next)) {
 			if (s->node != n) {
+				if (s->node->client->fullscreen) {
+					if (oldest_fullscreen == NULL)
+						oldest_fullscreen = s;
+					continue;
+				}
 				if (s->node->client->floating == n->client->floating) {
 					if (f == STACK_ABOVE) {
 						stack_insert_after(s, n);
@@ -135,18 +145,24 @@ void stack(node_t *n, stack_flavor_t f)
 				}
 			}
 		}
-		if (latest_tiled == NULL && oldest_floating == NULL)
+		if (latest_tiled == NULL && oldest_floating == NULL && oldest_fullscreen == NULL)
 			return;
 		if (n->client->floating) {
-			if (latest_tiled == NULL)
-				return;
-			window_above(n->client->window, latest_tiled->node->client->window);
-			stack_insert_after(latest_tiled, n);
+			if (latest_tiled != NULL) {
+				window_above(n->client->window, latest_tiled->node->client->window);
+				stack_insert_after(latest_tiled, n);
+			} else if (oldest_fullscreen != NULL) {
+				window_below(n->client->window, oldest_fullscreen->node->client->window);
+				stack_insert_before(oldest_fullscreen, n);
+			}
 		} else {
-			if (oldest_floating == NULL)
-				return;
-			window_below(n->client->window, oldest_floating->node->client->window);
-			stack_insert_before(oldest_floating, n);
+			if (oldest_floating != NULL) {
+				window_below(n->client->window, oldest_floating->node->client->window);
+				stack_insert_before(oldest_floating, n);
+			} else if (oldest_fullscreen != NULL) {
+				window_below(n->client->window, oldest_fullscreen->node->client->window);
+				stack_insert_before(oldest_fullscreen, n);
+			}
 		}
 	}
 }
