@@ -175,6 +175,10 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 		n->parent = c;
 		c->birth_rotation = f->birth_rotation;
+
+		if (f->split_mode == MODE_AUTOMATIC && tmux_split)
+			f->split_mode = MODE_SEMI_AUTOMATIC;
+
 		switch (f->split_mode) {
 			case MODE_AUTOMATIC:
 				if (p == NULL) {
@@ -215,6 +219,11 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					n->birth_rotation = rot;
 				}
 				break;
+			case MODE_SEMI_AUTOMATIC:
+				if (f->rectangle.height > f->rectangle.width)
+					f->split_dir =  DIR_DOWN;
+				else
+					f->split_dir = DIR_RIGHT;
 			case MODE_MANUAL:
 				if (p != NULL) {
 					if (is_first_child(f))
