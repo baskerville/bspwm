@@ -117,7 +117,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		f = mon->desk->focus;
 	}
 
-	if (csq->split_dir[0] != '\0') {
+	if (csq->split_dir[0] != '\0' && f != NULL) {
 		direction_t dir;
 		if (parse_direction(csq->split_dir, &dir)) {
 			f->split_mode = MODE_MANUAL;
