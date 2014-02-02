@@ -972,6 +972,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(history_aware_focus)
 		SETBOOL(ignore_ewmh_focus)
 		SETBOOL(remove_disabled_monitor)
+		SETBOOL(tmux_split)
 #undef SETBOOL
 	} else {
 		return false;
@@ -1043,6 +1044,7 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
 	GETBOOL(history_aware_focus)
 	GETBOOL(ignore_ewmh_focus)
 	GETBOOL(remove_disabled_monitor)
+	GETBOOL(tmux_split)
 #undef GETBOOL
 	else
 		return false;
