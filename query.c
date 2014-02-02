@@ -387,6 +387,9 @@ bool monitor_from_index(int i, coordinates_t *loc)
 
 bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 {
+	if (ref->node == NULL || loc->node == NULL)
+		return false;
+
 	if (sel.type != CLIENT_TYPE_ALL &&
 	    is_tiled(loc->node->client)
 	    ? sel.type == CLIENT_TYPE_FLOATING
