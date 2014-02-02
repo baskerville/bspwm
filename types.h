@@ -264,6 +264,7 @@ typedef struct {
 	char monitor_desc[MAXLEN];
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
+	char split_dir[MAXLEN];
 	uint16_t min_width;
 	uint16_t max_width;
 	uint16_t min_height;

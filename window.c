@@ -36,6 +36,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "tree.h"
+#include "messages.h"
 #include "window.h"
 
 void schedule_window(xcb_window_t win)
@@ -114,6 +115,14 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		m = mon;
 		d = mon->desk;
 		f = mon->desk->focus;
+	}
+
+	if (csq->split_dir[0] != '\0') {
+		direction_t dir;
+		if (parse_direction(csq->split_dir, &dir)) {
+			f->split_mode = MODE_MANUAL;
+			f->split_dir = dir;
+		}
 	}
 
 	client_t *c = make_client(win);

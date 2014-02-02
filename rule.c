@@ -282,6 +282,8 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		snprintf(csq->desktop_desc, sizeof(csq->desktop_desc), "%s", value);
 	} else if (streq("window", key)) {
 		snprintf(csq->node_desc, sizeof(csq->node_desc), "%s", value);
+	} else if (streq("split_dir", key)) {
+		snprintf(csq->split_dir, sizeof(csq->split_dir), "%s", value);
 	} else if (parse_bool(value, &v)) {
 		if (streq("floating", key))
 			csq->floating = v;
