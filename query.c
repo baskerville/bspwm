@@ -171,7 +171,7 @@ void query_windows(coordinates_t loc, char *rsp)
 
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-	client_select_t sel = {CLIENT_TYPE_ALL, CLIENT_CLASS_ALL, false, false, false};
+	client_select_t sel = {CLIENT_TYPE_ALL, CLIENT_CLASS_ALL, CLIENT_MODE_ALL, false, false};
 	char *tok;
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
@@ -184,10 +184,12 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			sel.class = CLIENT_CLASS_EQUAL;
 		} else if (streq("unlike", tok)) {
 			sel.class = CLIENT_CLASS_DIFFER;
+		} else if (streq("manual", tok)) {
+			sel.mode = CLIENT_MODE_MANUAL;
+		} else if (streq("automatic", tok)) {
+			sel.mode = CLIENT_MODE_AUTOMATIC;
 		} else if (streq("urgent", tok)) {
 			sel.urgent = true;
-		} else if (streq("manual", tok)) {
-			sel.manual = true;
 		} else if (streq("local", tok)) {
 			sel.local = true;
 		}
@@ -402,7 +404,10 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 	    : sel.class == CLIENT_CLASS_EQUAL)
 		return false;
 
-	if (sel.manual && loc->node->split_mode != MODE_MANUAL)
+	if (sel.mode != CLIENT_MODE_ALL &&
+	    loc->node->split_mode == MODE_MANUAL
+	    ? sel.mode == CLIENT_MODE_AUTOMATIC
+	    : sel.mode == CLIENT_MODE_MANUAL)
 		return false;
 
 	if (sel.local && loc->desktop != ref->desktop)

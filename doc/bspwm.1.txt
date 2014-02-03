@@ -134,7 +134,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual][.urgent][.local]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual|.automatic][.urgent][.local]
 ----
 
 Primary Selectors
@@ -177,7 +177,10 @@ unlike::
 	Only consider windows that have a different class than the current window.
 
 manual::
-	Only consider windows in manual splitting mode (see *--presel*).
+	Only consider windows in manual splitting mode.
+
+automatic::
+	Only consider windows in automatic splitting mode.
 
 local::
 	Only consider windows of the current desktop.

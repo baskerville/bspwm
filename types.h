@@ -60,11 +60,17 @@ typedef enum {
 	CLIENT_CLASS_DIFFER
 } client_class_t;
 
+typedef enum {
+	CLIENT_MODE_ALL,
+	CLIENT_MODE_AUTOMATIC,
+	CLIENT_MODE_MANUAL
+} client_mode_t;
+
 typedef struct {
 	client_type_t type;
 	client_class_t class;
+	client_mode_t mode;
 	bool urgent;
-	bool manual;
 	bool local;
 } client_select_t;
 
