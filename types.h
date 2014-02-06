@@ -282,7 +282,6 @@ typedef struct {
 	bool sticky;
 	bool private;
 	bool center;
-	bool lower;
 	bool follow;
 	bool manage;
 	bool focus;

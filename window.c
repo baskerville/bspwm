@@ -74,9 +74,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	parse_rule_consequence(fd, csq);
 
-	if (csq->lower)
-		window_lower(win);
-
 	if (!csq->manage) {
 		disable_floating_atom(win);
 		window_show(win);
