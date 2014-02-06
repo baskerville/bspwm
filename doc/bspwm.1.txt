@@ -658,7 +658,7 @@ Global Settings
 	Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
 
 'ignore_ewmh_focus'::
-	Ignore EWMH requests to focus a window.
+	Ignore EWMH focus requests coming from applications.
 
 'remove_disabled_monitor'::
 	Consider disabled monitors as disconnected.

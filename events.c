@@ -276,7 +276,8 @@ void client_message(xcb_generic_event_t *evt)
 		handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
 		handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
 	} else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
-		if (ignore_ewmh_focus || loc.node == mon->desk->focus)
+		if ((ignore_ewmh_focus && e->data.data32[0] == XCB_EWMH_CLIENT_SOURCE_TYPE_NORMAL) ||
+		    loc.node == mon->desk->focus)
 			return;
 		if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
 			set_fullscreen(loc.desktop->focus, false);
