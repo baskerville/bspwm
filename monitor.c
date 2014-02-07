@@ -426,6 +426,9 @@ bool import_monitors(void)
 		if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
 			add_desktop(m, make_desktop(NULL));
 
+	if (!running && pri_mon != NULL && mon_head != pri_mon)
+		swap_monitors(mon_head, pri_mon);
+
 	free(sres);
 	update_motion_recorder();
 	return (num_monitors > 0);
