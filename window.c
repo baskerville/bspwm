@@ -124,6 +124,8 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	client_t *c = make_client(win);
 	update_floating_rectangle(c);
+	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0)
+		csq->center = true;
 	c->min_width = csq->min_width;
 	c->max_width = csq->max_width;
 	c->min_height = csq->min_height;
