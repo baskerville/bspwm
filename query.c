@@ -267,11 +267,15 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		}
 	} else if ((colon = index(desc, ':')) != NULL) {
 		*colon = '\0';
-		if (streq("focused", desc))
-			if (monitor_from_desc(colon + 1, ref, dst))
+		if (monitor_from_desc(desc, ref, dst)) {
+			if (streq("focused", colon + 1)) {
 				dst->desktop = dst->monitor->desk;
+			} else if (parse_index(colon + 1, &idx)) {
+				desktop_from_index(idx, dst, dst->monitor);
+			}
+		}
 	} else if (parse_index(desc, &idx)) {
-		desktop_from_index(idx, dst);
+		desktop_from_index(idx, dst, NULL);
 	} else {
 		locate_desktop(desc, dst);
 	}
@@ -362,9 +366,11 @@ bool locate_monitor(char *name, coordinates_t *loc)
 	return false;
 }
 
-bool desktop_from_index(int i, coordinates_t *loc)
+bool desktop_from_index(int i, coordinates_t *loc, monitor_t *mm)
 {
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (mm != NULL && m != mm)
+			continue;
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, i--)
 			if (i == 1) {
 				loc->monitor = m;
@@ -372,6 +378,7 @@ bool desktop_from_index(int i, coordinates_t *loc)
 				loc->node = NULL;
 				return true;
 			}
+	}
 	return false;
 }
 

@@ -50,7 +50,7 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 bool locate_window(xcb_window_t win, coordinates_t *loc);
 bool locate_desktop(char *name, coordinates_t *loc);
 bool locate_monitor(char *name, coordinates_t *loc);
-bool desktop_from_index(int i, coordinates_t *loc);
+bool desktop_from_index(int i, coordinates_t *loc, monitor_t *mm);
 bool monitor_from_index(int i, coordinates_t *loc);
 bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel);
 bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t sel);
