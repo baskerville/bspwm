@@ -76,18 +76,15 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		xcb_rectangle_t r;
 		if (!n->client->fullscreen) {
 			if (!n->client->floating) {
+				int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
 				if (n->client->pseudo_tiled) {
 				/* pseudo-tiled clients */
 					r = n->client->floating_rectangle;
-					r.width += 2 * bw;
-					r.height += 2 * bw;
-					center_rectangle(&r, rect);
-					r.x -= bw;
-					r.y -= bw;
+					r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
+					r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
 				} else {
 					/* tiled clients */
 					r = rect;
-					int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
 					int bleed = wg + 2 * bw;
 					r.width = (bleed < r.width ? r.width - bleed : 1);
 					r.height = (bleed < r.height ? r.height - bleed : 1);

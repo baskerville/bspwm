@@ -87,9 +87,3 @@ double distance(xcb_point_t a, xcb_point_t b)
 {
 	return hypot(a.x - b.x, a.y - b.y);
 }
-
-void center_rectangle(xcb_rectangle_t *src, xcb_rectangle_t dst)
-{
-	src->x = dst.x + (dst.width - src->width) / 2;
-	src->y = dst.y + (dst.height - src->height) / 2;
-}

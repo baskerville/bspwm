@@ -63,6 +63,5 @@ void warn(char *fmt, ...);
 void err(char *fmt, ...);
 bool get_color(char *col, xcb_window_t win, uint32_t *pxl);
 double distance(xcb_point_t a, xcb_point_t b);
-void center_rectangle(xcb_rectangle_t *src, xcb_rectangle_t dst);
 
 #endif

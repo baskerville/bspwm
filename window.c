@@ -650,6 +650,8 @@ void window_center(monitor_t *m, client_t *c)
 		r->y = a.y;
 	else
 		r->y = a.y + (a.height - r->height) / 2;
+	r->x -= c->border_width;
+	r->y -= c->border_width;
 }
 
 void window_stack(xcb_window_t w1, xcb_window_t w2, uint32_t mode)
