@@ -820,17 +820,23 @@ bool cmd_config(char **args, int num, char *rsp)
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = {NULL, NULL, NULL};
 	if ((*args)[0] == OPT_CHR) {
-		if (streq("-d", *args) || streq("--desktop", *args)) {
+		if (streq("-m", *args) || streq("--monitor", *args)) {
+			num--, args++;
+			if (num < 1)
+				return false;
+			if (!monitor_from_desc(*args, &ref, &trg))
+				return false;
+		} else if (streq("-d", *args) || streq("--desktop", *args)) {
 			num--, args++;
 			if (num < 1)
 				return false;
 			if (!desktop_from_desc(*args, &ref, &trg))
 				return false;
-		} else if (streq("-m", *args) || streq("--monitor", *args)) {
+		} else if (streq("-w", *args) || streq("--window", *args)) {
 			num--, args++;
 			if (num < 1)
 				return false;
-			if (!monitor_from_desc(*args, &ref, &trg))
+			if (!node_from_desc(*args, &ref, &trg))
 				return false;
 		} else {
 			return false;
@@ -855,8 +861,10 @@ bool cmd_quit(char **args, int num)
 
 bool set_setting(coordinates_t loc, char *name, char *value)
 {
-#define DESKSET(k, v) \
-		if (loc.desktop != NULL) \
+#define DESKWINSET(k, v) \
+		if (loc.node != NULL) \
+			loc.node->client->k = v; \
+		else if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
 		else if (loc.monitor != NULL) \
 			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) \
@@ -869,7 +877,18 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 		unsigned int bw;
 		if (sscanf(value, "%u", &bw) != 1)
 			return false;
-		DESKSET(border_width, bw)
+		DESKWINSET(border_width, bw)
+#undef DESKWINSET
+#define DESKSET(k, v) \
+		if (loc.desktop != NULL) \
+			loc.desktop->k = v; \
+		else if (loc.monitor != NULL) \
+			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) \
+				d->k = v; \
+		else \
+			for (monitor_t *m = mon_head; m != NULL; m = m->next) \
+				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) \
+					d->k = v;
 	} else if (streq("window_gap", name)) {
 		int wg;
 		if (sscanf(value, "%i", &wg) != 1)
@@ -994,10 +1013,12 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
 		else
 			snprintf(rsp, BUFSIZ, "%i", loc.desktop->window_gap);
 	else if (streq("border_width", name))
-		if (loc.desktop == NULL)
-			return false;
-		else
+		if (loc.node != NULL)
+			snprintf(rsp, BUFSIZ, "%u", loc.node->client->border_width);
+		else if (loc.desktop != NULL)
 			snprintf(rsp, BUFSIZ, "%u", loc.desktop->border_width);
+		else
+			return false;
 	else if (streq("external_rules_command", name))
 		snprintf(rsp, BUFSIZ, "%s", external_rules_command);
 	else if (streq("status_prefix", name))

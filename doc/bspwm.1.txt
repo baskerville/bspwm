@@ -561,7 +561,7 @@ Config
 General Syntax
 ^^^^^^^^^^^^^^
 
-config [-m 'MONITOR_SEL'|-d 'DESKTOP_SEL'] <key> [<value>]::
+config [-m 'MONITOR_SEL'|-d 'DESKTOP_SEL'|-w 'WINDOW_SEL'] <key> [<value>]::
 	Get or set the value of <key>.
 
 Quit
@@ -672,14 +672,17 @@ Monitor and Desktop Settings
 'left_padding'::
 	Padding space added at the sides of the monitor or desktop.
 
+Desktop and Window Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+'border_width'::
+	Window border width.
+
 Desktop Settings
 ~~~~~~~~~~~~~~~~
 
 'window_gap'::
 	Size of the gap that separates windows.
-
-'border_width'::
-	Window border width.
 
 
 Status Format

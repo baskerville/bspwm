@@ -64,12 +64,14 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 
 	if (is_leaf(n)) {
 
+		unsigned int bw;
 		if ((borderless_monocle && is_tiled(n->client) &&
+		     !n->client->pseudo_tiled &&
 		     d->layout == LAYOUT_MONOCLE) ||
 		    n->client->fullscreen)
-			n->client->border_width = 0;
+			bw = 0;
 		else
-			n->client->border_width = d->border_width;
+			bw = n->client->border_width;
 
 		xcb_rectangle_t r;
 		if (!n->client->fullscreen) {
@@ -77,16 +79,16 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 				if (n->client->pseudo_tiled) {
 				/* pseudo-tiled clients */
 					r = n->client->floating_rectangle;
-					r.width += 2 * n->client->border_width;
-					r.height += 2 * n->client->border_width;
+					r.width += 2 * bw;
+					r.height += 2 * bw;
 					center_rectangle(&r, rect);
-					r.x -= n->client->border_width;
-					r.y -= n->client->border_width;
+					r.x -= bw;
+					r.y -= bw;
 				} else {
 					/* tiled clients */
 					r = rect;
 					int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
-					int bleed = wg + 2 * n->client->border_width;
+					int bleed = wg + 2 * bw;
 					r.width = (bleed < r.width ? r.width - bleed : 1);
 					r.height = (bleed < r.height ? r.height - bleed : 1);
 				}
@@ -101,7 +103,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		}
 
 		window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
-		window_border_width(n->client->window, n->client->border_width);
+		window_border_width(n->client->window, bw);
 		window_draw_border(n, d->focus == n, m == mon);
 
 	} else {
@@ -376,13 +378,13 @@ node_t *make_node(void)
 	return n;
 }
 
-client_t *make_client(xcb_window_t win)
+client_t *make_client(xcb_window_t win, unsigned int border_width)
 {
 	client_t *c = malloc(sizeof(client_t));
 	c->window = win;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
-	c->border_width = BORDER_WIDTH;
+	c->border_width = border_width;
 	c->pseudo_tiled = c->floating = c->fullscreen = false;
 	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
 	xcb_icccm_get_wm_protocols_reply_t protocols;

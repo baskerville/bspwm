@@ -36,7 +36,7 @@ void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n);
 void focus_node(monitor_t *m, desktop_t *d, node_t *n);
 void update_current(void);
 node_t *make_node(void);
-client_t *make_client(xcb_window_t win);
+client_t *make_client(xcb_window_t win, unsigned int border_width);
 bool is_leaf(node_t *n);
 bool is_tiled(client_t *c);
 bool is_floating(client_t *c);

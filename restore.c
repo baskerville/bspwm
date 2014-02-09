@@ -141,7 +141,7 @@ void restore_tree(char *file_path)
 				else if (st == 'V')
 					n->split_type = TYPE_VERTICAL;
 			} else {
-				client_t *c = make_client(XCB_NONE);
+				client_t *c = make_client(XCB_NONE, d->border_width);
 				num_clients++;
 				char floating, pseudo_tiled, fullscreen, urgent, locked, sticky, private, sd, sm, end = 0;
 				sscanf(line + level, "%c %s %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c %c", &br,
