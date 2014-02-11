@@ -515,6 +515,9 @@ Options
 *--subscribe*::
 	Continuously print status informations on standard output.
 
+*--get-status*::
+	Print the current status information.
+
 Pointer
 ~~~~~~~
 
