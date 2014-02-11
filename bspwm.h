@@ -81,6 +81,7 @@ void setup(void);
 void register_events(void);
 void cleanup(void);
 void put_status(void);
+char *get_status(void);
 void sig_handler(int sig);
 
 #endif

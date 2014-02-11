@@ -52,6 +52,7 @@
 #include "stack.h"
 #include "ewmh.h"
 #include "rule.h"
+#include "tree.h"
 #include "bspwm.h"
 
 int main(int argc, char *argv[])
@@ -341,11 +342,35 @@ void cleanup(void)
 void put_status(void)
 {
 	subscriber_list_t *sb = subscribe_head;
+	char *status = get_status();
 	while (sb != NULL) {
 		subscriber_list_t *next = sb->next;
-		feed_subscriber(sb);
+		feed_subscriber(sb, status);
 		sb = next;
 	}
+}
+
+char *get_status(void)
+{
+	static char rsp[BUFSIZ] = "";
+	int length = 0;
+	length += snprintf(rsp, BUFSIZ, "%s", status_prefix);
+	bool urgent = false;
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		length += snprintf(rsp+length, BUFSIZ-length, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
+			for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
+				urgent |= n->client->urgent;
+			char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
+			if (m->desk == d)
+				c = toupper(c);
+			length += snprintf(rsp+length, BUFSIZ-length, "%c%s:", c, d->name);
+		}
+	}
+	if (mon != NULL && mon->desk != NULL)
+		length += snprintf(rsp+length, BUFSIZ-length, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
+	snprintf(rsp+length, BUFSIZ-length, "%s", "\n");
+	return rsp;
 }
 
 void sig_handler(int sig)

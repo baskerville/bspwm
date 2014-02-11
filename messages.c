@@ -791,6 +791,8 @@ bool cmd_control(char **args, int num, char *rsp)
 			adopt_orphans();
 		} else if (streq("--put-status", *args)) {
 			put_status();
+		} else if (streq("--get-status", *args)) {
+			strcpy(rsp, get_status());
 		} else if (streq("--toggle-visibility", *args)) {
 			toggle_visibility();
 		} else if (streq("--subscribe", *args)) {
