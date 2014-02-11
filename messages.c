@@ -789,12 +789,12 @@ bool cmd_control(char **args, int num, char *rsp)
 	while (num > 0) {
 		if (streq("--adopt-orphans", *args)) {
 			adopt_orphans();
-		} else if (streq("--put-status", *args)) {
-			put_status();
 		} else if (streq("--toggle-visibility", *args)) {
 			toggle_visibility();
 		} else if (streq("--subscribe", *args)) {
 			snprintf(rsp, BUFSIZ, "%c", MESSAGE_SUBSCRIBE);
+		} else if (streq("--get-status", *args)) {
+			snprintf(rsp, BUFSIZ, "%c", MESSAGE_GET_STATUS);
 		} else if (streq("--record-history", *args)) {
 			num--, args++;
 			if (num < 1)

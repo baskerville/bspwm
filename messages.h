@@ -35,7 +35,9 @@
 #define CAT_CHR  '.'
 #define EQL_TOK  "="
 
-#define MESSAGE_SUBSCRIBE  '\x01'
+#define MESSAGE_SUBSCRIBE   '\x01'
+#define MESSAGE_GET_STATUS  '\x02'
+#define NON_CONTROL_START   '\x20'
 
 bool handle_message(char *msg, int msg_len, char *rsp);
 bool process_message(char **args, int num, char *rsp);

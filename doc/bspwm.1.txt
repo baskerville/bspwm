@@ -513,7 +513,10 @@ Options
 	Enable or disable the recording of window focus history.
 
 *--subscribe*::
-	Continuously print status informations on standard output.
+	Continuously print status informations.
+
+*--get-status*::
+	Print the current status informations.
 
 Pointer
 ~~~~~~~

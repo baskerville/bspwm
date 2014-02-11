@@ -165,8 +165,18 @@ int main(int argc, char *argv[])
 						rsp[0] = MESSAGE_FAILURE;
 						rsp_len = 1;
 					}
-					if (rsp_len == 1 && rsp[0] == MESSAGE_SUBSCRIBE) {
-						add_subscriber(cli_fd);
+					if (rsp_len == 1 && rsp[0] != MESSAGE_FAILURE && rsp[0] < NON_CONTROL_START) {
+						if (rsp[0] == MESSAGE_SUBSCRIBE) {
+							add_subscriber(cli_fd);
+						} else if (rsp[0] == MESSAGE_GET_STATUS) {
+							FILE *stream = fdopen(cli_fd, "w");
+							if (stream != NULL) {
+								print_status(stream);
+								fclose(stream);
+							} else {
+								close(cli_fd);
+							}
+						}
 					} else {
 						send(cli_fd, rsp, rsp_len, 0);
 						close(cli_fd);
@@ -343,7 +353,8 @@ void put_status(void)
 	subscriber_list_t *sb = subscribe_head;
 	while (sb != NULL) {
 		subscriber_list_t *next = sb->next;
-		feed_subscriber(sb);
+		if (print_status(sb->stream) != 0)
+			remove_subscriber(sb);
 		sb = next;
 	}
 }
