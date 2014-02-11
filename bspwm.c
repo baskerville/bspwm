@@ -342,15 +342,17 @@ void cleanup(void)
 void put_status(void)
 {
 	subscriber_list_t *sb = subscribe_head;
+	char *status = get_status();
 	while (sb != NULL) {
 		subscriber_list_t *next = sb->next;
-		feed_subscriber(sb);
+		feed_subscriber(sb, status);
 		sb = next;
 	}
 }
 
-void get_status(char *rsp)
+char *get_status(void)
 {
+	static char rsp[BUFSIZ] = "";
 	int length = 0;
 	length += snprintf(rsp, BUFSIZ, "%s", status_prefix);
 	bool urgent = false;
@@ -368,6 +370,7 @@ void get_status(char *rsp)
 	if (mon != NULL && mon->desk != NULL)
 		length += snprintf(rsp+length, BUFSIZ-length, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
 	snprintf(rsp+length, BUFSIZ-length, "%s", "\n");
+	return rsp;
 }
 
 void sig_handler(int sig)

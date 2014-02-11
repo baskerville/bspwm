@@ -79,27 +79,12 @@ void add_subscriber(int fd)
 		sb->prev = subscribe_tail;
 		subscribe_tail = sb;
 	}
-	feed_subscriber(sb);
+	feed_subscriber(sb, get_status());
 }
 
-void feed_subscriber(subscriber_list_t *sb)
+void feed_subscriber(subscriber_list_t *sb, char *status)
 {
-	fprintf(sb->stream, "%s", status_prefix);
-	bool urgent = false;
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		fprintf(sb->stream, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-			for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
-				urgent |= n->client->urgent;
-			char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
-			if (m->desk == d)
-				c = toupper(c);
-			fprintf(sb->stream, "%c%s:", c, d->name);
-		}
-	}
-	if (mon != NULL && mon->desk != NULL)
-		fprintf(sb->stream, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
-	fprintf(sb->stream, "%s", "\n");
+	fprintf(sb->stream, "%s", status);
 	int ret = fflush(sb->stream);
 	if (ret != 0)
 		remove_subscriber(sb);
