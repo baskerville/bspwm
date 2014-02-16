@@ -7,17 +7,13 @@ font_size=11
 
 . panel_colors
 
-adaptive_centering=0
 screen_width=$(sres -W)
 NORMIFS=$IFS
 FIELDIFS=':'
 PADDING='  '
 
-while getopts 'af:s:' opt ; do
+while getopts 'f:s:' opt ; do
 	case "$opt" in
-		a)
-			adaptive_centering=1
-			;;
 		f)
 			font_family=$OPTARG
 			;;
@@ -103,12 +99,14 @@ while read -r line ; do
 	right_indent=$((screen_width - right_width))
 	available_center=$((screen_width - (left_width + right_width)))
 	if [ $available_center -lt $center_width ] ; then
-		center_indent=$((left_indent + left_width))
+		center_indent=$left_width
 	else
-		if [ $adaptive_centering -eq 1 ] ; then
+		max_left_right_width=$left_width
+		[ $left_width -lt $right_width ] && max_left_right_width=$right_width
+		if [ $((2 * max_left_right_width + center_width)) -gt $screen_width ] ; then
 			center_indent=$((left_width + (available_center - center_width) / 2))
 		else
-			center_indent=$(( (screen_width - center_width) / 2 ))
+			center_indent=$(((screen_width - center_width) / 2))
 		fi
 	fi
 	printf "%s\n" "^pa($center_indent)$title^pa($left_indent)$wm_infos^pa($right_indent)$sys_infos"
