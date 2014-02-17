@@ -576,6 +576,19 @@ General Syntax
 quit [<status>]::
 	Quit with an optional exit status.
 
+Exit Codes
+----------
+
+If the server can't handle a message, *bspc* will return with one of the following exit codes:
+
+1::
+	Failure.
+2::
+	Syntax error.
+3::
+	Unknown command.
+
+
 Settings
 --------
 Colors are either http://en.wikipedia.org/wiki/X11_color_names[X color names] or '#RRGGBB', booleans are 'true' or 'false'.

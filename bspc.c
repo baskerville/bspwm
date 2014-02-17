@@ -70,10 +70,15 @@ int main(int argc, char *argv[])
 	if (send(fd, msg, msg_len, 0) == -1)
 		err("Failed to send the data.\n");
 
-	int ret = EXIT_SUCCESS, nb;
+	int ret = 0, nb;
 	while ((nb = recv(fd, rsp, sizeof(rsp), 0)) > 0) {
-		if (nb == 1 && rsp[0] == MESSAGE_FAILURE) {
-			ret = EXIT_FAILURE;
+		if (nb == 1 && rsp[0] < MSG_LENGTH) {
+			ret = rsp[0];
+			if (ret == MSG_UNKNOWN) {
+				warn("Unknown command.\n");
+			} else if (ret == MSG_SYNTAX) {
+				warn("Invalid syntax.\n");
+			}
 		} else {
 			int end = MIN(nb, (int) sizeof(rsp) - 1);
 			rsp[end--] = '\0';

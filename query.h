@@ -38,12 +38,12 @@ typedef enum {
 	DOMAIN_STACK
 } domain_t;
 
-void query_monitors(coordinates_t loc, domain_t dom, char *rsp);
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, char *rsp);
-void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth);
-void query_history(coordinates_t loc, char *rsp);
-void query_stack(char *rsp);
-void query_windows(coordinates_t loc, char *rsp);
+void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp);
+void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp);
+void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth);
+void query_history(coordinates_t loc, FILE *rsp);
+void query_stack(FILE *rsp);
+void query_windows(coordinates_t loc, FILE *rsp);
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);

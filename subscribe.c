@@ -34,18 +34,11 @@
 #include "settings.h"
 #include "subscribe.h"
 
-subscriber_list_t *make_subscriber_list(int fd)
+subscriber_list_t *make_subscriber_list(FILE *stream)
 {
 	subscriber_list_t *sb = malloc(sizeof(subscriber_list_t));
 	sb->prev = sb->next = NULL;
-	sb->fd = fd;
-	sb->stream = fdopen(fd, "w");
-	if (sb->stream == NULL) {
-		warn("Can't open subscriber %i\n", fd);
-		close(fd);
-		free(sb);
-		return NULL;
-	}
+	sb->stream = stream;
 	return sb;
 }
 
@@ -67,11 +60,9 @@ void remove_subscriber(subscriber_list_t *sb)
 	free(sb);
 }
 
-void add_subscriber(int fd)
+void add_subscriber(FILE *stream)
 {
-	subscriber_list_t *sb = make_subscriber_list(fd);
-	if (sb == NULL)
-		return;
+	subscriber_list_t *sb = make_subscriber_list(stream);
 	if (subscribe_head == NULL) {
 		subscribe_head = subscribe_tail = sb;
 	} else {

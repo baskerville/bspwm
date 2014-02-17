@@ -303,13 +303,11 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 	}
 }
 
-void list_rules(char *pattern, char *rsp)
+void list_rules(char *pattern, FILE *rsp)
 {
-	char line[MAXLEN];
 	for (rule_t *r = rule_head; r != NULL; r = r->next) {
 		if (pattern != NULL && !streq(pattern, r->cause))
 			continue;
-		snprintf(line, sizeof(line), "%s => %s\n", r->cause, r->effect);
-		strncat(rsp, line, REMLEN(rsp));
+		fprintf(rsp, "%s => %s\n", r->cause, r->effect);
 	}
 }

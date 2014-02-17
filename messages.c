@@ -42,15 +42,17 @@
 #include "settings.h"
 #include "tree.h"
 #include "window.h"
+#include "common.h"
+#include "subscribe.h"
 #include "messages.h"
 
-bool handle_message(char *msg, int msg_len, char *rsp)
+int handle_message(char *msg, int msg_len, FILE *rsp)
 {
 	int cap = INIT_CAP;
 	int num = 0;
 	char **args = malloc(cap * sizeof(char *));
 	if (args == NULL)
-		return false;
+		return MSG_FAILURE;
 
 	for (int i = 0, j = 0; i < msg_len; i++) {
 		if (msg[i] == 0) {
@@ -62,7 +64,7 @@ bool handle_message(char *msg, int msg_len, char *rsp)
 			char **new = realloc(args, cap * sizeof(char *));
 			if (new == NULL) {
 				free(args);
-				return false;
+				return MSG_FAILURE;
 			} else {
 				args = new;
 			}
@@ -71,16 +73,16 @@ bool handle_message(char *msg, int msg_len, char *rsp)
 
 	if (num < 1) {
 		free(args);
-		return false;
+		return MSG_SYNTAX;
 	}
 
 	char **args_orig = args;
-	bool ret = process_message(args, num, rsp);
+	int ret = process_message(args, num, rsp);
 	free(args_orig);
 	return ret;
 }
 
-bool process_message(char **args, int num, char *rsp)
+int process_message(char **args, int num, FILE *rsp)
 {
 	if (streq("window", *args)) {
 		return cmd_window(++args, --num);
@@ -104,13 +106,13 @@ bool process_message(char **args, int num, char *rsp)
 		return cmd_quit(++args, --num);
 	}
 
-	return false;
+	return MSG_UNKNOWN;
 }
 
-bool cmd_window(char **args, int num)
+int cmd_window(char **args, int num)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = ref;
@@ -119,11 +121,11 @@ bool cmd_window(char **args, int num)
 		if (node_from_desc(*args, &ref, &trg))
 			num--, args++;
 		else
-			return false;
+			return MSG_FAILURE;
 	}
 
 	if (trg.node == NULL)
-		return false;
+		return MSG_FAILURE;
 
 	bool dirty = false;
 
@@ -133,7 +135,7 @@ bool cmd_window(char **args, int num)
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				if (!node_from_desc(*args, &trg, &dst))
-					return false;
+					return MSG_FAILURE;
 			}
 			focus_node(dst.monitor, dst.desktop, dst.node);
 		} else if (streq("-d", *args) || streq("--to-desktop", *args)) {
@@ -145,12 +147,12 @@ bool cmd_window(char **args, int num)
 					trg.desktop = dst.desktop;
 				}
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-m", *args) || streq("--to-monitor", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			coordinates_t dst;
 			if (monitor_from_desc(*args, &trg, &dst)) {
 				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus)) {
@@ -158,12 +160,12 @@ bool cmd_window(char **args, int num)
 					trg.desktop = dst.monitor->desk;
 				}
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-w", *args) || streq("--to-window", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			coordinates_t dst;
 			if (node_from_desc(*args, &trg, &dst)) {
 				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
@@ -171,12 +173,12 @@ bool cmd_window(char **args, int num)
 					trg.desktop = dst.desktop;
 				}
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			coordinates_t dst;
 			if (node_from_desc(*args, &trg, &dst)) {
 				if (swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
@@ -187,12 +189,12 @@ bool cmd_window(char **args, int num)
 					dirty = true;
 				}
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-t", *args) || streq("--toggle", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			char *key = strtok(*args, EQL_TOK);
 			char *val = strtok(NULL, EQL_TOK);
 			alter_state_t a;
@@ -203,7 +205,7 @@ bool cmd_window(char **args, int num)
 				if (parse_bool(val, &b))
 					a = ALTER_SET;
 				else
-					return false;
+					return MSG_FAILURE;
 			}
 			if (streq("fullscreen", key)) {
 				set_fullscreen(trg.node, (a == ALTER_SET ? b : !trg.node->client->fullscreen));
@@ -221,13 +223,15 @@ bool cmd_window(char **args, int num)
 			} else if (streq("private", key)) {
 				set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->private));
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-p", *args) || streq("--presel", *args)) {
 			num--, args++;
-			if (num < 1 || !is_tiled(trg.node->client)
-					|| trg.desktop->layout != LAYOUT_TILED)
-				return false;
+			if (num < 1)
+				return MSG_SYNTAX;
+			if (!is_tiled(trg.node->client) ||
+			    trg.desktop->layout != LAYOUT_TILED)
+				return MSG_FAILURE;
 			if (streq("cancel", *args)) {
 				reset_mode(&trg);
 			} else {
@@ -237,7 +241,7 @@ bool cmd_window(char **args, int num)
 					if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 						num--, args++;
 						if (sscanf(*args, "%lf", &rat) != 1 || rat <= 0 || rat >= 1)
-							return false;
+							return MSG_FAILURE;
 					}
 					if (auto_cancel && trg.node->split_mode == MODE_MANUAL &&
 					    dir == trg.node->split_dir &&
@@ -250,19 +254,19 @@ bool cmd_window(char **args, int num)
 					}
 					window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
 				} else {
-					return false;
+					return MSG_FAILURE;
 				}
 			}
 		} else if (streq("-e", *args) || streq("--edge", *args)) {
 			num--, args++;
 			if (num < 2)
-				return false;
+				return MSG_SYNTAX;
 			direction_t dir;
 			if (!parse_direction(*args, &dir))
-				return false;
+				return MSG_FAILURE;
 			node_t *n = find_fence(trg.node, dir);
 			if (n == NULL)
-				return false;
+				return MSG_FAILURE;
 			num--, args++;
 			if ((*args)[0] == '+' || (*args)[0] == '-') {
 				int pix;
@@ -272,58 +276,58 @@ bool cmd_window(char **args, int num)
 					if (rat > 0 && rat < 1)
 						n->split_ratio = rat;
 					else
-						return false;
+						return MSG_FAILURE;
 				} else {
-					return false;
+					return MSG_FAILURE;
 				}
 			} else {
 				double rat;
 				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
 					n->split_ratio = rat;
 				else
-					return false;
+					return MSG_FAILURE;
 			}
 			dirty = true;
 		} else if (streq("-r", *args) || streq("--ratio", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			double rat;
 			if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
 				trg.node->split_ratio = rat;
 				window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-R", *args) || streq("--rotate", *args)) {
 			num--, args++;
 			if (num < 2)
-				return false;
+				return MSG_SYNTAX;
 			direction_t dir;
 			if (!parse_direction(*args, &dir))
-				return false;
+				return MSG_FAILURE;
 			node_t *n = find_fence(trg.node, dir);
 			if (n == NULL)
-				return false;
+				return MSG_FAILURE;
 			num--, args++;
 			int deg;
 			if (parse_degree(*args, &deg)) {
 				rotate_tree(n, deg);
 				dirty = true;
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-c", *args) || streq("--close", *args)) {
 			if (num > 1)
-				return false;
+				return MSG_SYNTAX;
 			window_close(trg.node);
 		} else if (streq("-k", *args) || streq("--kill", *args)) {
 			if (num > 1)
-				return false;
+				return MSG_SYNTAX;
 			window_kill(trg.monitor, trg.desktop, trg.node);
 			dirty = true;
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 
 		num--, args++;
@@ -332,13 +336,13 @@ bool cmd_window(char **args, int num)
 	if (dirty)
 		arrange(trg.monitor, trg.desktop);
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_desktop(char **args, int num)
+int cmd_desktop(char **args, int num)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 
 	coordinates_t ref = {mon, mon->desk, NULL};
 	coordinates_t trg = ref;
@@ -347,7 +351,7 @@ bool cmd_desktop(char **args, int num)
 		if (desktop_from_desc(*args, &ref, &trg))
 			num--, args++;
 		else
-			return false;
+			return MSG_FAILURE;
 	}
 
 	bool dirty = false;
@@ -358,7 +362,7 @@ bool cmd_desktop(char **args, int num)
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				if (!desktop_from_desc(*args, &trg, &dst))
-					return false;
+					return MSG_FAILURE;
 			}
 			if (auto_alternate && dst.desktop == mon->desk) {
 				desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
@@ -367,29 +371,31 @@ bool cmd_desktop(char **args, int num)
 			focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
 		} else if (streq("-m", *args) || streq("--to-monitor", *args)) {
 			num--, args++;
-			if (num < 1 || trg.monitor->desk_head == trg.monitor->desk_tail)
-				return false;
+			if (num < 1)
+				return MSG_SYNTAX;
+			if (trg.monitor->desk_head == trg.monitor->desk_tail)
+				return MSG_FAILURE;
 			coordinates_t dst;
 			if (monitor_from_desc(*args, &trg, &dst)) {
 				transfer_desktop(trg.monitor, dst.monitor, trg.desktop);
 				trg.monitor = dst.monitor;
 				update_current();
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			coordinates_t dst;
 			if (desktop_from_desc(*args, &trg, &dst))
 				swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop);
 			else
-				return false;
+				return MSG_FAILURE;
 		} else if (streq("-l", *args) || streq("--layout", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc))
@@ -397,11 +403,11 @@ bool cmd_desktop(char **args, int num)
 			else if (parse_layout(*args, &lyt))
 				change_layout(trg.monitor, trg.desktop, lyt);
 			else
-				return false;
+				return MSG_FAILURE;
 		} else if (streq("-n", *args) || streq("--rename", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			snprintf(trg.desktop->name, sizeof(trg.desktop->name), "%s", *args);
 			ewmh_update_desktop_names();
 			put_status();
@@ -411,33 +417,33 @@ bool cmd_desktop(char **args, int num)
 				remove_desktop(trg.monitor, trg.desktop);
 				show_desktop(trg.monitor->desk);
 				update_current();
-				return true;
+				return MSG_SUCCESS;
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-c", *args) || streq("--cancel-presel", *args)) {
 			reset_mode(&trg);
 		} else if (streq("-F", *args) || streq("--flip", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			flip_t flp;
 			if (parse_flip(*args, &flp)) {
 				flip_tree(trg.desktop->root, flp);
 				dirty = true;
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-R", *args) || streq("--rotate", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			int deg;
 			if (parse_degree(*args, &deg)) {
 				rotate_tree(trg.desktop->root, deg);
 				dirty = true;
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-E", *args) || streq("--equalize", *args)) {
 			equalize_tree(trg.desktop->root);
@@ -448,18 +454,18 @@ bool cmd_desktop(char **args, int num)
 		} else if (streq("-C", *args) || streq("--circulate", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			circulate_dir_t cir;
 			if (parse_circulate_direction(*args, &cir)) {
 				circulate_leaves(trg.monitor, trg.desktop, cir);
 				dirty = true;
 			} else {
-				return false;
+				return MSG_FAILURE;
 			}
 		} else if (streq("-t", *args) || streq("--toggle", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			char *key = strtok(*args, EQL_TOK);
 			char *val = strtok(NULL, EQL_TOK);
 			alter_state_t a;
@@ -470,14 +476,14 @@ bool cmd_desktop(char **args, int num)
 				if (parse_bool(val, &b))
 					a = ALTER_SET;
 				else
-					return false;
+					return MSG_FAILURE;
 			}
 			if (streq("floating", key))
 				trg.desktop->floating = (a == ALTER_SET ? b : !trg.desktop->floating);
 			else
-				return false;
+				return MSG_FAILURE;
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
@@ -485,13 +491,13 @@ bool cmd_desktop(char **args, int num)
 	if (dirty)
 		arrange(trg.monitor, trg.desktop);
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_monitor(char **args, int num)
+int cmd_monitor(char **args, int num)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 
 	coordinates_t ref = {mon, NULL, NULL};
 	coordinates_t trg = ref;
@@ -500,7 +506,7 @@ bool cmd_monitor(char **args, int num)
 		if (monitor_from_desc(*args, &ref, &trg))
 			num--, args++;
 		else
-			return false;
+			return MSG_FAILURE;
 	}
 
 	while (num > 0) {
@@ -509,7 +515,7 @@ bool cmd_monitor(char **args, int num)
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				if (!monitor_from_desc(*args, &trg, &dst))
-					return false;
+					return MSG_FAILURE;
 			}
 			if (auto_alternate && dst.monitor == mon) {
 				desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
@@ -519,7 +525,7 @@ bool cmd_monitor(char **args, int num)
 		} else if (streq("-d", *args) || streq("--reset-desktops", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			desktop_t *d = trg.monitor->desk_head;
 			while (num > 0 && d != NULL) {
 				snprintf(d->name, sizeof(d->name), "%s", *args);
@@ -542,7 +548,7 @@ bool cmd_monitor(char **args, int num)
 		} else if (streq("-a", *args) || streq("--add-desktops", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			while (num > 0) {
 				add_desktop(trg.monitor, make_desktop(*args));
 				num--, args++;
@@ -550,7 +556,7 @@ bool cmd_monitor(char **args, int num)
 		} else if (streq("-r", *args) || streq("--remove-desktops", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			while (num > 0) {
 				coordinates_t dst;
 				if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail && dst.desktop->root == NULL) {
@@ -562,7 +568,7 @@ bool cmd_monitor(char **args, int num)
 		} else if (streq("-o", *args) || streq("--order-desktops", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			desktop_t *d = trg.monitor->desk_head;
 			while (d != NULL && num > 0) {
 				desktop_t *next = d->next;
@@ -578,28 +584,28 @@ bool cmd_monitor(char **args, int num)
 		} else if (streq("-n", *args) || streq("--rename", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			snprintf(trg.monitor->name, sizeof(trg.monitor->name), "%s", *args);
 			put_status();
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			coordinates_t dst;
 			if (monitor_from_desc(*args, &trg, &dst))
 				swap_monitors(trg.monitor, dst.monitor);
 			else
-				return false;
+				return MSG_FAILURE;
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_query(char **args, int num, char *rsp)
+int cmd_query(char **args, int num, FILE *rsp)
 {
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = {NULL, NULL, NULL};
@@ -624,7 +630,7 @@ bool cmd_query(char **args, int num, char *rsp)
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				if (!monitor_from_desc(*args, &ref, &trg))
-					return false;
+					return MSG_FAILURE;
 			}
 			t++;
 		} else if (streq("-d", *args) || streq("--desktop", *args)) {
@@ -633,7 +639,7 @@ bool cmd_query(char **args, int num, char *rsp)
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				if (!desktop_from_desc(*args, &ref, &trg))
-					return false;
+					return MSG_FAILURE;
 			}
 			t++;
 		} else if (streq("-w", *args) || streq("--window", *args)) {
@@ -641,17 +647,17 @@ bool cmd_query(char **args, int num, char *rsp)
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				if (!node_from_desc(*args, &ref, &trg))
-					return false;
+					return MSG_FAILURE;
 			}
 			t++;
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
 
 	if (d != 1 || t > 1)
-		return false;
+		return MSG_SYNTAX;
 
 	if (dom == DOMAIN_HISTORY)
 		query_history(trg, rsp);
@@ -662,18 +668,18 @@ bool cmd_query(char **args, int num, char *rsp)
 	else
 		query_monitors(trg, dom, rsp);
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_rule(char **args, int num, char *rsp)
+int cmd_rule(char **args, int num, FILE *rsp)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 	while (num > 0) {
 		if (streq("-a", *args) || streq("--add", *args)) {
 			num--, args++;
 			if (num < 2)
-				return false;
+				return MSG_SYNTAX;
 			rule_t *rule = make_rule();
 			snprintf(rule->cause, sizeof(rule->cause), "%s", *args);
 			num--, args++;
@@ -694,7 +700,7 @@ bool cmd_rule(char **args, int num, char *rsp)
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			int idx;
 			while (num > 0) {
 				if (parse_index(*args, &idx))
@@ -711,135 +717,135 @@ bool cmd_rule(char **args, int num, char *rsp)
 			num--, args++;
 			list_rules(num > 0 ? *args : NULL, rsp);
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_pointer(char **args, int num)
+int cmd_pointer(char **args, int num)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 	while (num > 0) {
 		if (streq("-t", *args) || streq("--track", *args)) {
 			num--, args++;
 			if (num < 2)
-				return false;
+				return MSG_SYNTAX;
 			int x, y;
 			if (sscanf(*args, "%i", &x) == 1 && sscanf(*(args + 1), "%i", &y) == 1)
 				track_pointer(x, y);
 			else
-				return false;
+				return MSG_FAILURE;
 		} else if (streq("-g", *args) || streq("--grab", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			pointer_action_t pac;
 			if (parse_pointer_action(*args, &pac))
 				grab_pointer(pac);
 			else
-				return false;
+				return MSG_FAILURE;
 		} else if (streq("-u", *args) || streq("--ungrab", *args)) {
 			ungrab_pointer();
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_restore(char **args, int num)
+int cmd_restore(char **args, int num)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 	while (num > 0) {
 		if (streq("-T", *args) || streq("--tree", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			restore_tree(*args);
 		} else if (streq("-H", *args) || streq("--history", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			restore_history(*args);
 		} else if (streq("-S", *args) || streq("--stack", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			restore_stack(*args);
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_control(char **args, int num, char *rsp)
+int cmd_control(char **args, int num, FILE *rsp)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 	while (num > 0) {
 		if (streq("--adopt-orphans", *args)) {
 			adopt_orphans();
 		} else if (streq("--toggle-visibility", *args)) {
 			toggle_visibility();
 		} else if (streq("--subscribe", *args)) {
-			snprintf(rsp, BUFSIZ, "%c", MESSAGE_SUBSCRIBE);
+			return MSG_SUBSCRIBE;
 		} else if (streq("--get-status", *args)) {
-			snprintf(rsp, BUFSIZ, "%c", MESSAGE_GET_STATUS);
+			print_status(rsp);
 		} else if (streq("--record-history", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			bool b;
 			if (parse_bool(*args, &b))
 				record_history = b;
 			else
-				return false;
+				return MSG_SYNTAX;
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool cmd_config(char **args, int num, char *rsp)
+int cmd_config(char **args, int num, FILE *rsp)
 {
 	if (num < 1)
-		return false;
+		return MSG_SYNTAX;
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = {NULL, NULL, NULL};
 	if ((*args)[0] == OPT_CHR) {
 		if (streq("-m", *args) || streq("--monitor", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			if (!monitor_from_desc(*args, &ref, &trg))
-				return false;
+				return MSG_FAILURE;
 		} else if (streq("-d", *args) || streq("--desktop", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			if (!desktop_from_desc(*args, &ref, &trg))
-				return false;
+				return MSG_FAILURE;
 		} else if (streq("-w", *args) || streq("--window", *args)) {
 			num--, args++;
 			if (num < 1)
-				return false;
+				return MSG_SYNTAX;
 			if (!node_from_desc(*args, &ref, &trg))
-				return false;
+				return MSG_FAILURE;
 		} else {
-			return false;
+			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
@@ -848,18 +854,18 @@ bool cmd_config(char **args, int num, char *rsp)
 	else if (num == 1)
 		return get_setting(trg, *args, rsp);
 	else
-		return false;
+		return MSG_SYNTAX;
 }
 
-bool cmd_quit(char **args, int num)
+int cmd_quit(char **args, int num)
 {
 	if (num > 0 && sscanf(*args, "%i", &exit_status) != 1)
-		return false;
+		return MSG_FAILURE;
 	running = false;
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool set_setting(coordinates_t loc, char *name, char *value)
+int set_setting(coordinates_t loc, char *name, char *value)
 {
 #define DESKWINSET(k, v) \
 		if (loc.node != NULL) \
@@ -876,7 +882,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 	if (streq("border_width", name)) {
 		unsigned int bw;
 		if (sscanf(value, "%u", &bw) != 1)
-			return false;
+			return MSG_FAILURE;
 		DESKWINSET(border_width, bw)
 #undef DESKWINSET
 #define DESKSET(k, v) \
@@ -892,7 +898,7 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 	} else if (streq("window_gap", name)) {
 		int wg;
 		if (sscanf(value, "%i", &wg) != 1)
-			return false;
+			return MSG_FAILURE;
 		DESKSET(window_gap, wg)
 #undef DESKSET
 #define MONDESKSET(k, v) \
@@ -906,22 +912,22 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 	} else if (streq("top_padding", name)) {
 		int tp;
 		if (sscanf(value, "%i", &tp) != 1)
-			return false;
+			return MSG_FAILURE;
 		MONDESKSET(top_padding, tp)
 	} else if (streq("right_padding", name)) {
 		int rp;
 		if (sscanf(value, "%i", &rp) != 1)
-			return false;
+			return MSG_FAILURE;
 		MONDESKSET(right_padding, rp)
 	} else if (streq("bottom_padding", name)) {
 		int bp;
 		if (sscanf(value, "%i", &bp) != 1)
-			return false;
+			return MSG_FAILURE;
 		MONDESKSET(bottom_padding, bp)
 	} else if (streq("left_padding", name)) {
 		int lp;
 		if (sscanf(value, "%i", &lp) != 1)
-			return false;
+			return MSG_FAILURE;
 		MONDESKSET(left_padding, lp)
 #undef MONDESKSET
 #define SETSTR(s) \
@@ -935,8 +941,8 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 		if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1)
 			split_ratio = r;
 		else
-			return false;
-		return true;
+			return MSG_FAILURE;
+		return MSG_SUCCESS;
 #define SETCOLOR(s) \
 	} else if (streq(#s, name)) { \
 		snprintf(s, sizeof(s), "%s", value);
@@ -974,14 +980,14 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 					window_hide(m->root);
 				disable_motion_recorder();
 			}
-			return true;
+			return MSG_SUCCESS;
 		} else {
-			return false;
+			return MSG_FAILURE;
 		}
 #define SETBOOL(s) \
 	} else if (streq(#s, name)) { \
 		if (!parse_bool(value, &s)) \
-			return false;
+			return MSG_FAILURE;
 		SETBOOL(borderless_monocle)
 		SETBOOL(gapless_monocle)
 		SETBOOL(pointer_follows_monitor)
@@ -993,44 +999,44 @@ bool set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(remove_disabled_monitor)
 #undef SETBOOL
 	} else {
-		return false;
+		return MSG_FAILURE;
 	}
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
 			arrange(m, d);
 
-	return true;
+	return MSG_SUCCESS;
 }
 
-bool get_setting(coordinates_t loc, char *name, char* rsp)
+int get_setting(coordinates_t loc, char *name, FILE* rsp)
 {
 	if (streq("split_ratio", name))
-		snprintf(rsp, BUFSIZ, "%lf", split_ratio);
+		fprintf(rsp, "%lf", split_ratio);
 	else if (streq("window_gap", name))
 		if (loc.desktop == NULL)
-			return false;
+			return MSG_FAILURE;
 		else
-			snprintf(rsp, BUFSIZ, "%i", loc.desktop->window_gap);
+			fprintf(rsp, "%i", loc.desktop->window_gap);
 	else if (streq("border_width", name))
 		if (loc.node != NULL)
-			snprintf(rsp, BUFSIZ, "%u", loc.node->client->border_width);
+			fprintf(rsp, "%u", loc.node->client->border_width);
 		else if (loc.desktop != NULL)
-			snprintf(rsp, BUFSIZ, "%u", loc.desktop->border_width);
+			fprintf(rsp, "%u", loc.desktop->border_width);
 		else
-			return false;
+			return MSG_FAILURE;
 	else if (streq("external_rules_command", name))
-		snprintf(rsp, BUFSIZ, "%s", external_rules_command);
+		fprintf(rsp, "%s", external_rules_command);
 	else if (streq("status_prefix", name))
-		snprintf(rsp, BUFSIZ, "%s", status_prefix);
+		fprintf(rsp, "%s", status_prefix);
 #define MONDESKGET(k) \
 	else if (streq(#k, name)) \
 		if (loc.desktop != NULL) \
-			snprintf(rsp, BUFSIZ, "%i", loc.desktop->k); \
+			fprintf(rsp, "%i", loc.desktop->k); \
 		else if (loc.monitor != NULL) \
-			snprintf(rsp, BUFSIZ, "%i", loc.monitor->k); \
+			fprintf(rsp, "%i", loc.monitor->k); \
 		else \
-			return false;
+			return MSG_FAILURE;
 	MONDESKGET(top_padding)
 	MONDESKGET(right_padding)
 	MONDESKGET(bottom_padding)
@@ -1038,7 +1044,7 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
 #undef DESKGET
 #define GETCOLOR(s) \
 	else if (streq(#s, name)) \
-		snprintf(rsp, BUFSIZ, "%s", s);
+		fprintf(rsp, "%s", s);
 	GETCOLOR(focused_border_color)
 	GETCOLOR(active_border_color)
 	GETCOLOR(normal_border_color)
@@ -1053,7 +1059,7 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
 #undef GETCOLOR
 #define GETBOOL(s) \
 	else if (streq(#s, name)) \
-		snprintf(rsp, BUFSIZ, "%s", BOOLSTR(s));
+		fprintf(rsp, "%s", BOOLSTR(s));
 	GETBOOL(borderless_monocle)
 	GETBOOL(gapless_monocle)
 	GETBOOL(focus_follows_pointer)
@@ -1066,8 +1072,8 @@ bool get_setting(coordinates_t loc, char *name, char* rsp)
 	GETBOOL(remove_disabled_monitor)
 #undef GETBOOL
 	else
-		return false;
-	return true;
+		return MSG_FAILURE;
+	return MSG_SUCCESS;
 }
 
 bool parse_bool(char *value, bool *b)

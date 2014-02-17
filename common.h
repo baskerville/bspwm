@@ -31,6 +31,14 @@
 
 #define SOCKET_PATH_TPL  "/tmp/bspwm%s-socket"
 #define SOCKET_ENV_VAR   "BSPWM_SOCKET"
-#define MESSAGE_FAILURE  '\x18'
+
+enum {
+	MSG_SUCCESS,
+	MSG_FAILURE,
+	MSG_SYNTAX,
+	MSG_UNKNOWN,
+	MSG_SUBSCRIBE,
+	MSG_LENGTH
+};
 
 #endif

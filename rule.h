@@ -45,6 +45,6 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq);
 bool schedule_rules(xcb_window_t win, rule_consequence_t *csq);
 void parse_rule_consequence(int fd, rule_consequence_t *csq);
 void parse_key_value(char *key, char *value, rule_consequence_t *csq);
-void list_rules(char *pattern, char *rsp);
+void list_rules(char *pattern, FILE *rsp);
 
 #endif

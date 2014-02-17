@@ -37,69 +37,58 @@
 #include "tree.h"
 #include "query.h"
 
-void query_monitors(coordinates_t loc, domain_t dom, char *rsp)
+void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp)
 {
-	char line[MAXLEN];
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
 		if (dom != DOMAIN_DESKTOP) {
 			if (dom == DOMAIN_MONITOR) {
-				snprintf(line, sizeof(line), "%s\n", m->name);
-				strncat(rsp, line, REMLEN(rsp));
+				fprintf(rsp, "%s\n", m->name);
 				continue;
 			} else {
-				snprintf(line, sizeof(line), "%s %ux%u%+i%+i %i,%i,%i,%i", m->name,
+				fprintf(rsp, "%s %ux%u%+i%+i %i,%i,%i,%i%s\n", m->name,
 				         m->rectangle.width,m->rectangle.height, m->rectangle.x, m->rectangle.y,
-				         m->top_padding, m->right_padding, m->bottom_padding, m->left_padding);
-				strncat(rsp, line, REMLEN(rsp));
-				if (m == mon)
-					strncat(rsp, " *", REMLEN(rsp));
-				strncat(rsp, "\n", REMLEN(rsp));
+				         m->top_padding, m->right_padding, m->bottom_padding, m->left_padding,
+				         (m == mon ? " *" : ""));
 			}
 		}
 		query_desktops(m, dom, loc, (dom == DOMAIN_DESKTOP ? 0 : 1), rsp);
 	}
 }
 
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, char *rsp)
+void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp)
 {
-	char line[MAXLEN];
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 		if (loc.desktop != NULL && d != loc.desktop)
 			continue;
 		for (unsigned int i = 0; i < depth; i++)
-			strncat(rsp, "\t", REMLEN(rsp));
+			fprintf(rsp, "\t");
 		if (dom == DOMAIN_DESKTOP) {
-			snprintf(line, sizeof(line), "%s\n", d->name);
-			strncat(rsp, line, REMLEN(rsp));
+			fprintf(rsp, "%s\n", d->name);
 			continue;
 		} else {
-			snprintf(line, sizeof(line), "%s %u %i %i,%i,%i,%i %c %c", d->name, d->border_width, d->window_gap,
-			         d->top_padding, d->right_padding, d->bottom_padding, d->left_padding,
-			         (d->layout == LAYOUT_TILED ? 'T' : 'M'), (d->floating ? 'f' : '-'));
-			strncat(rsp, line, REMLEN(rsp));
-			if (d == m->desk)
-				strncat(rsp, " *", REMLEN(rsp));
-			strncat(rsp, "\n", REMLEN(rsp));
+			fprintf(rsp, "%s %u %i %i,%i,%i,%i %c %c%s\n", d->name, d->border_width,
+			        d->window_gap,
+			        d->top_padding, d->right_padding, d->bottom_padding, d->left_padding,
+			        (d->layout == LAYOUT_TILED ? 'T' : 'M'), (d->floating ? 'f' : '-'),
+			        (d == m->desk ? " *" : ""));
 		}
 		query_tree(d, d->root, rsp, depth + 1);
 	}
 }
 
-void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
+void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
 {
 	if (n == NULL)
 		return;
 
-	char line[MAXLEN];
-
 	for (unsigned int i = 0; i < depth; i++)
-		strncat(rsp, "\t", REMLEN(rsp));
+		fprintf(rsp, "\t");
 
 	if (is_leaf(n)) {
 		client_t *c = n->client;
-		snprintf(line, sizeof(line), "%c %s %s 0x%X %u %ux%u%+i%+i %c %c%c%c%c%c%c%c%c",
+		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c %c%c%c%c%c%c%c%c%s\n",
 		         (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')),
 		         c->class_name, c->instance_name, c->window, c->border_width,
 		         c->floating_rectangle.width, c->floating_rectangle.height,
@@ -107,25 +96,19 @@ void query_tree(desktop_t *d, node_t *n, char *rsp, unsigned int depth)
 		         (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))),
 		         (c->floating ? 'f' : '-'), (c->pseudo_tiled ? 'd' : '-'), (c->fullscreen ? 'F' : '-'),
 		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'),
-		         (c->private ? 'i' : '-'), (n->split_mode ? 'p' : '-'));
+		         (c->private ? 'i' : '-'), (n->split_mode ? 'p' : '-'),
+		         (n == d->focus ? " *" : ""));
 	} else {
-		snprintf(line, sizeof(line), "%c %c %lf", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
+		fprintf(rsp, "%c %c %lf\n", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
 		        (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), n->split_ratio);
 	}
-
-	strncat(rsp, line, REMLEN(rsp));
-
-	if (n == d->focus)
-		strncat(rsp, " *", REMLEN(rsp));
-	strncat(rsp, "\n", REMLEN(rsp));
 
 	query_tree(d, n->first_child, rsp, depth + 1);
 	query_tree(d, n->second_child, rsp, depth + 1);
 }
 
-void query_history(coordinates_t loc, char *rsp)
+void query_history(coordinates_t loc, FILE *rsp)
 {
-	char line[MAXLEN];
 	for (history_t *h = history_head; h != NULL; h = h->next) {
 		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
 				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
@@ -133,26 +116,18 @@ void query_history(coordinates_t loc, char *rsp)
 		xcb_window_t win = XCB_NONE;
 		if (h->loc.node != NULL)
 			win = h->loc.node->client->window;
-		snprintf(line, sizeof(line), "%s %s 0x%X", h->loc.monitor->name, h->loc.desktop->name, win);
-		strncat(rsp, line, REMLEN(rsp));
-		strncat(rsp, "\n", REMLEN(rsp));
+		fprintf(rsp, "%s %s 0x%X\n", h->loc.monitor->name, h->loc.desktop->name, win);
 	}
 }
 
-void query_stack(char *rsp)
+void query_stack(FILE *rsp)
 {
-	char line[MAXLEN];
-	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-		snprintf(line, sizeof(line), "0x%X", s->node->client->window);
-		strncat(rsp, line, REMLEN(rsp));
-		strncat(rsp, "\n", REMLEN(rsp));
-	}
+	for (stacking_list_t *s = stack_head; s != NULL; s = s->next)
+		fprintf(rsp, "0x%X\n", s->node->client->window);
 }
 
-void query_windows(coordinates_t loc, char *rsp)
+void query_windows(coordinates_t loc, FILE *rsp)
 {
-	char line[MAXLEN];
-
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
@@ -162,8 +137,7 @@ void query_windows(coordinates_t loc, char *rsp)
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				if (loc.node != NULL && n != loc.node)
 					continue;
-				snprintf(line, sizeof(line), "0x%X\n", n->client->window);
-				strncat(rsp, line, REMLEN(rsp));
+				fprintf(rsp, "0x%X\n", n->client->window);
 			}
 		}
 	}

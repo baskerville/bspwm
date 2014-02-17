@@ -48,7 +48,6 @@
 #define SMALEN     32
 #define INIT_CAP    8
 
-#define REMLEN(x)         (BUFSIZ - strlen(x) - 1)
 #define streq(s1, s2)     (strcmp((s1), (s2)) == 0)
 
 #ifdef DEBUG

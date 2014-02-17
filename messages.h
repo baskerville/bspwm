@@ -35,24 +35,20 @@
 #define CAT_CHR  '.'
 #define EQL_TOK  "="
 
-#define MESSAGE_SUBSCRIBE   '\x01'
-#define MESSAGE_GET_STATUS  '\x02'
-#define NON_CONTROL_START   '\x20'
-
-bool handle_message(char *msg, int msg_len, char *rsp);
-bool process_message(char **args, int num, char *rsp);
-bool cmd_window(char **args, int num);
-bool cmd_desktop(char **args, int num);
-bool cmd_monitor(char **args, int num);
-bool cmd_query(char **args, int num, char *rsp);
-bool cmd_rule(char **args, int num, char *rsp);
-bool cmd_pointer(char **args, int num);
-bool cmd_restore(char **args, int num);
-bool cmd_control(char **args, int num, char *rsp);
-bool cmd_config(char **args, int num, char *rsp);
-bool cmd_quit(char **args, int num);
-bool set_setting(coordinates_t loc, char *name, char *value);
-bool get_setting(coordinates_t loc, char *name, char* rsp);
+int handle_message(char *msg, int msg_len, FILE *rsp);
+int process_message(char **args, int num, FILE *rsp);
+int cmd_window(char **args, int num);
+int cmd_desktop(char **args, int num);
+int cmd_monitor(char **args, int num);
+int cmd_query(char **args, int num, FILE *rsp);
+int cmd_rule(char **args, int num, FILE *rsp);
+int cmd_pointer(char **args, int num);
+int cmd_restore(char **args, int num);
+int cmd_control(char **args, int num, FILE *rsp);
+int cmd_config(char **args, int num, FILE *rsp);
+int cmd_quit(char **args, int num);
+int set_setting(coordinates_t loc, char *name, char *value);
+int get_setting(coordinates_t loc, char *name, FILE* rsp);
 bool parse_bool(char *value, bool *b);
 bool parse_layout(char *s, layout_t *l);
 bool parse_direction(char *s, direction_t *d);

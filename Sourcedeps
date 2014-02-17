@@ -11,7 +11,7 @@ helpers.o: helpers.c bspwm.h types.h helpers.h
 history.o: history.c bspwm.h types.h helpers.h query.h
 messages.o: messages.c bspwm.h types.h helpers.h desktop.h ewmh.h \
  history.h monitor.h pointer.h query.h rule.h restore.h settings.h tree.h \
- window.h messages.h
+ window.h common.h subscribe.h messages.h
 monitor.o: monitor.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
  query.h settings.h tree.h window.h monitor.h
 pointer.o: pointer.c bspwm.h types.h helpers.h query.h settings.h stack.h \
@@ -29,4 +29,4 @@ subscribe.o: subscribe.c bspwm.h types.h helpers.h tree.h settings.h \
 tree.o: tree.c bspwm.h types.h helpers.h desktop.h ewmh.h history.h \
  monitor.h query.h settings.h stack.h window.h tree.h
 window.o: window.c bspwm.h types.h helpers.h ewmh.h monitor.h query.h \
- rule.h settings.h stack.h tree.h window.h
+ rule.h settings.h stack.h tree.h messages.h window.h

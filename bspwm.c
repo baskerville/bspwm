@@ -61,9 +61,7 @@ int main(int argc, char *argv[])
 	config_path[0] = '\0';
 	int sock_fd, cli_fd, dpy_fd, max_fd, n;
 	struct sockaddr_un sock_address;
-	size_t rsp_len = 0;
 	char msg[BUFSIZ] = {0};
-	char rsp[BUFSIZ] = {0};
 	xcb_generic_event_t *event;
 	char opt;
 
@@ -159,29 +157,21 @@ int main(int argc, char *argv[])
 				cli_fd = accept(sock_fd, NULL, 0);
 				if (cli_fd > 0 && (n = recv(cli_fd, msg, sizeof(msg), 0)) > 0) {
 					msg[n] = '\0';
-					if (handle_message(msg, n, rsp)) {
-						rsp_len = strlen(rsp);
-					} else {
-						rsp[0] = MESSAGE_FAILURE;
-						rsp_len = 1;
-					}
-					if (rsp_len == 1 && rsp[0] != MESSAGE_FAILURE && rsp[0] < NON_CONTROL_START) {
-						if (rsp[0] == MESSAGE_SUBSCRIBE) {
-							add_subscriber(cli_fd);
-						} else if (rsp[0] == MESSAGE_GET_STATUS) {
-							FILE *stream = fdopen(cli_fd, "w");
-							if (stream != NULL) {
-								print_status(stream);
-								fclose(stream);
-							} else {
-								close(cli_fd);
-							}
+					FILE *rsp = fdopen(cli_fd, "w");
+					if (rsp != NULL) {
+						int ret = handle_message(msg, n, rsp);
+						if (ret == MSG_SUBSCRIBE) {
+							add_subscriber(rsp);
+						} else {
+							if (ret != MSG_SUCCESS)
+								fprintf(rsp, "%c", ret);
+							fflush(rsp);
+							fclose(rsp);
 						}
 					} else {
-						send(cli_fd, rsp, rsp_len, 0);
+						warn("Can't open the client socket as file.\n");
 						close(cli_fd);
 					}
-					rsp[0] = '\0';
 				}
 			}
 
