@@ -178,6 +178,14 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	history_dir_t hdi;
 	if (parse_direction(desc, &dir)) {
 		dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
+		if (dst->node == NULL && num_monitors > 1) {
+			monitor_t *m = nearest_monitor(ref->monitor, dir, (desktop_select_t) {DESKTOP_STATUS_ALL, false, false});
+			if (m != NULL) {
+				dst->monitor = m;
+				dst->desktop = m->desk;
+				dst->node = m->desk->focus;
+			}
+		}
 	} else if (parse_cycle_direction(desc, &cyc)) {
 		dst->node = closest_node(ref->monitor, ref->desktop, ref->node, cyc, sel);
 	} else if (parse_history_direction(desc, &hdi)) {
@@ -199,7 +207,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			locate_window(wid, dst);
 	}
 
-	return (dst->node != NULL);
+	return (dst->node != NULL || dst->desktop != ref->desktop);
 }
 
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
