@@ -64,8 +64,8 @@ while read -r line ; do
 								;;
 							o*)
 								# occupied desktop
-								FG=$COLOR_OCUPPIED_FG
-								BG=$COLOR_OCUPPIED_BG
+								FG=$COLOR_OCCUPIED_FG
+								BG=$COLOR_OCCUPIED_BG
 								;;
 							f*)
 								# free desktop
