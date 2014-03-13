@@ -247,7 +247,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			dst->monitor = mon;
 			dst->desktop = mon->desk;
 		}
-	} else if ((colon = index(desc, ':')) != NULL) {
+	} else if ((colon = strchr(desc, ':')) != NULL) {
 		*colon = '\0';
 		if (monitor_from_desc(desc, ref, dst)) {
 			if (streq("focused", colon + 1)) {
