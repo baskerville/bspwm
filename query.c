@@ -207,7 +207,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			locate_window(wid, dst);
 	}
 
-	return (dst->node != NULL || dst->desktop != ref->desktop);
+	return (dst->node != NULL);
 }
 
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
