@@ -154,7 +154,7 @@ typedef struct {
 typedef struct {
 	xcb_window_t window;
 	char class_name[SMALEN];
-	char instance_name[SMALEN];
+	char instance_name[2 * SMALEN];
 	unsigned int border_width;
 	bool pseudo_tiled;
 	bool floating;
@@ -266,11 +266,11 @@ struct rule_t {
 
 typedef struct {
 	char class_name[SMALEN];
-	char instance_name[SMALEN];
+	char instance_name[2 * SMALEN];
 	char monitor_desc[MAXLEN];
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
-	char split_dir[MAXLEN];
+	char split_dir[SMALEN];
 	uint16_t min_width;
 	uint16_t max_width;
 	uint16_t min_height;
