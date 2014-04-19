@@ -739,6 +739,7 @@ int cmd_pointer(char **args, int num)
 				track_pointer(x, y);
 			else
 				return MSG_FAILURE;
+			num--, args++;
 		} else if (streq("-g", *args) || streq("--grab", *args)) {
 			num--, args++;
 			if (num < 1)
