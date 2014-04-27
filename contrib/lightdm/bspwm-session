@@ -49,8 +49,8 @@ trap on_exit EXIT SIGHUP SIGINT SIGTERM
 
 # Environment and autostart:
 source_these=(
-	"/etc/profile",
-	"${HOME}/.profile",
+	"/etc/profile"
+	"${HOME}/.profile"
 	"${XDG_CONFIG_HOME:-"$HOME/.config"}/bspwm/autostart"
 )
 
