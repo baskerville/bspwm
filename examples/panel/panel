@@ -22,7 +22,8 @@ clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 
 case "$flavor" in
 	bar)
-		cat "$PANEL_FIFO" | panel_bar | bar -g x$PANEL_HEIGHT -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" &
+		FONT_FAMILY='-*-terminus-medium-r-normal-*-12-*-*-*-c-*-*-1'
+		cat "$PANEL_FIFO" | panel_bar | bar -g x$PANEL_HEIGHT -f "$FONT_FAMILY" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" &
 		;;
 	dzen2)
 		FONT_FAMILY='DejaVu Sans'
