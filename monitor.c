@@ -411,14 +411,16 @@ bool import_monitors(void)
 	}
 
 	/* merge and remove disconnected monitors */
-	m = mon_head;
-	while (m != NULL) {
-		monitor_t *next = m->next;
-		if (!m->wired) {
-			merge_monitors(m, mm);
-			remove_monitor(m);
+	if (!persistent_monitors) {
+		m = mon_head;
+		while (m != NULL) {
+			monitor_t *next = m->next;
+			if (!m->wired) {
+				merge_monitors(m, mm);
+				remove_monitor(m);
+			}
+			m = next;
 		}
-		m = next;
 	}
 
 	/* add one desktop to each new monitor */

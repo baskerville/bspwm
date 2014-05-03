@@ -998,6 +998,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(history_aware_focus)
 		SETBOOL(ignore_ewmh_focus)
 		SETBOOL(remove_disabled_monitor)
+		SETBOOL(persistent_monitors)
 #undef SETBOOL
 	} else {
 		return MSG_FAILURE;
@@ -1071,6 +1072,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GETBOOL(history_aware_focus)
 	GETBOOL(ignore_ewmh_focus)
 	GETBOOL(remove_disabled_monitor)
+	GETBOOL(persistent_monitors)
 #undef GETBOOL
 	else
 		return MSG_FAILURE;
