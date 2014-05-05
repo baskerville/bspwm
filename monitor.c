@@ -411,7 +411,7 @@ bool update_monitors(void)
 	}
 
 	/* merge and remove disconnected monitors */
-	if (!persistent_monitors) {
+	if (remove_unplugged_monitors) {
 		m = mon_head;
 		while (m != NULL) {
 			monitor_t *next = m->next;

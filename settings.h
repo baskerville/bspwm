@@ -54,17 +54,17 @@
 
 #define SPLIT_RATIO    0.5
 
-#define HISTORY_AWARE_FOCUS      false
-#define BORDERLESS_MONOCLE       false
-#define GAPLESS_MONOCLE          false
-#define FOCUS_FOLLOWS_POINTER    false
-#define POINTER_FOLLOWS_MONITOR  false
-#define AUTO_ALTERNATE           false
-#define AUTO_CANCEL              false
-#define APPLY_FLOATING_ATOM      false
-#define IGNORE_EWMH_FOCUS        false
-#define REMOVE_DISABLED_MONITOR  false
-#define PERSISTENT_MONITORS      false
+#define HISTORY_AWARE_FOCUS        false
+#define BORDERLESS_MONOCLE         false
+#define GAPLESS_MONOCLE            false
+#define FOCUS_FOLLOWS_POINTER      false
+#define POINTER_FOLLOWS_MONITOR    false
+#define AUTO_ALTERNATE             false
+#define AUTO_CANCEL                false
+#define APPLY_FLOATING_ATOM        false
+#define IGNORE_EWMH_FOCUS          false
+#define REMOVE_DISABLED_MONITOR    false
+#define REMOVE_UNPLUGGED_MONITORS  false
 
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
@@ -96,7 +96,7 @@ bool auto_cancel;
 bool history_aware_focus;
 bool ignore_ewmh_focus;
 bool remove_disabled_monitor;
-bool persistent_monitors;
+bool remove_unplugged_monitors;
 
 void run_config(void);
 void load_settings(void);

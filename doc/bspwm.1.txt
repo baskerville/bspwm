@@ -679,8 +679,8 @@ Global Settings
 'remove_disabled_monitor'::
 	Consider disabled monitors as disconnected.
 
-'persistent_monitors'::
-	Don't remove unplugged monitors.
+'remove_unplugged_monitors'::
+	Remove unplugged monitors.
 
 Monitor and Desktop Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
