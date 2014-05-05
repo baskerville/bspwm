@@ -369,7 +369,7 @@ bool update_monitors(void)
 					}
 				}
 				free(cir);
-			} else if (!remove_disabled_monitor && info->connection != XCB_RANDR_CONNECTION_DISCONNECTED) {
+			} else if (!remove_disabled_monitors && info->connection != XCB_RANDR_CONNECTION_DISCONNECTED) {
 				m = get_monitor_by_id(outputs[i]);
 				if (m != NULL)
 					m->wired = true;

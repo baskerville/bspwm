@@ -72,7 +72,7 @@ void load_settings(void)
 	auto_cancel = AUTO_CANCEL;
 	history_aware_focus = HISTORY_AWARE_FOCUS;
 	ignore_ewmh_focus = IGNORE_EWMH_FOCUS;
-	remove_disabled_monitor = REMOVE_DISABLED_MONITOR;
+	remove_disabled_monitors = REMOVE_DISABLED_MONITORS;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;
 	merge_overlapping_monitors = MERGE_OVERLAPPING_MONITORS;
 }

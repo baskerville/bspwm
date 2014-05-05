@@ -676,7 +676,7 @@ Global Settings
 'ignore_ewmh_focus'::
 	Ignore EWMH focus requests coming from applications.
 
-'remove_disabled_monitor'::
+'remove_disabled_monitors'::
 	Consider disabled monitors as disconnected.
 
 'remove_unplugged_monitors'::
