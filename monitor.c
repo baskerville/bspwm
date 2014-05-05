@@ -403,8 +403,13 @@ bool update_monitors(void)
 							contains(mb->rectangle, m->rectangle)) {
 						if (mm == m)
 							mm = mb;
-						merge_monitors(m, mb);
-						remove_monitor(m);
+						if (m->desk != NULL && mb->desk == NULL && contains(m->rectangle, mb->rectangle)) {
+							mm = m;
+							remove_monitor(mb);
+						} else {
+							merge_monitors(m, mb);
+							remove_monitor(m);
+						}
 						break;
 					}
 			}
