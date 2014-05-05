@@ -47,6 +47,6 @@ bool is_inside_monitor(monitor_t *m, xcb_point_t pt);
 monitor_t *monitor_from_point(xcb_point_t pt);
 monitor_t *monitor_from_client(client_t *c);
 monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel);
-bool import_monitors(void);
+bool update_monitors(void);
 
 #endif

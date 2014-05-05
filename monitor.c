@@ -323,9 +323,9 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
 	return nearest;
 }
 
-bool import_monitors(void)
+bool update_monitors(void)
 {
-	PUTS("import monitors");
+	PUTS("update monitors");
 	xcb_randr_get_screen_resources_current_reply_t *sres = xcb_randr_get_screen_resources_current_reply(dpy, xcb_randr_get_screen_resources_current(dpy, root), NULL);
 	if (sres == NULL)
 		return false;

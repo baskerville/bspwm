@@ -267,7 +267,7 @@ void setup(void)
 #undef GETATOM
 
 	const xcb_query_extension_reply_t *qep = xcb_get_extension_data(dpy, &xcb_randr_id);
-	if (qep->present && import_monitors()) {
+	if (qep->present && update_monitors()) {
 		randr = true;
 		randr_base = qep->first_event;
 		xcb_randr_select_input(dpy, root, XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);

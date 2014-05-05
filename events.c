@@ -69,7 +69,7 @@ void handle_event(xcb_generic_event_t *evt)
 			break;
 		default:
 			if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
-				import_monitors();
+				update_monitors();
 			break;
 	}
 }
