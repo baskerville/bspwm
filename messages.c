@@ -999,6 +999,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(ignore_ewmh_focus)
 		SETBOOL(remove_disabled_monitor)
 		SETBOOL(remove_unplugged_monitors)
+		SETBOOL(merge_overlapping_monitors)
 #undef SETBOOL
 	} else {
 		return MSG_FAILURE;
@@ -1073,6 +1074,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GETBOOL(ignore_ewmh_focus)
 	GETBOOL(remove_disabled_monitor)
 	GETBOOL(remove_unplugged_monitors)
+	GETBOOL(merge_overlapping_monitors)
 #undef GETBOOL
 	else
 		return MSG_FAILURE;

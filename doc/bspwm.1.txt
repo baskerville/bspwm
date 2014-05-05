@@ -682,6 +682,9 @@ Global Settings
 'remove_unplugged_monitors'::
 	Remove unplugged monitors.
 
+'merge_overlapping_monitors'::
+	Merge overlapping monitors (the bigger remains).
+
 Monitor and Desktop Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

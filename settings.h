@@ -65,6 +65,7 @@
 #define IGNORE_EWMH_FOCUS          false
 #define REMOVE_DISABLED_MONITOR    false
 #define REMOVE_UNPLUGGED_MONITORS  false
+#define MERGE_OVERLAPPING_MONITORS  false
 
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
@@ -97,6 +98,7 @@ bool history_aware_focus;
 bool ignore_ewmh_focus;
 bool remove_disabled_monitor;
 bool remove_unplugged_monitors;
+bool merge_overlapping_monitors;
 
 void run_config(void);
 void load_settings(void);

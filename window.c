@@ -295,6 +295,7 @@ pointer_state_t *make_pointer_state(void)
 	return p;
 }
 
+/* Returns true if a contains b */
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
 {
 	return (a.x <= b.x && (a.x + a.width) >= (b.x + b.width) &&

@@ -392,22 +392,24 @@ bool update_monitors(void)
 	free(gpo);
 
 	/* handle overlapping monitors */
-	m = mon_head;
-	while (m != NULL) {
-		monitor_t *next = m->next;
-		if (m->wired) {
-			for (monitor_t *mb = mon_head; mb != NULL; mb = mb->next)
-				if (mb != m && mb->wired &&
-				    (m->desk == NULL || mb->desk == NULL) &&
-				    contains(mb->rectangle, m->rectangle)) {
-					if (mm == m)
-						mm = mb;
-					merge_monitors(m, mb);
-					remove_monitor(m);
-					break;
-				}
+	if (merge_overlapping_monitors) {
+		m = mon_head;
+		while (m != NULL) {
+			monitor_t *next = m->next;
+			if (m->wired) {
+				for (monitor_t *mb = mon_head; mb != NULL; mb = mb->next)
+					if (mb != m && mb->wired &&
+							(m->desk == NULL || mb->desk == NULL) &&
+							contains(mb->rectangle, m->rectangle)) {
+						if (mm == m)
+							mm = mb;
+						merge_monitors(m, mb);
+						remove_monitor(m);
+						break;
+					}
+			}
+			m = next;
 		}
-		m = next;
 	}
 
 	/* merge and remove disconnected monitors */

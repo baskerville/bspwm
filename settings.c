@@ -74,4 +74,5 @@ void load_settings(void)
 	ignore_ewmh_focus = IGNORE_EWMH_FOCUS;
 	remove_disabled_monitor = REMOVE_DISABLED_MONITOR;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;
+	merge_overlapping_monitors = MERGE_OVERLAPPING_MONITORS;
 }
