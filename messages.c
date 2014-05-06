@@ -868,7 +868,7 @@ int cmd_quit(char **args, int num)
 
 int set_setting(coordinates_t loc, char *name, char *value)
 {
-#define DESKWINSET(k, v) \
+#define DESKWINGLOBSET(k, v) \
 		if (loc.node != NULL) \
 			loc.node->client->k = v; \
 		else if (loc.desktop != NULL) \
@@ -877,31 +877,27 @@ int set_setting(coordinates_t loc, char *name, char *value)
 			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) \
 				d->k = v; \
 		else \
-			for (monitor_t *m = mon_head; m != NULL; m = m->next) \
-				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) \
-					d->k = v;
+			k = v;
 	if (streq("border_width", name)) {
 		unsigned int bw;
 		if (sscanf(value, "%u", &bw) != 1)
 			return MSG_FAILURE;
-		DESKWINSET(border_width, bw)
-#undef DESKWINSET
-#define DESKSET(k, v) \
+		DESKWINGLOBSET(border_width, bw)
+#undef DESKWINGLOBSET
+#define DESKGLOBSET(k, v) \
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
 		else if (loc.monitor != NULL) \
 			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) \
 				d->k = v; \
 		else \
-			for (monitor_t *m = mon_head; m != NULL; m = m->next) \
-				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) \
-					d->k = v;
+			k = v;
 	} else if (streq("window_gap", name)) {
 		int wg;
 		if (sscanf(value, "%i", &wg) != 1)
 			return MSG_FAILURE;
-		DESKSET(window_gap, wg)
-#undef DESKSET
+		DESKGLOBSET(window_gap, wg)
+#undef DESKGLOBSET
 #define MONDESKSET(k, v) \
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \

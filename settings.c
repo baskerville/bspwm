@@ -62,6 +62,8 @@ void load_settings(void)
 	snprintf(urgent_border_color, sizeof(urgent_border_color), "%s", URGENT_BORDER_COLOR);
 
 	split_ratio = SPLIT_RATIO;
+	window_gap = WINDOW_GAP;
+	border_width = BORDER_WIDTH;
 
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;

@@ -35,6 +35,7 @@
 #include "tree.h"
 #include "window.h"
 #include "desktop.h"
+#include "settings.h"
 
 void focus_desktop(monitor_t *m, desktop_t *d)
 {
@@ -123,8 +124,8 @@ desktop_t *make_desktop(const char *name)
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
 	d->top_padding = d->right_padding = d->bottom_padding = d->left_padding = 0;
-	d->window_gap = WINDOW_GAP;
-	d->border_width = BORDER_WIDTH;
+	d->window_gap = window_gap;
+	d->border_width = border_width;
 	d->floating = false;
 	return d;
 }

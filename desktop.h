@@ -30,8 +30,6 @@
 #define BSPWM_DESKTOP_H
 
 #define DEFAULT_DESK_NAME    "Desktop"
-#define WINDOW_GAP           6
-#define BORDER_WIDTH         1
 
 void focus_desktop(monitor_t *m, desktop_t *d);
 desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel);
