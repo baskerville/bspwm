@@ -694,14 +694,14 @@ Monitor and Desktop Settings
 'left_padding'::
 	Padding space added at the sides of the monitor or desktop.
 
-Global, Desktop and Window Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default, Desktop and Window Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 'border_width'::
 	Window border width.
 
-Global and Desktop Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default and Desktop Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 'window_gap'::
 	Size of the gap that separates windows.

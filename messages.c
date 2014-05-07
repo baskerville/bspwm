@@ -868,7 +868,7 @@ int cmd_quit(char **args, int num)
 
 int set_setting(coordinates_t loc, char *name, char *value)
 {
-#define DESKWINGLOBSET(k, v) \
+#define DESKWINDEFSET(k, v) \
 		if (loc.node != NULL) \
 			loc.node->client->k = v; \
 		else if (loc.desktop != NULL) \
@@ -882,9 +882,9 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		unsigned int bw;
 		if (sscanf(value, "%u", &bw) != 1)
 			return MSG_FAILURE;
-		DESKWINGLOBSET(border_width, bw)
-#undef DESKWINGLOBSET
-#define DESKGLOBSET(k, v) \
+		DESKWINDEFSET(border_width, bw)
+#undef DESKWINDEFSET
+#define DESKDEFSET(k, v) \
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
 		else if (loc.monitor != NULL) \
@@ -896,8 +896,8 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		int wg;
 		if (sscanf(value, "%i", &wg) != 1)
 			return MSG_FAILURE;
-		DESKGLOBSET(window_gap, wg)
-#undef DESKGLOBSET
+		DESKDEFSET(window_gap, wg)
+#undef DESKDEFSET
 #define MONDESKSET(k, v) \
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
@@ -1013,17 +1013,17 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	if (streq("split_ratio", name))
 		fprintf(rsp, "%lf", split_ratio);
 	else if (streq("window_gap", name))
-		if (loc.desktop == NULL)
-			return MSG_FAILURE;
-		else
+		if (loc.desktop != NULL)
 			fprintf(rsp, "%i", loc.desktop->window_gap);
+		else
+			fprintf(rsp, "%i", window_gap);
 	else if (streq("border_width", name))
 		if (loc.node != NULL)
 			fprintf(rsp, "%u", loc.node->client->border_width);
 		else if (loc.desktop != NULL)
 			fprintf(rsp, "%u", loc.desktop->border_width);
 		else
-			return MSG_FAILURE;
+			fprintf(rsp, "%u", border_width);
 	else if (streq("external_rules_command", name))
 		fprintf(rsp, "%s", external_rules_command);
 	else if (streq("status_prefix", name))
