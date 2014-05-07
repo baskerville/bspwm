@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 	if (xcb_connection_has_error(dpy))
 		err("Can't open the default display.\n");
 
+	load_settings();
 	setup();
 
 	dpy_fd = xcb_get_file_descriptor(dpy);
@@ -123,7 +124,6 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, sig_handler);
 	signal(SIGCHLD, sig_handler);
 	signal(SIGPIPE, SIG_IGN);
-	load_settings();
 	run_config();
 	running = true;
 
