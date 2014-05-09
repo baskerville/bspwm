@@ -433,7 +433,7 @@ Options
 	Reorder the desktops of the selected monitor to match the given order.
 
 *-d*, *--reset-desktops* <name>...::
-	Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops.
+	Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops. Incidentally reset the settings of the existing desktops.
 
 *-n*, *--rename* <new_name>::
 	Rename the selected monitor.
