@@ -36,6 +36,7 @@ desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_
 void change_layout(monitor_t *m, desktop_t *d, layout_t l);
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d);
 desktop_t *make_desktop(const char *name);
+void initialize_desktop(desktop_t *d);
 void insert_desktop(monitor_t *m, desktop_t *d);
 void add_desktop(monitor_t *m, desktop_t *d);
 void empty_desktop(desktop_t *d);

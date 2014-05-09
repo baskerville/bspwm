@@ -120,14 +120,19 @@ desktop_t *make_desktop(const char *name)
 		snprintf(d->name, sizeof(d->name), "%s%d", DEFAULT_DESK_NAME, ++desktop_uid);
 	else
 		snprintf(d->name, sizeof(d->name), "%s", name);
-	d->layout = LAYOUT_TILED;
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
+	initialize_desktop(d);
+	return d;
+}
+
+void initialize_desktop(desktop_t *d)
+{
+	d->layout = LAYOUT_TILED;
 	d->top_padding = d->right_padding = d->bottom_padding = d->left_padding = 0;
 	d->window_gap = window_gap;
 	d->border_width = border_width;
 	d->floating = false;
-	return d;
 }
 
 void insert_desktop(monitor_t *m, desktop_t *d)

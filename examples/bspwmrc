@@ -1,20 +1,13 @@
 #! /bin/sh
 
-bspc monitor -d I II III IV V VI VII VIII IX X
-
-config_default() {
-	bspc config $1 $2
-	for M in $(bspc query -M); do
-		bspc config -m $M $1 $2
-	done
-}
-
-config_default border_width     2
-config_default window_gap      12
+bspc config border_width        2
+bspc config window_gap         12
 
 bspc config split_ratio         0.52
 bspc config borderless_monocle  true
 bspc config gapless_monocle     true
+
+bspc monitor -d I II III IV V VI VII VIII IX X
 
 bspc rule -a Gimp desktop=^8 follow=on floating=on
 bspc rule -a Chromium desktop=^2

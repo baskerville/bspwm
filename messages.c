@@ -529,6 +529,8 @@ int cmd_monitor(char **args, int num)
 			desktop_t *d = trg.monitor->desk_head;
 			while (num > 0 && d != NULL) {
 				snprintf(d->name, sizeof(d->name), "%s", *args);
+				initialize_desktop(d);
+				arrange(trg.monitor, d);
 				d = d->next;
 				num--, args++;
 			}
