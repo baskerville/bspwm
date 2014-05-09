@@ -2,8 +2,16 @@
 
 bspc monitor -d I II III IV V VI VII VIII IX X
 
-bspc config border_width        2
-bspc config window_gap          12
+desktop_config() {
+	bspc config $1 $2
+	for M in $(bspc query -M); do
+		bspc config -m $M $1 $2
+	done
+}
+
+desktop_config border_width     2
+desktop_config window_gap      12
+
 bspc config split_ratio         0.52
 bspc config borderless_monocle  true
 bspc config gapless_monocle     true
