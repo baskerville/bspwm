@@ -261,6 +261,8 @@ int cmd_window(char **args, int num)
 			num--, args++;
 			if (num < 2)
 				return MSG_SYNTAX;
+			if (!is_tiled(trg.node->client))
+				return MSG_FAILURE;
 			direction_t dir;
 			if (!parse_direction(*args, &dir))
 				return MSG_FAILURE;
