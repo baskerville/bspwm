@@ -2,7 +2,7 @@
 #
 # Example panel for LemonBoy's bar
 
-. panel_colors
+. panel_colors-bar
 
 while read -r line ; do
 	case $line in

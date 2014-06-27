@@ -18,7 +18,7 @@ bspc control --subscribe > "$PANEL_FIFO" &
 xtitle -sf 'T%s' > "$PANEL_FIFO" &
 clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 
-. panel_colors
+. panel_colors-${flavor}
 
 case "$flavor" in
 	bar)
