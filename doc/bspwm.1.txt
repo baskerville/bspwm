@@ -652,6 +652,9 @@ Global Settings
 'history_aware_focus'::
 	Give priority to the focus history when focusing nodes.
 
+'focus_by_distance'::
+	Base focusing on distances between windows.
+
 'borderless_monocle'::
 	Remove borders for tiled windows in monocle mode.
 

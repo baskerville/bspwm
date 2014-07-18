@@ -57,6 +57,7 @@
 #define BORDER_WIDTH   1
 
 #define HISTORY_AWARE_FOCUS        false
+#define FOCUS_BY_DISTANCE          false
 #define BORDERLESS_MONOCLE         false
 #define GAPLESS_MONOCLE            false
 #define FOCUS_FOLLOWS_POINTER      false
@@ -99,6 +100,7 @@ bool apply_floating_atom;
 bool auto_alternate;
 bool auto_cancel;
 bool history_aware_focus;
+bool focus_by_distance;
 bool ignore_ewmh_focus;
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;

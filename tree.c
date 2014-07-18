@@ -604,8 +604,33 @@ node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir,
 	node_t *nearest = NULL;
 	if (history_aware_focus)
 		nearest = nearest_from_history(m, d, n, dir, sel);
-	if (nearest == NULL)
-		nearest = nearest_from_distance(m, d, n, dir, sel);
+    if (nearest == NULL) {
+        if (focus_by_distance) {
+            nearest = nearest_from_distance(m, d, n, dir, sel);
+        } else {
+            nearest = nearest_from_tree(n, dir);
+        }
+    }
+    return nearest;
+}
+
+node_t *nearest_from_tree(node_t *n, direction_t dir)
+{
+    if (n == NULL)
+        return NULL;
+
+    node_t *fence = find_fence(n, dir);
+
+    if (fence == NULL)
+        return NULL;
+
+    node_t *nearest = NULL;
+
+    if (dir == DIR_UP || dir == DIR_LEFT)
+        nearest = second_extrema(fence->first_child);
+    else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+        nearest = first_extrema(fence->second_child);
+
 	return nearest;
 }
 
