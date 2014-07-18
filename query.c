@@ -378,7 +378,7 @@ bool monitor_from_index(int i, coordinates_t *loc)
 
 bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 {
-	if (ref->node == NULL || loc->node == NULL)
+	if (loc->node == NULL)
 		return false;
 
 	if (sel.type != CLIENT_TYPE_ALL &&
@@ -387,7 +387,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 	    : sel.type == CLIENT_TYPE_TILED)
 		return false;
 
-	if (sel.class != CLIENT_CLASS_ALL &&
+	if (sel.class != CLIENT_CLASS_ALL && ref->node != NULL &&
 	    streq(loc->node->client->class_name, ref->node->client->class_name)
 	    ? sel.class == CLIENT_CLASS_DIFFER
 	    : sel.class == CLIENT_CLASS_EQUAL)
