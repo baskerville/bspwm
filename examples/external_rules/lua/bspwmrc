@@ -1,4 +1,0 @@
-#! /bin/sh
-
-bspc config external_rules_command "$(which external_rules)"
-bspwm_rules
