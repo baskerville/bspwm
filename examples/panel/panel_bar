@@ -34,7 +34,7 @@ while read -r line ; do
 					m*)
 						# inactive monitor
 						if [ $num_mon -gt 1 ] ; then
-							wm_infos="$wm_infos %{F$COLOR_ACTIVE_MONITOR_FG}%{B$COLOR_ACTIVE_MONITOR_BG} ${name} %{B-}%{F-}  "
+							wm_infos="$wm_infos %{F$COLOR_INACTIVE_MONITOR_FG}%{B$COLOR_INACTIVE_MONITOR_BG} ${name} %{B-}%{F-}  "
 						fi
 						;;
 					O*)
