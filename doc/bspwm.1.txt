@@ -741,8 +741,8 @@ Each item has the form '<type><value>' where '<type>' is the first character of 
 'u<desktop_name>'::
 	Urgent unfocused desktop.
 
-'L(tiled|monocle)'::
-	Layout of the focused desktop of the focused monitor.
+'L(T|M)'::
+	Layout of the focused desktop of a monitor.
 
 Environment Variables
 ---------------------

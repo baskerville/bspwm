@@ -77,7 +77,7 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l)
 {
 	d->layout = l;
 	arrange(m, d);
-	if (d == mon->desk)
+	if (d == m->desk)
 		put_status();
 }
 

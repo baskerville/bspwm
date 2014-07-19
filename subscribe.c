@@ -87,9 +87,8 @@ int print_status(FILE *stream)
 				c = toupper(c);
 			fprintf(stream, "%c%s:", c, d->name);
 		}
+		fprintf(stream, "L%c", (m->desk->layout == LAYOUT_TILED ? 'T' : 'M'));
 	}
-	if (mon != NULL && mon->desk != NULL)
-		fprintf(stream, "L%s", (mon->desk->layout == LAYOUT_TILED ? "tiled" : "monocle"));
 	fprintf(stream, "%s", "\n");
 	return fflush(stream);
 }
