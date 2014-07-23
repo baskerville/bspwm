@@ -549,7 +549,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus)=(true|false)] [split_dir=DIR]::
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus)=(on|off)] [split_dir=DIR]::
 	Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::
