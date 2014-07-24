@@ -181,9 +181,12 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		if (dst->node == NULL && num_monitors > 1) {
 			monitor_t *m = nearest_monitor(ref->monitor, dir, (desktop_select_t) {DESKTOP_STATUS_ALL, false, false});
 			if (m != NULL) {
-				dst->monitor = m;
-				dst->desktop = m->desk;
-				dst->node = m->desk->focus;
+				coordinates_t loc = {m, m->desk, m->desk->focus};
+				if (node_matches(&loc, ref, sel)) {
+					dst->monitor = m;
+					dst->desktop = m->desk;
+					dst->node = m->desk->focus;
+				}
 			}
 		}
 	} else if (parse_cycle_direction(desc, &cyc)) {
