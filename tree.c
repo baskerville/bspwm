@@ -608,13 +608,13 @@ node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir,
         if (focus_by_distance) {
             nearest = nearest_from_distance(m, d, n, dir, sel);
         } else {
-            nearest = nearest_from_tree(n, dir);
+            nearest = nearest_from_tree(m, d, n, dir, sel);
         }
     }
     return nearest;
 }
 
-node_t *nearest_from_tree(node_t *n, direction_t dir)
+node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
     if (n == NULL)
         return NULL;
@@ -631,7 +631,13 @@ node_t *nearest_from_tree(node_t *n, direction_t dir)
     else if (dir == DIR_DOWN || dir == DIR_RIGHT)
         nearest = first_extrema(fence->second_child);
 
-	return nearest;
+	coordinates_t ref = {m, d, n};
+	coordinates_t loc = {m, d, nearest};
+
+	if (node_matches(&loc, &ref, sel))
+		return nearest;
+	else
+		return NULL;
 }
 
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)

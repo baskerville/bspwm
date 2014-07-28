@@ -54,7 +54,7 @@ node_t *prev_tiled_leaf(desktop_t *d, node_t *n, node_t *r);
 bool is_adjacent(node_t *a, node_t *b, direction_t dir);
 node_t *find_fence(node_t *n, direction_t dir);
 node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel);
-node_t *nearest_from_tree(node_t *n, direction_t dir);
+node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel);
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel);
 node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel);
 void get_opposite(direction_t src, direction_t *dst);
