@@ -39,16 +39,12 @@ bspc: $(CL_OBJ)
 	$(CC) -o $@ $(CL_OBJ) $(LDFLAGS) $(LIBS)
 
 install:
-	mkdir -p "$(DESTDIR)$(BINPREFIX)"
-	cp -p bspwm "$(DESTDIR)$(BINPREFIX)"
-	cp -p bspc "$(DESTDIR)$(BINPREFIX)"
-	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	mkdir -p "$(DESTDIR)$(BASHCPL)"
-	cp -p contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
-	mkdir -p "$(DESTDIR)$(ZSHCPL)"
-	cp -p contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
+	install -Dm755 bspwm "$(DESTDIR)$(BINPREFIX)"/bspwm
+	install -Dm755 bspc "$(DESTDIR)$(BINPREFIX)"/bspc
+	install -Dm644 doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	install -Dm644 doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1
+	install -Dm644 contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
+	install -Dm644 contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
