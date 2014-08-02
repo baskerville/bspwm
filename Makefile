@@ -1,6 +1,7 @@
 VERSION = 0.8.9
 
 CC      ?= gcc
+CP      ?= cp --remove-destination -P -T
 LIBS     = -lm -lxcb -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama
 CFLAGS  += -std=c99 -pedantic -Wall -Wextra -I$(PREFIX)/include
 CFLAGS  += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
@@ -39,16 +40,22 @@ bspc: $(CL_OBJ)
 	$(CC) -o $@ $(CL_OBJ) $(LDFLAGS) $(LIBS)
 
 install:
-	mkdir -p "$(DESTDIR)$(BINPREFIX)"
-	cp -p bspwm "$(DESTDIR)$(BINPREFIX)"
-	cp -p bspc "$(DESTDIR)$(BINPREFIX)"
-	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	mkdir -p "$(DESTDIR)$(BASHCPL)"
-	cp -p contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
-	mkdir -p "$(DESTDIR)$(ZSHCPL)"
-	cp -p contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
+	mkdir -m755 -p "$(DESTDIR)$(BINPREFIX)"
+	$(CP) bspwm "$(DESTDIR)$(BINPREFIX)"/bspwm
+	$(CP) bspc "$(DESTDIR)$(BINPREFIX)"/bspc
+	chmod 755 "$(DESTDIR)$(BINPREFIX)"/bspc \
+			  "$(DESTDIR)$(BINPREFIX)"/bspwm
+	mkdir -m755 -p "$(DESTDIR)$(MANPREFIX)"/man1
+	$(CP) doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
+	$(CP) doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1
+	mkdir -m755 -p "$(DESTDIR)$(BASHCPL)"
+	$(CP) contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
+	mkdir -m755 -p "$(DESTDIR)$(ZSHCPL)"
+	$(CP) contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
+	chmod 644 "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1 \
+			  "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1 \
+			  "$(DESTDIR)$(ZSHCPL)"/_bspc \
+			  "$(DESTDIR)$(BASHCPL)"/bspc
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
