@@ -192,6 +192,7 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 	empty_desktop(d);
 	free(d);
 	num_desktops--;
+	ewmh_update_current_desktop();
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 	put_status();
