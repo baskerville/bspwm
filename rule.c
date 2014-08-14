@@ -97,7 +97,7 @@ bool remove_rule_by_index(int idx)
 rule_consequence_t *make_rule_conquence(void)
 {
 	rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
-	rc->manage = rc->focus = true;
+	rc->manage = rc->focus = rc->border = true;
 	return rc;
 }
 
@@ -299,6 +299,7 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		SETCSQ(follow)
 		SETCSQ(manage)
 		SETCSQ(focus)
+		SETCSQ(border)
 #undef SETCSQ
 	}
 }

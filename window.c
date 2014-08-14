@@ -122,7 +122,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		}
 	}
 
-	client_t *c = make_client(win, d->border_width);
+	client_t *c = make_client(win, csq->border ? d->border_width : 0);
 	update_floating_rectangle(c);
 	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0)
 		csq->center = true;

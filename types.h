@@ -285,6 +285,7 @@ typedef struct {
 	bool follow;
 	bool manage;
 	bool focus;
+	bool border;
 } rule_consequence_t;
 
 typedef struct pending_rule_t pending_rule_t;
