@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/14/2014
+.\"      Date: 08/16/2014
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "08/14/2014" "Bspwm 0\&.8\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "08/16/2014" "Bspwm 0\&.8\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -68,7 +68,7 @@ Example configuration files can be found in the \fBexamples\fR directory\&.
 .sp
 New windows are inserted in the tree as close as possible to the focused window\&.
 .sp
-There is only two splitting modes: \fIautomatic\fR and \fImanual\fR\&.
+There are only two splitting modes: \fIautomatic\fR and \fImanual\fR\&.
 .sp
 The default mode is \fIautomatic\fR\&. The \fImanual\fR mode is entered by sending a \fBpreselection\fR message\&.
 .sp
@@ -99,7 +99,7 @@ Example: insertion of a new node (number 4) into the given tree in \fIautomatic\
 .RE
 .\}
 .sp
-Same departure, but the mode is \fImanual\fR, and a \fBwindow \-\-presel up\fR message was sent beforehand:
+Same action, but the mode is \fImanual\fR, and a \fBwindow \-\-presel up\fR message was sent beforehand:
 .sp
 .if n \{\
 .RS 4
@@ -157,7 +157,7 @@ PRIMARY_SELECTOR[\&.MODIFIER]*
 .RE
 .\}
 .sp
-For obvious reasons, neither desktops nor monitors names may be valid descriptive selectors\&.
+For obvious reasons, neither desktop nor monitor names may be valid descriptive selectors\&.
 .SS "Window"
 .sp
 Select a window\&.
@@ -450,7 +450,7 @@ Is above any tiled window and can be moved/resized freely\&. Although it doesn\(
 .PP
 pseudo_tiled
 .RS 4
-Has a libre size while being centered in its tiling space\&.
+Has an unrestricted size while being centered in its tiling space\&.
 .RE
 .PP
 fullscreen
@@ -830,12 +830,12 @@ Enable or disable the recording of window focus history\&.
 .PP
 \fB\-\-subscribe\fR
 .RS 4
-Continuously print status informations\&.
+Continuously print status information\&.
 .RE
 .PP
 \fB\-\-get\-status\fR
 .RS 4
-Print the current status informations\&.
+Print the current status information\&.
 .RE
 .RE
 .SS "Pointer"
@@ -1150,7 +1150,7 @@ Size of the gap that separates windows\&.
 .RE
 .SH "STATUS FORMAT"
 .sp
-Status informations are composed of items separated by colons\&.
+Status information is composed of items separated by colons\&.
 .sp
 Each item has the form \fI<type><value>\fR where \fI<type>\fR is the first character of the item\&.
 .PP

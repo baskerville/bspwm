@@ -53,7 +53,7 @@ Splitting Modes
 
 New windows are inserted in the tree as close as possible to the focused window.
 
-There is only two splitting modes: 'automatic' and 'manual'.
+There are only two splitting modes: 'automatic' and 'manual'.
 
 The default mode is 'automatic'. The 'manual' mode is entered by sending a *preselection* message.
 
@@ -78,7 +78,7 @@ Example: insertion of a new node (number 4) into the given tree in 'automatic' m
  +-------------------------+         +-------------------------+
 ----
 
-Same departure, but the mode is 'manual', and a *window --presel up* message was sent beforehand:
+Same action, but the mode is 'manual', and a *window --presel up* message was sent beforehand:
 
 ----
              b                                   b
@@ -124,8 +124,8 @@ of non-conflicting modifiers as follows:
 
 	PRIMARY_SELECTOR[.MODIFIER]*
 
-For obvious reasons, neither desktops nor monitors names may be valid
-descriptive selectors.
+For obvious reasons, neither desktop nor monitor names may be valid descriptive
+selectors.
 
 Window
 ~~~~~~
@@ -296,7 +296,7 @@ floating::
 	Is above any tiled window and can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
 
 pseudo_tiled::
-	Has a libre size while being centered in its tiling space.
+	Has an unrestricted size while being centered in its tiling space.
 
 fullscreen::
 	Fills its monitor rectangle, is above all the other windows and has no borders.
@@ -513,10 +513,10 @@ Options
 	Enable or disable the recording of window focus history.
 
 *--subscribe*::
-	Continuously print status informations.
+	Continuously print status information.
 
 *--get-status*::
-	Print the current status informations.
+	Print the current status information.
 
 Pointer
 ~~~~~~~
@@ -713,7 +713,7 @@ Default and Desktop Settings
 Status Format
 -------------
 
-Status informations are composed of items separated by colons.
+Status information is composed of items separated by colons.
 
 Each item has the form '<type><value>' where '<type>' is the first character of the item.
 
