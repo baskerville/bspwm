@@ -998,10 +998,17 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(history_aware_focus)
 		SETBOOL(focus_by_distance)
 		SETBOOL(ignore_ewmh_focus)
-		SETBOOL(remove_disabled_monitors)
-		SETBOOL(remove_unplugged_monitors)
-		SETBOOL(merge_overlapping_monitors)
 #undef SETBOOL
+#define SETMONBOOL(s) \
+	} else if (streq(#s, name)) { \
+		if (!parse_bool(value, &s)) \
+			return MSG_FAILURE; \
+		if (s) \
+			update_monitors();
+		SETMONBOOL(remove_disabled_monitors)
+		SETMONBOOL(remove_unplugged_monitors)
+		SETMONBOOL(merge_overlapping_monitors)
+#undef SETMONBOOL
 	} else {
 		return MSG_FAILURE;
 	}
