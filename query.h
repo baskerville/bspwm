@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014, Bastien Dejean
+/* Copyright (c) 2012, Bastien Dejean
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,10 +20,6 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * The views and conclusions contained in the software and documentation are those
- * of the authors and should not be interpreted as representing official policies,
- * either expressed or implied, of the FreeBSD Project.
  */
 
 #ifndef BSPWM_QUERY_H
