@@ -664,6 +664,9 @@ Global Settings
 'focus_follows_pointer'::
 	Focus the window under the pointer.
 
+'pointer_follows_focus'::
+	When focusing a window, put the pointer at its center.
+
 'pointer_follows_monitor'::
 	When focusing a monitor, put the pointer at its center.
 

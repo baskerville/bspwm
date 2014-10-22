@@ -61,6 +61,7 @@
 #define BORDERLESS_MONOCLE         false
 #define GAPLESS_MONOCLE            false
 #define FOCUS_FOLLOWS_POINTER      false
+#define POINTER_FOLLOWS_FOCUS      false
 #define POINTER_FOLLOWS_MONITOR    false
 #define AUTO_ALTERNATE             false
 #define AUTO_CANCEL                false
@@ -95,6 +96,7 @@ unsigned int border_width;
 bool borderless_monocle;
 bool gapless_monocle;
 bool focus_follows_pointer;
+bool pointer_follows_focus;
 bool pointer_follows_monitor;
 bool apply_floating_atom;
 bool auto_alternate;

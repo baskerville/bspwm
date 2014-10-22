@@ -103,6 +103,10 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		window_border_width(n->client->window, bw);
 		window_draw_border(n, d->focus == n, m == mon);
 
+		if (pointer_follows_focus && mon->desk->focus == n && frozen_pointer->action == ACTION_NONE) {
+			center_pointer(r);
+		}
+
 	} else {
 		xcb_rectangle_t first_rect;
 		xcb_rectangle_t second_rect;
@@ -351,6 +355,10 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 			enable_motion_recorder();
 		else
 			disable_motion_recorder();
+	}
+
+	if (pointer_follows_focus) {
+		center_pointer(get_rectangle(n->client));
 	}
 
 	ewmh_update_active_window();

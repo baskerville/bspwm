@@ -139,7 +139,7 @@ void focus_monitor(monitor_t *m)
 	mon = m;
 
 	if (pointer_follows_monitor)
-		center_pointer(m);
+		center_pointer(m->rectangle);
 
 	ewmh_update_current_desktop();
 	put_status();

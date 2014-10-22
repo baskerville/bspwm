@@ -762,10 +762,10 @@ void clear_input_focus(void)
 	xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, root, XCB_CURRENT_TIME);
 }
 
-void center_pointer(monitor_t *m)
+void center_pointer(xcb_rectangle_t r)
 {
-	int16_t cx = m->rectangle.x + m->rectangle.width / 2;
-	int16_t cy = m->rectangle.y + m->rectangle.height / 2;
+	int16_t cx = r.x + r.width / 2;
+	int16_t cy = r.y + r.height / 2;
 	window_lower(motion_recorder);
 	xcb_warp_pointer(dpy, XCB_NONE, root, 0, 0, 0, 0, cx, cy);
 	window_raise(motion_recorder);

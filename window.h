@@ -83,7 +83,7 @@ void update_motion_recorder(void);
 void update_input_focus(void);
 void set_input_focus(node_t *n);
 void clear_input_focus(void);
-void center_pointer(monitor_t *m);
+void center_pointer(xcb_rectangle_t r);
 void get_atom(char *name, xcb_atom_t *atom);
 void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value);
 bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols);
