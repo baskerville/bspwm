@@ -757,14 +757,14 @@ Panels
 ------
 
 * Any EWMH compliant panel (e.g.: 'tint2', 'bmpanel2', etc.).
-* A custom panel if the '-s' flag is used (have a look at the files in 'examples/panel').
+* A custom panel (have a look at the files in 'examples/panel').
 
 Key Features
 ------------
 
 * Configured and controlled through messages.
-* Multiple monitors support (via 'RandR').
-* EWMH support (*tint2* works).
+* Multiple monitors support.
+* EWMH support.
 * Hybrid tiling.
 
 Contributors
