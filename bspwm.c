@@ -96,10 +96,15 @@ int main(int argc, char *argv[])
 	dpy_fd = xcb_get_file_descriptor(dpy);
 
 	char *sp = getenv(SOCKET_ENV_VAR);
-	if (sp != NULL)
+	if (sp != NULL) {
 		snprintf(socket_path, sizeof(socket_path), "%s", sp);
-	else
-		snprintf(socket_path, sizeof(socket_path), SOCKET_PATH_TPL, getenv("DISPLAY"));
+	} else {
+		char *host = NULL;
+		int dn = 0, sn = 0;
+		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0)
+			snprintf(socket_path, sizeof(socket_path), SOCKET_PATH_TPL, host, dn, sn);
+		free(host);
+	}
 
 	sock_address.sun_family = AF_UNIX;
 	snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", socket_path);

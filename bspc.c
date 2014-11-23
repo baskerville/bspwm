@@ -22,7 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <string.h>
 #include <stdlib.h>
 #ifdef __OpenBSD__
 #include <sys/types.h>
@@ -34,8 +33,6 @@
 #include "helpers.h"
 #include "common.h"
 
-extern char *strdup(const char*);
-
 int main(int argc, char *argv[])
 {
 	int fd;
@@ -46,9 +43,7 @@ int main(int argc, char *argv[])
 		err("No arguments given.\n");
 
 	sock_address.sun_family = AF_UNIX;
-	char *sp, *dp, *tdp;
-	int con, it;
-	unsigned int dplen;
+	char *sp;
 
 	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
 		err("Failed to create the socket.\n");
@@ -56,34 +51,15 @@ int main(int argc, char *argv[])
 	sp = getenv(SOCKET_ENV_VAR);
 	if (sp != NULL) {
 		snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", sp);
-		con = connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
 	} else {
-		con = -1;
+		char *host = NULL;
+		int dn = 0, sn = 0;
+		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0)
+			snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, host, dn, sn);
+		free(host);
 	}
 
-	dp = getenv("DISPLAY");
-	if (con == -1 && dp != NULL) {
-		snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, dp);
-		con = connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
-	}
-
-	if (con == -1 && dp != NULL) {
-		tdp = strdup(dp);
-		dplen = strlen(dp);
-		for (it = dplen - 1; (it > 1) && (tdp[it] != ':'); it--) {
-			if (tdp[it] == '.') {
-				tdp[it] = '\0';
-				break;
-			}
-		}
-		if (strlen(tdp) != dplen) {
-			snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, tdp);
-			con = connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address));
-		}
-		free(tdp);
-	}
-
-	if (con == -1)
+	if (connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
 		err("Failed to connect to the socket.\n");
 
 	argc--, argv++;

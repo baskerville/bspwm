@@ -25,7 +25,7 @@
 #ifndef BSPWM_COMMON_H
 #define BSPWM_COMMON_H
 
-#define SOCKET_PATH_TPL  "/tmp/bspwm%s-socket"
+#define SOCKET_PATH_TPL  "/tmp/bspwm%s_%i_%i-socket"
 #define SOCKET_ENV_VAR   "BSPWM_SOCKET"
 
 enum {
