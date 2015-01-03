@@ -134,7 +134,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual|.automatic][.urgent][.local]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual|.automatic][.urgent][.local][.unfocused]
 ----
 
 Primary Selectors
@@ -187,6 +187,9 @@ local::
 
 urgent::
 	Only consider urgent windows.
+
+unfocused::
+	Only consider windows other than the focused window.
 
 Desktop
 ~~~~~~~

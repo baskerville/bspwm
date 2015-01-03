@@ -141,7 +141,7 @@ void query_windows(coordinates_t loc, FILE *rsp)
 
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-	client_select_t sel = {CLIENT_TYPE_ALL, CLIENT_CLASS_ALL, CLIENT_MODE_ALL, false, false};
+	client_select_t sel = {CLIENT_TYPE_ALL, CLIENT_CLASS_ALL, CLIENT_MODE_ALL, false, false, false};
 	char *tok;
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
@@ -162,6 +162,8 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			sel.urgent = true;
 		} else if (streq("local", tok)) {
 			sel.local = true;
+		} else if (streq("unfocused", tok)) {
+			sel.unfocused = true;
 		}
 	}
 
@@ -402,6 +404,9 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 		return false;
 
 	if (sel.urgent && !loc->node->client->urgent)
+		return false;
+
+	if (sel.unfocused && loc->node == mon->desk->focus)
 		return false;
 
 	return true;

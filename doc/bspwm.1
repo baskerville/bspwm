@@ -167,7 +167,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.manual|\&.automatic][\&.urgent][\&.local]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.manual|\&.automatic][\&.urgent][\&.local][\&.unfocused]
 .fi
 .if n \{\
 .RE
@@ -263,6 +263,11 @@ Only consider windows of the current desktop\&.
 urgent
 .RS 4
 Only consider urgent windows\&.
+.RE
+.PP
+unfocused
+.RS 4
+Only consider windows other than the focused window\&.
 .RE
 .RE
 .SS "Desktop"

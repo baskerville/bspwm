@@ -68,6 +68,7 @@ typedef struct {
 	client_mode_t mode;
 	bool urgent;
 	bool local;
+	bool unfocused;
 } client_select_t;
 
 typedef enum {
