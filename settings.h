@@ -52,19 +52,19 @@
 #define WINDOW_GAP     6
 #define BORDER_WIDTH   1
 
-#define HISTORY_AWARE_FOCUS        false
-#define FOCUS_BY_DISTANCE          false
-#define BORDERLESS_MONOCLE         false
-#define GAPLESS_MONOCLE            false
-#define FOCUS_FOLLOWS_POINTER      false
-#define POINTER_FOLLOWS_FOCUS      false
-#define POINTER_FOLLOWS_MONITOR    false
-#define AUTO_ALTERNATE             false
-#define AUTO_CANCEL                false
-#define APPLY_FLOATING_ATOM        false
-#define IGNORE_EWMH_FOCUS          false
+#define HISTORY_AWARE_FOCUS         false
+#define FOCUS_BY_DISTANCE           false
+#define BORDERLESS_MONOCLE          false
+#define GAPLESS_MONOCLE             false
+#define FOCUS_FOLLOWS_POINTER       false
+#define POINTER_FOLLOWS_FOCUS       false
+#define POINTER_FOLLOWS_MONITOR     false
+#define AUTO_ALTERNATE              false
+#define AUTO_CANCEL                 false
+#define APPLY_FLOATING_ATOM         false
+#define IGNORE_EWMH_FOCUS           false
 #define REMOVE_DISABLED_MONITORS    false
-#define REMOVE_UNPLUGGED_MONITORS  false
+#define REMOVE_UNPLUGGED_MONITORS   false
 #define MERGE_OVERLAPPING_MONITORS  false
 
 char external_rules_command[MAXLEN];
