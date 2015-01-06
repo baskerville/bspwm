@@ -142,6 +142,11 @@ typedef enum {
 	DESKTOP_URGENCY_OFF
 } desktop_urgency_t;
 
+typedef enum {
+	FIRST_CHILD,
+	SECOND_CHILD
+} child_polarity_t;
+
 typedef struct {
 	desktop_status_t status;
 	bool urgent;

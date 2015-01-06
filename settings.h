@@ -88,6 +88,7 @@ char urgent_border_color[MAXLEN];
 double split_ratio;
 int window_gap;
 unsigned int border_width;
+child_polarity_t initial_polarity;
 
 bool borderless_monocle;
 bool gapless_monocle;

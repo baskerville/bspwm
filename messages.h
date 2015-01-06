@@ -53,6 +53,7 @@ bool parse_circulate_direction(char *s, circulate_dir_t *d);
 bool parse_history_direction(char *s, history_dir_t *d);
 bool parse_flip(char *s, flip_t *f);
 bool parse_pointer_action(char *s, pointer_action_t *a);
+bool parse_child_polarity(char *s, child_polarity_t *p);
 bool parse_degree(char *s, int *d);
 bool parse_window_id(char *s, long int *i);
 bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *state);

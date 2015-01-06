@@ -181,8 +181,13 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		switch (f->split_mode) {
 			case MODE_AUTOMATIC:
 				if (p == NULL) {
-					c->first_child = n;
-					c->second_child = f;
+					if (initial_polarity == FIRST_CHILD) {
+						c->first_child = n;
+						c->second_child = f;
+					} else {
+						c->first_child = f;
+						c->second_child = n;
+					}
 					if (m->rectangle.width > m->rectangle.height)
 						c->split_type = TYPE_VERTICAL;
 					else

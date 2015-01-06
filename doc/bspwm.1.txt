@@ -652,6 +652,9 @@ Global Settings
 'external_rules_command'::
 	External command used to retrieve rule consequences. The command will receive the the ID of the window being processed as its first argument and the class and instance names as second and third arguments. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
 
+'initial_polarity'::
+	On which child should a new window be attached when adding a window on a single window tree in automatic mode. Accept the following values: *first_child*, *second_child*.
+
 'history_aware_focus'::
 	Give priority to the focus history when focusing nodes.
 

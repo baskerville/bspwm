@@ -958,6 +958,13 @@ int set_setting(coordinates_t loc, char *name, char *value)
 	SETCOLOR(normal_private_border_color)
 	SETCOLOR(urgent_border_color)
 #undef SETCOLOR
+	} else if (streq("initial_polarity", name)) {
+		child_polarity_t p;
+		if (parse_child_polarity(value, &p)) {
+			initial_polarity = p;
+		} else {
+			return MSG_FAILURE;
+		}
 	} else if (streq("focus_follows_pointer", name)) {
 		bool b;
 		if (parse_bool(value, &b) && b != focus_follows_pointer) {
@@ -1037,6 +1044,8 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", external_rules_command);
 	else if (streq("status_prefix", name))
 		fprintf(rsp, "%s", status_prefix);
+	else if (streq("initial_polarity", name))
+		fprintf(rsp, "%s", initial_polarity == FIRST_CHILD ? "first_child" : "second_child");
 #define MONDESKGET(k) \
 	else if (streq(#k, name)) \
 		if (loc.desktop != NULL) \
@@ -1192,6 +1201,18 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
 		return true;
 	} else if (streq("focus", s)) {
 		*a = ACTION_FOCUS;
+		return true;
+	}
+	return false;
+}
+
+bool parse_child_polarity(char *s, child_polarity_t *p)
+{
+	if (streq("first_child", s)) {
+		*p = FIRST_CHILD;
+		return true;
+	} else if (streq("second_child", s)) {
+		*p = SECOND_CHILD;
 		return true;
 	}
 	return false;

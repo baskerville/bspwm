@@ -60,6 +60,7 @@ void load_settings(void)
 	split_ratio = SPLIT_RATIO;
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
+	initial_polarity = FIRST_CHILD;
 
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
