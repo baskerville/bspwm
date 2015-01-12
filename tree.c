@@ -168,11 +168,15 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					p = f->parent;
 				}
 				f->split_mode = MODE_MANUAL;
-				xcb_rectangle_t rect = f->client->tiled_rectangle;
-				f->split_dir = (rect.width >= rect.height ? DIR_LEFT : DIR_UP);
-				if (f->client->private) {
-					get_opposite(f->split_dir, &f->split_dir);
-					update_privacy_level(f, false);
+				if (f->client != NULL) {
+					xcb_rectangle_t rect = f->client->tiled_rectangle;
+					f->split_dir = (rect.width >= rect.height ? DIR_LEFT : DIR_UP);
+					if (f->client->private) {
+						get_opposite(f->split_dir, &f->split_dir);
+						update_privacy_level(f, false);
+					}
+				} else {
+					f->split_dir = DIR_UP;
 				}
 			}
 		}
