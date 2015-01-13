@@ -148,12 +148,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 	} else {
 		node_t *c = make_node();
 		node_t *p = f->parent;
-		if (p != NULL && f->split_mode == MODE_AUTOMATIC &&
-		    (p->first_child->vacant || p->second_child->vacant)) {
-			f = p;
-			p = f->parent;
-		}
-		if (((f->client != NULL && f->client->private) ||
+		if ((f->client->private ||
 		     (p != NULL && p->privacy_level > 0)) &&
 		    f->split_mode == MODE_AUTOMATIC) {
 			node_t *closest = NULL;
@@ -175,6 +170,11 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					update_privacy_level(f, false);
 				}
 			}
+		}
+		if (p != NULL && f->split_mode == MODE_AUTOMATIC &&
+		    (p->first_child->vacant || p->second_child->vacant)) {
+			f = p;
+			p = f->parent;
 		}
 		n->parent = c;
 		c->birth_rotation = f->birth_rotation;
