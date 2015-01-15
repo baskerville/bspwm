@@ -63,6 +63,7 @@
 #define AUTO_CANCEL                 false
 #define APPLY_FLOATING_ATOM         false
 #define IGNORE_EWMH_FOCUS           false
+#define CENTER_PSEUDO_TILED         true
 #define REMOVE_DISABLED_MONITORS    false
 #define REMOVE_UNPLUGGED_MONITORS   false
 #define MERGE_OVERLAPPING_MONITORS  false
@@ -101,6 +102,7 @@ bool auto_cancel;
 bool history_aware_focus;
 bool focus_by_distance;
 bool ignore_ewmh_focus;
+bool center_pseudo_tiled;
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;
 bool merge_overlapping_monitors;

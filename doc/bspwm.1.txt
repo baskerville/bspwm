@@ -594,9 +594,9 @@ If the server can't handle a message, *bspc* will return with one of the followi
 
 Settings
 --------
-Colors are either http://en.wikipedia.org/wiki/X11_color_names[X color names] or '#RRGGBB', booleans are 'true' or 'false'.
+Colors are either '#RRGGBB' or http://en.wikipedia.org/wiki/X11_color_names[X color names], booleans are 'true', 'on', 'false' or 'off'.
 
-All the boolean settings are 'false' by default.
+All the boolean settings are 'false' by default unless stated otherwise.
 
 Global Settings
 ~~~~~~~~~~~~~~~
@@ -687,6 +687,9 @@ Global Settings
 
 'ignore_ewmh_focus'::
 	Ignore EWMH focus requests coming from applications.
+
+'center_pseudo_tiled'::
+	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
 
 'remove_disabled_monitors'::
 	Consider disabled monitors as disconnected.

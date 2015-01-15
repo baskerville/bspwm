@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 01/06/2015
+.\"      Date: 01/15/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.8.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "01/06/2015" "Bspwm 0\&.8\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "01/15/2015" "Bspwm 0\&.8\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -965,9 +965,9 @@ Unknown command\&.
 .RE
 .SH "SETTINGS"
 .sp
-Colors are either X color names or \fI#RRGGBB\fR, booleans are \fItrue\fR or \fIfalse\fR\&.
+Colors are either \fI#RRGGBB\fR or X color names, booleans are \fItrue\fR, \fIon\fR, \fIfalse\fR or \fIoff\fR\&.
 .sp
-All the boolean settings are \fIfalse\fR by default\&.
+All the boolean settings are \fIfalse\fR by default unless stated otherwise\&.
 .SS "Global Settings"
 .PP
 \fIfocused_border_color\fR
@@ -1131,6 +1131,12 @@ atom of each window according to its floating state\&.
 \fIignore_ewmh_focus\fR
 .RS 4
 Ignore EWMH focus requests coming from applications\&.
+.RE
+.PP
+\fIcenter_pseudo_tiled\fR
+.RS 4
+Center pseudo tiled windows into their tiling rectangles\&. Defaults to
+\fItrue\fR\&.
 .RE
 .PP
 \fIremove_disabled_monitors\fR

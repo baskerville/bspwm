@@ -76,8 +76,13 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 				if (n->client->pseudo_tiled) {
 				/* pseudo-tiled clients */
 					r = n->client->floating_rectangle;
-					r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
-					r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
+					if (center_pseudo_tiled) {
+						r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
+						r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
+					} else {
+						r.x = rect.x;
+						r.y = rect.y;
+					}
 				} else {
 					/* tiled clients */
 					r = rect;

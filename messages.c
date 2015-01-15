@@ -1002,6 +1002,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(history_aware_focus)
 		SETBOOL(focus_by_distance)
 		SETBOOL(ignore_ewmh_focus)
+		SETBOOL(center_pseudo_tiled)
 #undef SETBOOL
 #define SETMONBOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1088,6 +1089,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GETBOOL(history_aware_focus)
 	GETBOOL(focus_by_distance)
 	GETBOOL(ignore_ewmh_focus)
+	GETBOOL(center_pseudo_tiled)
 	GETBOOL(remove_disabled_monitors)
 	GETBOOL(remove_unplugged_monitors)
 	GETBOOL(merge_overlapping_monitors)
