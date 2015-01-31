@@ -14,6 +14,7 @@ ZSHCPL = $(PREFIX)/share/zsh/site-functions
 DOCPREFIX = $(PREFIX)/share/doc/bspwm
 
 MD_DOCS = doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
+XSESSIONS = $(PREFIX)/share/xsessions
 
 WM_SRC = bspwm.c helpers.c settings.c monitor.c desktop.c tree.c stack.c history.c \
 	 events.c pointer.c window.c messages.c query.c restore.c rule.c ewmh.c subscribe.c
@@ -45,6 +46,7 @@ install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
 	cp -p bspwm "$(DESTDIR)$(BINPREFIX)"
 	cp -p bspc "$(DESTDIR)$(BINPREFIX)"
+	cp -p contrib/freedesktop/bspwm-session "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
@@ -55,15 +57,19 @@ install:
 	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
 	cp -p $(MD_DOCS) "$(DESTDIR)$(DOCPREFIX)"
 	cp -pr examples "$(DESTDIR)$(DOCPREFIX)"/examples
+	mkdir -p "$(DESTDIR)$(XSESSIONS)"
+	cp -p contrib/freedesktop/bspwm.desktop "$(DESTDIR)$(XSESSIONS)"
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspc
+	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm-session
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1
 	rm -f "$(DESTDIR)$(BASHCPL)"/bspc
 	rm -f "$(DESTDIR)$(ZSHCPL)"/_bspc
 	rm -rf "$(DESTDIR)$(DOCPREFIX)"
+	rm -f "$(DESTDIR)$(XSESSIONS)"/bspwm.desktop
 
 doc:
 	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt
