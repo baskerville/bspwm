@@ -11,6 +11,9 @@ BINPREFIX = $(PREFIX)/bin
 MANPREFIX = $(PREFIX)/share/man
 BASHCPL = $(PREFIX)/share/bash-completion/completions
 ZSHCPL = $(PREFIX)/share/zsh/site-functions
+DOCPREFIX = $(PREFIX)/share/doc/bspwm
+
+MD_DOCS = doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
 
 WM_SRC = bspwm.c helpers.c settings.c monitor.c desktop.c tree.c stack.c history.c \
 	 events.c pointer.c window.c messages.c query.c restore.c rule.c ewmh.c subscribe.c
@@ -49,6 +52,9 @@ install:
 	cp -p contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
 	mkdir -p "$(DESTDIR)$(ZSHCPL)"
 	cp -p contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
+	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
+	cp -p $(MD_DOCS) "$(DESTDIR)$(DOCPREFIX)"
+	cp -pr examples "$(DESTDIR)$(DOCPREFIX)"/examples
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
@@ -57,6 +63,7 @@ uninstall:
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1
 	rm -f "$(DESTDIR)$(BASHCPL)"/bspc
 	rm -f "$(DESTDIR)$(ZSHCPL)"/_bspc
+	rm -rf "$(DESTDIR)$(DOCPREFIX)"
 
 doc:
 	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt
