@@ -27,14 +27,14 @@ c
 ```
 
 Or if you just want to generate a backtrace (saved in `gdb.txt`):
-`
+```
 ulimit -c unlimited
 startx
 sudo systemd-coredumpctl gdb bspwm
 set logging on
 bt full
 q
-`
+```
 
 [1]: http://cm.bell-labs.com/cm/cs/cbook/
 [2]: http://www.x.org/releases/X11R7.5/doc/libxcb/tutorial/
