@@ -620,11 +620,12 @@ void window_move(xcb_window_t win, int16_t x, int16_t y)
 // this function must only be called with a floating window
 bool window_modify_size(client_t client_win, const char *modifier)
 {
-	uint32_t dims[] = {client_win.floating_rectangle.width, client_win.floating_rectangle.height};
+	uint16_t X = client_win.floating_rectangle.width;
+	uint16_t Y = client_win.floating_rectangle.height;
 	if (!*modifier)
 		return false;
 	bool isnegative = (modifier[0] == '-');
-	int magnitude = 0;
+	uint16_t magnitude = 0;
 	if (isnegative)
 		modifier++;
 
@@ -636,16 +637,16 @@ bool window_modify_size(client_t client_win, const char *modifier)
 
 	if (*modifier == 'x' || *modifier == 'y') {
 		if (*modifier == 'x') {
-			dims[0] = isnegative ? dims[0] - magnitude
-			                     : dims[0] + magnitude;
+			X = isnegative ? X - magnitude
+			               : X + magnitude;
 		}
 
 		if (*modifier == 'y') {
-			dims[1] = isnegative ? dims[1] - magnitude
-			                     : dims[1] + magnitude;
+			Y = isnegative ? Y - magnitude
+			               : Y + magnitude;
 		}
 
-		xcb_configure_window(dpy, client_win.window, XCB_CONFIG_WINDOW_WIDTH_HEIGHT, dims);
+		window_resize(client_win.window, X, Y);
 		return true;
 	}
 
