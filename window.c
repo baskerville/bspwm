@@ -624,26 +624,18 @@ bool window_modify_size(client_t client_win, const char *modifier)
 	uint16_t Y = client_win.floating_rectangle.height;
 	if (!*modifier)
 		return false;
-	bool isnegative = (modifier[0] == '-');
-	uint16_t magnitude = 0;
-	if (isnegative)
-		modifier++;
 
-	while (is_digit(*modifier)) {
-		magnitude *= 10;
-		magnitude += (*modifier) - '0';
-		modifier ++;
-	}
+	int modsize;
+	char direction;
 
-	if (*modifier == 'x' || *modifier == 'y') {
-		if (*modifier == 'x') {
-			X = isnegative ? X - magnitude
-			               : X + magnitude;
+	sscanf(modifier, "%d%c", &modsize, &direction);
+	if (direction == 'x' || direction == 'y') {
+		if (direction == 'x') {
+			X += modsize;
 		}
 
-		if (*modifier == 'y') {
-			Y = isnegative ? Y - magnitude
-			               : Y + magnitude;
+		if (direction == 'y') {
+			Y += modsize;
 		}
 
 		window_resize(client_win.window, X, Y);
