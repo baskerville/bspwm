@@ -46,6 +46,8 @@
 
 #define streq(s1, s2)     (strcmp((s1), (s2)) == 0)
 
+#define is_digit(c)    ((c)>='0' && (c)<='9')
+
 #ifdef DEBUG
 #  define PUTS(x)         puts(x)
 #  define PRINTF(x,...)   printf(x, __VA_ARGS__)

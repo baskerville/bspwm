@@ -61,6 +61,7 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt);
 bool window_focus(xcb_window_t win);
 void window_border_width(xcb_window_t win, uint32_t bw);
 void window_move(xcb_window_t win, int16_t x, int16_t y);
+bool window_modify_size(client_t client_win, const char *modifier);
 void window_resize(xcb_window_t win, uint16_t w, uint16_t h);
 void window_move_resize(xcb_window_t win, int16_t x, int16_t y, uint16_t w, uint16_t h);
 void window_raise(xcb_window_t win);
