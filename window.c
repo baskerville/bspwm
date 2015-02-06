@@ -638,6 +638,8 @@ bool window_modify_size(client_t client_win, const char *modifier)
 			Y += modsize;
 		}
 
+		client_win.floating_rectangle.width = X;
+		client_win.floating_rectangle.height = Y;
 		window_resize(client_win.window, X, Y);
 		return true;
 	}
