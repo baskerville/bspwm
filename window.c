@@ -618,10 +618,8 @@ void window_move(xcb_window_t win, int16_t x, int16_t y)
 }
 
 // this function must only be called with a floating window
-bool window_modify_size(client_t client_win, const char *modifier)
+bool window_modify_size(client_t *c, const char *modifier)
 {
-	uint16_t X = client_win.floating_rectangle.width;
-	uint16_t Y = client_win.floating_rectangle.height;
 	if (!*modifier)
 		return false;
 
@@ -631,16 +629,13 @@ bool window_modify_size(client_t client_win, const char *modifier)
 	sscanf(modifier, "%d%c", &modsize, &direction);
 	if (direction == 'x' || direction == 'y') {
 		if (direction == 'x') {
-			X += modsize;
+			window_resize(c->window, c->floating_rectangle.width + modsize, c->floating_rectangle.height);
 		}
 
 		if (direction == 'y') {
-			Y += modsize;
+			window_resize(c->window, c->floating_rectangle.width, c->floating_rectangle.height + modsize);
 		}
-
-		client_win.floating_rectangle.width = X;
-		client_win.floating_rectangle.height = Y;
-		window_resize(client_win.window, X, Y);
+		update_floating_rectangle(c);
 		return true;
 	}
 

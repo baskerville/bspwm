@@ -163,7 +163,7 @@ int cmd_window(char **args, int num)
 			if (num < 1)
 				return MSG_SYNTAX;
 			if (trg.node -> client -> floating) {
-				if (!window_modify_size(*(trg.node -> client), *args))
+				if (!window_modify_size(trg.node->client, *args))
 					return MSG_SYNTAX;
 			} else {
 				return MSG_FAILURE;
