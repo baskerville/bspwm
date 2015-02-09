@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
 
 	dpy = xcb_connect(NULL, &default_screen);
 
-	if (xcb_connection_has_error(dpy))
-		err("Can't open the default display.\n");
+	if (!check_connection(dpy))
+		exit(EXIT_FAILURE);
 
 	load_settings();
 	setup();
@@ -184,10 +184,8 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		if (xcb_connection_has_error(dpy)) {
-			warn("The server closed the connection.\n");
+		if (!check_connection(dpy))
 			running = false;
-		}
 	}
 
 	cleanup();
@@ -347,6 +345,43 @@ void put_status(void)
 		if (print_status(sb->stream) != 0)
 			remove_subscriber(sb);
 		sb = next;
+	}
+}
+
+bool check_connection (xcb_connection_t *dpy)
+{
+	int xerr;
+	if ((xerr = xcb_connection_has_error(dpy)) != 0) {
+		warn("The server closed the connection: ");
+		switch (xerr) {
+			case XCB_CONN_ERROR:
+				warn("socket, pipe or stream error.\n");
+				break;
+			case XCB_CONN_CLOSED_EXT_NOTSUPPORTED:
+				warn("unsupported extension.\n");
+				break;
+			case XCB_CONN_CLOSED_MEM_INSUFFICIENT:
+				warn("not enough memory.\n");
+				break;
+			case XCB_CONN_CLOSED_REQ_LEN_EXCEED:
+				warn("request length exceeded.\n");
+				break;
+			case XCB_CONN_CLOSED_PARSE_ERR:
+				warn("can't parse display string.\n");
+				break;
+			case XCB_CONN_CLOSED_INVALID_SCREEN:
+				warn("invalid screen.\n");
+				break;
+			case XCB_CONN_CLOSED_FDPASSING_FAILED:
+				warn("failed to pass FD.\n");
+				break;
+			default:
+				warn("unknown error.\n");
+				break;
+		}
+		return false;
+	} else {
+		return true;
 	}
 }
 
