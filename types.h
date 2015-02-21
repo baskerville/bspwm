@@ -273,6 +273,7 @@ typedef struct {
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
 	char split_dir[SMALEN];
+	double split_ratio;
 	uint16_t min_width;
 	uint16_t max_width;
 	uint16_t min_height;

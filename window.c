@@ -118,6 +118,10 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		}
 	}
 
+	if (csq->split_ratio != 0) {
+		f->split_ratio = csq->split_ratio;
+	}
+
 	client_t *c = make_client(win, csq->border ? d->border_width : 0);
 	update_floating_rectangle(c);
 	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0)
