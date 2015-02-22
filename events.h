@@ -43,5 +43,6 @@ void focus_in(xcb_generic_event_t *evt);
 void enter_notify(xcb_generic_event_t *evt);
 void motion_notify(xcb_generic_event_t *evt);
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action);
+void process_error(xcb_generic_event_t *evt);
 
 #endif

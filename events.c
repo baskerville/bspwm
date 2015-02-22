@@ -63,6 +63,9 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_FOCUS_IN:
 			focus_in(evt);
 			break;
+		case 0:
+			process_error(evt);
+			break;
 		default:
 			if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
 				update_monitors();
@@ -387,4 +390,10 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
 			set_urgency(m, d, n, !n->client->urgent);
 	}
+}
+
+void process_error(xcb_generic_event_t *evt)
+{
+	xcb_request_error_t *e = (xcb_request_error_t *) evt;
+	warn("Failed request: %s, %s: %d.\n", xcb_event_get_request_label(e->major_opcode), xcb_event_get_error_label(e->error_code), e->bad_value);
 }
