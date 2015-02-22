@@ -118,7 +118,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		}
 	}
 
-	if (csq->split_ratio != 0) {
+	if (csq->split_ratio != 0 && f != NULL) {
 		f->split_ratio = csq->split_ratio;
 	}
 
