@@ -1,6 +1,6 @@
 super + alt + {_,shift + }Escape
 	{bspc query -T > "$BSPWM_TREE"; \
-	    bspc query -H > "$BSPWM_HISTORY"; \
-               bspc query -S > "$BSPWM_STACK"; \
-	          bspc quit,\
+		bspc query -H > "$BSPWM_HISTORY"; \
+		bspc query -S > "$BSPWM_STACK"; \
+		bspc quit,\
 	 bspc quit 1}
