@@ -275,9 +275,11 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		update_privacy_level(n, true);
 	if (d->focus == NULL)
 		d->focus = n;
-	if (n->client->sticky)
+	if (n->client->sticky) {
 		m->num_sticky++;
-	put_status();
+	} else {
+		put_status();
+	}
 }
 
 void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n)
@@ -929,9 +931,11 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 				d->focus = first_extrema(d->root);
 		}
 	}
-	if (n->client->sticky)
+	if (n->client->sticky) {
 		m->num_sticky--;
-	put_status();
+	} else {
+		put_status();
+	}
 }
 
 void remove_node(monitor_t *m, desktop_t *d, node_t *n)
