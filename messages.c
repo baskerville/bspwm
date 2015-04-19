@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <jansson.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -639,6 +640,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 	coordinates_t trg = {NULL, NULL, NULL};
 	domain_t dom = DOMAIN_TREE;
 	int d = 0, t = 0;
+	bool print_json = false;
 
 	while (num > 0) {
 		if (streq("-T", *args) || streq("--tree", *args)) {
@@ -653,6 +655,8 @@ int cmd_query(char **args, int num, FILE *rsp)
 			dom = DOMAIN_HISTORY, d++;
 		} else if (streq("-S", *args) || streq("--stack", *args)) {
 			dom = DOMAIN_STACK, d++;
+		} else if (streq("--json", *args)) {
+			print_json = true;
 		} else if (streq("-m", *args) || streq("--monitor", *args)) {
 			trg.monitor = ref.monitor;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
@@ -687,14 +691,60 @@ int cmd_query(char **args, int num, FILE *rsp)
 	if (d != 1 || t > 1)
 		return MSG_SYNTAX;
 
-	if (dom == DOMAIN_HISTORY)
-		query_history(trg, rsp);
-	else if (dom == DOMAIN_STACK)
-		query_stack(rsp);
-	else if (dom == DOMAIN_WINDOW)
-		query_windows(trg, rsp);
-	else
-		query_monitors(trg, dom, rsp);
+	if (print_json) {
+		if (dom == DOMAIN_HISTORY) {
+			json_t *jmsg = json_array();
+			if (!jmsg) {
+				warn("Unable to create JSON object\n");
+				return MSG_FAILURE;
+			}
+			query_history_json(trg, jmsg);
+			json_dumpf(jmsg, rsp, JSON_INDENT(4));
+			json_decref(jmsg);
+		}
+		else if (dom == DOMAIN_STACK) {
+			json_t *jmsg = json_array();
+			if (!jmsg) {
+				warn("Unable to create JSON object\n");
+				return MSG_FAILURE;
+			}
+			query_stack_json(jmsg);
+			json_dumpf(jmsg, rsp, JSON_INDENT(4));
+			json_decref(jmsg);
+		}
+		else if (dom == DOMAIN_WINDOW) {
+			json_t *jmsg = json_array();
+			if (!jmsg) {
+				warn("Unable to create JSON object\n");
+				return MSG_FAILURE;
+			}
+			query_windows_json(trg, jmsg);
+			json_dumpf(jmsg, rsp, JSON_INDENT(4));
+			json_decref(jmsg);
+		}
+		else {
+			json_t *jmsg = json_object();
+			if (!jmsg) {
+				warn("Unable to create JSON object\n");
+				return MSG_FAILURE;
+			}
+			query_monitors_json(trg, dom, jmsg);
+			if(json_dumpf(jmsg, rsp, JSON_INDENT(0) | JSON_SORT_KEYS) == -1) {
+				warn("Print JSON failed\n");
+				return MSG_FAILURE;
+			}
+			json_decref(jmsg);
+		}
+	} else {
+		if (dom == DOMAIN_HISTORY)
+			query_history(trg, rsp);
+		else if (dom == DOMAIN_STACK)
+			query_stack(rsp);
+		else if (dom == DOMAIN_WINDOW)
+			query_windows(trg, rsp);
+		else
+			query_monitors(trg, dom, rsp);
+	}
 
 	return MSG_SUCCESS;
 }

@@ -141,6 +141,219 @@ void query_windows(coordinates_t loc, FILE *rsp)
 	}
 }
 
+void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+
+		json_t *jmonitor = json_object();
+
+		if (dom == DOMAIN_MONITOR) {
+			json_t *jpack = json_pack(
+					"{s:{s:{s:i, s:i, s:i, s:i}, s:{s:i, s:i, s:i, s:i}, s:b}}",
+					m->name,
+					"Rectangle",
+					"Width", m->rectangle.width,
+					"Height", m->rectangle.height,
+					"x", m->rectangle.x,
+					"y", m->rectangle.y,
+					"Padding",
+					"Top", m->top_padding,
+					"Right", m->right_padding,
+					"Bottom", m->bottom_padding,
+					"Left", m->left_padding,
+					"Focused", m == mon ? 1 : 0
+					);
+			json_object_update(jmonitor, jpack);
+			json_decref(jpack);
+		}
+
+		if (dom == DOMAIN_DESKTOP || dom == DOMAIN_TREE) {
+			json_t *jdesktop = json_object();
+			query_desktops_json(m, dom, loc, jdesktop);
+			json_t *jpack = json_pack(
+					"{s:{s:o}}",
+					m->name, "Desktops", jdesktop
+					);
+			json_object_update(jmonitor, jpack);
+			json_decref(jpack);
+		}
+
+		json_object_update(jmsg, jmonitor);
+		json_decref(jmonitor);
+	}
+}
+
+void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *jmsg)
+{
+	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+		if (loc.desktop != NULL && d != loc.desktop)
+			continue;
+
+		json_t *jdesktop = json_object();
+
+		if (dom == DOMAIN_DESKTOP) {
+			json_t *jpack = json_pack(
+					"{s:{s:i, s:i, s:{s:i, s:i, s:i, s:i}, s:b, s:b, s:b, s:b}}",
+					d->name,
+					"Border Width", d->border_width,
+					"Window Gap", d->window_gap,
+					"Padding",
+					"Top", d->top_padding,
+					"Right", d->right_padding,
+					"Bottom", d->bottom_padding,
+					"Left", d->left_padding,
+					"Tiled", d->layout == LAYOUT_TILED ? 1 : 0,
+					"Monocle", d->layout == LAYOUT_MONOCLE ? 1 : 0,
+					"Floating", d->floating ? 1 : 0,
+					"Focused", d == m->desk ? 1 : 0
+					);
+			json_object_update(jdesktop, jpack);
+			json_decref(jpack);
+		}
+
+		if (dom == DOMAIN_TREE) {
+			json_t *jtree = json_object();
+			query_tree_json(d, d->root, jtree);
+			json_t *jpack = json_pack(
+					"{s:{s:o}}",
+					d->name, "Tree", jtree
+					);
+			json_object_update(jdesktop, jpack);
+			json_decref(jpack);
+		}
+
+		json_object_update(jmsg, jdesktop);
+		json_decref(jdesktop);
+	}
+}
+
+void query_tree_json(desktop_t *d, node_t *n, json_t *jmsg)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	if (is_leaf(n)) {
+		client_t *c = n->client;
+		char swindow[10];
+		sprintf(swindow, "0x%X", c->window);
+		json_t *jpack = json_pack(
+				"{s:i, s:{s:s, s:s}, s:s, s:i, s:{s:i, s:i, s:i, s:i}, s:s, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b}",
+				"Birth Rotation", n->birth_rotation,
+				"Name",
+				"Class", c->class_name,
+				"Instance", c->instance_name,
+				"Window ID", swindow,
+				"Border Width", c->border_width,
+				"Floating Rectangle",
+				"Width", c->floating_rectangle.width,
+				"Height", c->floating_rectangle.height,
+				"x", c->floating_rectangle.x,
+				"y", c->floating_rectangle.y,
+				"Split Direction", (
+					n->split_dir == DIR_UP ? "Up" : (
+						n->split_dir == DIR_RIGHT ? "Right" : (
+							n->split_dir == DIR_DOWN ? "Down" : "Left"
+							)
+						)
+					),
+				"Floating", c->floating ? 1 : 0,
+				"Pseudo Tiled", c->pseudo_tiled ? 1 : 0,
+				"Fullscreen", c->fullscreen ? 1 : 0,
+				"Urgent", c->urgent ? 1 : 0,
+				"Locked", c->locked ? 1 : 0,
+				"Sticky", c->sticky ? 1 : 0,
+				"Private", c->private ? 1 : 0,
+				"Split Mode", n->split_mode ? 1 : 0,
+				"Focused", n == d->focus ? 1 : 0
+                );
+		json_object_update(jmsg, jpack);
+		json_decref(jpack);
+	} else {
+		json_t *jpack = json_pack(
+				"{s:s, s:i, s:f}",
+				"Split Type", n->split_type == TYPE_HORIZONTAL ? "Horizontal" : "Vertical",
+				"Birth Rotation", n->birth_rotation,
+				"Split Ratio", n->split_ratio
+				);
+		json_object_update(jmsg, jpack);
+		json_decref(jpack);
+	}
+
+	json_t *jfirst = json_object();
+	query_tree_json(d, n->first_child, jfirst);
+	json_t *jsecond = json_object();
+	query_tree_json(d, n->second_child, jsecond);
+	json_t *jpack = json_pack(
+			"{s:o, s:o}",
+			"First Child", jfirst,
+			"Second Child", jsecond
+			);
+	json_object_update(jmsg, jpack);
+	json_decref(jpack);
+}
+
+void query_history_json(coordinates_t loc, json_t *jmsg)
+{
+	for (history_t *h = history_head; h != NULL; h = h->next) {
+		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
+				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
+			continue;
+		xcb_window_t win = XCB_NONE;
+		if (h->loc.node != NULL)
+			win = h->loc.node->client->window;
+
+		char swindow[10];
+		sprintf(swindow, "0x%X", win);
+		json_array_append_new(jmsg, json_pack(
+					"{s:s, s:s, s:s}",
+					"Monitor Name", h->loc.monitor->name,
+					"Desktop Name", h->loc.desktop->name,
+					"Window ID", swindow
+					)
+				);
+	}
+}
+
+void query_stack_json(json_t *jmsg)
+{
+	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
+		char swindow[10];
+		sprintf(swindow, "0x%X", s->node->client->window);
+		json_array_append_new(jmsg, json_pack(
+					"{s:s}",
+					"Window ID", swindow
+					)
+				);
+	}
+}
+
+void query_windows_json(coordinates_t loc, json_t *jmsg)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (loc.node != NULL && n != loc.node)
+					continue;
+
+				char swindow[10];
+				sprintf(swindow, "0x%X", n->client->window);
+				json_array_append_new(jmsg, json_pack(
+							"{s:s}",
+							"Window ID", swindow
+							)
+						);
+			}
+		}
+	}
+}
+
 client_select_t make_client_select(void)
 {
 	client_select_t sel = {
