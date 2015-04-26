@@ -189,6 +189,10 @@ void remove_monitor(monitor_t *m)
 
 void merge_monitors(monitor_t *ms, monitor_t *md)
 {
+	if (ms == NULL || md == NULL || ms == md) {
+		return;
+	}
+
 	PRINTF("merge %s into %s\n", ms->name, md->name);
 
 	desktop_t *d = ms->desk_head;
