@@ -397,21 +397,21 @@ bool update_monitors(void)
 		while (m != NULL) {
 			monitor_t *next = m->next;
 			if (m->wired) {
-				for (monitor_t *mb = mon_head; mb != NULL; mb = mb->next)
-					if (mb != m && mb->wired &&
-							(m->desk == NULL || mb->desk == NULL) &&
-							contains(mb->rectangle, m->rectangle)) {
-						if (mm == m)
-							mm = mb;
-						if (m->desk != NULL && mb->desk == NULL && contains(m->rectangle, mb->rectangle)) {
+				monitor_t *mb = mon_head;
+				while (mb != NULL) {
+					monitor_t *mb_next = mb->next;
+					if (m != mb && mb->wired && contains(m->rectangle, mb->rectangle)) {
+						if (mm == mb) {
 							mm = m;
-							remove_monitor(mb);
-						} else {
-							merge_monitors(m, mb);
-							remove_monitor(m);
 						}
-						break;
+						if (next == mb) {
+							next = mb_next;
+						}
+						merge_monitors(mb, m);
+						remove_monitor(mb);
 					}
+					mb = mb_next;
+				}
 			}
 			m = next;
 		}
