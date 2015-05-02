@@ -44,8 +44,8 @@ bspc: $(CL_OBJ)
 
 install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
-	cp -p bspwm "$(DESTDIR)$(BINPREFIX)"
-	cp -p bspc "$(DESTDIR)$(BINPREFIX)"
+	cp -pf bspwm "$(DESTDIR)$(BINPREFIX)"
+	cp -pf bspc "$(DESTDIR)$(BINPREFIX)"
 	cp -p contrib/freedesktop/bspwm-session "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
