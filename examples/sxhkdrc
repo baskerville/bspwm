@@ -66,12 +66,17 @@ super + {_,shift + }{1-9,0}
 
 ~button1
 	bspc pointer -g focus
-
+	
+# move and resize windows with mouse
 super + button{1-3}
-	; bspc pointer -g {move,resize_side,resize_corner}
+	bspc pointer -g {move,resize_side,resize_corner}
+
+super + !button{1-3}
+	bspc pointer -t %i %i
 
 super + @button{1-3}
 	bspc pointer -u
+
 
 #
 # wm independent hotkeys
