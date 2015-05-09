@@ -32,6 +32,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "tree.h"
+#include "subscribe.h"
 #include "messages.h"
 #include "window.h"
 
@@ -77,6 +78,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	}
 
 	PRINTF("manage %X\n", win);
+	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage 0x%X\n", win);
 
 	if (csq->node_desc[0] != '\0') {
 		coordinates_t ref = {m, d, f};
@@ -193,6 +195,7 @@ void unmanage_window(xcb_window_t win)
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
 		PRINTF("unmanage %X\n", win);
+		put_status(SBSC_MASK_WINDOW_UNMANAGE, "window_unmanage 0x%X\n", win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
 		if (frozen_pointer->window == win)
 			frozen_pointer->action = ACTION_NONE;
@@ -383,6 +386,7 @@ void set_fullscreen(node_t *n, bool value)
 	client_t *c = n->client;
 
 	PRINTF("fullscreen %X: %s\n", c->window, BOOLSTR(value));
+	put_status(SBSC_MASK_WINDOW_FULLSCREEN, "window_fullscreen %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->fullscreen = value;
 	if (value)
@@ -482,7 +486,9 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		return;
 	n->client->urgent = value;
 	window_draw_border(n, d->focus == n, m == mon);
-	put_status();
+
+	put_status(SBSC_MASK_WINDOW_URGENT, "window_urgent %s 0x%X\n", ONOFFSTR(value), n->client->window);
+	put_status(SBSC_MASK_REPORT);
 }
 
 void set_floating_atom(xcb_window_t win, uint32_t value)

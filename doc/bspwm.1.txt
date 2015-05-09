@@ -515,7 +515,7 @@ Options
 *--record-history* on|off::
 	Enable or disable the recording of window focus history.
 
-*--subscribe*::
+*--subscribe* (all|report|monitor|desktop|window|...)*::
 	Continuously print status information.
 
 *--get-status*::

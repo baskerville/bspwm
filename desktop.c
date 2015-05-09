@@ -31,6 +31,7 @@
 #include "tree.h"
 #include "window.h"
 #include "desktop.h"
+#include "subscribe.h"
 #include "settings.h"
 
 void focus_desktop(monitor_t *m, desktop_t *d)
@@ -48,7 +49,7 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 	mon->desk = d;
 
 	ewmh_update_current_desktop();
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
@@ -74,7 +75,7 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l)
 	d->layout = l;
 	arrange(m, d);
 	if (d == m->desk)
-		put_status();
+		put_status(SBSC_MASK_REPORT);
 }
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
@@ -106,7 +107,7 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 desktop_t *make_desktop(const char *name)
@@ -147,12 +148,13 @@ void insert_desktop(monitor_t *m, desktop_t *d)
 void add_desktop(monitor_t *m, desktop_t *d)
 {
 	PRINTF("add desktop %s\n", d->name);
+	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add %s\n", d->name);
 
 	insert_desktop(m, d);
 	num_desktops++;
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 void empty_desktop(desktop_t *d)
@@ -182,16 +184,20 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
 void remove_desktop(monitor_t *m, desktop_t *d)
 {
 	PRINTF("remove desktop %s\n", d->name);
+	put_status(SBSC_MASK_DESKTOP_REMOVE, "desktop_remove %s\n", d->name);
 
 	unlink_desktop(m, d);
 	history_remove(d, NULL);
 	empty_desktop(d);
 	free(d);
+
 	num_desktops--;
+
 	ewmh_update_current_desktop();
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
-	put_status();
+
+	put_status(SBSC_MASK_REPORT);
 }
 
 void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
@@ -280,7 +286,7 @@ void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 void show_desktop(desktop_t *d)

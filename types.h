@@ -253,6 +253,7 @@ typedef struct subscriber_list_t subscriber_list_t;
 struct subscriber_list_t {
 	int fd;
 	FILE *stream;
+	int field;
 	subscriber_list_t *prev;
 	subscriber_list_t *next;
 };

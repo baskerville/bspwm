@@ -25,9 +25,28 @@
 #ifndef BSPWM_SUBSCRIBE_H
 #define BSPWM_SUBSCRIBE_H
 
-subscriber_list_t *make_subscriber_list(FILE *stream);
+typedef enum {
+	SBSC_MASK_REPORT = 1 << 0,
+	SBSC_MASK_MONITOR_ADD = 1 << 1,
+	SBSC_MASK_MONITOR_RENAME = 1 << 2,
+	SBSC_MASK_MONITOR_REMOVE = 1 << 3,
+	SBSC_MASK_DESKTOP_ADD = 1 << 4,
+	SBSC_MASK_DESKTOP_RENAME = 1 << 5,
+	SBSC_MASK_DESKTOP_REMOVE = 1 << 6,
+	SBSC_MASK_WINDOW_MANAGE = 1 << 7,
+	SBSC_MASK_WINDOW_UNMANAGE = 1 << 8,
+	SBSC_MASK_WINDOW_URGENT = 1 << 9,
+	SBSC_MASK_WINDOW_FULLSCREEN = 1 << 10,
+	SBSC_MASK_MONITOR = (1 << 4) - (1 << 1),
+	SBSC_MASK_DESKTOP = (1 << 7) - (1 << 4),
+	SBSC_MASK_WINDOW = (1 << 11) - (1 << 7),
+	SBSC_MASK_ALL = (1 << 11) - 1
+} subscriber_mask_t;
+
+subscriber_list_t *make_subscriber_list(FILE *stream, int field);
 void remove_subscriber(subscriber_list_t *sb);
-void add_subscriber(FILE *stream);
-int print_status(FILE *stream);
+void add_subscriber(FILE *stream, int field);
+int print_report(FILE *stream);
+void put_status(subscriber_mask_t mask, ...);
 
 #endif

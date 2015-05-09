@@ -26,6 +26,7 @@
 #define BSPWM_MESSAGES_H
 
 #include "types.h"
+#include "subscribe.h"
 
 #define OPT_CHR  '-'
 #define CAT_CHR  '.'
@@ -45,6 +46,7 @@ int cmd_config(char **args, int num, FILE *rsp);
 int cmd_quit(char **args, int num);
 int set_setting(coordinates_t loc, char *name, char *value);
 int get_setting(coordinates_t loc, char *name, FILE* rsp);
+bool parse_subscriber_mask(char *s, subscriber_mask_t *mask);
 bool parse_bool(char *value, bool *b);
 bool parse_layout(char *s, layout_t *l);
 bool parse_direction(char *s, direction_t *d);

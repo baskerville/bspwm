@@ -76,7 +76,6 @@ void init(void);
 void setup(void);
 void register_events(void);
 void cleanup(void);
-void put_status(void);
 bool check_connection (xcb_connection_t *dpy);
 void sig_handler(int sig);
 

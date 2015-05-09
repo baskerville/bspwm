@@ -406,9 +406,10 @@ int cmd_desktop(char **args, int num)
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
+			put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s\n", trg.desktop->name, *args);
 			snprintf(trg.desktop->name, sizeof(trg.desktop->name), "%s", *args);
 			ewmh_update_desktop_names();
-			put_status();
+			put_status(SBSC_MASK_REPORT);
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			if (trg.desktop->root == NULL &&
 			    trg.monitor->desk_head != trg.monitor->desk_tail) {
@@ -532,7 +533,7 @@ int cmd_monitor(char **args, int num)
 				d = d->next;
 				num--, args++;
 			}
-			put_status();
+			put_status(SBSC_MASK_REPORT);
 			while (num > 0) {
 				add_desktop(trg.monitor, make_desktop(*args));
 				num--, args++;
@@ -585,8 +586,9 @@ int cmd_monitor(char **args, int num)
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
+			put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename %s %s\n", trg.monitor->name, *args);
 			snprintf(trg.monitor->name, sizeof(trg.monitor->name), "%s", *args);
-			put_status();
+			put_status(SBSC_MASK_REPORT);
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1)
@@ -799,9 +801,25 @@ int cmd_control(char **args, int num, FILE *rsp)
 		} else if (streq("--toggle-visibility", *args)) {
 			toggle_visibility();
 		} else if (streq("--subscribe", *args)) {
+			num--, args++;
+			int field = 0;
+			if (num < 1) {
+				field = SBSC_MASK_REPORT;
+			} else {
+				subscriber_mask_t mask;
+				while (num > 0) {
+					if (parse_subscriber_mask(*args, &mask)) {
+						field |= mask;
+					} else {
+						return MSG_SYNTAX;
+					}
+					num--, args++;
+				}
+			}
+			add_subscriber(rsp, field);
 			return MSG_SUBSCRIBE;
 		} else if (streq("--get-status", *args)) {
-			print_status(rsp);
+			print_report(rsp);
 		} else if (streq("--record-history", *args)) {
 			num--, args++;
 			if (num < 1)
@@ -1097,6 +1115,44 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	else
 		return MSG_FAILURE;
 	return MSG_SUCCESS;
+}
+
+bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
+{
+	if (streq("all", s)) {
+		*mask = SBSC_MASK_ALL;
+	} else if (streq("window", s)) {
+		*mask = SBSC_MASK_WINDOW;
+	} else if (streq("desktop", s)) {
+		*mask = SBSC_MASK_DESKTOP;
+	} else if (streq("monitor", s)) {
+		*mask = SBSC_MASK_MONITOR;
+	} else if (streq("window_manage", s)) {
+		*mask = SBSC_MASK_WINDOW_MANAGE;
+	} else if (streq("window_unmanage", s)) {
+		*mask = SBSC_MASK_WINDOW_UNMANAGE;
+	} else if (streq("window_urgent", s)) {
+		*mask = SBSC_MASK_WINDOW_URGENT;
+	} else if (streq("window_fullscreen", s)) {
+		*mask = SBSC_MASK_WINDOW_FULLSCREEN;
+	} else if (streq("desktop_add", s)) {
+		*mask = SBSC_MASK_DESKTOP_ADD;
+	} else if (streq("desktop_rename", s)) {
+		*mask = SBSC_MASK_DESKTOP_RENAME;
+	} else if (streq("desktop_remove", s)) {
+		*mask = SBSC_MASK_DESKTOP_REMOVE;
+	} else if (streq("monitor_add", s)) {
+		*mask = SBSC_MASK_MONITOR_ADD;
+	} else if (streq("monitor_rename", s)) {
+		*mask = SBSC_MASK_MONITOR_RENAME;
+	} else if (streq("monitor_remove", s)) {
+		*mask = SBSC_MASK_MONITOR_REMOVE;
+	} else if (streq("report", s)) {
+		*mask = SBSC_MASK_REPORT;
+	} else {
+		return false;
+	}
+	return true;
 }
 
 bool parse_bool(char *value, bool *b)

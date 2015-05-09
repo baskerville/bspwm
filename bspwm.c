@@ -161,9 +161,7 @@ int main(int argc, char *argv[])
 					FILE *rsp = fdopen(cli_fd, "w");
 					if (rsp != NULL) {
 						int ret = handle_message(msg, n, rsp);
-						if (ret == MSG_SUBSCRIBE) {
-							add_subscriber(rsp);
-						} else {
+						if (ret != MSG_SUBSCRIBE) {
 							if (ret != MSG_SUCCESS)
 								fprintf(rsp, "%c", ret);
 							fflush(rsp);
@@ -335,17 +333,6 @@ void cleanup(void)
 		remove_pending_rule(pending_rule_head);
 	empty_history();
 	free(frozen_pointer);
-}
-
-void put_status(void)
-{
-	subscriber_list_t *sb = subscribe_head;
-	while (sb != NULL) {
-		subscriber_list_t *next = sb->next;
-		if (print_status(sb->stream) != 0)
-			remove_subscriber(sb);
-		sb = next;
-	}
 }
 
 bool check_connection (xcb_connection_t *dpy)

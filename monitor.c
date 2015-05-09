@@ -32,6 +32,7 @@
 #include "query.h"
 #include "settings.h"
 #include "tree.h"
+#include "subscribe.h"
 #include "window.h"
 #include "monitor.h"
 
@@ -138,12 +139,14 @@ void focus_monitor(monitor_t *m)
 		center_pointer(m->rectangle);
 
 	ewmh_update_current_desktop();
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 monitor_t *add_monitor(xcb_rectangle_t rect)
 {
 	monitor_t *m = make_monitor(rect);
+	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s\n", m->name);
+
 	if (mon == NULL) {
 		mon = m;
 		mon_head = m;
@@ -153,6 +156,7 @@ monitor_t *add_monitor(xcb_rectangle_t rect)
 		m->prev = mon_tail;
 		mon_tail = m;
 	}
+
 	num_monitors++;
 	return m;
 }
@@ -160,6 +164,7 @@ monitor_t *add_monitor(xcb_rectangle_t rect)
 void remove_monitor(monitor_t *m)
 {
 	PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
+	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
 
 	while (m->desk_head != NULL)
 		remove_desktop(m, m->desk_head);
@@ -184,7 +189,7 @@ void remove_monitor(monitor_t *m)
 	xcb_destroy_window(dpy, m->root);
 	free(m);
 	num_monitors--;
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 void merge_monitors(monitor_t *ms, monitor_t *md)
@@ -240,7 +245,7 @@ void swap_monitors(monitor_t *m1, monitor_t *m2)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	put_status();
+	put_status(SBSC_MASK_REPORT);
 }
 
 monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)

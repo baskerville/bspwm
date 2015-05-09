@@ -25,16 +25,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include "bspwm.h"
 #include "tree.h"
 #include "settings.h"
 #include "subscribe.h"
 
-subscriber_list_t *make_subscriber_list(FILE *stream)
+subscriber_list_t *make_subscriber_list(FILE *stream, int field)
 {
 	subscriber_list_t *sb = malloc(sizeof(subscriber_list_t));
 	sb->prev = sb->next = NULL;
 	sb->stream = stream;
+	sb->field = field;
 	return sb;
 }
 
@@ -56,9 +58,9 @@ void remove_subscriber(subscriber_list_t *sb)
 	free(sb);
 }
 
-void add_subscriber(FILE *stream)
+void add_subscriber(FILE *stream, int field)
 {
-	subscriber_list_t *sb = make_subscriber_list(stream);
+	subscriber_list_t *sb = make_subscriber_list(stream, field);
 	if (subscribe_head == NULL) {
 		subscribe_head = subscribe_tail = sb;
 	} else {
@@ -66,10 +68,12 @@ void add_subscriber(FILE *stream)
 		sb->prev = subscribe_tail;
 		subscribe_tail = sb;
 	}
-	print_status(sb->stream);
+	if (sb->field & SBSC_MASK_REPORT) {
+		print_report(sb->stream);
+	}
 }
 
-int print_status(FILE *stream)
+int print_report(FILE *stream)
 {
 	fprintf(stream, "%s", status_prefix);
 	bool urgent = false;
@@ -88,4 +92,30 @@ int print_status(FILE *stream)
 	}
 	fprintf(stream, "%s", "\n");
 	return fflush(stream);
+}
+
+void put_status(subscriber_mask_t mask, ...)
+{
+	subscriber_list_t *sb = subscribe_head;
+	int ret;
+	while (sb != NULL) {
+		subscriber_list_t *next = sb->next;
+		if (sb->field & mask) {
+			if (mask == SBSC_MASK_REPORT) {
+				ret = print_report(sb->stream);
+			} else {
+				char *fmt;
+				va_list args;
+				va_start(args, mask);
+				fmt = va_arg(args, char *);
+				vfprintf(sb->stream, fmt, args);
+				va_end(args);
+				ret = fflush(sb->stream);
+			}
+			if (ret != 0) {
+				remove_subscriber(sb);
+			}
+		}
+		sb = next;
+	}
 }
