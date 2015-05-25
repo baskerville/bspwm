@@ -2,74 +2,97 @@
 # bspwm hotkeys
 #
 
+# Quit BSPWM.
 super + alt + Escape
 	bspc quit
 
+# Close selected window.
 super + w
 	bspc window -c
 
+# Set or cycle the layout of the selected desktop.
 super + t
 	bspc desktop -l next
 
+# Splits screen space evenly between all open windows.
 super + b
 	bspc desktop -B
 
+# Toggle floating or fullscreen.
 super + {s,f}
 	bspc window -t {floating,fullscreen}
 
+# Focus last selected window/desktop ???
 super + {grave,Tab}
 	bspc {window,desktop} -f last
 
+# Swap the selected window with the given window.
 super + apostrophe
 	bspc window -s last
 
+# Enable or disable the recording of window focus history.
 super + {o,i}
 	bspc control --record-history off; \
 	bspc window {older,newer} -f; \
 	bspc control --record-history on
 
+# ???
 super + y
 	bspc window -w last.manual
 
+# Move the selected window to the largest space.
 super + m
 	bspc window -s biggest
 
+# Focus and swap windows.
 super + {_,shift + }{h,j,k,l}
 	bspc window -{f,s} {left,down,up,right}
 
+# Focus next / previous windows.
 super + {_,shift + }c
 	bspc window -f {next,prev}
 
+# Move window to a new position.
 super + {comma,period}
 	bspc desktop -C {backward,forward}
 
+# Move to next / previous BSPWM desktop.
 super + bracket{left,right}
 	bspc desktop -f {prev,next}
 
+# Preselect the splitting area of the selected window.
 super + ctrl + {h,j,k,l}
 	bspc window -p {left,down,up,right}
 
+# Cancel preselection / cancel preselection of all windows on the desktop.
 super + ctrl + {_,shift + }space
 	bspc {window -p cancel,desktop -c}
 
+# Set or change the splitting ratio of the edge located in the given direction in relation to the selected window???
 super + alt + {h,j,k,l}
 	bspc window -e {left -10,down +10,up -10,right +10}
 
+# Set or change the splitting ratio of the edge located in the given direction in relation to the selected window???
 super + alt + shift + {h,j,k,l}
 	bspc window -e {right -10,up +10,down -10,left +10}
 
+# Set the split ratio of the selected window.
 super + ctrl + {1-9}
 	bspc window -r 0.{1-9}
 
+# Send seleced window to a new desktop???
 super + {_,shift + }{1-9,0}
 	bspc {desktop -f,window -d} ^{1-9,10}
-
+	
+# Select a window on mouse click
 ~button1
 	bspc pointer -g focus
 
+# Resize floating windows using mouse buttons 1-3.
 super + button{1-3}
 	; bspc pointer -g {move,resize_side,resize_corner}
 
+# Terminate current pointer action.
 super + @button{1-3}
 	bspc pointer -u
 
@@ -77,9 +100,11 @@ super + @button{1-3}
 # wm independent hotkeys
 #
 
+# Start a terminal (URXVT is the default for the example)
 super + Return
 	urxvt
-
+	
+# Run dmenu (Requires dmenu to be installed)
 super + space
 	dmenu_run
 
