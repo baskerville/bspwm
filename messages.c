@@ -390,6 +390,33 @@ int cmd_desktop(char **args, int num)
 				swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop);
 			else
 				return MSG_FAILURE;
+		} else if (streq("-b", *args) || streq("--bubble", *args)) {
+			num--, args++;
+			if (num < 1)
+				return MSG_SYNTAX;
+			cycle_dir_t cyc;
+			if (parse_cycle_direction(*args, &cyc)) {
+				desktop_t *d = trg.desktop;
+				if (cyc == CYCLE_PREV) {
+					if (d->prev == NULL) {
+						while (d->next != NULL) {
+							swap_desktops(trg.monitor, d, trg.monitor, d->next);
+						}
+					} else {
+						swap_desktops(trg.monitor, d, trg.monitor, d->prev);
+					}
+				} else {
+					if (d->next == NULL) {
+						while (d->prev != NULL) {
+							swap_desktops(trg.monitor, d, trg.monitor, d->prev);
+						}
+					} else {
+						swap_desktops(trg.monitor, d, trg.monitor, d->next);
+					}
+				}
+			} else {
+				return MSG_FAILURE;
+			}
 		} else if (streq("-l", *args) || streq("--layout", *args)) {
 			num--, args++;
 			if (num < 1)

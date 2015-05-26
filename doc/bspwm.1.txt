@@ -388,6 +388,9 @@ Options
 *-s*, *--swap* 'DESKTOP_SEL'::
 	Swap the selected desktop with the given desktop.
 
+*-b*, *--bubble* 'CYCLE_DIR'::
+	Bubble the selected desktop in the given direction.
+
 *-r*, *--remove*::
 	Remove the selected desktop.
 
