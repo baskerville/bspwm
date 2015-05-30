@@ -759,6 +759,9 @@ Each item has the form '<type><value>' where '<type>' is the first character of 
 'L(T|M)'::
 	Layout of the focused desktop of a monitor.
 
+'4(y|n)'::
+	Floating state of the focused desktop of a monitor.
+
 Environment Variables
 ---------------------
 
