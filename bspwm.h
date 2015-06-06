@@ -59,7 +59,7 @@ pending_rule_t *pending_rule_head;
 pending_rule_t *pending_rule_tail;
 
 pointer_state_t *frozen_pointer;
-xcb_window_t motion_recorder;
+xcb_window_t meta_window;
 xcb_atom_t WM_TAKE_FOCUS;
 xcb_atom_t WM_DELETE_WINDOW;
 xcb_atom_t _BSPWM_FLOATING_WINDOW;

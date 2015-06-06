@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 	close(sock_fd);
 	unlink(socket_path);
 	xcb_ewmh_connection_wipe(ewmh);
-	xcb_destroy_window(dpy, motion_recorder);
+	xcb_destroy_window(dpy, meta_window);
 	free(ewmh);
 	xcb_flush(dpy);
 	xcb_disconnect(dpy);
@@ -227,10 +227,8 @@ void setup(void)
 	screen_height = screen->height_in_pixels;
 	root_depth = screen->root_depth;
 
-	uint32_t mask = XCB_CW_EVENT_MASK;
-	uint32_t values[] = {XCB_EVENT_MASK_POINTER_MOTION};
-	motion_recorder = xcb_generate_id(dpy);
-	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder, root, 0, 0, screen_width, screen_height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, mask, values);
+	meta_window = xcb_generate_id(dpy);
+	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, meta_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_NONE, NULL);
 
 	xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
 	                          ewmh->_NET_SUPPORTING_WM_CHECK,
@@ -254,7 +252,7 @@ void setup(void)
 	                          ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR};
 
 	xcb_ewmh_set_supported(ewmh, default_screen, LENGTH(net_atoms), net_atoms);
-	ewmh_set_supporting(motion_recorder);
+	ewmh_set_supporting(meta_window);
 
 #define GETATOM(a) \
 	get_atom(#a, &a);

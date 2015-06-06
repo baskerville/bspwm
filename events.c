@@ -57,9 +57,6 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_ENTER_NOTIFY:
 			enter_notify(evt);
 			break;
-		case XCB_MOTION_NOTIFY:
-			motion_notify(evt);
-			break;
 		case XCB_FOCUS_IN:
 			focus_in(evt);
 			break;
@@ -323,42 +320,17 @@ void enter_notify(xcb_generic_event_t *evt)
 	     mon->desk->focus->client->window == win))
 		return;
 
-	enable_motion_recorder();
-}
-
-void motion_notify(xcb_generic_event_t *evt)
-{
-	PUTS("motion notify");
-
-	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-
-	int dtime = e->time - last_motion_time;
-	if (dtime > 1000) {
-		last_motion_time = e->time;
-		last_motion_x = e->event_x;
-		last_motion_y = e->event_y;
-		return;
-	}
-
-	int mdist = abs(e->event_x - last_motion_x) + abs(e->event_y - last_motion_y);
-	if (mdist < 10)
-		return;
-
-	disable_motion_recorder();
-
-	xcb_window_t win = XCB_NONE;
-	xcb_point_t pt = {e->root_x, e->root_y};
-	query_pointer(&win, NULL);
-
 	bool pfm_backup = pointer_follows_monitor;
 	bool pff_backup = pointer_follows_focus;
 	auto_raise = false;
 	pointer_follows_monitor = false;
 	pointer_follows_focus = false;
 	if (!window_focus(win)) {
+		xcb_point_t pt = {e->root_x, e->root_y};
 		monitor_t *m = monitor_from_point(pt);
-		if (m != NULL && m != mon)
+		if (m != NULL && m != mon) {
 			focus_node(m, m->desk, m->desk->focus);
+		}
 	}
 	pointer_follows_monitor = pfm_backup;
 	pointer_follows_focus = pff_backup;

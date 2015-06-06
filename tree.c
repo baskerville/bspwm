@@ -355,15 +355,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	history_add(m, d, n);
 	set_input_focus(n);
 
-	if (focus_follows_pointer) {
-		xcb_window_t win = XCB_NONE;
-		query_pointer(&win, NULL);
-		if (win != n->client->window)
-			enable_motion_recorder();
-		else
-			disable_motion_recorder();
-	}
-
 	if (pointer_follows_focus) {
 		center_pointer(get_rectangle(n->client));
 	}

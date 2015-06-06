@@ -589,8 +589,6 @@ void restrain_floating_size(client_t *c, int *width, int *height)
 
 void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {
-	window_lower(motion_recorder);
-
 	xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
 
 	if (qpr != NULL) {
@@ -600,8 +598,6 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 			*pt = (xcb_point_t) {qpr->root_x, qpr->root_y};
 		free(qpr);
 	}
-
-	window_raise(motion_recorder);
 }
 
 bool window_focus(xcb_window_t win)
@@ -722,31 +718,6 @@ void toggle_visibility(void)
 		update_input_focus();
 }
 
-void enable_motion_recorder(void)
-{
-	PUTS("enable motion recorder");
-	window_raise(motion_recorder);
-	window_show(motion_recorder);
-}
-
-void disable_motion_recorder(void)
-{
-	PUTS("disable motion recorder");
-	window_hide(motion_recorder);
-}
-
-void update_motion_recorder(void)
-{
-	xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, root), NULL);
-
-	if (geo != NULL) {
-		window_resize(motion_recorder, geo->width, geo->height);
-		PRINTF("update motion recorder size: %ux%u\n", geo->width, geo->height);
-	}
-
-	free(geo);
-}
-
 void update_input_focus(void)
 {
 	set_input_focus(mon->desk->focus);
@@ -772,9 +743,7 @@ void center_pointer(xcb_rectangle_t r)
 {
 	int16_t cx = r.x + r.width / 2;
 	int16_t cy = r.y + r.height / 2;
-	window_lower(motion_recorder);
 	xcb_warp_pointer(dpy, XCB_NONE, root, 0, 0, 0, 0, cx, cy);
-	window_raise(motion_recorder);
 }
 
 void get_atom(char *name, xcb_atom_t *atom)

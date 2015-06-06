@@ -1020,15 +1020,6 @@ int set_setting(coordinates_t loc, char *name, char *value)
 						uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 						xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
 					}
-			if (focus_follows_pointer) {
-				for (monitor_t *m = mon_head; m != NULL; m = m->next)
-					window_show(m->root);
-				enable_motion_recorder();
-			} else {
-				for (monitor_t *m = mon_head; m != NULL; m = m->next)
-					window_hide(m->root);
-				disable_motion_recorder();
-			}
 			return MSG_SUCCESS;
 		} else {
 			return MSG_FAILURE;
