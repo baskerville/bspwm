@@ -1130,7 +1130,6 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GETBOOL(remove_disabled_monitors)
 	GETBOOL(remove_unplugged_monitors)
 	GETBOOL(merge_overlapping_monitors)
-	GETBOOL(mode_alter)
 	GETBOOL(enable_autosplit_mode)
 #undef GETBOOL
 	else
