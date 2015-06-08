@@ -68,6 +68,8 @@
 #define REMOVE_UNPLUGGED_MONITORS   false
 #define MERGE_OVERLAPPING_MONITORS  false
 
+#define ENABLE_AUTOSPLIT_MODE       false
+
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
 
@@ -106,6 +108,8 @@ bool center_pseudo_tiled;
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;
 bool merge_overlapping_monitors;
+
+bool enable_autosplit_mode;
 
 void run_config(void);
 void load_settings(void);

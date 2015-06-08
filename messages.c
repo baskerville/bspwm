@@ -1039,6 +1039,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		SETBOOL(focus_by_distance)
 		SETBOOL(ignore_ewmh_focus)
 		SETBOOL(center_pseudo_tiled)
+		SETBOOL(enable_autosplit_mode)
 #undef SETBOOL
 #define SETMONBOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1129,6 +1130,8 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GETBOOL(remove_disabled_monitors)
 	GETBOOL(remove_unplugged_monitors)
 	GETBOOL(merge_overlapping_monitors)
+	GETBOOL(mode_alter)
+	GETBOOL(enable_autosplit_mode)
 #undef GETBOOL
 	else
 		return MSG_FAILURE;

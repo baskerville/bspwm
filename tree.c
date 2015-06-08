@@ -182,6 +182,11 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 			f = p;
 			p = f->parent;
 		}
+
+		if (enable_autosplit_mode && p != NULL && f->split_mode == MODE_AUTOMATIC){
+			f->split_mode = MODE_AUTOSPLIT;
+		}
+
 		n->parent = c;
 		c->birth_rotation = f->birth_rotation;
 		switch (f->split_mode) {
@@ -261,6 +266,30 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 						c->first_child = f;
 						c->second_child = n;
 						break;
+				}
+				if (d->root == f)
+					d->root = c;
+				f->split_mode = MODE_AUTOMATIC;
+				break;
+			case MODE_AUTOSPLIT:
+				if (p != NULL) {
+					if (is_first_child(f))
+						p->first_child = c;
+					else
+						p->second_child = c;
+				}
+				c->split_ratio = f->split_ratio;
+				c->parent = p;
+				f->parent = c;
+				f->birth_rotation = 0;
+				if (f->rectangle.width > f->rectangle.height) {
+					c->split_type = TYPE_VERTICAL;
+					c->first_child = n;
+					c->second_child = f;
+				}else{
+					c->split_type = TYPE_HORIZONTAL;
+					c->first_child = f;
+					c->second_child = n;
 				}
 				if (d->root == f)
 					d->root = c;
