@@ -41,7 +41,8 @@ typedef enum {
 
 typedef enum {
 	MODE_AUTOMATIC,
-	MODE_MANUAL
+	MODE_MANUAL,
+	MODE_AUTOSPLIT
 } split_mode_t;
 
 typedef enum {

@@ -76,4 +76,6 @@ void load_settings(void)
 	remove_disabled_monitors = REMOVE_DISABLED_MONITORS;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;
 	merge_overlapping_monitors = MERGE_OVERLAPPING_MONITORS;
+
+	enable_autosplit_mode = ENABLE_AUTOSPLIT_MODE;
 }
