@@ -1,0 +1,15 @@
+#! /bin/sh
+
+fwid=$(bspc query -W -w)
+
+if [ -n "$fwid" ] ; then
+	wattr wh $fwid | {
+		read width height
+		if [ $width -gt $height ] ; then
+			echo "split_dir=left"
+		else
+			echo "split_dir=down"
+		fi
+		echo "split_ratio=0.5"
+	}
+fi
