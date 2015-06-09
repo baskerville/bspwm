@@ -600,17 +600,6 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 	}
 }
 
-bool window_focus(xcb_window_t win)
-{
-	coordinates_t loc;
-	if (locate_window(win, &loc)) {
-		if (loc.node != mon->desk->focus)
-			focus_node(loc.monitor, loc.desktop, loc.node);
-		return true;
-	}
-	return false;
-}
-
 void window_border_width(xcb_window_t win, uint32_t bw)
 {
 	uint32_t values[] = {bw};
