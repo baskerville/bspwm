@@ -1,6 +1,6 @@
 #! /bin/sh
 
-fwid=$(bspc query -W -w)
+fwid=$(bspc query -W -w focused.automatic)
 
 if [ -n "$fwid" ] ; then
 	wattr wh $fwid | {
