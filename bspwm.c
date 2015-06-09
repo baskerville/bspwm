@@ -309,7 +309,7 @@ void setup(void)
 
 void register_events(void)
 {
-	uint32_t values[] = {ROOT_EVENT_MASK};
+	uint32_t values[] = {ROOT_EVENT_MASK | (focus_follows_pointer ? FFP_MASK : 0)};
 	xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, root, XCB_CW_EVENT_MASK, values));
 	if (e != NULL) {
 		xcb_disconnect(dpy);

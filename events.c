@@ -57,6 +57,12 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_ENTER_NOTIFY:
 			enter_notify(evt);
 			break;
+		case XCB_LEAVE_NOTIFY:
+			leave_notify(evt);
+			break;
+		case XCB_MOTION_NOTIFY:
+			motion_notify(evt);
+			break;
 		case XCB_FOCUS_IN:
 			focus_in(evt);
 			break;
@@ -317,15 +323,62 @@ void enter_notify(xcb_generic_event_t *evt)
 
 	if (e->mode != XCB_NOTIFY_MODE_NORMAL ||
 	    (mon->desk->focus != NULL &&
-	     mon->desk->focus->client->window == win))
+	     mon->desk->focus->client->window == win)) {
 		return;
+	}
+
+	uint32_t values[] = {CLIENT_EVENT_MASK|FFP_MASK|XCB_EVENT_MASK_POINTER_MOTION};
+	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+}
+
+void leave_notify(xcb_generic_event_t *evt)
+{
+	xcb_leave_notify_event_t *e = (xcb_leave_notify_event_t *) evt;
+	xcb_window_t win = e->event;
+
+	PRINTF("leave notify %X %d %d\n", win, e->mode, e->detail);
+
+	if (e->mode != XCB_NOTIFY_MODE_NORMAL) {
+		return;
+	}
+
+	uint32_t values[] = {CLIENT_EVENT_MASK|FFP_MASK};
+	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+}
+
+void motion_notify(xcb_generic_event_t *evt)
+{
+	PUTS("motion notify");
+
+	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
+	xcb_window_t win = e->event;
+
+	int dtime = e->time - last_motion_time;
+	if (dtime > 1000) {
+		last_motion_time = e->time;
+		last_motion_x = e->event_x;
+		last_motion_y = e->event_y;
+		return;
+	}
+
+	int mdist = abs(e->event_x - last_motion_x) + abs(e->event_y - last_motion_y);
+	if (mdist < 10) {
+		return;
+	}
 
 	bool pfm_backup = pointer_follows_monitor;
 	bool pff_backup = pointer_follows_focus;
 	auto_raise = false;
 	pointer_follows_monitor = false;
 	pointer_follows_focus = false;
-	if (!window_focus(win)) {
+	coordinates_t loc;
+	if (locate_window(win, &loc)) {
+		if (loc.node != mon->desk->focus) {
+			focus_node(loc.monitor, loc.desktop, loc.node);
+			uint32_t values[] = {CLIENT_EVENT_MASK|FFP_MASK};
+			xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+		}
+	} else {
 		xcb_point_t pt = {e->root_x, e->root_y};
 		monitor_t *m = monitor_from_point(pt);
 		if (m != NULL && m != mon) {
