@@ -974,7 +974,8 @@ int set_setting(coordinates_t loc, char *name, char *value)
 #undef MONDESKSET
 #define SETSTR(s) \
 	} else if (streq(#s, name)) { \
-		return snprintf(s, sizeof(s), "%s", value) >= 0;
+		if (snprintf(s, sizeof(s), "%s", value) < 0) \
+			return MSG_FAILURE;
 	SETSTR(external_rules_command)
 	SETSTR(status_prefix)
 #undef SETSTR
