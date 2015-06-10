@@ -348,10 +348,10 @@ void leave_notify(xcb_generic_event_t *evt)
 
 void motion_notify(xcb_generic_event_t *evt)
 {
-	PUTS("motion notify");
-
 	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
 	xcb_window_t win = e->event;
+
+	PRINTF("motion notify %X %i %i\n", win, e->root_x, e->root_y);
 
 	int dtime = e->time - last_motion_time;
 	if (dtime > 1000) {
