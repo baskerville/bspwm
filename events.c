@@ -327,8 +327,7 @@ void enter_notify(xcb_generic_event_t *evt)
 		return;
 	}
 
-	uint32_t values[] = {CLIENT_EVENT_MASK|FFP_MASK|XCB_EVENT_MASK_POINTER_MOTION};
-	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+	xcb_grab_pointer(dpy, 1, win, XCB_EVENT_MASK_POINTER_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
 }
 
 void leave_notify(xcb_generic_event_t *evt)
@@ -342,8 +341,7 @@ void leave_notify(xcb_generic_event_t *evt)
 		return;
 	}
 
-	uint32_t values[] = {CLIENT_EVENT_MASK|FFP_MASK};
-	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+	xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
 }
 
 void motion_notify(xcb_generic_event_t *evt)
@@ -375,8 +373,7 @@ void motion_notify(xcb_generic_event_t *evt)
 	if (locate_window(win, &loc)) {
 		if (loc.node != mon->desk->focus) {
 			focus_node(loc.monitor, loc.desktop, loc.node);
-			uint32_t values[] = {CLIENT_EVENT_MASK|FFP_MASK};
-			xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+			xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
 		}
 	} else {
 		xcb_point_t pt = {e->root_x, e->root_y};
