@@ -171,7 +171,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	else
 		stack(n, STACK_ABOVE);
 
-	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
+	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? FFP_MASK : 0)};
 	xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
 
 	if (visible) {

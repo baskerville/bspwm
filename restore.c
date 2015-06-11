@@ -183,7 +183,7 @@ void restore_tree(char *file_path)
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
+				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? FFP_MASK : 0)};
 				xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
 				if (n->client->floating) {
 					n->vacant = true;
