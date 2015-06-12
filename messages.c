@@ -1015,15 +1015,23 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		bool b;
 		if (parse_bool(value, &b) && b != focus_follows_pointer) {
 			focus_follows_pointer = b;
-			uint32_t root_values[] = {ROOT_EVENT_MASK | (focus_follows_pointer ? FFP_MASK : 0)};
-			uint32_t client_values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? FFP_MASK : 0)};
-			xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, root_values);
+			uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-						xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, client_values);
+						xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
 					}
 				}
+			}
+			if (focus_follows_pointer) {
+				for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+					window_show(m->root);
+				}
+			} else {
+				for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+					window_hide(m->root);
+				}
+				disable_motion_recorder();
 			}
 			return MSG_SUCCESS;
 		} else {

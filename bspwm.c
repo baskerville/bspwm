@@ -191,6 +191,7 @@ int main(int argc, char *argv[])
 	unlink(socket_path);
 	xcb_ewmh_connection_wipe(ewmh);
 	xcb_destroy_window(dpy, meta_window);
+	xcb_destroy_window(dpy, motion_recorder);
 	free(ewmh);
 	xcb_flush(dpy);
 	xcb_disconnect(dpy);
@@ -229,6 +230,11 @@ void setup(void)
 
 	meta_window = xcb_generate_id(dpy);
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, meta_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_NONE, NULL);
+
+	motion_recorder = xcb_generate_id(dpy);
+	uint32_t values[] = {XCB_EVENT_MASK_POINTER_MOTION};
+	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder, root, 0, 0, screen_width, screen_height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+
 
 	xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
 	                          ewmh->_NET_SUPPORTING_WM_CHECK,
@@ -309,7 +315,7 @@ void setup(void)
 
 void register_events(void)
 {
-	uint32_t values[] = {ROOT_EVENT_MASK | (focus_follows_pointer ? FFP_MASK : 0)};
+	uint32_t values[] = {ROOT_EVENT_MASK};
 	xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, root, XCB_CW_EVENT_MASK, values));
 	if (e != NULL) {
 		xcb_disconnect(dpy);

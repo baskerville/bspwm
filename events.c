@@ -57,9 +57,6 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_ENTER_NOTIFY:
 			enter_notify(evt);
 			break;
-		case XCB_LEAVE_NOTIFY:
-			leave_notify(evt);
-			break;
 		case XCB_MOTION_NOTIFY:
 			motion_notify(evt);
 			break;
@@ -327,29 +324,24 @@ void enter_notify(xcb_generic_event_t *evt)
 		return;
 	}
 
-	xcb_grab_pointer(dpy, 1, win, XCB_EVENT_MASK_POINTER_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
-}
+	xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, motion_recorder), NULL);
 
-void leave_notify(xcb_generic_event_t *evt)
-{
-	xcb_leave_notify_event_t *e = (xcb_leave_notify_event_t *) evt;
-	xcb_window_t win = e->event;
-
-	PRINTF("leave notify %X %d %d\n", win, e->mode, e->detail);
-
-	if (e->mode != XCB_NOTIFY_MODE_NORMAL) {
+	if (wa == NULL) {
 		return;
 	}
 
-	xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
+	if (wa->map_state == XCB_MAP_STATE_UNMAPPED) {
+		enable_motion_recorder();
+	} else {
+		disable_motion_recorder();
+	}
 }
 
 void motion_notify(xcb_generic_event_t *evt)
 {
 	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-	xcb_window_t win = e->event;
 
-	PRINTF("motion notify %X %i %i\n", win, e->root_x, e->root_y);
+	PRINTF("motion notify %X %i %i\n", e->event, e->root_x, e->root_y);
 
 	int dtime = e->time - last_motion_time;
 	if (dtime > 1000) {
@@ -364,6 +356,10 @@ void motion_notify(xcb_generic_event_t *evt)
 		return;
 	}
 
+	xcb_window_t win = XCB_NONE;
+	xcb_point_t pt = {e->root_x, e->root_y};
+	query_pointer(&win, NULL);
+
 	bool pfm_backup = pointer_follows_monitor;
 	bool pff_backup = pointer_follows_focus;
 	auto_raise = false;
@@ -373,10 +369,8 @@ void motion_notify(xcb_generic_event_t *evt)
 	if (locate_window(win, &loc)) {
 		if (loc.node != mon->desk->focus) {
 			focus_node(loc.monitor, loc.desktop, loc.node);
-			xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
 		}
 	} else {
-		xcb_point_t pt = {e->root_x, e->root_y};
 		monitor_t *m = monitor_from_point(pt);
 		if (m != NULL && m != mon) {
 			focus_node(m, m->desk, m->desk->focus);
@@ -385,6 +379,8 @@ void motion_notify(xcb_generic_event_t *evt)
 	pointer_follows_monitor = pfm_backup;
 	pointer_follows_focus = pff_backup;
 	auto_raise = true;
+
+	disable_motion_recorder();
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)

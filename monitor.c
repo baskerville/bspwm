@@ -46,6 +46,13 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
 	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
 	m->wired = true;
 	m->num_sticky = 0;
+	uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
+	m->root = xcb_generate_id(dpy);
+	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, rect.x, rect.y, rect.width, rect.height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+	window_lower(m->root);
+	if (focus_follows_pointer) {
+		window_show(m->root);
+	}
 	return m;
 }
 
@@ -113,6 +120,12 @@ void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
 	c->floating_rectangle.y = md->rectangle.y + dy_d - top_adjust;
 }
 
+void update_root(monitor_t *m)
+{
+	xcb_rectangle_t rect = m->rectangle;
+	window_move_resize(m->root, rect.x, rect.y, rect.width, rect.height);
+}
+
 void focus_monitor(monitor_t *m)
 {
 	if (mon == m)
@@ -173,6 +186,7 @@ void remove_monitor(monitor_t *m)
 		if (mon != NULL && mon->desk != NULL)
 			update_current();
 	}
+	xcb_destroy_window(dpy, m->root);
 	free(m);
 	num_monitors--;
 	put_status(SBSC_MASK_REPORT);
@@ -343,6 +357,7 @@ bool update_monitors(void)
 					mm = get_monitor_by_id(outputs[i]);
 					if (mm != NULL) {
 						mm->rectangle = rect;
+						update_root(mm);
 						for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
 							for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
 								translate_client(mm, mm, n->client);
@@ -429,5 +444,6 @@ bool update_monitors(void)
 		swap_monitors(mon_head, pri_mon);
 
 	free(sres);
+	update_motion_recorder();
 	return (num_monitors > 0);
 }

@@ -214,6 +214,7 @@ struct monitor_t {
 	char name[SMALEN];
 	xcb_randr_output_t id;
 	xcb_rectangle_t rectangle;
+	xcb_window_t root;
 	bool wired;
 	int top_padding;
 	int right_padding;
