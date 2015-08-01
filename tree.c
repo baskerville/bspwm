@@ -351,6 +351,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	PRINTF("focus node %X\n", n->client->window);
+	put_status(SBSC_MASK_WINDOW_FOCUS, "window_focus 0x%X\n", n->client->window);
 
 	history_add(m, d, n);
 	set_input_focus(n);
@@ -1059,6 +1060,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		return false;
 
 	PRINTF("transfer node %X\n", ns->client->window);
+	put_status(SBSC_MASK_WINDOW_TRANSFER, "window_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->client->window, md->name, dd->name, nd!=NULL?nd->client->window:0);
 
 	bool focused = (ns == mon->desk->focus);
 	bool active = (ns == ds->focus);

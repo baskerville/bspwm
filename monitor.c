@@ -132,6 +132,7 @@ void focus_monitor(monitor_t *m)
 		return;
 
 	PRINTF("focus monitor %s\n", m->name);
+	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
 
 	mon = m;
 

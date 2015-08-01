@@ -386,7 +386,7 @@ void set_fullscreen(node_t *n, bool value)
 	client_t *c = n->client;
 
 	PRINTF("fullscreen %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_FULLSCREEN, "window_fullscreen %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state fullscreen %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->fullscreen = value;
 	if (value)
@@ -487,7 +487,7 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->client->urgent = value;
 	window_draw_border(n, d->focus == n, m == mon);
 
-	put_status(SBSC_MASK_WINDOW_URGENT, "window_urgent %s 0x%X\n", ONOFFSTR(value), n->client->window);
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state urgent %s 0x%X\n", ONOFFSTR(value), n->client->window);
 	put_status(SBSC_MASK_REPORT);
 }
 

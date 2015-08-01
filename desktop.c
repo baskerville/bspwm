@@ -42,6 +42,7 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 		return;
 
 	PRINTF("focus desktop %s\n", d->name);
+	put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus %s %s\n", m->name, d->name);
 
 	show_desktop(d);
 	hide_desktop(mon->desk);
@@ -72,6 +73,7 @@ desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_
 
 void change_layout(monitor_t *m, desktop_t *d, layout_t l)
 {
+	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout %s %s %s\n", m->name, d->name, l==LAYOUT_TILED?"tiled":"monocle");
 	d->layout = l;
 	arrange(m, d);
 	if (d == m->desk)
@@ -82,6 +84,8 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
 	if (ms == md)
 		return;
+
+	put_status(SBSC_MASK_DESKTOP_TRANSFER, "desktop_transfer %s %s %s\n", ms->name, d->name, md->name);
 
 	desktop_t *dd = ms->desk;
 	unlink_desktop(ms, d);
@@ -148,7 +152,7 @@ void insert_desktop(monitor_t *m, desktop_t *d)
 void add_desktop(monitor_t *m, desktop_t *d)
 {
 	PRINTF("add desktop %s\n", d->name);
-	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add %s\n", d->name);
+	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add %s %s\n", m->name, d->name);
 
 	insert_desktop(m, d);
 	num_desktops++;
@@ -218,6 +222,7 @@ void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 		return;
 
 	PRINTF("swap desktops %s %s\n", d1->name, d2->name);
+	put_status(SBSC_MASK_DESKTOP_SWAP, "desktop_swap %s %s %s %s\n", m1->name, d1->name, m2->name, d2->name);
 
 	bool d1_focused = (m1->desk == d1);
 	bool d2_focused = (m2->desk == d2);

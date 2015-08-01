@@ -433,7 +433,7 @@ int cmd_desktop(char **args, int num)
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
-			put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s\n", trg.desktop->name, *args);
+			put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", trg.monitor->name, trg.desktop->name, *args);
 			snprintf(trg.desktop->name, sizeof(trg.desktop->name), "%s", *args);
 			ewmh_update_desktop_names();
 			put_status(SBSC_MASK_REPORT);
@@ -554,6 +554,7 @@ int cmd_monitor(char **args, int num)
 				return MSG_SYNTAX;
 			desktop_t *d = trg.monitor->desk_head;
 			while (num > 0 && d != NULL) {
+				put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", trg.monitor->name, d->name, *args);
 				snprintf(d->name, sizeof(d->name), "%s", *args);
 				initialize_desktop(d);
 				arrange(trg.monitor, d);
@@ -1162,22 +1163,44 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_WINDOW_MANAGE;
 	} else if (streq("window_unmanage", s)) {
 		*mask = SBSC_MASK_WINDOW_UNMANAGE;
-	} else if (streq("window_urgent", s)) {
-		*mask = SBSC_MASK_WINDOW_URGENT;
-	} else if (streq("window_fullscreen", s)) {
-		*mask = SBSC_MASK_WINDOW_FULLSCREEN;
+	} else if (streq("window_swap", s)) {
+		*mask = SBSC_MASK_WINDOW_SWAP;
+	} else if (streq("window_transfer", s)) {
+		*mask = SBSC_MASK_WINDOW_TRANSFER;
+	} else if (streq("window_focus", s)) {
+		*mask = SBSC_MASK_WINDOW_FOCUS;
+	} else if (streq("window_resize", s)) {
+		*mask = SBSC_MASK_WINDOW_RESIZE;
+	} else if (streq("window_move", s)) {
+		*mask = SBSC_MASK_WINDOW_MOVE;
+	} else if (streq("window_state", s)) {
+		*mask = SBSC_MASK_WINDOW_STATE;
 	} else if (streq("desktop_add", s)) {
 		*mask = SBSC_MASK_DESKTOP_ADD;
 	} else if (streq("desktop_rename", s)) {
 		*mask = SBSC_MASK_DESKTOP_RENAME;
 	} else if (streq("desktop_remove", s)) {
 		*mask = SBSC_MASK_DESKTOP_REMOVE;
+	} else if (streq("desktop_swap", s)) {
+		*mask = SBSC_MASK_DESKTOP_SWAP;
+	} else if (streq("desktop_transfer", s)) {
+		*mask = SBSC_MASK_DESKTOP_TRANSFER;
+	} else if (streq("desktop_focus", s)) {
+		*mask = SBSC_MASK_DESKTOP_FOCUS;
+	} else if (streq("desktop_layout", s)) {
+		*mask = SBSC_MASK_DESKTOP_LAYOUT;
+	} else if (streq("desktop_state", s)) {
+		*mask = SBSC_MASK_DESKTOP_STATE;
 	} else if (streq("monitor_add", s)) {
 		*mask = SBSC_MASK_MONITOR_ADD;
 	} else if (streq("monitor_rename", s)) {
 		*mask = SBSC_MASK_MONITOR_RENAME;
 	} else if (streq("monitor_remove", s)) {
 		*mask = SBSC_MASK_MONITOR_REMOVE;
+	} else if (streq("monitor_focus", s)) {
+		*mask = SBSC_MASK_MONITOR_FOCUS;
+	} else if (streq("monitor_resize", s)) {
+		*mask = SBSC_MASK_MONITOR_RESIZE;
 	} else if (streq("report", s)) {
 		*mask = SBSC_MASK_REPORT;
 	} else {
