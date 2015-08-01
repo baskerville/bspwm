@@ -88,7 +88,7 @@ int print_report(FILE *stream)
 			fprintf(stream, "%c%s:", c, d->name);
 		}
 		if (m->desk != NULL)
-			fprintf(stream, "L%c%s", (m->desk->layout == LAYOUT_TILED ? 'T' : 'M'), (m != mon_tail ? ":" : ""));
+			fprintf(stream, "L%c:4%c%s", (m->desk->layout == LAYOUT_TILED ? 'T' : 'M'), (m->desk->floating ? 'y' : 'n'), (m != mon_tail ? ":" : ""));
 	}
 	fprintf(stream, "%s", "\n");
 	return fflush(stream);

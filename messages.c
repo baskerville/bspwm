@@ -504,10 +504,12 @@ int cmd_desktop(char **args, int num)
 				else
 					return MSG_FAILURE;
 			}
-			if (streq("floating", key))
+			if (streq("floating", key)) {
 				trg.desktop->floating = (a == ALTER_SET ? b : !trg.desktop->floating);
-			else
+				put_status(SBSC_MASK_REPORT);
+			} else {
 				return MSG_FAILURE;
+			}
 		} else {
 			return MSG_SYNTAX;
 		}
