@@ -670,6 +670,9 @@ Global Settings
 'gapless_monocle'::
 	Remove gaps for tiled windows in monocle mode.
 
+'leaf_monocle'::
+	Use monocle layout if there is a single node.
+
 'focus_follows_pointer'::
 	Focus the window under the pointer.
 
