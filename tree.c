@@ -43,6 +43,10 @@ void arrange(monitor_t *m, desktop_t *d)
 
 	PRINTF("arrange %s %s\n", m->name, d->name);
 
+	layout_t set_layout = d->layout;
+	if (leaf_monocle && is_leaf(d->root))
+		d->layout = LAYOUT_MONOCLE;
+
 	xcb_rectangle_t rect = m->rectangle;
 	int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
 	rect.x += m->left_padding + d->left_padding + wg;
@@ -50,6 +54,8 @@ void arrange(monitor_t *m, desktop_t *d)
 	rect.width -= m->left_padding + d->left_padding + d->right_padding + m->right_padding + wg;
 	rect.height -= m->top_padding + d->top_padding + d->bottom_padding + m->bottom_padding + wg;
 	apply_layout(m, d, d->root, rect, rect);
+
+	d->layout = set_layout;
 }
 
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
