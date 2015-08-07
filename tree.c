@@ -44,8 +44,9 @@ void arrange(monitor_t *m, desktop_t *d)
 	PRINTF("arrange %s %s\n", m->name, d->name);
 
 	layout_t set_layout = d->layout;
-	if (leaf_monocle && is_leaf(d->root))
+	if (leaf_monocle && tiled_count(d) == 1) {
 		d->layout = LAYOUT_MONOCLE;
+	}
 
 	xcb_rectangle_t rect = m->rectangle;
 	int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
@@ -768,6 +769,17 @@ int tiled_area(node_t *n)
 		return -1;
 	xcb_rectangle_t rect = n->client->tiled_rectangle;
 	return rect.width * rect.height;
+}
+
+int tiled_count(desktop_t *d)
+{
+	int cnt = 0;
+	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
+		if (is_tiled(f->client)) {
+			cnt++;
+		}
+	}
+	return cnt;
 }
 
 node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel)

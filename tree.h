@@ -55,6 +55,7 @@ node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t 
 node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel);
 void get_opposite(direction_t src, direction_t *dst);
 int tiled_area(node_t *n);
+int tiled_count(desktop_t *d);
 node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel);
 void rotate_tree(node_t *n, int deg);
 void rotate_brother(node_t *n);

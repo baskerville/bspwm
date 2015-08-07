@@ -665,13 +665,13 @@ Global Settings
 	Base focusing on distances between windows.
 
 'borderless_monocle'::
-	Remove borders for tiled windows in monocle mode.
+	Remove borders of tiled windows for the *monocle* desktop layout.
 
 'gapless_monocle'::
-	Remove gaps for tiled windows in monocle mode.
+	Remove gaps of tiled windows for the *monocle* desktop layout.
 
 'leaf_monocle'::
-	Use monocle layout if there is a single node.
+	Set the desktop layout to *monocle* if there's only one tiled window in the tree.
 
 'focus_follows_pointer'::
 	Focus the window under the pointer.
