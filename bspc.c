@@ -73,8 +73,9 @@ int main(int argc, char *argv[])
 	if (send(fd, msg, msg_len, 0) == -1)
 		err("Failed to send the data.\n");
 
-	int ret = 0, nb;
-	while ((nb = recv(fd, rsp, sizeof(rsp), 0)) > 0) {
+	int ret = 0, nb, p;
+	while ((nb = recv(fd, rsp, sizeof(rsp)-1, 0)) > 0) {
+		int peek = recv(fd, &p, 1, MSG_PEEK);
 		if (nb == 1 && rsp[0] < MSG_LENGTH) {
 			ret = rsp[0];
 			if (ret == MSG_UNKNOWN) {
@@ -83,11 +84,15 @@ int main(int argc, char *argv[])
 				warn("Invalid syntax.\n");
 			}
 		} else {
-			int end = MIN(nb, (int) sizeof(rsp) - 1);
-			rsp[end--] = '\0';
-			while (end >= 0 && isspace(rsp[end]))
-				rsp[end--] = '\0';
-			printf("%s\n", rsp);
+			rsp[nb--] = '\0';
+			if (peek > 0) {
+				printf("%s", rsp);
+			} else {
+				while (nb >= 0 && isspace(rsp[nb])) {
+					rsp[nb--] = '\0';
+				}
+				printf("%s\n", rsp);
+			}
 			fflush(stdout);
 		}
 	}
