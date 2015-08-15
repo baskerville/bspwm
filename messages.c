@@ -1148,6 +1148,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 #undef GETBOOL
 	else
 		return MSG_FAILURE;
+	fprintf(rsp, "\n");
 	return MSG_SUCCESS;
 }
 
