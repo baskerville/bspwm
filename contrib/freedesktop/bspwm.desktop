@@ -1,6 +1,6 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=bspwm
-Comment=Launch a bspwm session
-Exec=/usr/bin/bspwm-session
-Type=XSession
+Comment=Binary space partitioning window manager
+Exec=bspwm
+Type=Application

@@ -46,7 +46,6 @@ install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
 	cp -pf bspwm "$(DESTDIR)$(BINPREFIX)"
 	cp -pf bspc "$(DESTDIR)$(BINPREFIX)"
-	cp -p contrib/freedesktop/bspwm-session "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
@@ -63,7 +62,6 @@ install:
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspc
-	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm-session
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspwm.1
 	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/bspc.1
 	rm -f "$(DESTDIR)$(BASHCPL)"/bspc
