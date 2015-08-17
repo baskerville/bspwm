@@ -401,9 +401,12 @@ void set_pseudo_tiled(node_t *n, bool value)
 	if (n == NULL || n->client->pseudo_tiled == value)
 		return;
 
-	PRINTF("pseudo-tiled %X: %s\n", n->client->window, BOOLSTR(value));
+	client_t *c = n->client;
 
-	n->client->pseudo_tiled = value;
+	PRINTF("pseudo-tiled %X: %s\n", c->window, BOOLSTR(value));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state pseudo_tiled %s 0x%X\n", ONOFFSTR(value), c->window);
+
+	c->pseudo_tiled = value;
 }
 
 void set_floating(node_t *n, bool value)
@@ -411,10 +414,12 @@ void set_floating(node_t *n, bool value)
 	if (n == NULL || n->client->fullscreen || n->client->floating == value)
 		return;
 
-	PRINTF("floating %X: %s\n", n->client->window, BOOLSTR(value));
+	client_t *c = n->client;
+
+	PRINTF("floating %X: %s\n", c->window, BOOLSTR(value));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state floating %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	n->split_mode = MODE_AUTOMATIC;
-	client_t *c = n->client;
 	c->floating = n->vacant = value;
 	update_vacant_state(n->parent);
 
@@ -437,6 +442,7 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	client_t *c = n->client;
 
 	PRINTF("set locked %X: %s\n", c->window, BOOLSTR(value));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state locked %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->locked = value;
 	window_draw_border(n, d->focus == n, m == mon);
@@ -450,6 +456,7 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	client_t *c = n->client;
 
 	PRINTF("set sticky %X: %s\n", c->window, BOOLSTR(value));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state sticky %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	if (d != m->desk)
 		transfer_node(m, d, n, m, m->desk, m->desk->focus);
@@ -474,6 +481,7 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	client_t *c = n->client;
 
 	PRINTF("set private %X: %s\n", c->window, BOOLSTR(value));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state private %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->private = value;
 	update_privacy_level(n, value);
