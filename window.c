@@ -78,7 +78,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	}
 
 	PRINTF("manage %X\n", win);
-	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage 0x%X\n", win);
 
 	if (csq->node_desc[0] != '\0') {
 		coordinates_t ref = {m, d, f};
@@ -146,6 +145,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	node_t *n = make_node();
 	n->client = c;
 
+	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, f!=NULL?f->client->window:0, win);
 	insert_node(m, d, n, f);
 
 	disable_floating_atom(c->window);
