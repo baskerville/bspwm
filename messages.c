@@ -934,8 +934,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
 		else if (loc.monitor != NULL) \
-			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) \
-				d->k = v; \
+			return MSG_SYNTAX; \
 		else \
 			k = v;
 	} else if (streq("window_gap", name)) {
@@ -1083,6 +1082,8 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	else if (streq("window_gap", name))
 		if (loc.desktop != NULL)
 			fprintf(rsp, "%i", loc.desktop->window_gap);
+		else if (loc.monitor != NULL)
+			return MSG_SYNTAX;
 		else
 			fprintf(rsp, "%i", window_gap);
 	else if (streq("border_width", name))
