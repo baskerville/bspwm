@@ -158,6 +158,7 @@ void add_desktop(monitor_t *m, desktop_t *d)
 	num_desktops++;
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_wm_desktops();
 	put_status(SBSC_MASK_REPORT);
 }
 
