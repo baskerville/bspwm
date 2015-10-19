@@ -434,8 +434,7 @@ int cmd_desktop(char **args, int num)
 			if (num < 1)
 				return MSG_SYNTAX;
 			put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", trg.monitor->name, trg.desktop->name, *args);
-			snprintf(trg.desktop->name, sizeof(trg.desktop->name), "%s", *args);
-			ewmh_update_desktop_names();
+			rename_desktop(trg.desktop, *args);
 			put_status(SBSC_MASK_REPORT);
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			if (trg.desktop->root == NULL &&
@@ -555,7 +554,7 @@ int cmd_monitor(char **args, int num)
 			desktop_t *d = trg.monitor->desk_head;
 			while (num > 0 && d != NULL) {
 				put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", trg.monitor->name, d->name, *args);
-				snprintf(d->name, sizeof(d->name), "%s", *args);
+				rename_desktop(d, *args);
 				initialize_desktop(d);
 				arrange(trg.monitor, d);
 				d = d->next;

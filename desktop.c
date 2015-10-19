@@ -127,6 +127,12 @@ desktop_t *make_desktop(const char *name)
 	return d;
 }
 
+void rename_desktop(desktop_t *d, const char *name)
+{
+	snprintf(d->name, sizeof(d->name), "%s", name);
+	ewmh_update_desktop_names();
+}
+
 void initialize_desktop(desktop_t *d)
 {
 	d->layout = LAYOUT_TILED;
