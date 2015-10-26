@@ -225,7 +225,7 @@ int cmd_window(char **args, int num)
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
-			if (!is_tiled(trg.node->client) ||
+			if (trg.node->client->floating ||
 			    trg.desktop->layout != LAYOUT_TILED)
 				return MSG_FAILURE;
 			if (streq("cancel", *args)) {
@@ -257,7 +257,7 @@ int cmd_window(char **args, int num)
 			num--, args++;
 			if (num < 2)
 				return MSG_SYNTAX;
-			if (!is_tiled(trg.node->client))
+			if (trg.node->client->floating)
 				return MSG_FAILURE;
 			direction_t dir;
 			if (!parse_direction(*args, &dir))
@@ -294,6 +294,17 @@ int cmd_window(char **args, int num)
 			if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
 				trg.node->split_ratio = rat;
 				window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
+			} else {
+				return MSG_FAILURE;
+			}
+		} else if (streq("-l", *args) || streq("--layer", *args)) {
+			num--, args++;
+			if (num < 1) {
+				return MSG_SYNTAX;
+			}
+			stack_layer_t lyr;
+			if (parse_stack_layer(*args, &lyr)) {
+				set_layer(trg.node, lyr);
 			} else {
 				return MSG_FAILURE;
 			}
@@ -1178,6 +1189,8 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_WINDOW_MOVE;
 	} else if (streq("window_state", s)) {
 		*mask = SBSC_MASK_WINDOW_STATE;
+	} else if (streq("window_layer", s)) {
+		*mask = SBSC_MASK_WINDOW_LAYER;
 	} else if (streq("desktop_add", s)) {
 		*mask = SBSC_MASK_DESKTOP_ADD;
 	} else if (streq("desktop_rename", s)) {
@@ -1231,6 +1244,21 @@ bool parse_layout(char *s, layout_t *l)
 		return true;
 	} else if (streq("tiled", s)) {
 		*l = LAYOUT_TILED;
+		return true;
+	}
+	return false;
+}
+
+bool parse_stack_layer(char *s, stack_layer_t *l)
+{
+	if (streq("below", s)) {
+		*l = LAYER_BELOW;
+		return true;
+	} else if (streq("normal", s)) {
+		*l = LAYER_NORMAL;
+		return true;
+	} else if (streq("above", s)) {
+		*l = LAYER_ABOVE;
 		return true;
 	}
 	return false;

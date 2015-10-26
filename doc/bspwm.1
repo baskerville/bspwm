@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/07/2015
+.\"      Date: 10/26/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "08/07/2015" "Bspwm 0\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "10/26/2015" "Bspwm 0\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -450,7 +450,7 @@ Only consider monitors where the focused desktop is free\&.
 .PP
 floating
 .RS 4
-Is above any tiled window and can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
+Can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
 .RE
 .PP
 pseudo_tiled
@@ -460,7 +460,7 @@ Has an unrestricted size while being centered in its tiling space\&.
 .PP
 fullscreen
 .RS 4
-Fills its monitor rectangle, is above all the other windows and has no borders\&.
+Fills its monitor rectangle and has no borders\&.
 .RE
 .PP
 locked
@@ -479,6 +479,11 @@ private
 .RS 4
 Tries to keep the same tiling position/size\&.
 .RE
+.SH "STACKING LAYERS"
+.sp
+There\(cqs three stacking layers: BELOW, NORMAL and ABOVE\&.
+.sp
+In each layer, floating windows are stacked above tiled windows\&.
 .SH "COMMANDS"
 .SS "Window"
 .sp
@@ -551,6 +556,11 @@ Rotate the tree holding the edge located in the given direction in relation to t
 \fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]
 .RS 4
 Set or toggle the given state for the selected window\&.
+.RE
+.PP
+\fB\-l\fR, \fB\-\-layer\fR below|normal|above
+.RS 4
+Set the stacking layer of the selected window\&.
 .RE
 .PP
 \fB\-c\fR, \fB\-\-close\fR
@@ -905,7 +915,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name>|* [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus|border)=(on|off)] [split_dir=DIR] [split_ratio=RATIO]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name>|* [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus|border)=(on|off)] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO]
 .RS 4
 Create a new rule\&.
 .RE

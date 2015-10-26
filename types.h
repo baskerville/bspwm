@@ -45,6 +45,12 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
+	LAYER_BELOW,
+	LAYER_NORMAL,
+	LAYER_ABOVE
+} stack_layer_t;
+
+typedef enum {
 	CLIENT_TYPE_ALL,
 	CLIENT_TYPE_FLOATING,
 	CLIENT_TYPE_TILED
@@ -166,6 +172,7 @@ typedef struct {
 	bool urgent;
 	bool private;
 	bool icccm_focus;
+	stack_layer_t layer;
 	xcb_rectangle_t floating_rectangle;
 	xcb_rectangle_t tiled_rectangle;
 	uint16_t min_width;
@@ -274,6 +281,7 @@ typedef struct {
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
 	char split_dir[SMALEN];
+	stack_layer_t layer;
 	double split_ratio;
 	uint16_t min_width;
 	uint16_t max_width;

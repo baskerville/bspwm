@@ -62,17 +62,17 @@ void grab_pointer(pointer_action_t pac)
 					focus_node(loc.monitor, loc.desktop, loc.node);
 					pointer_follows_monitor = backup;
 				} else if (focus_follows_pointer) {
-					stack(loc.node, STACK_ABOVE);
+					stack(loc.node);
 				}
 				frozen_pointer->action = ACTION_NONE;
 				break;
 			case ACTION_MOVE:
 			case ACTION_RESIZE_SIDE:
 			case ACTION_RESIZE_CORNER:
-				if (is_floating(c)) {
+				if (c->floating) {
 					frozen_pointer->rectangle = c->floating_rectangle;
 					frozen_pointer->is_tiled = false;
-				} else if (is_tiled(c)) {
+				} else if (!c->floating) {
 					frozen_pointer->rectangle = c->tiled_rectangle;
 					frozen_pointer->is_tiled = (pac == ACTION_MOVE || !c->pseudo_tiled);
 				} else {
@@ -197,7 +197,7 @@ void track_pointer(int root_x, int root_y)
 					return;
 				coordinates_t loc;
 				bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
-				if (is_managed && is_tiled(loc.node->client) && loc.monitor == m) {
+				if (is_managed && !loc.node->client->floating && loc.monitor == m) {
 					swap_nodes(m, d, n, m, d, loc.node);
 					arrange(m, d);
 				} else {

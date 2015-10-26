@@ -296,13 +296,13 @@ Window States
 -------------
 
 floating::
-	Is above any tiled window and can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+	Can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
 
 pseudo_tiled::
 	Has an unrestricted size while being centered in its tiling space.
 
 fullscreen::
-	Fills its monitor rectangle, is above all the other windows and has no borders.
+	Fills its monitor rectangle and has no borders.
 
 locked::
 	Ignores the *close* message.
@@ -312,6 +312,14 @@ sticky::
 
 private::
 	Tries to keep the same tiling position/size.
+
+
+Stacking Layers
+--------------
+
+There's three stacking layers: BELOW, NORMAL and ABOVE.
+
+In each layer, floating windows are stacked above tiled windows.
 
 
 Commands
@@ -356,6 +364,9 @@ Options
 
 *-t*, *--toggle* floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]::
 	Set or toggle the given state for the selected window.
+
+*-l*, *--layer* below|normal|above::
+	Set the stacking layer of the selected window.
 
 *-c*, *--close*::
 	Close the selected window.
@@ -555,7 +566,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus|border)=(on|off)] [split_dir=DIR] [split_ratio=RATIO]::
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus|border)=(on|off)] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO]::
 	Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::

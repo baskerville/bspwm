@@ -93,7 +93,7 @@ void configure_request(xcb_generic_event_t *evt)
 	client_t *c = (is_managed ? loc.node->client : NULL);
 	int w = 0, h = 0;
 
-	if (is_managed && !is_floating(c)) {
+	if (is_managed && !c->floating) {
 		if (e->value_mask & XCB_CONFIG_WINDOW_X)
 			c->floating_rectangle.x = e->x;
 		if (e->value_mask & XCB_CONFIG_WINDOW_Y)
@@ -278,10 +278,6 @@ void client_message(xcb_generic_event_t *evt)
 		if ((ignore_ewmh_focus && e->data.data32[0] == XCB_EWMH_CLIENT_SOURCE_TYPE_NORMAL) ||
 		    loc.node == mon->desk->focus)
 			return;
-		if (loc.desktop->focus->client->fullscreen && loc.desktop->focus != loc.node) {
-			set_fullscreen(loc.desktop->focus, false);
-			arrange(loc.monitor, loc.desktop);
-		}
 		focus_node(loc.monitor, loc.desktop, loc.node);
 	} else if (e->type == ewmh->_NET_WM_DESKTOP) {
 		coordinates_t dloc;
@@ -393,6 +389,20 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
 			set_fullscreen(n, !n->client->fullscreen);
 		arrange(m, d);
+	} else if (state == ewmh->_NET_WM_STATE_BELOW) {
+		if (action == XCB_EWMH_WM_STATE_ADD)
+			set_layer(n, LAYER_BELOW);
+		else if (action == XCB_EWMH_WM_STATE_REMOVE)
+			set_layer(n, LAYER_NORMAL);
+		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+			set_layer(n, n->client->layer == LAYER_BELOW ? LAYER_NORMAL : LAYER_BELOW);
+	} else if (state == ewmh->_NET_WM_STATE_ABOVE) {
+		if (action == XCB_EWMH_WM_STATE_ADD)
+			set_layer(n, LAYER_ABOVE);
+		else if (action == XCB_EWMH_WM_STATE_REMOVE)
+			set_layer(n, LAYER_NORMAL);
+		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+			set_layer(n, n->client->layer == LAYER_ABOVE ? LAYER_NORMAL : LAYER_ABOVE);
 	} else if (state == ewmh->_NET_WM_STATE_STICKY) {
 		if (action == XCB_EWMH_WM_STATE_ADD)
 			set_sticky(m, d, n, true);

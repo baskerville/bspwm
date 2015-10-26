@@ -43,6 +43,7 @@ void adopt_orphans(void);
 void window_close(node_t *n);
 void window_kill(monitor_t *m, desktop_t *d, node_t *n);
 void set_fullscreen(node_t *n, bool value);
+void set_layer(node_t *n, stack_layer_t layer);
 void set_pseudo_tiled(node_t *n, bool value);
 void set_floating(node_t *n, bool value);
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value);

@@ -25,16 +25,12 @@
 #ifndef BSPWM_STACK_H
 #define BSPWM_STACK_H
 
-typedef enum {
-	STACK_ABOVE,
-	STACK_BELOW
-} stack_flavor_t;
-
 stacking_list_t *make_stack(node_t *n);
 void stack_insert_after(stacking_list_t *a, node_t *n);
 void stack_insert_before(stacking_list_t *a, node_t *n);
 void remove_stack(stacking_list_t *s);
 void remove_stack_node(node_t *n);
-void stack(node_t *n, stack_flavor_t f);
+int stack_cmp(client_t *c1, client_t *c2);
+void stack(node_t *n);
 
 #endif

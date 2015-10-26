@@ -48,10 +48,11 @@ typedef enum {
 	SBSC_MASK_WINDOW_RESIZE = 1 << 19,
 	SBSC_MASK_WINDOW_MOVE = 1 << 20,
 	SBSC_MASK_WINDOW_STATE = 1 << 21,
+	SBSC_MASK_WINDOW_LAYER = 1 << 22,
 	SBSC_MASK_MONITOR = (1 << 6) - (1 << 1),
 	SBSC_MASK_DESKTOP = (1 << 14) - (1 << 6),
-	SBSC_MASK_WINDOW = (1 << 22) - (1 << 14),
-	SBSC_MASK_ALL = (1 << 22) - 1
+	SBSC_MASK_WINDOW = (1 << 23) - (1 << 14),
+	SBSC_MASK_ALL = (1 << 23) - 1
 } subscriber_mask_t;
 
 subscriber_list_t *make_subscriber_list(FILE *stream, int field);

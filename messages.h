@@ -49,6 +49,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp);
 bool parse_subscriber_mask(char *s, subscriber_mask_t *mask);
 bool parse_bool(char *value, bool *b);
 bool parse_layout(char *s, layout_t *l);
+bool parse_stack_layer(char *s, stack_layer_t *l);
 bool parse_direction(char *s, direction_t *d);
 bool parse_cycle_direction(char *s, cycle_dir_t *d);
 bool parse_circulate_direction(char *s, circulate_dir_t *d);

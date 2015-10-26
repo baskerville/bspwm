@@ -94,6 +94,7 @@ rule_consequence_t *make_rule_conquence(void)
 {
 	rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
 	rc->manage = rc->focus = rc->border = true;
+	rc->layer = LAYER_NORMAL;
 	return rc;
 }
 
@@ -170,10 +171,15 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &win_state, NULL) == 1) {
 		for (unsigned int i = 0; i < win_state.atoms_len; i++) {
 			xcb_atom_t a = win_state.atoms[i];
-			if (a == ewmh->_NET_WM_STATE_FULLSCREEN)
+			if (a == ewmh->_NET_WM_STATE_FULLSCREEN) {
 				csq->fullscreen = true;
-			else if (a == ewmh->_NET_WM_STATE_STICKY)
+			} else if (a == ewmh->_NET_WM_STATE_BELOW) {
+				csq->layer = LAYER_BELOW;
+			} else if (a == ewmh->_NET_WM_STATE_ABOVE) {
+				csq->layer = LAYER_ABOVE;
+			} else if (a == ewmh->_NET_WM_STATE_STICKY) {
 				csq->sticky = true;
+			}
 		}
 		xcb_ewmh_get_atoms_reply_wipe(&win_state);
 	}
@@ -280,6 +286,11 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		snprintf(csq->node_desc, sizeof(csq->node_desc), "%s", value);
 	} else if (streq("split_dir", key)) {
 		snprintf(csq->split_dir, sizeof(csq->split_dir), "%s", value);
+	} else if (streq("layer", key)) {
+		stack_layer_t lyr;
+		if (parse_stack_layer(value, &lyr)) {
+			csq->layer = lyr;
+		}
 	} else if (streq("split_ratio", key)) {
 		double rat;
 		if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1) {

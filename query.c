@@ -84,7 +84,7 @@ void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
 
 	if (is_leaf(n)) {
 		client_t *c = n->client;
-		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c %c%c%c%c%c%c%c%c%s\n",
+		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c %c%c%c%c%c%c%c%c%c%s\n",
 		         (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')),
 		         c->class_name, c->instance_name, c->window, c->border_width,
 		         c->floating_rectangle.width, c->floating_rectangle.height,
@@ -93,6 +93,7 @@ void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
 		         (c->floating ? 'f' : '-'), (c->pseudo_tiled ? 'd' : '-'), (c->fullscreen ? 'F' : '-'),
 		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'),
 		         (c->private ? 'i' : '-'), (n->split_mode ? 'p' : '-'),
+		         (c->layer == LAYER_BELOW ? 'b' : (c->layer == LAYER_ABOVE ? 'a' : '-')),
 		         (n == d->focus ? " *" : ""));
 	} else {
 		fprintf(rsp, "%c %c %lf\n", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
@@ -383,7 +384,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 		return false;
 
 	if (sel.type != CLIENT_TYPE_ALL &&
-	    is_tiled(loc->node->client)
+	    !loc->node->client->floating
 	    ? sel.type == CLIENT_TYPE_FLOATING
 	    : sel.type == CLIENT_TYPE_TILED)
 		return false;

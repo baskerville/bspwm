@@ -42,7 +42,7 @@ void restore_tree(char *file_path)
 
 	FILE *snapshot = fopen(file_path, "r");
 	if (snapshot == NULL) {
-		warn("Restore tree: can't open file\n");
+		warn("Restore tree: can't open '%s'.\n", file_path);
 		return;
 	}
 
@@ -139,13 +139,13 @@ void restore_tree(char *file_path)
 			} else {
 				client_t *c = make_client(XCB_NONE, d->border_width);
 				num_clients++;
-				char floating, pseudo_tiled, fullscreen, urgent, locked, sticky, private, sd, sm, end = 0;
-				sscanf(line + level, "%c %s %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c %c", &br,
+				char floating, pseudo_tiled, fullscreen, urgent, locked, sticky, private, sd, sm, sl, end = 0;
+				sscanf(line + level, "%c %s %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c%c %c", &br,
 				       c->class_name, c->instance_name, &c->window, &c->border_width,
 				       &c->floating_rectangle.width, &c->floating_rectangle.height,
 				       &c->floating_rectangle.x, &c->floating_rectangle.y,
 				       &sd, &floating, &pseudo_tiled, &fullscreen, &urgent,
-				       &locked, &sticky, &private, &sm, &end);
+				       &locked, &sticky, &private, &sm, &sl, &end);
 				c->floating = (floating == '-' ? false : true);
 				c->pseudo_tiled = (pseudo_tiled == '-' ? false : true);
 				c->fullscreen = (fullscreen == '-' ? false : true);
@@ -154,14 +154,20 @@ void restore_tree(char *file_path)
 				c->sticky = (sticky == '-' ? false : true);
 				c->private = (private == '-' ? false : true);
 				n->split_mode = (sm == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
-				if (sd == 'U')
+				if (sd == 'U') {
 					n->split_dir = DIR_UP;
-				else if (sd == 'R')
+				} else if (sd == 'R') {
 					n->split_dir = DIR_RIGHT;
-				else if (sd == 'D')
+				} else if (sd == 'D') {
 					n->split_dir = DIR_DOWN;
-				else if (sd == 'L')
+				} else if (sd == 'L') {
 					n->split_dir = DIR_LEFT;
+				}
+				if (sl == 'b') {
+					c->layer = LAYER_BELOW;
+				} else if (sl == 'a') {
+					c->layer = LAYER_ABOVE;
+				}
 				n->client = c;
 				if (end != 0)
 					d->focus = n;
