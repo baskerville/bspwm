@@ -134,7 +134,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual|.automatic][.urgent][.local][.unfocused]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual|.automatic][.urgent|.nonurgent][.local|.foreign][.focused|.unfocused][.below|.normal|.above][.fullscreen|.nonfullscreen][.sticky|.nonsticky][.public|.private][.locked|.unlocked][.pseudotiled|.nonpseudotiled]
 ----
 
 Primary Selectors
@@ -199,7 +199,7 @@ Select a desktop.
 ----
 DESKTOP_SEL := <desktop_name>
              | [MONITOR_SEL:]^<n>
-             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[.occupied|.free][.urgent][.local]
+             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[.occupied|.free][.urgent|.nonurgent][.local|.foreign]
 ----
 
 Primary Selectors
@@ -312,6 +312,9 @@ sticky::
 
 private::
 	Tries to keep the same tiling position/size.
+
+urgent::
+	Has its urgency hint set.
 
 
 Stacking Layers

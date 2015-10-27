@@ -24,7 +24,6 @@
 
 #ifndef BSPWM_TYPES_H
 #define BSPWM_TYPES_H
-
 #include <stdbool.h>
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
@@ -51,31 +50,10 @@ typedef enum {
 } stack_layer_t;
 
 typedef enum {
-	CLIENT_TYPE_ALL,
-	CLIENT_TYPE_FLOATING,
-	CLIENT_TYPE_TILED
-} client_type_t;
-
-typedef enum {
-	CLIENT_CLASS_ALL,
-	CLIENT_CLASS_EQUAL,
-	CLIENT_CLASS_DIFFER
-} client_class_t;
-
-typedef enum {
-	CLIENT_MODE_ALL,
-	CLIENT_MODE_AUTOMATIC,
-	CLIENT_MODE_MANUAL
-} client_mode_t;
-
-typedef struct {
-	client_type_t type;
-	client_class_t class;
-	client_mode_t mode;
-	bool urgent;
-	bool local;
-	bool unfocused;
-} client_select_t;
+	OPTION_NONE,
+	OPTION_TRUE,
+	OPTION_FALSE
+} option_bool_t;
 
 typedef enum {
 	ALTER_TOGGLE,
@@ -137,26 +115,29 @@ typedef enum {
 } flip_t;
 
 typedef enum {
-	DESKTOP_STATUS_ALL,
-	DESKTOP_STATUS_FREE,
-	DESKTOP_STATUS_OCCUPIED
-} desktop_status_t;
-
-typedef enum {
-	DESKTOP_URGENCY_ALL,
-	DESKTOP_URGENCY_ON,
-	DESKTOP_URGENCY_OFF
-} desktop_urgency_t;
-
-typedef enum {
 	FIRST_CHILD,
 	SECOND_CHILD
 } child_polarity_t;
 
 typedef struct {
-	desktop_status_t status;
-	bool urgent;
-	bool local;
+	option_bool_t floating;
+	option_bool_t pseudo_tiled;
+	option_bool_t fullscreen;
+	option_bool_t locked;
+	option_bool_t sticky;
+	option_bool_t private;
+	option_bool_t urgent;
+	option_bool_t same_class;
+	option_bool_t automatic;
+	option_bool_t local;
+	option_bool_t focused;
+	stack_layer_t *layer;
+} client_select_t;
+
+typedef struct {
+	option_bool_t occupied;
+	option_bool_t urgent;
+	option_bool_t local;
 } desktop_select_t;
 
 typedef struct {

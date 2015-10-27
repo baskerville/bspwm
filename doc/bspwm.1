@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/26/2015
+.\"      Date: 10/27/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/26/2015" "Bspwm 0\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "10/27/2015" "Bspwm 0\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -167,7 +167,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.manual|\&.automatic][\&.urgent][\&.local][\&.unfocused]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.manual|\&.automatic][\&.urgent|\&.nonurgent][\&.local|\&.foreign][\&.focused|\&.unfocused][\&.below|\&.normal|\&.above][\&.fullscreen|\&.nonfullscreen][\&.sticky|\&.nonsticky][\&.public|\&.private][\&.locked|\&.unlocked][\&.pseudotiled|\&.nonpseudotiled]
 .fi
 .if n \{\
 .RE
@@ -280,7 +280,7 @@ Select a desktop\&.
 .nf
 DESKTOP_SEL := <desktop_name>
              | [MONITOR_SEL:]^<n>
-             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[\&.occupied|\&.free][\&.urgent][\&.local]
+             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[\&.occupied|\&.free][\&.urgent|\&.nonurgent][\&.local|\&.foreign]
 .fi
 .if n \{\
 .RE
@@ -478,6 +478,11 @@ Stays in the focused desktop of its monitor\&.
 private
 .RS 4
 Tries to keep the same tiling position/size\&.
+.RE
+.PP
+urgent
+.RS 4
+Has its urgency hint set\&.
 .RE
 .SH "STACKING LAYERS"
 .sp

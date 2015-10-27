@@ -23,6 +23,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <strings.h>
 #include <string.h>
 #include "bspwm.h"
@@ -140,31 +141,100 @@ void query_windows(coordinates_t loc, FILE *rsp)
 	}
 }
 
+client_select_t make_client_select(void)
+{
+	client_select_t sel = {
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE,
+		NULL
+	};
+	return sel;
+}
+
+desktop_select_t make_desktop_select(void)
+{
+	desktop_select_t sel = {
+		OPTION_NONE,
+		OPTION_NONE,
+		OPTION_NONE
+	};
+	return sel;
+}
+
+void cleanup_client_select(client_select_t *sel)
+{
+	free(sel->layer);
+}
+
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-	client_select_t sel = {CLIENT_TYPE_ALL, CLIENT_CLASS_ALL, CLIENT_MODE_ALL, false, false, false};
+	client_select_t sel = make_client_select();
 	char *tok;
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
-		if (streq("tiled", tok)) {
-			sel.type = CLIENT_TYPE_TILED;
-		} else if (streq("floating", tok)) {
-			sel.type = CLIENT_TYPE_FLOATING;
+		if (streq("floating", tok)) {
+			sel.floating = OPTION_TRUE;
+		} else if (streq("tiled", tok)) {
+			sel.floating = OPTION_FALSE;
 		} else if (streq("like", tok)) {
-			sel.class = CLIENT_CLASS_EQUAL;
+			sel.same_class = OPTION_TRUE;
 		} else if (streq("unlike", tok)) {
-			sel.class = CLIENT_CLASS_DIFFER;
-		} else if (streq("manual", tok)) {
-			sel.mode = CLIENT_MODE_MANUAL;
+			sel.same_class = OPTION_FALSE;
 		} else if (streq("automatic", tok)) {
-			sel.mode = CLIENT_MODE_AUTOMATIC;
+			sel.automatic = OPTION_TRUE;
+		} else if (streq("manual", tok)) {
+			sel.automatic = OPTION_FALSE;
+		} else if (streq("fullscreen", tok)) {
+			sel.fullscreen = OPTION_TRUE;
+		} else if (streq("nonfullscreen", tok)) {
+			sel.fullscreen = OPTION_FALSE;
+		} else if (streq("pseudotiled", tok)) {
+			sel.pseudo_tiled = OPTION_TRUE;
+		} else if (streq("nonpseudotiled", tok)) {
+			sel.pseudo_tiled = OPTION_FALSE;
 		} else if (streq("urgent", tok)) {
-			sel.urgent = true;
+			sel.urgent = OPTION_TRUE;
+		} else if (streq("nonurgent", tok)) {
+			sel.urgent = OPTION_FALSE;
 		} else if (streq("local", tok)) {
-			sel.local = true;
+			sel.local = OPTION_TRUE;
+		} else if (streq("foreign", tok)) {
+			sel.local = OPTION_FALSE;
+		} else if (streq("private", tok)) {
+			sel.private = OPTION_TRUE;
+		} else if (streq("public", tok)) {
+			sel.private = OPTION_FALSE;
+		} else if (streq("sticky", tok)) {
+			sel.sticky = OPTION_TRUE;
+		} else if (streq("nonsticky", tok)) {
+			sel.sticky = OPTION_FALSE;
+		} else if (streq("locked", tok)) {
+			sel.locked = OPTION_TRUE;
+		} else if (streq("unlocked", tok)) {
+			sel.locked = OPTION_FALSE;
+		} else if (streq("focused", tok)) {
+			sel.focused = OPTION_TRUE;
 		} else if (streq("unfocused", tok)) {
-			sel.unfocused = true;
+			sel.focused = OPTION_FALSE;
+		} else if (streq("below", tok)) {
+			sel.layer = malloc(sizeof(stack_layer_t));
+			*(sel.layer) = LAYER_BELOW;
+		} else if (streq("normal", tok)) {
+			sel.layer = malloc(sizeof(stack_layer_t));
+			*(sel.layer) = LAYER_NORMAL;
+		} else if (streq("above", tok)) {
+			sel.layer = malloc(sizeof(stack_layer_t));
+			*(sel.layer) = LAYER_ABOVE;
 		}
 	}
 
@@ -178,7 +248,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	if (parse_direction(desc, &dir)) {
 		dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
 		if (dst->node == NULL && num_monitors > 1) {
-			monitor_t *m = nearest_monitor(ref->monitor, dir, (desktop_select_t) {DESKTOP_STATUS_ALL, false, false});
+			monitor_t *m = nearest_monitor(ref->monitor, dir, make_desktop_select());
 			if (m != NULL) {
 				coordinates_t loc = {m, m->desk, m->desk->focus};
 				if (node_matches(&loc, ref, sel)) {
@@ -209,24 +279,30 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			locate_window(wid, dst);
 	}
 
+	cleanup_client_select(&sel);
+
 	return (dst->node != NULL);
 }
 
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-	desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
+	desktop_select_t sel = make_desktop_select();
 	char *tok;
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
 		if (streq("free", tok)) {
-			sel.status = DESKTOP_STATUS_FREE;
+			sel.occupied = OPTION_FALSE;
 		} else if (streq("occupied", tok)) {
-			sel.status = DESKTOP_STATUS_OCCUPIED;
+			sel.occupied = OPTION_TRUE;
 		} else if (streq("urgent", tok)) {
-			sel.urgent = true;
+			sel.urgent = OPTION_TRUE;
+		} else if (streq("nonurgent", tok)) {
+			sel.urgent = OPTION_FALSE;
 		} else if (streq("local", tok)) {
-			sel.local = true;
+			sel.local = OPTION_TRUE;
+		} else if (streq("foreign", tok)) {
+			sel.local = OPTION_FALSE;
 		}
 	}
 
@@ -269,15 +345,15 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
-	desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
+	desktop_select_t sel = make_desktop_select();
 	char *tok;
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
 		if (streq("free", tok)) {
-			sel.status = DESKTOP_STATUS_FREE;
+			sel.occupied = OPTION_FALSE;
 		} else if (streq("occupied", tok)) {
-			sel.status = DESKTOP_STATUS_OCCUPIED;
+			sel.occupied = OPTION_TRUE;
 		}
 	}
 
@@ -383,49 +459,78 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 	if (loc->node == NULL)
 		return false;
 
-	if (sel.type != CLIENT_TYPE_ALL &&
-	    !loc->node->client->floating
-	    ? sel.type == CLIENT_TYPE_FLOATING
-	    : sel.type == CLIENT_TYPE_TILED)
-		return false;
+#define WSTATE(prop) \
+	if (sel.prop != OPTION_NONE && \
+	    !loc->node->client->prop \
+	    ? sel.prop == OPTION_TRUE \
+	    : sel.prop == OPTION_FALSE) { \
+		return false; \
+	}
+	WSTATE(floating)
+	WSTATE(fullscreen)
+	WSTATE(pseudo_tiled)
+	WSTATE(locked)
+	WSTATE(sticky)
+	WSTATE(private)
+	WSTATE(urgent)
+#undef MATCHSTATE
 
-	if (sel.class != CLIENT_CLASS_ALL && ref->node != NULL &&
+	if (sel.same_class != OPTION_NONE && ref->node != NULL &&
 	    streq(loc->node->client->class_name, ref->node->client->class_name)
-	    ? sel.class == CLIENT_CLASS_DIFFER
-	    : sel.class == CLIENT_CLASS_EQUAL)
+	    ? sel.same_class == OPTION_FALSE
+	    : sel.same_class == OPTION_TRUE) {
 		return false;
+	}
 
-	if (sel.mode != CLIENT_MODE_ALL &&
+	if (sel.automatic != OPTION_NONE &&
 	    loc->node->split_mode == MODE_MANUAL
-	    ? sel.mode == CLIENT_MODE_AUTOMATIC
-	    : sel.mode == CLIENT_MODE_MANUAL)
+	    ? sel.automatic == OPTION_TRUE
+	    : sel.automatic == OPTION_FALSE) {
 		return false;
+	}
 
-	if (sel.local && loc->desktop != ref->desktop)
+	if (sel.local != OPTION_NONE && loc->desktop != ref->desktop
+	    ? sel.local == OPTION_TRUE
+	    : sel.local == OPTION_FALSE) {
 		return false;
+	}
 
-	if (sel.urgent && !loc->node->client->urgent)
+	if (sel.layer != NULL && loc->node->client->layer != *(sel.layer)) {
 		return false;
+	}
 
-	if (sel.unfocused && loc->node == mon->desk->focus)
+	if (sel.focused != OPTION_NONE &&
+	    loc->node != mon->desk->focus
+	    ? sel.focused == OPTION_TRUE
+	    : sel.focused == OPTION_FALSE) {
 		return false;
+	}
 
 	return true;
 }
 
 bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t sel)
 {
-	if (sel.status != DESKTOP_STATUS_ALL &&
+	if (sel.occupied != OPTION_NONE &&
 	    loc->desktop->root == NULL
-	    ? sel.status == DESKTOP_STATUS_OCCUPIED
-	    : sel.status == DESKTOP_STATUS_FREE)
+	    ? sel.occupied == OPTION_TRUE
+	    : sel.occupied == OPTION_FALSE) {
 		return false;
+	}
 
-	if (sel.urgent && !is_urgent(loc->desktop))
+	if (sel.urgent != OPTION_NONE &&
+	    !is_urgent(loc->desktop)
+	    ? sel.urgent == OPTION_TRUE
+	    : sel.urgent == OPTION_FALSE) {
 		return false;
+	}
 
-	if (sel.local && ref->monitor != loc->monitor)
+	if (sel.local != OPTION_NONE &&
+	    ref->monitor != loc->monitor
+	    ? sel.local == OPTION_TRUE
+	    : sel.local == OPTION_FALSE) {
 		return false;
+	}
 
 	return true;
 }

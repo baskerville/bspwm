@@ -374,7 +374,7 @@ int cmd_desktop(char **args, int num)
 					return MSG_FAILURE;
 			}
 			if (auto_alternate && dst.desktop == mon->desk) {
-				desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
+				desktop_select_t sel = make_desktop_select();
 				history_find_desktop(HISTORY_OLDER, &trg, &dst, sel);
 			}
 			focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
@@ -554,7 +554,7 @@ int cmd_monitor(char **args, int num)
 					return MSG_FAILURE;
 			}
 			if (auto_alternate && dst.monitor == mon) {
-				desktop_select_t sel = {DESKTOP_STATUS_ALL, false, false};
+				desktop_select_t sel = make_desktop_select();
 				history_find_monitor(HISTORY_OLDER, &trg, &dst, sel);
 			}
 			focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
