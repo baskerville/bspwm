@@ -185,11 +185,62 @@ automatic::
 local::
 	Only consider windows of the current desktop.
 
+foreign::
+	Only consider windows outside of the current desktop.
+
+private::
+	Only consider private windows.
+
+public::
+	Only consider non private windows.
+
 urgent::
 	Only consider urgent windows.
 
+nonurgent::
+	Only consider non urgent windows.
+
+pseudotiled::
+	Only consider pseudo-tiled windows.
+
+nonpseudotiled::
+	Only consider non pseudo-tiled windows.
+
+sticky::
+	Only consider sticky windows.
+
+nonsticky::
+	Only consider non sticky windows.
+
+locked::
+	Only consider locked windows.
+
+unlocked::
+	Only consider non locked windows.
+
+nonfullscreen::
+	Only consider non fullscreen windows.
+
+fullscreen::
+	Only consider fullscreen windows.
+
+nonfullscreen::
+	Only consider non fullscreen windows.
+
+focused::
+	Only consider focused windows.
+
 unfocused::
-	Only consider windows other than the focused window.
+	Only consider unfocused windows.
+
+below::
+	Only consider windows of the BELOW layer.
+
+normal::
+	Only consider windows of the NORMAL layer.
+
+above::
+	Only consider windows of the ABOVE layer.
 
 Desktop
 ~~~~~~~
@@ -238,8 +289,14 @@ free::
 urgent::
 	Only consider urgent desktops.
 
+nonurgent::
+	Only consider non urgent desktops.
+
 local::
 	Only consider desktops of the current monitor.
+
+foreign::
+	Only consider desktops outside of the current monitor.
 
 Monitor
 ~~~~~~~

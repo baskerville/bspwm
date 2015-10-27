@@ -500,7 +500,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 	}
 
 	if (sel.focused != OPTION_NONE &&
-	    loc->node != mon->desk->focus
+	    loc->node != loc->desktop->focus
 	    ? sel.focused == OPTION_TRUE
 	    : sel.focused == OPTION_FALSE) {
 		return false;
