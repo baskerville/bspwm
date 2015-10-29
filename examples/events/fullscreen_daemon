@@ -1,0 +1,11 @@
+#! /bin/sh
+
+bspc control --subscribe window_state | while read msg name state wid ; do
+	if [ $name = "fullscreen" ] ; then
+		if [ $state = "on" ] ; then
+			bspc window $wid -l above
+		else
+			bspc window $wid -l normal
+		fi
+	fi
+done
