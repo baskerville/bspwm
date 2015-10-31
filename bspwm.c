@@ -231,10 +231,12 @@ void setup(void)
 
 	meta_window = xcb_generate_id(dpy);
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, meta_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_NONE, NULL);
+	xcb_icccm_set_wm_class(dpy, meta_window, sizeof(META_WINDOW_IC), META_WINDOW_IC);
 
 	motion_recorder = xcb_generate_id(dpy);
 	uint32_t values[] = {XCB_EVENT_MASK_POINTER_MOTION};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder, root, 0, 0, screen_width, screen_height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+	xcb_icccm_set_wm_class(dpy, motion_recorder, sizeof(MOTION_RECORDER_IC), MOTION_RECORDER_IC);
 
 
 	xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,

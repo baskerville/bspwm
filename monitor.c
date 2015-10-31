@@ -49,6 +49,7 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
 	uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
 	m->root = xcb_generate_id(dpy);
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, rect.x, rect.y, rect.width, rect.height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+	xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
 	window_lower(m->root);
 	if (focus_follows_pointer) {
 		window_show(m->root);
