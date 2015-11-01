@@ -278,7 +278,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 			update_vacant_state(f->parent);
 		}
 		if (f->client != NULL) {
-			n->client->layer = f->client->layer;
 			if (f->client->private) {
 				update_privacy_level(f, true);
 			}

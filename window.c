@@ -150,6 +150,10 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, f!=NULL?f->client->window:0, win);
 	insert_node(m, d, n, f);
 
+	if (f != NULL && f->client != NULL && csq->floating) {
+		c->layer = f->client->layer;
+	}
+
 	if (csq->layer != NULL) {
 		c->layer = *(csq->layer);
 		free(csq->layer);
