@@ -274,17 +274,25 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				f->split_mode = MODE_AUTOMATIC;
 				break;
 		}
-		if (f->vacant)
+		if (f->vacant) {
 			update_vacant_state(f->parent);
-		if (f->client != NULL && f->client->private)
-			update_privacy_level(f, true);
+		}
+		if (f->client != NULL) {
+			n->client->layer = f->client->layer;
+			if (f->client->private) {
+				update_privacy_level(f, true);
+			}
+		}
 	}
-	if (n->client->private)
+	if (n->client->private) {
 		update_privacy_level(n, true);
-	if (d->focus == NULL)
+	}
+	if (d->focus == NULL) {
 		d->focus = n;
-	if (n->client->sticky)
+	}
+	if (n->client->sticky) {
 		m->num_sticky++;
+	}
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -323,6 +331,10 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		if (n->client->urgent) {
 			n->client->urgent = false;
 			put_status(SBSC_MASK_REPORT);
+		}
+		if (d->focus != NULL && n != d->focus && d->focus->client->fullscreen && stack_cmp(n->client, d->focus->client) <= 0) {
+			set_fullscreen(d->focus, false);
+			arrange(m, d);
 		}
 	}
 

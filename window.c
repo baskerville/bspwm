@@ -134,8 +134,10 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	monitor_t *mm = monitor_from_client(c);
 	embrace_client(mm, c);
 	translate_client(mm, m, c);
-	if (csq->center)
+
+	if (csq->center) {
 		window_center(m, c);
+	}
 
 	snprintf(c->class_name, sizeof(c->class_name), "%s", csq->class_name);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", csq->instance_name);
@@ -148,6 +150,11 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, f!=NULL?f->client->window:0, win);
 	insert_node(m, d, n, f);
 
+	if (csq->layer != NULL) {
+		c->layer = *(csq->layer);
+		free(csq->layer);
+	}
+
 	disable_floating_atom(c->window);
 	set_pseudo_tiled(n, csq->pseudo_tiled);
 	set_floating(n, csq->floating);
@@ -155,7 +162,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
 	set_fullscreen(n, csq->fullscreen);
-	set_layer(n, csq->layer);
 
 	arrange(m, d);
 
@@ -386,10 +392,13 @@ void set_fullscreen(node_t *n, bool value)
 	put_status(SBSC_MASK_WINDOW_STATE, "window_state fullscreen %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->fullscreen = value;
-	if (value)
+	if (value) {
 		ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);
-	else
+		set_layer(n, LAYER_ABOVE);
+	} else {
 		ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
+		set_layer(n, LAYER_NORMAL);
+	}
 }
 
 void set_layer(node_t *n, stack_layer_t layer)

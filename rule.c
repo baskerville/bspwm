@@ -94,7 +94,7 @@ rule_consequence_t *make_rule_conquence(void)
 {
 	rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
 	rc->manage = rc->focus = rc->border = true;
-	rc->layer = LAYER_NORMAL;
+	rc->layer = NULL;
 	return rc;
 }
 
@@ -174,9 +174,15 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 			if (a == ewmh->_NET_WM_STATE_FULLSCREEN) {
 				csq->fullscreen = true;
 			} else if (a == ewmh->_NET_WM_STATE_BELOW) {
-				csq->layer = LAYER_BELOW;
+				if (csq->layer == NULL) {
+					csq->layer = malloc(sizeof(stack_layer_t));
+				}
+				*(csq->layer) = LAYER_BELOW;
 			} else if (a == ewmh->_NET_WM_STATE_ABOVE) {
-				csq->layer = LAYER_ABOVE;
+				if (csq->layer == NULL) {
+					csq->layer = malloc(sizeof(stack_layer_t));
+				}
+				*(csq->layer) = LAYER_ABOVE;
 			} else if (a == ewmh->_NET_WM_STATE_STICKY) {
 				csq->sticky = true;
 			}
@@ -289,7 +295,10 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 	} else if (streq("layer", key)) {
 		stack_layer_t lyr;
 		if (parse_stack_layer(value, &lyr)) {
-			csq->layer = lyr;
+			if (csq->layer == NULL) {
+				csq->layer = malloc(sizeof(stack_layer_t));
+			}
+			*(csq->layer) = lyr;
 		}
 	} else if (streq("split_ratio", key)) {
 		double rat;
