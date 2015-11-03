@@ -158,6 +158,16 @@ int cmd_window(char **args, int num)
 			} else {
 				return MSG_FAILURE;
 			}
+		} else if (streq("-S", *args) || streq("--size", *args)) {
+			num--, args++;
+			if (num < 1)
+				return MSG_SYNTAX;
+			if (trg.node -> client -> floating) {
+				if (!window_modify_size(trg.node->client, *args))
+					return MSG_SYNTAX;
+			} else {
+				return MSG_FAILURE;
+			}
 		} else if (streq("-w", *args) || streq("--to-window", *args)) {
 			num--, args++;
 			if (num < 1)

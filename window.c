@@ -650,6 +650,31 @@ void window_move(xcb_window_t win, int16_t x, int16_t y)
 	xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_X_Y, values);
 }
 
+// this function must only be called with a floating window
+bool window_modify_size(client_t *c, const char *modifier)
+{
+	if (!*modifier)
+		return false;
+
+	int modsize;
+	char direction;
+
+	sscanf(modifier, "%d%c", &modsize, &direction);
+	if (direction == 'x' || direction == 'y') {
+		if (direction == 'x') {
+			window_resize(c->window, c->floating_rectangle.width + modsize, c->floating_rectangle.height);
+		}
+
+		if (direction == 'y') {
+			window_resize(c->window, c->floating_rectangle.width, c->floating_rectangle.height + modsize);
+		}
+		update_floating_rectangle(c);
+		return true;
+	}
+
+	return false;
+}
+
 void window_resize(xcb_window_t win, uint16_t w, uint16_t h)
 {
 	uint32_t values[] = {w, h};
