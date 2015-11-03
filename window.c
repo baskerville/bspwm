@@ -398,11 +398,14 @@ void set_fullscreen(node_t *n, bool value)
 	c->fullscreen = value;
 	if (value) {
 		ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);
-		set_layer(n, LAYER_ABOVE);
+		c->last_layer = c->layer;
+		c->layer = LAYER_ABOVE;
 	} else {
 		ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
-		set_layer(n, LAYER_NORMAL);
+		c->layer = c->last_layer;
 	}
+
+	stack(n);
 }
 
 void set_layer(node_t *n, stack_layer_t layer)
@@ -410,9 +413,12 @@ void set_layer(node_t *n, stack_layer_t layer)
 	if (n == NULL || n->client->layer == layer) {
 		return;
 	}
+
 	client_t *c = n->client;
 	c->layer = layer;
+
 	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s 0x%X\n", LAYERSTR(layer), c->window);
+
 	stack(n);
 }
 

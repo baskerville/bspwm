@@ -154,6 +154,7 @@ typedef struct {
 	bool private;
 	bool icccm_focus;
 	stack_layer_t layer;
+	stack_layer_t last_layer;
 	xcb_rectangle_t floating_rectangle;
 	xcb_rectangle_t tiled_rectangle;
 	uint16_t min_width;

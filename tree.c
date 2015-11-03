@@ -410,7 +410,7 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 {
 	client_t *c = malloc(sizeof(client_t));
 	c->window = win;
-	c->layer = LAYER_NORMAL;
+	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
