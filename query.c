@@ -65,10 +65,10 @@ void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int 
 			fprintf(rsp, "%s\n", d->name);
 			continue;
 		} else {
-			fprintf(rsp, "%s %u %i %i,%i,%i,%i %c %c%s\n", d->name, d->border_width,
+			fprintf(rsp, "%s %u %i %i,%i,%i,%i %c%s\n", d->name, d->border_width,
 			        d->window_gap,
 			        d->top_padding, d->right_padding, d->bottom_padding, d->left_padding,
-			        (d->layout == LAYOUT_TILED ? 'T' : 'M'), (d->floating ? 'f' : '-'),
+			        (d->layout == LAYOUT_TILED ? 'T' : 'M'),
 			        (d == m->desk ? " *" : ""));
 		}
 		query_tree(d, d->root, rsp, depth + 1);
@@ -85,16 +85,16 @@ void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
 
 	if (is_leaf(n)) {
 		client_t *c = n->client;
-		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c %c%c%c%c%c%c%c%c%c%s\n",
+		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c%c %c%c %c%c%c%c%s\n",
 		         (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')),
 		         c->class_name, c->instance_name, c->window, c->border_width,
 		         c->floating_rectangle.width, c->floating_rectangle.height,
 		         c->floating_rectangle.x, c->floating_rectangle.y,
 		         (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))),
-		         (c->floating ? 'f' : '-'), (c->pseudo_tiled ? 'd' : '-'), (c->fullscreen ? 'F' : '-'),
-		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'),
-		         (c->private ? 'i' : '-'), (n->split_mode ? 'p' : '-'),
-		         (c->layer == LAYER_BELOW ? 'b' : (c->layer == LAYER_ABOVE ? 'a' : '-')),
+		         (n->split_mode == MODE_AUTOMATIC ? '-' : 'p'),
+		         (c->state == STATE_TILED ? '-' : (c->state == STATE_FLOATING ? 'f' : (c->state == STATE_FULLSCREEN ? 'F' : 'p'))),
+		         (c->layer == LAYER_NORMAL ? '-' : (c->layer == LAYER_ABOVE ? 'a' : 'b')),
+		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'), (c->private ? 'i' : '-'),
 		         (n == d->focus ? " *" : ""));
 	} else {
 		fprintf(rsp, "%c %c %lf\n", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
@@ -155,6 +155,7 @@ client_select_t make_client_select(void)
 		OPTION_NONE,
 		OPTION_NONE,
 		OPTION_NONE,
+		OPTION_NONE,
 		NULL
 	};
 	return sel;
@@ -182,9 +183,17 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
-		if (streq("floating", tok)) {
+		if (streq("tiled", tok)) {
+			sel.tiled = OPTION_TRUE;
+		} else if (streq("nontiled", tok)) {
+			sel.tiled = OPTION_FALSE;
+		} else if (streq("pseudotiled", tok)) {
+			sel.pseudo_tiled = OPTION_TRUE;
+		} else if (streq("nonpseudotiled", tok)) {
+			sel.pseudo_tiled = OPTION_FALSE;
+		} else if (streq("floating", tok)) {
 			sel.floating = OPTION_TRUE;
-		} else if (streq("tiled", tok)) {
+		} else if (streq("nonfloating", tok)) {
 			sel.floating = OPTION_FALSE;
 		} else if (streq("like", tok)) {
 			sel.same_class = OPTION_TRUE;
@@ -198,10 +207,6 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			sel.fullscreen = OPTION_TRUE;
 		} else if (streq("nonfullscreen", tok)) {
 			sel.fullscreen = OPTION_FALSE;
-		} else if (streq("pseudotiled", tok)) {
-			sel.pseudo_tiled = OPTION_TRUE;
-		} else if (streq("nonpseudotiled", tok)) {
-			sel.pseudo_tiled = OPTION_FALSE;
 		} else if (streq("urgent", tok)) {
 			sel.urgent = OPTION_TRUE;
 		} else if (streq("nonurgent", tok)) {
@@ -466,14 +471,39 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 	    : sel.prop == OPTION_FALSE) { \
 		return false; \
 	}
-	WSTATE(floating)
-	WSTATE(fullscreen)
-	WSTATE(pseudo_tiled)
 	WSTATE(locked)
 	WSTATE(sticky)
 	WSTATE(private)
 	WSTATE(urgent)
 #undef MATCHSTATE
+
+	if (sel.tiled != OPTION_NONE &&
+	    loc->node->client->state != STATE_TILED
+	    ? sel.tiled == OPTION_TRUE
+	    : sel.tiled == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.pseudo_tiled != OPTION_NONE &&
+	    loc->node->client->state != STATE_PSEUDO_TILED
+	    ? sel.pseudo_tiled == OPTION_TRUE
+	    : sel.pseudo_tiled == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.floating != OPTION_NONE &&
+	    loc->node->client->state != STATE_FLOATING
+	    ? sel.floating == OPTION_TRUE
+	    : sel.floating == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.fullscreen != OPTION_NONE &&
+	    loc->node->client->state != STATE_FULLSCREEN
+	    ? sel.fullscreen == OPTION_TRUE
+	    : sel.fullscreen == OPTION_FALSE) {
+		return false;
+	}
 
 	if (sel.same_class != OPTION_NONE && ref->node != NULL &&
 	    streq(loc->node->client->class_name, ref->node->client->class_name)
@@ -489,7 +519,8 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 		return false;
 	}
 
-	if (sel.local != OPTION_NONE && loc->desktop != ref->desktop
+	if (sel.local != OPTION_NONE &&
+	    loc->desktop != ref->desktop
 	    ? sel.local == OPTION_TRUE
 	    : sel.local == OPTION_FALSE) {
 		return false;

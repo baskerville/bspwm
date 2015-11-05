@@ -134,7 +134,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.floating|.tiled][.like|.unlike][.manual|.automatic][.urgent|.nonurgent][.local|.foreign][.focused|.unfocused][.below|.normal|.above][.fullscreen|.nonfullscreen][.sticky|.nonsticky][.public|.private][.locked|.unlocked][.pseudotiled|.nonpseudotiled]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.manual|.automatic][.tiled|nontiled][.pseudotiled|.nonpseudotiled][.floating|.nonfloating][.fullscreen|.nonfullscreen][.below|.normal|.above][.local|.foreign][.like|.unlike][.focused|.unfocused][.urgent|.nonurgent][.sticky|.nonsticky][.public|.private][.locked|.unlocked]
 ----
 
 Primary Selectors
@@ -164,23 +164,56 @@ newer::
 Modifiers
 ^^^^^^^^^
 
-floating::
-	Only consider floating windows.
-
 tiled::
 	Only consider tiled windows.
 
-like::
-	Only consider windows that have the same class as the current window.
+nontiled::
+	Only consider tiled windows.
 
-unlike::
-	Only consider windows that have a different class than the current window.
+pseudotiled::
+	Only consider pseudo-tiled windows.
+
+nonpseudotiled::
+	Only consider non pseudo-tiled windows.
+
+floating::
+	Only consider floating windows.
+
+nonfloating::
+	Only consider non floating windows.
+
+fullscreen::
+	Only consider fullscreen windows.
+
+nonfullscreen::
+	Only consider non fullscreen windows.
 
 manual::
 	Only consider windows in manual splitting mode.
 
 automatic::
 	Only consider windows in automatic splitting mode.
+
+focused::
+	Only consider focused windows.
+
+unfocused::
+	Only consider unfocused windows.
+
+below::
+	Only consider windows of the BELOW layer.
+
+normal::
+	Only consider windows of the NORMAL layer.
+
+above::
+	Only consider windows of the ABOVE layer.
+
+like::
+	Only consider windows that have the same class as the current window.
+
+unlike::
+	Only consider windows that have a different class than the current window.
 
 local::
 	Only consider windows of the current desktop.
@@ -200,12 +233,6 @@ urgent::
 nonurgent::
 	Only consider non urgent windows.
 
-pseudotiled::
-	Only consider pseudo-tiled windows.
-
-nonpseudotiled::
-	Only consider non pseudo-tiled windows.
-
 sticky::
 	Only consider sticky windows.
 
@@ -217,30 +244,6 @@ locked::
 
 unlocked::
 	Only consider non locked windows.
-
-nonfullscreen::
-	Only consider non fullscreen windows.
-
-fullscreen::
-	Only consider fullscreen windows.
-
-nonfullscreen::
-	Only consider non fullscreen windows.
-
-focused::
-	Only consider focused windows.
-
-unfocused::
-	Only consider unfocused windows.
-
-below::
-	Only consider windows of the BELOW layer.
-
-normal::
-	Only consider windows of the NORMAL layer.
-
-above::
-	Only consider windows of the ABOVE layer.
 
 Desktop
 ~~~~~~~
@@ -352,14 +355,21 @@ free::
 Window States
 -------------
 
-floating::
-	Can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+tiled::
+	Its size and position are determined by the splitting type and ratio of each node of its path in the window tree.
 
 pseudo_tiled::
 	Has an unrestricted size while being centered in its tiling space.
 
+floating::
+	Can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+
 fullscreen::
-	Fills its monitor rectangle and has no borders.
+	Fills its monitor rectangle and has no borders. It is send in the ABOVE layer by default.
+
+
+Window Flags
+-------------
 
 locked::
 	Ignores the *close* message.
@@ -371,7 +381,7 @@ private::
 	Tries to keep the same tiling position/size.
 
 urgent::
-	Has its urgency hint set.
+	Has its urgency hint set. This flag is set externally.
 
 
 Stacking Layers
@@ -379,7 +389,7 @@ Stacking Layers
 
 There's three stacking layers: BELOW, NORMAL and ABOVE.
 
-In each layer, floating windows are stacked above tiled windows.
+In each layer, the window are orderered as follow: tiled & pseudo-tiled < fullscreen < floating.
 
 
 Commands
@@ -422,8 +432,11 @@ Options
 *-R*, *--rotate* 'DIR' '90|270|180'::
 	Rotate the tree holding the edge located in the given direction in relation to the selected window.
 
-*-t*, *--toggle* floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]::
-	Set or toggle the given state for the selected window.
+*-t*, *--state* tiled|pseudo_tiled|floating|fullscreen::
+	Set the state of the selected window.
+
+*-g*, *--flag* locked|sticky|private[=on|off]::
+	Set or toggle the given flag for the selected window.
 
 *-l*, *--layer* below|normal|above::
 	Set the stacking layer of the selected window.
@@ -482,9 +495,6 @@ Options
 
 *-C*, *--circulate* forward|backward::
 	Circulate the leaves of the tree of the selected desktop.
-
-*-t*, *--toggle* floating[=on|off]::
-	Set or toggle the given state for the selected desktop.
 
 
 Monitor
@@ -626,7 +636,7 @@ rule 'OPTIONS'
 Options
 ^^^^^^^
 
-*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus|border)=(on|off)] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO]::
+*-a*, *--add* <class_name>|<instance_name>|* [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(locked|sticky|private|center|follow|manage|focus|border)=(on|off)]::
 	Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|<class_name>|<instance_name>|*...::

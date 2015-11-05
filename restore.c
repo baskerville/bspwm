@@ -92,21 +92,23 @@ void restore_tree(char *file_path)
 			       &bw, &wg, &top, &right, &bottom, &left, &layout, &floating, &end);
 			locate_desktop(name, &loc);
 			d = loc.desktop;
-			if (d == NULL)
+			if (d == NULL) {
 				continue;
+			}
 			d->border_width = bw;
 			d->window_gap = wg;
 			d->top_padding = top;
 			d->right_padding = right;
 			d->bottom_padding = bottom;
 			d->left_padding = left;
-			if (layout == 'M')
+			if (layout == 'M') {
 				d->layout = LAYOUT_MONOCLE;
-			else if (layout == 'T')
+			} else if (layout == 'T') {
 				d->layout = LAYOUT_TILED;
-			d->floating = (floating == '-' ? false : true);
-			if (end != 0)
+			}
+			if (end != 0) {
 				m->desk = d;
+			}
 		} else {
 			if (m == NULL || d == NULL)
 				continue;
@@ -128,76 +130,88 @@ void restore_tree(char *file_path)
 				birth->parent = n;
 			}
 			n = birth;
-			char br;
+			char birth_rotation;
 			if (isupper(line[level])) {
-				char st;
-				sscanf(line + level, "%c %c %lf", &st, &br, &n->split_ratio);
-				if (st == 'H')
+				char split_type;
+				sscanf(line + level, "%c %c %lf", &split_type, &birth_rotation, &n->split_ratio);
+				if (split_type == 'H') {
 					n->split_type = TYPE_HORIZONTAL;
-				else if (st == 'V')
+				} else if (split_type == 'V') {
 					n->split_type = TYPE_VERTICAL;
+				}
 			} else {
 				client_t *c = make_client(XCB_NONE, d->border_width);
 				num_clients++;
-				char floating, pseudo_tiled, fullscreen, urgent, locked, sticky, private, sd, sm, sl, end = 0;
-				sscanf(line + level, "%c %s %s %X %u %hux%hu%hi%hi %c %c%c%c%c%c%c%c%c%c %c", &br,
+				char urgent, locked, sticky, private, split_dir, split_mode, state, layer, end = 0;
+				sscanf(line + level, "%c %s %s %X %u %hux%hu%hi%hi %c%c %c%c %c%c%c%c %c", &birth_rotation,
 				       c->class_name, c->instance_name, &c->window, &c->border_width,
 				       &c->floating_rectangle.width, &c->floating_rectangle.height,
 				       &c->floating_rectangle.x, &c->floating_rectangle.y,
-				       &sd, &floating, &pseudo_tiled, &fullscreen, &urgent,
-				       &locked, &sticky, &private, &sm, &sl, &end);
-				c->floating = (floating == '-' ? false : true);
-				c->pseudo_tiled = (pseudo_tiled == '-' ? false : true);
-				c->fullscreen = (fullscreen == '-' ? false : true);
+				       &split_dir, &split_mode, &state, &layer,
+				       &urgent, &locked, &sticky, &private, &end);
+				n->split_mode = (split_mode == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
+				if (split_dir == 'U') {
+					n->split_dir = DIR_UP;
+				} else if (split_dir == 'R') {
+					n->split_dir = DIR_RIGHT;
+				} else if (split_dir == 'D') {
+					n->split_dir = DIR_DOWN;
+				} else if (split_dir == 'L') {
+					n->split_dir = DIR_LEFT;
+				}
+				if (state == 'f') {
+					c->state = STATE_FLOATING;
+				} else if (state == 'F') {
+					c->state = STATE_FULLSCREEN;
+				} else if (state == 'p') {
+					c->state = STATE_PSEUDO_TILED;
+				}
+				if (layer == 'b') {
+					c->layer = LAYER_BELOW;
+				} else if (layer == 'a') {
+					c->layer = LAYER_ABOVE;
+				}
 				c->urgent = (urgent == '-' ? false : true);
 				c->locked = (locked == '-' ? false : true);
 				c->sticky = (sticky == '-' ? false : true);
 				c->private = (private == '-' ? false : true);
-				n->split_mode = (sm == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
-				if (sd == 'U') {
-					n->split_dir = DIR_UP;
-				} else if (sd == 'R') {
-					n->split_dir = DIR_RIGHT;
-				} else if (sd == 'D') {
-					n->split_dir = DIR_DOWN;
-				} else if (sd == 'L') {
-					n->split_dir = DIR_LEFT;
-				}
-				if (sl == 'b') {
-					c->layer = LAYER_BELOW;
-				} else if (sl == 'a') {
-					c->layer = LAYER_ABOVE;
-				}
 				n->client = c;
-				if (end != 0)
+				if (end != 0) {
 					d->focus = n;
-				if (c->sticky)
+				}
+				if (c->sticky) {
 					m->num_sticky++;
+				}
 			}
-			if (br == 'a')
+			if (birth_rotation == 'a') {
 				n->birth_rotation = 90;
-			else if (br == 'c')
+			} else if (birth_rotation == 'c') {
 				n->birth_rotation = 270;
-			else if (br == 'm')
+			} else if (birth_rotation == 'm') {
 				n->birth_rotation = 0;
+			}
 		}
 		last_level = level;
 	}
 
 	fclose(snapshot);
 
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 				xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
-				if (n->client->floating) {
+				if (!IS_TILED(n->client)) {
 					n->vacant = true;
 					update_vacant_state(n->parent);
 				}
-				if (n->client->private)
+				if (n->client->private) {
 					update_privacy_level(n, true);
+				}
 			}
+		}
+	}
+
 	ewmh_update_current_desktop();
 }
 

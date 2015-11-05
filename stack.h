@@ -30,6 +30,7 @@ void stack_insert_after(stacking_list_t *a, node_t *n);
 void stack_insert_before(stacking_list_t *a, node_t *n);
 void remove_stack(stacking_list_t *s);
 void remove_stack_node(node_t *n);
+int stack_level(client_t *c);
 int stack_cmp(client_t *c1, client_t *c2);
 void stack(node_t *n);
 

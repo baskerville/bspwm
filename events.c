@@ -93,7 +93,7 @@ void configure_request(xcb_generic_event_t *evt)
 	client_t *c = (is_managed ? loc.node->client : NULL);
 	int w = 0, h = 0;
 
-	if (is_managed && !c->floating) {
+	if (is_managed && !IS_FLOATING(c)) {
 		if (e->value_mask & XCB_CONFIG_WINDOW_X)
 			c->floating_rectangle.x = e->x;
 		if (e->value_mask & XCB_CONFIG_WINDOW_Y)
@@ -114,14 +114,10 @@ void configure_request(xcb_generic_event_t *evt)
 		}
 
 		xcb_configure_notify_event_t evt;
-		xcb_rectangle_t rect;
 		xcb_window_t win = c->window;
 		unsigned int bw = c->border_width;
 
-		if (c->fullscreen)
-			rect = loc.monitor->rectangle;
-		else
-			rect = c->tiled_rectangle;
+		xcb_rectangle_t rect = get_rectangle(loc.monitor, c);
 
 		evt.response_type = XCB_CONFIGURE_NOTIFY;
 		evt.event = win;
@@ -136,8 +132,9 @@ void configure_request(xcb_generic_event_t *evt)
 
 		xcb_send_event(dpy, false, win, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
 
-		if (c->pseudo_tiled)
+		if (c->state == STATE_PSEUDO_TILED) {
 			arrange(loc.monitor, loc.desktop);
+		}
 	} else {
 		uint16_t mask = 0;
 		uint32_t values[7];
@@ -195,8 +192,9 @@ void configure_request(xcb_generic_event_t *evt)
 		xcb_configure_window(dpy, e->window, mask, values);
 	}
 
-	if (is_managed)
+	if (is_managed) {
 		translate_client(monitor_from_client(c), loc.monitor, c);
+	}
 }
 
 void destroy_notify(xcb_generic_event_t *evt)
@@ -382,41 +380,46 @@ void motion_notify(xcb_generic_event_t *evt)
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
 {
 	if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-		if (action == XCB_EWMH_WM_STATE_ADD)
-			set_fullscreen(n, true);
-		else if (action == XCB_EWMH_WM_STATE_REMOVE)
-			set_fullscreen(n, false);
-		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
-			set_fullscreen(n, !n->client->fullscreen);
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			set_state(m, d, n, STATE_FULLSCREEN);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+			set_state(m, d, n, n->client->last_state);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			set_state(m, d, n, IS_FULLSCREEN(n->client) ? n->client->last_state : STATE_FULLSCREEN);
+		}
 		arrange(m, d);
 	} else if (state == ewmh->_NET_WM_STATE_BELOW) {
-		if (action == XCB_EWMH_WM_STATE_ADD)
-			set_layer(n, LAYER_BELOW);
-		else if (action == XCB_EWMH_WM_STATE_REMOVE)
-			set_layer(n, LAYER_NORMAL);
-		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
-			set_layer(n, n->client->layer == LAYER_BELOW ? LAYER_NORMAL : LAYER_BELOW);
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			set_layer(m, d, n, LAYER_BELOW);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+			set_layer(m, d, n, LAYER_NORMAL);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			set_layer(m, d, n, n->client->layer == LAYER_BELOW ? n->client->last_layer : LAYER_BELOW);
+		}
 	} else if (state == ewmh->_NET_WM_STATE_ABOVE) {
-		if (action == XCB_EWMH_WM_STATE_ADD)
-			set_layer(n, LAYER_ABOVE);
-		else if (action == XCB_EWMH_WM_STATE_REMOVE)
-			set_layer(n, LAYER_NORMAL);
-		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
-			set_layer(n, n->client->layer == LAYER_ABOVE ? LAYER_NORMAL : LAYER_ABOVE);
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			set_layer(m, d, n, LAYER_ABOVE);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+			set_layer(m, d, n, n->client->last_layer);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			set_layer(m, d, n, n->client->layer == LAYER_ABOVE ? n->client->last_layer : LAYER_ABOVE);
+		}
 	} else if (state == ewmh->_NET_WM_STATE_STICKY) {
-		if (action == XCB_EWMH_WM_STATE_ADD)
+		if (action == XCB_EWMH_WM_STATE_ADD) {
 			set_sticky(m, d, n, true);
-		else if (action == XCB_EWMH_WM_STATE_REMOVE)
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
 			set_sticky(m, d, n, false);
-		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_sticky(m, d, n, !n->client->sticky);
+		}
 	} else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
-		if (action == XCB_EWMH_WM_STATE_ADD)
+		if (action == XCB_EWMH_WM_STATE_ADD) {
 			set_urgency(m, d, n, true);
-		else if (action == XCB_EWMH_WM_STATE_REMOVE)
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
 			set_urgency(m, d, n, false);
-		else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_urgency(m, d, n, !n->client->urgent);
+		}
 	}
 }
 

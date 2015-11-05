@@ -69,12 +69,12 @@ void grab_pointer(pointer_action_t pac)
 			case ACTION_MOVE:
 			case ACTION_RESIZE_SIDE:
 			case ACTION_RESIZE_CORNER:
-				if (c->floating) {
+				if (IS_FLOATING(c)) {
 					frozen_pointer->rectangle = c->floating_rectangle;
 					frozen_pointer->is_tiled = false;
-				} else if (!c->floating) {
+				} else if (IS_TILED(c)) {
 					frozen_pointer->rectangle = c->tiled_rectangle;
-					frozen_pointer->is_tiled = (pac == ACTION_MOVE || !c->pseudo_tiled);
+					frozen_pointer->is_tiled = (pac == ACTION_MOVE || c->state == STATE_PSEUDO_TILED);
 				} else {
 					frozen_pointer->action = ACTION_NONE;
 					return;
@@ -197,7 +197,7 @@ void track_pointer(int root_x, int root_y)
 					return;
 				coordinates_t loc;
 				bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
-				if (is_managed && !loc.node->client->floating && loc.monitor == m) {
+				if (is_managed && !IS_FLOATING(loc.node->client) && loc.monitor == m) {
 					swap_nodes(m, d, n, m, d, loc.node);
 					arrange(m, d);
 				} else {
@@ -314,11 +314,7 @@ void track_pointer(int root_x, int root_y)
 				int oldw = w, oldh = h;
 				restrain_floating_size(c, &w, &h);
 
-				if (c->pseudo_tiled) {
-					c->floating_rectangle.width = w;
-					c->floating_rectangle.height = h;
-					arrange(m, d);
-				} else {
+				if (c->state == STATE_FLOATING) {
 					if (oldw == w) {
 						c->floating_rectangle.x = x;
 						c->floating_rectangle.width = w;
@@ -331,6 +327,10 @@ void track_pointer(int root_x, int root_y)
 					                        c->floating_rectangle.y,
 					                        c->floating_rectangle.width,
 					                        c->floating_rectangle.height);
+				} else {
+					c->floating_rectangle.width = w;
+					c->floating_rectangle.height = h;
+					arrange(m, d);
 				}
 			}
 			break;

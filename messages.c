@@ -187,7 +187,21 @@ int cmd_window(char **args, int num)
 			} else {
 				return MSG_FAILURE;
 			}
-		} else if (streq("-t", *args) || streq("--toggle", *args)) {
+		} else if (streq("-t", *args) || streq("--state", *args)) {
+			num--, args++;
+			if (num < 1)
+				return MSG_SYNTAX;
+			client_state_t cst;
+			if (parse_client_state(*args, &cst)) {
+				if (trg.node->client->state == cst) {
+					cst = trg.node->client->last_state;
+				}
+				set_state(trg.monitor, trg.desktop, trg.node, cst);
+				dirty = true;
+			} else {
+				return MSG_FAILURE;
+			}
+		} else if (streq("-g", *args) || streq("--flag", *args)) {
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
@@ -198,21 +212,13 @@ int cmd_window(char **args, int num)
 			if (val == NULL) {
 				a = ALTER_TOGGLE;
 			} else {
-				if (parse_bool(val, &b))
+				if (parse_bool(val, &b)) {
 					a = ALTER_SET;
-				else
+				} else {
 					return MSG_FAILURE;
+				}
 			}
-			if (streq("fullscreen", key)) {
-				set_fullscreen(trg.node, (a == ALTER_SET ? b : !trg.node->client->fullscreen));
-				dirty = true;
-			} else if (streq("pseudo_tiled", key)) {
-				set_pseudo_tiled(trg.node, (a == ALTER_SET ? b : !trg.node->client->pseudo_tiled));
-				dirty = true;
-			} else if (streq("floating", key)) {
-				set_floating(trg.node, (a == ALTER_SET ? b : !trg.node->client->floating));
-				dirty = true;
-			} else if (streq("locked", key)) {
+			if (streq("locked", key)) {
 				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->locked));
 			} else if (streq("sticky", key)) {
 				set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->sticky));
@@ -225,7 +231,7 @@ int cmd_window(char **args, int num)
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
-			if (trg.node->client->floating ||
+			if (IS_FLOATING(trg.node->client) ||
 			    trg.desktop->layout != LAYOUT_TILED)
 				return MSG_FAILURE;
 			if (streq("cancel", *args)) {
@@ -257,7 +263,7 @@ int cmd_window(char **args, int num)
 			num--, args++;
 			if (num < 2)
 				return MSG_SYNTAX;
-			if (trg.node->client->floating)
+			if (IS_FLOATING(trg.node->client))
 				return MSG_FAILURE;
 			direction_t dir;
 			if (!parse_direction(*args, &dir))
@@ -304,7 +310,7 @@ int cmd_window(char **args, int num)
 			}
 			stack_layer_t lyr;
 			if (parse_stack_layer(*args, &lyr)) {
-				set_layer(trg.node, lyr);
+				set_layer(trg.monitor, trg.desktop, trg.node, lyr);
 			} else {
 				return MSG_FAILURE;
 			}
@@ -498,28 +504,6 @@ int cmd_desktop(char **args, int num)
 			} else {
 				return MSG_FAILURE;
 			}
-		} else if (streq("-t", *args) || streq("--toggle", *args)) {
-			num--, args++;
-			if (num < 1)
-				return MSG_SYNTAX;
-			char *key = strtok(*args, EQL_TOK);
-			char *val = strtok(NULL, EQL_TOK);
-			alter_state_t a;
-			bool b;
-			if (val == NULL) {
-				a = ALTER_TOGGLE;
-			} else {
-				if (parse_bool(val, &b))
-					a = ALTER_SET;
-				else
-					return MSG_FAILURE;
-			}
-			if (streq("floating", key))
-				trg.desktop->floating = (a == ALTER_SET ? b : !trg.desktop->floating);
-			else
-				return MSG_FAILURE;
-		} else {
-			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
@@ -1189,6 +1173,8 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_WINDOW_MOVE;
 	} else if (streq("window_state", s)) {
 		*mask = SBSC_MASK_WINDOW_STATE;
+	} else if (streq("window_flag", s)) {
+		*mask = SBSC_MASK_WINDOW_FLAG;
 	} else if (streq("window_layer", s)) {
 		*mask = SBSC_MASK_WINDOW_LAYER;
 	} else if (streq("desktop_add", s)) {
@@ -1205,8 +1191,6 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_DESKTOP_FOCUS;
 	} else if (streq("desktop_layout", s)) {
 		*mask = SBSC_MASK_DESKTOP_LAYOUT;
-	} else if (streq("desktop_state", s)) {
-		*mask = SBSC_MASK_DESKTOP_STATE;
 	} else if (streq("monitor_add", s)) {
 		*mask = SBSC_MASK_MONITOR_ADD;
 	} else if (streq("monitor_rename", s)) {
@@ -1244,6 +1228,24 @@ bool parse_layout(char *s, layout_t *l)
 		return true;
 	} else if (streq("tiled", s)) {
 		*l = LAYOUT_TILED;
+		return true;
+	}
+	return false;
+}
+
+bool parse_client_state(char *s, client_state_t *t)
+{
+	if (streq("tiled", s)) {
+		*t = STATE_TILED;
+		return true;
+	} else if (streq("pseudo_tiled", s)) {
+		*t = STATE_PSEUDO_TILED;
+		return true;
+	} else if (streq("floating", s)) {
+		*t = STATE_FLOATING;
+		return true;
+	} else if (streq("fullscreen", s)) {
+		*t = STATE_FULLSCREEN;
 		return true;
 	}
 	return false;

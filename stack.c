@@ -102,31 +102,16 @@ void remove_stack_node(node_t *n)
 	}
 }
 
+int stack_level(client_t *c)
+{
+	int layer_level = (c->layer == LAYER_NORMAL ? 1 : (c->layer == LAYER_BELOW ? 0 : 2));
+	int state_level = (IS_TILED(c) ? 0 : (IS_FLOATING(c) ? 2 : 1));
+	return 3 * layer_level + state_level;
+}
+
 int stack_cmp(client_t *c1, client_t *c2)
 {
-	if (c1->layer == c2->layer) {
-		if (!c1->floating && c2->floating) {
-			return -1;
-		} else if (c1->floating && !c2->floating) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		if (c1->layer == LAYER_BELOW) {
-			return -1;
-		} else if (c1->layer == LAYER_ABOVE) {
-			return 1;
-		/* c1->layer == LAYER_NORMAL */
-		} else {
-			if (c2->layer == LAYER_ABOVE) {
-				return -1;
-			/* c2->layer == LAYER_BELOW */
-			} else {
-				return 1;
-			}
-		}
-	}
+	return stack_level(c1) - stack_level(c2);
 }
 
 void stack(node_t *n)
@@ -136,8 +121,9 @@ void stack(node_t *n)
 	if (stack_head == NULL) {
 		stack_insert_after(NULL, n);
 	} else {
-		if (n->client->floating && !auto_raise)
+		if (IS_FLOATING(n->client) && !auto_raise) {
 			return;
+		}
 		stacking_list_t *s = stack_head;
 		while (s != NULL && stack_cmp(n->client, s->node->client) >= 0) {
 			s = s->next;

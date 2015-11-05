@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 10/27/2015
+.\"      Date: 11/05/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "10/27/2015" "Bspwm 0\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "11/05/2015" "Bspwm 0\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -167,7 +167,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.floating|\&.tiled][\&.like|\&.unlike][\&.manual|\&.automatic][\&.urgent|\&.nonurgent][\&.local|\&.foreign][\&.focused|\&.unfocused][\&.below|\&.normal|\&.above][\&.fullscreen|\&.nonfullscreen][\&.sticky|\&.nonsticky][\&.public|\&.private][\&.locked|\&.unlocked][\&.pseudotiled|\&.nonpseudotiled]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.manual|\&.automatic][\&.tiled|nontiled][\&.pseudotiled|\&.nonpseudotiled][\&.floating|\&.nonfloating][\&.fullscreen|\&.nonfullscreen][\&.below|\&.normal|\&.above][\&.local|\&.foreign][\&.like|\&.unlike][\&.focused|\&.unfocused][\&.urgent|\&.nonurgent][\&.sticky|\&.nonsticky][\&.public|\&.private][\&.locked|\&.unlocked]
 .fi
 .if n \{\
 .RE
@@ -225,24 +225,44 @@ Selects the window newer than the focused window in the history\&.
 \fBModifiers\fR
 .RS 4
 .PP
-floating
-.RS 4
-Only consider floating windows\&.
-.RE
-.PP
 tiled
 .RS 4
 Only consider tiled windows\&.
 .RE
 .PP
-like
+nontiled
 .RS 4
-Only consider windows that have the same class as the current window\&.
+Only consider tiled windows\&.
 .RE
 .PP
-unlike
+pseudotiled
 .RS 4
-Only consider windows that have a different class than the current window\&.
+Only consider pseudo\-tiled windows\&.
+.RE
+.PP
+nonpseudotiled
+.RS 4
+Only consider non pseudo\-tiled windows\&.
+.RE
+.PP
+floating
+.RS 4
+Only consider floating windows\&.
+.RE
+.PP
+nonfloating
+.RS 4
+Only consider non floating windows\&.
+.RE
+.PP
+fullscreen
+.RS 4
+Only consider fullscreen windows\&.
+.RE
+.PP
+nonfullscreen
+.RS 4
+Only consider non fullscreen windows\&.
 .RE
 .PP
 manual
@@ -253,6 +273,41 @@ Only consider windows in manual splitting mode\&.
 automatic
 .RS 4
 Only consider windows in automatic splitting mode\&.
+.RE
+.PP
+focused
+.RS 4
+Only consider focused windows\&.
+.RE
+.PP
+unfocused
+.RS 4
+Only consider unfocused windows\&.
+.RE
+.PP
+below
+.RS 4
+Only consider windows of the BELOW layer\&.
+.RE
+.PP
+normal
+.RS 4
+Only consider windows of the NORMAL layer\&.
+.RE
+.PP
+above
+.RS 4
+Only consider windows of the ABOVE layer\&.
+.RE
+.PP
+like
+.RS 4
+Only consider windows that have the same class as the current window\&.
+.RE
+.PP
+unlike
+.RS 4
+Only consider windows that have a different class than the current window\&.
 .RE
 .PP
 local
@@ -285,16 +340,6 @@ nonurgent
 Only consider non urgent windows\&.
 .RE
 .PP
-pseudotiled
-.RS 4
-Only consider pseudo\-tiled windows\&.
-.RE
-.PP
-nonpseudotiled
-.RS 4
-Only consider non pseudo\-tiled windows\&.
-.RE
-.PP
 sticky
 .RS 4
 Only consider sticky windows\&.
@@ -313,46 +358,6 @@ Only consider locked windows\&.
 unlocked
 .RS 4
 Only consider non locked windows\&.
-.RE
-.PP
-nonfullscreen
-.RS 4
-Only consider non fullscreen windows\&.
-.RE
-.PP
-fullscreen
-.RS 4
-Only consider fullscreen windows\&.
-.RE
-.PP
-nonfullscreen
-.RS 4
-Only consider non fullscreen windows\&.
-.RE
-.PP
-focused
-.RS 4
-Only consider focused windows\&.
-.RE
-.PP
-unfocused
-.RS 4
-Only consider unfocused windows\&.
-.RE
-.PP
-below
-.RS 4
-Only consider windows of the BELOW layer\&.
-.RE
-.PP
-normal
-.RS 4
-Only consider windows of the NORMAL layer\&.
-.RE
-.PP
-above
-.RS 4
-Only consider windows of the ABOVE layer\&.
 .RE
 .RE
 .SS "Desktop"
@@ -543,9 +548,9 @@ Only consider monitors where the focused desktop is free\&.
 .RE
 .SH "WINDOW STATES"
 .PP
-floating
+tiled
 .RS 4
-Can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
+Its size and position are determined by the splitting type and ratio of each node of its path in the window tree\&.
 .RE
 .PP
 pseudo_tiled
@@ -553,10 +558,16 @@ pseudo_tiled
 Has an unrestricted size while being centered in its tiling space\&.
 .RE
 .PP
+floating
+.RS 4
+Can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
+.RE
+.PP
 fullscreen
 .RS 4
-Fills its monitor rectangle and has no borders\&.
+Fills its monitor rectangle and has no borders\&. It is send in the ABOVE layer by default\&.
 .RE
+.SH "WINDOW FLAGS"
 .PP
 locked
 .RS 4
@@ -577,13 +588,13 @@ Tries to keep the same tiling position/size\&.
 .PP
 urgent
 .RS 4
-Has its urgency hint set\&.
+Has its urgency hint set\&. This flag is set externally\&.
 .RE
 .SH "STACKING LAYERS"
 .sp
 There\(cqs three stacking layers: BELOW, NORMAL and ABOVE\&.
 .sp
-In each layer, floating windows are stacked above tiled windows\&.
+In each layer, the window are orderered as follow: tiled & pseudo\-tiled < fullscreen < floating\&.
 .SH "COMMANDS"
 .SS "Window"
 .sp
@@ -653,9 +664,14 @@ Set or change the splitting ratio of the edge located in the given direction in 
 Rotate the tree holding the edge located in the given direction in relation to the selected window\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-toggle\fR floating|fullscreen|pseudo_tiled|locked|sticky|private[=on|off]
+\fB\-t\fR, \fB\-\-state\fR tiled|pseudo_tiled|floating|fullscreen
 .RS 4
-Set or toggle the given state for the selected window\&.
+Set the state of the selected window\&.
+.RE
+.PP
+\fB\-g\fR, \fB\-\-flag\fR locked|sticky|private[=on|off]
+.RS 4
+Set or toggle the given flag for the selected window\&.
 .RE
 .PP
 \fB\-l\fR, \fB\-\-layer\fR below|normal|above
@@ -757,11 +773,6 @@ Adjust the split ratios of the tree of the selected desktop so that all windows 
 \fB\-C\fR, \fB\-\-circulate\fR forward|backward
 .RS 4
 Circulate the leaves of the tree of the selected desktop\&.
-.RE
-.PP
-\fB\-t\fR, \fB\-\-toggle\fR floating[=on|off]
-.RS 4
-Set or toggle the given state for the selected desktop\&.
 .RE
 .RE
 .SS "Monitor"
@@ -1015,7 +1026,7 @@ rule \fIOPTIONS\fR
 \fBOptions\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name>|* [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [(floating|fullscreen|pseudo_tiled|locked|sticky|private|center|follow|manage|focus|border)=(on|off)] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO]
+\fB\-a\fR, \fB\-\-add\fR <class_name>|<instance_name>|* [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|window=WINDOW_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(locked|sticky|private|center|follow|manage|focus|border)=(on|off)]
 .RS 4
 Create a new rule\&.
 .RE

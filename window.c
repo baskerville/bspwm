@@ -72,6 +72,8 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	parse_rule_consequence(fd, csq);
 
 	if (!csq->manage) {
+		free(csq->layer);
+		free(csq->state);
 		disable_floating_atom(win);
 		window_show(win);
 		return;
@@ -142,41 +144,37 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	snprintf(c->class_name, sizeof(c->class_name), "%s", csq->class_name);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", csq->instance_name);
 
-	csq->floating = csq->floating || d->floating;
-
 	node_t *n = make_node();
 	n->client = c;
 
 	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, f!=NULL?f->client->window:0, win);
 	insert_node(m, d, n, f);
 
-	if (f != NULL && f->client != NULL && csq->floating) {
+	if (f != NULL && f->client != NULL && csq->state != NULL && *(csq->state) == STATE_FLOATING) {
 		c->layer = f->client->layer;
 	}
 
 	if (csq->layer != NULL) {
 		c->layer = *(csq->layer);
-		free(csq->layer);
 	}
 
 	disable_floating_atom(c->window);
-	set_pseudo_tiled(n, csq->pseudo_tiled);
-	set_floating(n, csq->floating);
+	set_state(m, d, n, csq->state != NULL ? *(csq->state) : c->state);
 	set_locked(m, d, n, csq->locked);
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
-	set_fullscreen(n, csq->fullscreen);
 
 	arrange(m, d);
 
 	bool give_focus = (csq->focus && (d == mon->desk || csq->follow));
 
-	if (give_focus)
+	if (give_focus) {
 		focus_node(m, d, n);
-	else if (csq->focus)
+	} else if (csq->focus) {
 		pseudo_focus(m, d, n);
-	else
+	} else {
 		stack(n);
+	}
 
 	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 	xcb_change_window_attributes(dpy, c->window, XCB_CW_EVENT_MASK, values);
@@ -189,12 +187,15 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	}
 
 	/* the same function is already called in `focus_node` but has no effects on unmapped windows */
-	if (give_focus)
+	if (give_focus) {
 		xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
+	}
 
 	num_clients++;
 	ewmh_set_wm_desktop(n, d);
 	ewmh_update_client_list();
+	free(csq->layer);
+	free(csq->state);
 }
 
 void unmanage_window(xcb_window_t win)
@@ -233,7 +234,7 @@ void window_draw_border(node_t *n, bool focused_window, bool focused_monitor)
 		uint32_t presel_border_color_pxl;
 		get_color(presel_border_color, win, &presel_border_color_pxl);
 
-		xcb_rectangle_t actual_rectangle = get_rectangle(n->client);
+		xcb_rectangle_t actual_rectangle = get_rectangle(NULL, n->client);
 
 		uint16_t width = actual_rectangle.width;
 		uint16_t height = actual_rectangle.height;
@@ -312,17 +313,26 @@ bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
 	        a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
 }
 
-xcb_rectangle_t get_rectangle(client_t *c)
+xcb_rectangle_t get_rectangle(monitor_t *m, client_t *c)
 {
-	if (!c->floating)
-		return c->tiled_rectangle;
-	else
-		return c->floating_rectangle;
+	switch (c->state) {
+		case STATE_TILED:
+			return c->tiled_rectangle;
+			break;
+		case STATE_PSEUDO_TILED:
+		case STATE_FLOATING:
+			return c->floating_rectangle;
+			break;
+		case STATE_FULLSCREEN:
+			return m->rectangle;
+			break;
+	 }
 }
 
 void get_side_handle(client_t *c, direction_t dir, xcb_point_t *pt)
 {
-	xcb_rectangle_t rect = get_rectangle(c);
+	xcb_rectangle_t rect = get_rectangle(NULL, c);
+
 	switch (dir) {
 		case DIR_RIGHT:
 			pt->x = rect.x + rect.width;
@@ -385,68 +395,75 @@ void window_kill(monitor_t *m, desktop_t *d, node_t *n)
 	remove_node(m, d, n);
 }
 
-void set_fullscreen(node_t *n, bool value)
+void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 {
-	if (n == NULL || n->client->fullscreen == value)
+	if (n == NULL || n->client->layer == l) {
 		return;
+	}
 
 	client_t *c = n->client;
 
-	PRINTF("fullscreen %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state fullscreen %s 0x%X\n", ONOFFSTR(value), c->window);
+	c->layer = l;
 
-	c->fullscreen = value;
-	if (value) {
-		ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);
-		c->last_layer = c->layer;
-		c->layer = LAYER_ABOVE;
-	} else {
-		ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
-		c->layer = c->last_layer;
+	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s 0x%X\n", LAYERSTR(l), c->window);
+
+	if (d->focus == n) {
+		neutralize_obscuring_windows(m, d, n);
 	}
 
 	stack(n);
 }
 
-void set_layer(node_t *n, stack_layer_t layer)
+void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 {
-	if (n == NULL || n->client->layer == layer) {
+	if (n == NULL || n->client->state == s) {
 		return;
 	}
 
 	client_t *c = n->client;
-	c->layer = layer;
 
-	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s 0x%X\n", LAYERSTR(layer), c->window);
+	c->last_state = c->state;
+	c->state = s;
 
-	stack(n);
+	switch (c->last_state) {
+		case STATE_TILED:
+		case STATE_PSEUDO_TILED:
+			break;
+		case STATE_FLOATING:
+			set_floating(m, d, n, false);
+			break;
+		case STATE_FULLSCREEN:
+			set_fullscreen(m, d, n, false);
+			break;
+	}
+
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s off 0x%X\n", STATESTR(c->last_state), c->window);
+
+	switch (c->state) {
+		case STATE_TILED:
+		case STATE_PSEUDO_TILED:
+			break;
+		case STATE_FLOATING:
+			set_floating(m, d, n, true);
+			break;
+		case STATE_FULLSCREEN:
+			set_fullscreen(m, d, n, true);
+			break;
+	}
+
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s on 0x%X\n", STATESTR(c->state), c->window);
 }
 
-void set_pseudo_tiled(node_t *n, bool value)
+void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
-	if (n == NULL || n->client->pseudo_tiled == value)
+	if (n == NULL) {
 		return;
+	}
 
 	client_t *c = n->client;
-
-	PRINTF("pseudo-tiled %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state pseudo_tiled %s 0x%X\n", ONOFFSTR(value), c->window);
-
-	c->pseudo_tiled = value;
-}
-
-void set_floating(node_t *n, bool value)
-{
-	if (n == NULL || n->client->fullscreen || n->client->floating == value)
-		return;
-
-	client_t *c = n->client;
-
-	PRINTF("floating %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state floating %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	n->split_mode = MODE_AUTOMATIC;
-	c->floating = n->vacant = value;
+	n->vacant = value;
 	update_vacant_state(n->parent);
 
 	if (value) {
@@ -455,9 +472,55 @@ void set_floating(node_t *n, bool value)
 	} else {
 		disable_floating_atom(c->window);
 		rotate_brother(n);
+		if (d->focus == n) {
+			neutralize_obscuring_windows(m, d, n);
+		}
 	}
 
 	stack(n);
+}
+
+void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	client_t *c = n->client;
+
+	n->split_mode = MODE_AUTOMATIC;
+	n->vacant = value;
+	update_vacant_state(n->parent);
+
+	if (value) {
+		ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);
+		c->last_layer = c->layer;
+		c->layer = LAYER_ABOVE;
+	} else {
+		ewmh_wm_state_remove(c, ewmh->_NET_WM_STATE_FULLSCREEN);
+		c->layer = c->last_layer;
+		if (d->focus == n) {
+			neutralize_obscuring_windows(m, d, n);
+		}
+	}
+
+	stack(n);
+}
+
+void neutralize_obscuring_windows(monitor_t *m, desktop_t *d, node_t *n)
+{
+	bool dirty = false;
+	for (node_t *a = first_extrema(d->root); a != NULL; a = next_leaf(a, d->root)) {
+		if (a != n) {
+			if (IS_FULLSCREEN(a->client) && stack_cmp(n->client, a->client) < 0) {
+				set_state(m, d, a, a->client->last_state);
+				dirty = true;
+			}
+		}
+	}
+	if (dirty) {
+		arrange(m, d);
+	}
 }
 
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -467,8 +530,7 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	PRINTF("set locked %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state locked %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag locked %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->locked = value;
 	window_draw_border(n, d->focus == n, m == mon);
@@ -481,8 +543,7 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	PRINTF("set sticky %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state sticky %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag sticky %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	if (d != m->desk)
 		transfer_node(m, d, n, m, m->desk, m->desk->focus);
@@ -506,8 +567,7 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	PRINTF("set private %X: %s\n", c->window, BOOLSTR(value));
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state private %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag private %s 0x%X\n", ONOFFSTR(value), c->window);
 
 	c->private = value;
 	update_privacy_level(n, value);
@@ -521,7 +581,7 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->client->urgent = value;
 	window_draw_border(n, d->focus == n, m == mon);
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state urgent %s 0x%X\n", ONOFFSTR(value), n->client->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag urgent %s 0x%X\n", ONOFFSTR(value), n->client->window);
 	put_status(SBSC_MASK_REPORT);
 }
 

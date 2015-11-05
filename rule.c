@@ -95,6 +95,7 @@ rule_consequence_t *make_rule_conquence(void)
 	rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
 	rc->manage = rc->focus = rc->border = true;
 	rc->layer = NULL;
+	rc->state = NULL;
 	return rc;
 }
 
@@ -153,14 +154,18 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 			    a == ewmh->_NET_WM_WINDOW_TYPE_UTILITY) {
 				csq->focus = false;
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
-				csq->floating = true;
+				if (csq->state == NULL) {
+					csq->state = malloc(sizeof(client_state_t));
+				}
+				*(csq->state) = STATE_FLOATING;
 				csq->center = true;
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK ||
 			           a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP ||
 			           a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {
 				csq->manage = false;
-				if (a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
+				if (a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP) {
 					window_lower(win);
+				}
 			}
 		}
 		xcb_ewmh_get_atoms_reply_wipe(&win_type);
@@ -172,7 +177,10 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 		for (unsigned int i = 0; i < win_state.atoms_len; i++) {
 			xcb_atom_t a = win_state.atoms[i];
 			if (a == ewmh->_NET_WM_STATE_FULLSCREEN) {
-				csq->fullscreen = true;
+				if (csq->state == NULL) {
+					csq->state = malloc(sizeof(client_state_t));
+				}
+				*(csq->state) = STATE_FULLSCREEN;
 			} else if (a == ewmh->_NET_WM_STATE_BELOW) {
 				if (csq->layer == NULL) {
 					csq->layer = malloc(sizeof(stack_layer_t));
@@ -194,8 +202,12 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 	if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
 		if (size_hints.min_width > 0 && size_hints.min_height > 0 &&
 		    size_hints.min_width == size_hints.max_width &&
-		    size_hints.min_height == size_hints.max_height)
-			csq->floating = true;
+		    size_hints.min_height == size_hints.max_height) {
+			if (csq->state == NULL) {
+				csq->state = malloc(sizeof(client_state_t));
+			}
+			*(csq->state) = STATE_FLOATING;
+		}
 		csq->min_width = size_hints.min_width;
 		csq->max_width = size_hints.max_width;
 		csq->min_height = size_hints.min_height;
@@ -204,8 +216,12 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 
 	xcb_window_t transient_for = XCB_NONE;
 	xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
-	if (transient_for != XCB_NONE)
-		csq->floating = true;
+	if (transient_for != XCB_NONE) {
+		if (csq->state == NULL) {
+			csq->state = malloc(sizeof(client_state_t));
+		}
+		*(csq->state) = STATE_FLOATING;
+	}
 
 	xcb_icccm_get_wm_class_reply_t reply;
 	if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
@@ -229,8 +245,9 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 				key = strtok(NULL, CSQ_BLK);
 				value = strtok(NULL, CSQ_BLK);
 			}
-			if (rule->one_shot)
+			if (rule->one_shot) {
 				remove_rule(rule);
+			}
 		}
 		rule = next;
 	}
@@ -238,15 +255,18 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 
 bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
 {
-	if (external_rules_command[0] == '\0')
+	if (external_rules_command[0] == '\0') {
 		return false;
+	}
 	int fds[2];
-	if (pipe(fds) == -1)
+	if (pipe(fds) == -1) {
 		return false;
+	}
 	pid_t pid = fork();
 	if (pid == 0) {
-		if (dpy != NULL)
+		if (dpy != NULL) {
 			close(xcb_get_file_descriptor(dpy));
+		}
 		dup2(fds[1], 1);
 		close(fds[0]);
 		char wid[SMALEN];
@@ -292,6 +312,14 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		snprintf(csq->node_desc, sizeof(csq->node_desc), "%s", value);
 	} else if (streq("split_dir", key)) {
 		snprintf(csq->split_dir, sizeof(csq->split_dir), "%s", value);
+	} else if (streq("state", key)) {
+		client_state_t cst;
+		if (parse_client_state(value, &cst)) {
+			if (csq->state == NULL) {
+				csq->state = malloc(sizeof(client_state_t));
+			}
+			*(csq->state) = cst;
+		}
 	} else if (streq("layer", key)) {
 		stack_layer_t lyr;
 		if (parse_stack_layer(value, &lyr)) {
@@ -306,14 +334,11 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 			csq->split_ratio = rat;
 		}
 	} else if (parse_bool(value, &v)) {
-		if (streq("floating", key))
-			csq->floating = v;
+		if (streq("locked", key))
+			csq->locked = true;
 #define SETCSQ(name) \
 		else if (streq(#name, key)) \
 			csq->name = v;
-		SETCSQ(pseudo_tiled)
-		SETCSQ(fullscreen)
-		SETCSQ(locked)
 		SETCSQ(sticky)
 		SETCSQ(private)
 		SETCSQ(center)

@@ -44,6 +44,13 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
+	STATE_TILED,
+	STATE_PSEUDO_TILED,
+	STATE_FLOATING,
+	STATE_FULLSCREEN
+} client_state_t;
+
+typedef enum {
 	LAYER_BELOW,
 	LAYER_NORMAL,
 	LAYER_ABOVE
@@ -120,8 +127,9 @@ typedef enum {
 } child_polarity_t;
 
 typedef struct {
-	option_bool_t floating;
+	option_bool_t tiled;
 	option_bool_t pseudo_tiled;
+	option_bool_t floating;
 	option_bool_t fullscreen;
 	option_bool_t locked;
 	option_bool_t sticky;
@@ -145,14 +153,13 @@ typedef struct {
 	char class_name[3 * SMALEN / 2];
 	char instance_name[3 * SMALEN / 2];
 	unsigned int border_width;
-	bool pseudo_tiled;
-	bool floating;
-	bool fullscreen;
 	bool locked;				/* protects window from being closed */
 	bool sticky;
 	bool urgent;
 	bool private;
 	bool icccm_focus;
+	client_state_t state;
+	client_state_t last_state;
 	stack_layer_t layer;
 	stack_layer_t last_layer;
 	xcb_rectangle_t floating_rectangle;
@@ -195,7 +202,6 @@ struct desktop_t {
 	int left_padding;
 	int window_gap;
 	unsigned int border_width;
-	bool floating;
 };
 
 typedef struct monitor_t monitor_t;
@@ -264,14 +270,12 @@ typedef struct {
 	char node_desc[MAXLEN];
 	char split_dir[SMALEN];
 	stack_layer_t *layer;
+	client_state_t *state;
 	double split_ratio;
 	uint16_t min_width;
 	uint16_t max_width;
 	uint16_t min_height;
 	uint16_t max_height;
-	bool pseudo_tiled;
-	bool floating;
-	bool fullscreen;
 	bool locked;
 	bool sticky;
 	bool private;

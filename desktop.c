@@ -76,8 +76,9 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l)
 	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout %s %s %s\n", m->name, d->name, l==LAYOUT_TILED?"tiled":"monocle");
 	d->layout = l;
 	arrange(m, d);
-	if (d == m->desk)
+	if (d == m->desk) {
 		put_status(SBSC_MASK_REPORT);
+	}
 }
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
@@ -92,19 +93,23 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	insert_desktop(md, d);
 
 	if (d == dd) {
-		if (ms->desk != NULL)
+		if (ms->desk != NULL) {
 			show_desktop(ms->desk);
-		if (md->desk != d)
+		}
+		if (md->desk != d) {
 			hide_desktop(d);
+		}
 	}
 
-	for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+	for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 		translate_client(ms, md, n->client);
+	}
 
 	arrange(md, d);
 
-	if (d != dd && md->desk == d)
+	if (d != dd && md->desk == d) {
 		show_desktop(d);
+	}
 
 	history_transfer_desktop(md, d);
 
@@ -139,7 +144,6 @@ void initialize_desktop(desktop_t *d)
 	d->top_padding = d->right_padding = d->bottom_padding = d->left_padding = 0;
 	d->window_gap = window_gap;
 	d->border_width = border_width;
-	d->floating = false;
 }
 
 void insert_desktop(monitor_t *m, desktop_t *d)

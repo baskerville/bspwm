@@ -69,42 +69,39 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 	if (is_leaf(n)) {
 
 		unsigned int bw;
-		if ((borderless_monocle && !n->client->floating &&
-		     !n->client->pseudo_tiled &&
-		     d->layout == LAYOUT_MONOCLE) ||
-		    n->client->fullscreen)
+		if ((borderless_monocle && n->client->state == STATE_TILED && d->layout == LAYOUT_MONOCLE)
+		    || n->client->state == STATE_FULLSCREEN) {
 			bw = 0;
-		else
+		} else {
 			bw = n->client->border_width;
+		}
 
 		xcb_rectangle_t r;
-		if (!n->client->fullscreen) {
-			if (!n->client->floating) {
-				int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
-				if (n->client->pseudo_tiled) {
-				/* pseudo-tiled clients */
-					r = n->client->floating_rectangle;
-					if (center_pseudo_tiled) {
-						r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
-						r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
-					} else {
-						r.x = rect.x;
-						r.y = rect.y;
-					}
-				} else {
-					/* tiled clients */
-					r = rect;
-					int bleed = wg + 2 * bw;
-					r.width = (bleed < r.width ? r.width - bleed : 1);
-					r.height = (bleed < r.height ? r.height - bleed : 1);
-				}
-				n->client->tiled_rectangle = r;
+		client_state_t s = n->client->state;
+		if (s == STATE_TILED || s == STATE_PSEUDO_TILED) {
+			int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+			/* tiled clients */
+			if (s == STATE_TILED) {
+				r = rect;
+				int bleed = wg + 2 * bw;
+				r.width = (bleed < r.width ? r.width - bleed : 1);
+				r.height = (bleed < r.height ? r.height - bleed : 1);
+			/* pseudo-tiled clients */
 			} else {
-				/* floating clients */
 				r = n->client->floating_rectangle;
+				if (center_pseudo_tiled) {
+					r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
+					r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
+				} else {
+					r.x = rect.x;
+					r.y = rect.y;
+				}
 			}
+		/* floating clients */
+		} else if (s == STATE_FLOATING) {
+			r = n->client->floating_rectangle;
+		/* fullscreen clients */
 		} else {
-			/* fullscreen clients */
 			r = m->rectangle;
 		}
 
@@ -231,8 +228,9 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 						c->second_child = n;
 						rot = 270;
 					}
-					if (!n->client->floating)
+					if (IS_TILED(n->client)) {
 						rotate_tree(p, rot);
+					}
 					n->birth_rotation = rot;
 				}
 				break;
@@ -331,20 +329,23 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 			n->client->urgent = false;
 			put_status(SBSC_MASK_REPORT);
 		}
-		if (d->focus != NULL && n != d->focus && d->focus->client->fullscreen && stack_cmp(n->client, d->focus->client) <= 0) {
-			set_fullscreen(d->focus, false);
-			arrange(m, d);
+		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
+			neutralize_obscuring_windows(m, d, n);
 		}
 	}
 
 	if (mon != m) {
-		for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next)
+		for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next) {
 			window_draw_border(cd->focus, true, false);
-		for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next)
-			if (cd != d)
+		}
+		for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next) {
+			if (cd != d) {
 				window_draw_border(cd->focus, true, true);
-		if (d->focus == n)
+			}
+		}
+		if (d->focus == n) {
 			window_draw_border(n, true, true);
+		}
 	}
 
 	if (d->focus != n) {
@@ -381,7 +382,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (pointer_follows_focus) {
-		center_pointer(get_rectangle(n->client));
+		center_pointer(get_rectangle(m, n->client));
 	}
 
 	ewmh_update_active_window();
@@ -410,11 +411,11 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 {
 	client_t *c = malloc(sizeof(client_t));
 	c->window = win;
+	c->state = c->last_state = STATE_TILED;
 	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
-	c->pseudo_tiled = c->floating = c->fullscreen = false;
 	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
 	xcb_icccm_get_wm_protocols_reply_t protocols;
 	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
@@ -479,7 +480,7 @@ void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public)
 	while (prev != NULL || next != NULL) {
 #define TESTLOOP(n) \
 		if (n != NULL) { \
-			if (!n->client->floating) { \
+			if (IS_TILED(n->client)) { \
 				if (n->privacy_level == 0) { \
 					if (n->parent == NULL || n->parent->privacy_level == 0) { \
 						*public = n; \
@@ -544,7 +545,7 @@ node_t *prev_leaf(node_t *n, node_t *r)
 node_t *next_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 {
 	node_t *next = next_leaf(n, r);
-	if (next == NULL || !next->client->floating)
+	if (next == NULL || IS_TILED(next->client))
 		return next;
 	else
 		return next_tiled_leaf(d, next, r);
@@ -553,24 +554,11 @@ node_t *next_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 node_t *prev_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 {
 	node_t *prev = prev_leaf(n, r);
-	if (prev == NULL || !prev->client->floating)
+	if (prev == NULL || IS_TILED(prev->client))
 		return prev;
 	else
 		return prev_tiled_leaf(d, prev, r);
 }
-
-/* bool is_adjacent(node_t *a, node_t *r) */
-/* { */
-/*	   node_t *f = r->parent; */
-/*	   node_t *p = a; */
-/*	   bool first_child = is_first_child(r); */
-/*	   while (p != r) { */
-/*		   if (p->parent->split_type == f->split_type && is_first_child(p) == first_child) */
-/*			   return false; */
-/*		   p = p->parent; */
-/*	   } */
-/*	   return true; */
-/* } */
 
 /* Returns true if *b* is adjacent to *a* in the direction *dir* */
 bool is_adjacent(node_t *a, node_t *b, direction_t dir)
@@ -615,8 +603,8 @@ node_t *find_fence(node_t *n, direction_t dir)
 
 node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
-	if (n == NULL || n->client->fullscreen ||
-	    (d->layout == LAYOUT_MONOCLE && !n->client->floating))
+	if (n == NULL || IS_FULLSCREEN(n->client) ||
+	    (d->layout == LAYOUT_MONOCLE && IS_TILED(n->client)))
 		return NULL;
 
 	node_t *nearest = NULL;
@@ -634,8 +622,9 @@ node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir,
 
 node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
-    if (n == NULL)
+    if (n == NULL) {
         return NULL;
+    }
 
     node_t *fence = find_fence(n, dir);
 
@@ -644,24 +633,27 @@ node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir
 
     node_t *nearest = NULL;
 
-    if (dir == DIR_UP || dir == DIR_LEFT)
+    if (dir == DIR_UP || dir == DIR_LEFT) {
         nearest = second_extrema(fence->first_child);
-    else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+    } else if (dir == DIR_DOWN || dir == DIR_RIGHT) {
         nearest = first_extrema(fence->second_child);
+    }
 
 	coordinates_t ref = {m, d, n};
 	coordinates_t loc = {m, d, nearest};
 
-	if (node_matches(&loc, &ref, sel))
+	if (node_matches(&loc, &ref, sel)) {
 		return nearest;
-	else
+	} else {
 		return NULL;
+	}
 }
 
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
 {
-	if (n == NULL || n->client->floating)
+	if (n == NULL || !IS_TILED(n->client)) {
 		return NULL;
+	}
 
 	node_t *target = find_fence(n, dir);
 	if (target == NULL)
@@ -699,7 +691,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 
 	node_t *target = NULL;
 
-	if (!n->client->floating) {
+	if (IS_TILED(n->client)) {
 		target = find_fence(n, dir);
 		if (target == NULL)
 			return NULL;
@@ -724,8 +716,8 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 		coordinates_t loc = {m, d, a};
 		if (a == n ||
 		    !node_matches(&loc, &ref, sel) ||
-		    !a->client->floating != !n->client->floating ||
-		    (!a->client->floating && !is_adjacent(n, a, dir)))
+		    IS_TILED(a->client) != IS_TILED(n->client) ||
+		    (IS_TILED(a->client) && !is_adjacent(n, a, dir)))
 			continue;
 
 		get_side_handle(a->client, dir2, &pt2);
@@ -769,7 +761,7 @@ int tiled_count(desktop_t *d)
 {
 	int cnt = 0;
 	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-		if (!f->client->floating) {
+		if (IS_TILED(f->client)) {
 			cnt++;
 		}
 	}
@@ -787,7 +779,7 @@ node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel)
 
 	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
 		coordinates_t loc = {m, d, f};
-		if (f->client->floating || !node_matches(&loc, &ref, sel))
+		if (IS_FLOATING(f->client) || !node_matches(&loc, &ref, sel))
 			continue;
 		int f_area = tiled_area(f);
 		if (r == NULL) {

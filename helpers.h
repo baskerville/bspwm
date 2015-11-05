@@ -37,6 +37,10 @@
 #define BOOLSTR(A)        ((A) ? "true" : "false")
 #define ONOFFSTR(A)       ((A) ? "on" : "off")
 #define LAYERSTR(A)       ((A) == LAYER_BELOW ? "below" : ((A) == LAYER_NORMAL ? "normal" : "above"))
+#define STATESTR(A)       ((A) == STATE_TILED ? "tiled" : ((A) == STATE_FLOATING ? "floating" : ((A) == STATE_FULLSCREEN ? "fullscreen" : "pseudo_tiled")))
+#define IS_TILED(c)       (c->state == STATE_TILED || c->state == STATE_PSEUDO_TILED)
+#define IS_FLOATING(c)    (c->state == STATE_FLOATING)
+#define IS_FULLSCREEN(c)  (c->state == STATE_FULLSCREEN)
 
 #define XCB_CONFIG_WINDOW_X_Y               XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y
 #define XCB_CONFIG_WINDOW_WIDTH_HEIGHT      XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT

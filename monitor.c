@@ -168,26 +168,41 @@ void remove_monitor(monitor_t *m)
 	PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
 	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
 
-	while (m->desk_head != NULL)
+	while (m->desk_head != NULL) {
 		remove_desktop(m, m->desk_head);
+	}
+
 	monitor_t *prev = m->prev;
 	monitor_t *next = m->next;
 	monitor_t *last_mon = history_get_monitor(m);
-	if (prev != NULL)
+
+	if (prev != NULL) {
 		prev->next = next;
-	if (next != NULL)
+	}
+
+	if (next != NULL) {
 		next->prev = prev;
-	if (mon_head == m)
+	}
+
+	if (mon_head == m) {
 		mon_head = next;
-	if (mon_tail == m)
+	}
+
+	if (mon_tail == m) {
 		mon_tail = prev;
-	if (pri_mon == m)
+	}
+
+	if (pri_mon == m) {
 		pri_mon = NULL;
+	}
+
 	if (mon == m) {
 		mon = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
-		if (mon != NULL && mon->desk != NULL)
+		if (mon != NULL && mon->desk != NULL) {
 			update_current();
+		}
 	}
+
 	xcb_destroy_window(dpy, m->root);
 	free(m);
 	num_monitors--;
