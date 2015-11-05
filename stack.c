@@ -114,30 +114,53 @@ int stack_cmp(client_t *c1, client_t *c2)
 	return stack_level(c1) - stack_level(c2);
 }
 
-void stack(node_t *n)
+stacking_list_t *limit_above(node_t *n)
 {
+	stacking_list_t *s = stack_head;
+	while (s != NULL && stack_cmp(n->client, s->node->client) >= 0) {
+		s = s->next;
+	}
+	if (s == NULL) {
+		s = stack_tail;
+	}
+	if (s->node == n) {
+		s = s->prev;
+	}
+	return s;
+}
+
+stacking_list_t *limit_below(node_t *n)
+{
+	stacking_list_t *s = stack_tail;
+	while (s != NULL && stack_cmp(n->client, s->node->client) <= 0) {
+		s = s->prev;
+	}
+	if (s == NULL) {
+		s = stack_head;
+	}
+	if (s->node == n) {
+		s = s->next;
+	}
+	return s;
+}
+
+void stack(node_t *n, bool focused)
+{
+	if (IS_FLOATING(n->client) && !auto_raise) {
+		return;
+	}
+
 	PRINTF("stack %X\n", n->client->window);
 
 	if (stack_head == NULL) {
 		stack_insert_after(NULL, n);
 	} else {
-		if (IS_FLOATING(n->client) && !auto_raise) {
+		stacking_list_t *s = (focused ? limit_above(n) : limit_below(n));
+		if (s == NULL) {
 			return;
 		}
-		stacking_list_t *s = stack_head;
-		while (s != NULL && stack_cmp(n->client, s->node->client) >= 0) {
-			s = s->next;
-		}
-		if (s == NULL) {
-			s = stack_tail;
-		}
-		if (s->node == n) {
-			s = s->prev;
-			if (s == NULL) {
-				return;
-			}
-		}
-		if (stack_cmp(n->client, s->node->client) < 0) {
+		int i = stack_cmp(n->client, s->node->client);
+		if (i < 0 || (i == 0 && !focused)) {
 			stack_insert_before(s, n);
 			window_below(n->client->window, s->node->client->window);
 		} else {

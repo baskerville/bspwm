@@ -173,7 +173,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	} else if (csq->focus) {
 		pseudo_focus(m, d, n);
 	} else {
-		stack(n);
+		stack(n, false);
 	}
 
 	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
@@ -411,7 +411,7 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 		neutralize_obscuring_windows(m, d, n);
 	}
 
-	stack(n);
+	stack(n, (d->focus == n));
 }
 
 void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
@@ -477,7 +477,7 @@ void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		}
 	}
 
-	stack(n);
+	stack(n, (d->focus == n));
 }
 
 void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -504,7 +504,7 @@ void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		}
 	}
 
-	stack(n);
+	stack(n, (d->focus == n));
 }
 
 void neutralize_obscuring_windows(monitor_t *m, desktop_t *d, node_t *n)

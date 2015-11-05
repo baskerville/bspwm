@@ -62,7 +62,7 @@ void grab_pointer(pointer_action_t pac)
 					focus_node(loc.monitor, loc.desktop, loc.node);
 					pointer_follows_monitor = backup;
 				} else if (focus_follows_pointer) {
-					stack(loc.node);
+					stack(loc.node, true);
 				}
 				frozen_pointer->action = ACTION_NONE;
 				break;

@@ -32,6 +32,8 @@ void remove_stack(stacking_list_t *s);
 void remove_stack_node(node_t *n);
 int stack_level(client_t *c);
 int stack_cmp(client_t *c1, client_t *c2);
-void stack(node_t *n);
+stacking_list_t *limit_above(node_t *n);
+stacking_list_t *limit_below(node_t *n);
+void stack(node_t *n, bool focused);
 
 #endif

@@ -296,7 +296,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n != NULL) {
-		stack(n);
+		stack(n, true);
 		if (d->focus != n) {
 			window_draw_border(d->focus, false, m == mon);
 			window_draw_border(n, true, m == mon);
@@ -362,7 +362,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		ewmh_update_active_window();
 		return;
 	} else {
-		stack(n);
+		stack(n, true);
 	}
 
 	PRINTF("focus node %X\n", n->client->window);
@@ -1060,8 +1060,9 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
 {
-	if (ns == NULL || ns == nd || (sticky_still && ns->client->sticky))
+	if (ns == NULL || ns == nd || (sticky_still && ns->client->sticky)) {
 		return false;
+	}
 
 	PRINTF("transfer node %X\n", ns->client->window);
 	put_status(SBSC_MASK_WINDOW_TRANSFER, "window_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->client->window, md->name, dd->name, nd!=NULL?nd->client->window:0);
@@ -1069,43 +1070,50 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	bool focused = (ns == mon->desk->focus);
 	bool active = (ns == ds->focus);
 
-	if (focused)
+	if (focused) {
 		clear_input_focus();
+	}
 
 	unlink_node(ms, ds, ns);
 	insert_node(md, dd, ns, nd);
 
-	if (md != ms)
+	if (md != ms) {
 		translate_client(ms, md, ns->client);
+	}
 
 	if (ds != dd) {
 		ewmh_set_wm_desktop(ns, dd);
 		if (!ns->client->sticky) {
-			if (ds == ms->desk && dd != md->desk)
+			if (ds == ms->desk && dd != md->desk) {
 				window_hide(ns->client->window);
-			else if (ds != ms->desk && dd == md->desk)
+			} else if (ds != ms->desk && dd == md->desk) {
 				window_show(ns->client->window);
+			}
 		}
 	}
 
 	history_transfer_node(md, dd, ns);
-	stack(ns);
+	stack(ns, false);
 
 	if (ds == dd) {
-		if (focused)
+		if (focused) {
 			focus_node(md, dd, ns);
-		else if (active)
+		} else if (active) {
 			pseudo_focus(md, dd, ns);
+		}
 	} else {
-		if (focused)
+		if (focused) {
 			update_current();
-		else if (ns == mon->desk->focus)
+		} else if (ns == mon->desk->focus) {
 			update_input_focus();
+		}
 	}
 
 	arrange(ms, ds);
-	if (ds != dd)
+
+	if (ds != dd) {
 		arrange(md, dd);
+	}
 
 	return true;
 }
