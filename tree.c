@@ -296,6 +296,9 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n != NULL) {
+		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
+			neutralize_obscuring_windows(m, d, n);
+		}
 		stack(n, true);
 		if (d->focus != n) {
 			window_draw_border(d->focus, false, m == mon);
