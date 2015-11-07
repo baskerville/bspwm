@@ -1,3 +1,4 @@
+- Restore more client properties (`icccm_focus`, `last_state`, etc.).
 - Handle window size constraints specified by size hints.
 - Set more attributes in `make_client` (instead of doing it in `apply_rules`) and don't pass `XCB_NONE` as argument.
 - Internal nodes selectors/actions: labels?
