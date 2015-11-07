@@ -209,6 +209,8 @@ void restore_tree(char *file_path)
 					update_privacy_level(n, true);
 				}
 			}
+			/* Has the side effect of restoring the node's rectangles and the client's tiled rectangles */
+			arrange(m, d);
 		}
 	}
 
