@@ -422,8 +422,9 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
 	xcb_icccm_get_wm_protocols_reply_t protocols;
 	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
-		if (has_proto(WM_TAKE_FOCUS, &protocols))
+		if (has_proto(WM_TAKE_FOCUS, &protocols)) {
 			c->icccm_focus = true;
+		}
 		xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
 	}
 	c->num_states = 0;
