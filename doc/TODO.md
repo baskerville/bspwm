@@ -1,4 +1,4 @@
-- Restore more client properties (`icccm_focus`, `last_state`, etc.).
+- Use JSON for *query -{T,H,S}* and *restore -{T,H,S}*.
 - Handle window size constraints specified by size hints.
 - Set more attributes in `make_client` (instead of doing it in `apply_rules`) and don't pass `XCB_NONE` as argument.
 - Internal nodes selectors/actions: labels?
