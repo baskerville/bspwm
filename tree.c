@@ -97,6 +97,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 					r.y = rect.y;
 				}
 			}
+			n->client->tiled_rectangle = r;
 		/* floating clients */
 		} else if (s == STATE_FLOATING) {
 			r = n->client->floating_rectangle;
