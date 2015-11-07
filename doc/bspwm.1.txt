@@ -408,6 +408,9 @@ Options
 *-f*, *--focus* ['WINDOW_SEL']::
 	Focus the selected or given window.
 
+*-a*, *--activate* ['WINDOW_SEL']::
+	Activate the selected or given window.
+
 *-d*, *--to-desktop* 'DESKTOP_SEL'::
 	Send the selected window to the given desktop.
 

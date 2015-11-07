@@ -171,7 +171,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	if (give_focus) {
 		focus_node(m, d, n);
 	} else if (csq->focus) {
-		pseudo_focus(m, d, n);
+		activate(m, d, n);
 	} else {
 		stack(n, false);
 	}

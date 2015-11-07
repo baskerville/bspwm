@@ -294,7 +294,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 	put_status(SBSC_MASK_REPORT);
 }
 
-void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n)
+void activate(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n != NULL) {
 		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
@@ -307,6 +307,7 @@ void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n)
 		}
 	}
 	d->focus = n;
+	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate 0x%X\n", n->client->window);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -1104,7 +1105,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		if (focused) {
 			focus_node(md, dd, ns);
 		} else if (active) {
-			pseudo_focus(md, dd, ns);
+			activate(md, dd, ns);
 		}
 	} else {
 		if (focused) {

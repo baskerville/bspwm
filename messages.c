@@ -134,6 +134,17 @@ int cmd_window(char **args, int num)
 					return MSG_FAILURE;
 			}
 			focus_node(dst.monitor, dst.desktop, dst.node);
+		} else if (streq("-a", *args) || streq("--activate", *args)) {
+			coordinates_t dst = trg;
+			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+				num--, args++;
+				if (!node_from_desc(*args, &trg, &dst))
+					return MSG_FAILURE;
+			}
+			if (dst.desktop == mon->desk) {
+				return MSG_FAILURE;
+			}
+			activate(dst.monitor, dst.desktop, dst.node);
 		} else if (streq("-d", *args) || streq("--to-desktop", *args)) {
 			num--, args++;
 			coordinates_t dst;
@@ -1167,10 +1178,10 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_WINDOW_TRANSFER;
 	} else if (streq("window_focus", s)) {
 		*mask = SBSC_MASK_WINDOW_FOCUS;
-	} else if (streq("window_resize", s)) {
-		*mask = SBSC_MASK_WINDOW_RESIZE;
-	} else if (streq("window_move", s)) {
-		*mask = SBSC_MASK_WINDOW_MOVE;
+	} else if (streq("window_activate", s)) {
+		*mask = SBSC_MASK_WINDOW_ACTIVATE;
+	} else if (streq("window_geometry", s)) {
+		*mask = SBSC_MASK_WINDOW_GEOMETRY;
 	} else if (streq("window_state", s)) {
 		*mask = SBSC_MASK_WINDOW_STATE;
 	} else if (streq("window_flag", s)) {

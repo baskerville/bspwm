@@ -28,7 +28,7 @@
 void arrange(monitor_t *m, desktop_t *d);
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
 void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f);
-void pseudo_focus(monitor_t *m, desktop_t *d, node_t *n);
+void activate(monitor_t *m, desktop_t *d, node_t *n);
 void focus_node(monitor_t *m, desktop_t *d, node_t *n);
 void update_current(void);
 node_t *make_node(void);
