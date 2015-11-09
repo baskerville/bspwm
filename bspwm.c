@@ -296,14 +296,16 @@ void setup(void)
 			for (int i = 0; i < n; i++) {
 				xcb_xinerama_screen_info_t info = xsi[i];
 				xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
-				monitor_t *m = add_monitor(rect);
+				monitor_t *m = make_monitor(rect);
+				add_monitor(m);
 				add_desktop(m, make_desktop(NULL));
 			}
 			free(xsq);
 		} else {
 			warn("Xinerama is inactive.\n");
 			xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-			monitor_t *m = add_monitor(rect);
+			monitor_t *m = make_monitor(rect);
+			add_monitor(m);
 			add_desktop(m, make_desktop(NULL));
 		}
 	}

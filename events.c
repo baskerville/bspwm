@@ -28,6 +28,7 @@
 #include "monitor.h"
 #include "query.h"
 #include "settings.h"
+#include "subscribe.h"
 #include "tree.h"
 #include "window.h"
 #include "events.h"
@@ -77,16 +78,12 @@ void map_request(xcb_generic_event_t *evt)
 {
 	xcb_map_request_event_t *e = (xcb_map_request_event_t *) evt;
 
-	PRINTF("map request %X\n", e->window);
-
 	schedule_window(e->window);
 }
 
 void configure_request(xcb_generic_event_t *evt)
 {
 	xcb_configure_request_event_t *e = (xcb_configure_request_event_t *) evt;
-
-	PRINTF("configure request %X\n", e->window);
 
 	coordinates_t loc;
 	bool is_managed = locate_window(e->window, &loc);
@@ -190,6 +187,11 @@ void configure_request(xcb_generic_event_t *evt)
 		}
 
 		xcb_configure_window(dpy, e->window, mask, values);
+
+		if (is_managed && (mask & XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT)) {
+			xcb_rectangle_t r = c->floating_rectangle;
+			put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", loc.monitor->name, loc.desktop->name, c->window, r.width, r.height, r.x, r.y);
+		}
 	}
 
 	if (is_managed) {
@@ -201,16 +203,12 @@ void destroy_notify(xcb_generic_event_t *evt)
 {
 	xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *) evt;
 
-	PRINTF("destroy notify %X\n", e->window);
-
 	unmanage_window(e->window);
 }
 
 void unmap_notify(xcb_generic_event_t *evt)
 {
 	xcb_unmap_notify_event_t *e = (xcb_unmap_notify_event_t *) evt;
-
-	PRINTF("unmap notify %X\n", e->window);
 
 	unmanage_window(e->window);
 }
@@ -219,10 +217,9 @@ void property_notify(xcb_generic_event_t *evt)
 {
 	xcb_property_notify_event_t *e = (xcb_property_notify_event_t *) evt;
 
-	/* PRINTF("property notify %X\n", e->window); */
-
-	if (e->atom != XCB_ATOM_WM_HINTS && e->atom != XCB_ATOM_WM_NORMAL_HINTS)
+	if (e->atom != XCB_ATOM_WM_HINTS && e->atom != XCB_ATOM_WM_NORMAL_HINTS) {
 		return;
+	}
 
 	coordinates_t loc;
 	if (!locate_window(e->window, &loc))
@@ -256,8 +253,6 @@ void client_message(xcb_generic_event_t *evt)
 {
 	xcb_client_message_event_t *e = (xcb_client_message_event_t *) evt;
 
-	PRINTF("client message %X %u\n", e->window, e->type);
-
 	if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
 		coordinates_t loc;
 		if (ewmh_locate_desktop(e->data.data32[0], &loc))
@@ -290,8 +285,6 @@ void focus_in(xcb_generic_event_t *evt)
 {
 	xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) evt;
 
-	/* PRINTF("focus in %X %d %d\n", e->event, e->mode, e->detail); */
-
 	if (e->mode == XCB_NOTIFY_MODE_GRAB ||
 	    e->mode == XCB_NOTIFY_MODE_UNGRAB)
 		return;
@@ -309,8 +302,6 @@ void enter_notify(xcb_generic_event_t *evt)
 {
 	xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
 	xcb_window_t win = e->event;
-
-	PRINTF("enter notify %X %d %d\n", win, e->mode, e->detail);
 
 	if (e->mode != XCB_NOTIFY_MODE_NORMAL ||
 	    (mon->desk->focus != NULL &&
@@ -334,8 +325,6 @@ void enter_notify(xcb_generic_event_t *evt)
 void motion_notify(xcb_generic_event_t *evt)
 {
 	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-
-	PRINTF("motion notify %X %i %i\n", e->event, e->root_x, e->root_y);
 
 	int dtime = e->time - last_motion_time;
 	if (dtime > 1000) {

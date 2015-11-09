@@ -113,7 +113,6 @@ void add_pending_rule(pending_rule_t *pr)
 {
 	if (pr == NULL)
 		return;
-	PRINTF("add pending rule %i\n", pr->fd);
 	if (pending_rule_head == NULL) {
 		pending_rule_head = pending_rule_tail = pr;
 	} else {
@@ -127,7 +126,6 @@ void remove_pending_rule(pending_rule_t *pr)
 {
 	if (pr == NULL)
 		return;
-	PRINTF("remove pending rule %i\n", pr->fd);
 	pending_rule_t *a = pr->prev;
 	pending_rule_t *b = pr->next;
 	if (a != NULL)

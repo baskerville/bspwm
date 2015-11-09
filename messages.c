@@ -144,7 +144,7 @@ int cmd_window(char **args, int num)
 			if (dst.desktop == mon->desk) {
 				return MSG_FAILURE;
 			}
-			activate(dst.monitor, dst.desktop, dst.node);
+			activate_node(dst.monitor, dst.desktop, dst.node);
 		} else if (streq("-d", *args) || streq("--to-desktop", *args)) {
 			num--, args++;
 			coordinates_t dst;
@@ -461,9 +461,7 @@ int cmd_desktop(char **args, int num)
 			num--, args++;
 			if (num < 1)
 				return MSG_SYNTAX;
-			put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", trg.monitor->name, trg.desktop->name, *args);
-			rename_desktop(trg.desktop, *args);
-			put_status(SBSC_MASK_REPORT);
+			rename_desktop(trg.monitor, trg.desktop, *args);
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			if (trg.desktop->root == NULL &&
 			    trg.monitor->desk_head != trg.monitor->desk_tail) {
@@ -559,8 +557,7 @@ int cmd_monitor(char **args, int num)
 				return MSG_SYNTAX;
 			desktop_t *d = trg.monitor->desk_head;
 			while (num > 0 && d != NULL) {
-				put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", trg.monitor->name, d->name, *args);
-				rename_desktop(d, *args);
+				rename_desktop(trg.monitor, d, *args);
 				initialize_desktop(d);
 				arrange(trg.monitor, d);
 				d = d->next;
@@ -617,11 +614,10 @@ int cmd_monitor(char **args, int num)
 			}
 		} else if (streq("-n", *args) || streq("--rename", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename %s %s\n", trg.monitor->name, *args);
-			snprintf(trg.monitor->name, sizeof(trg.monitor->name), "%s", *args);
-			put_status(SBSC_MASK_REPORT);
+			}
+			rename_monitor(trg.monitor, *args);
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1)
@@ -1210,8 +1206,8 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_MONITOR_REMOVE;
 	} else if (streq("monitor_focus", s)) {
 		*mask = SBSC_MASK_MONITOR_FOCUS;
-	} else if (streq("monitor_resize", s)) {
-		*mask = SBSC_MASK_MONITOR_RESIZE;
+	} else if (streq("monitor_geometry", s)) {
+		*mask = SBSC_MASK_MONITOR_GEOMETRY;
 	} else if (streq("report", s)) {
 		*mask = SBSC_MASK_REPORT;
 	} else {

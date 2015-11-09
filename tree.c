@@ -41,8 +41,6 @@ void arrange(monitor_t *m, desktop_t *d)
 	if (d->root == NULL)
 		return;
 
-	PRINTF("arrange %s %s\n", m->name, d->name);
-
 	layout_t set_layout = d->layout;
 	if (leaf_monocle && tiled_count(d) == 1) {
 		d->layout = LAYOUT_MONOCLE;
@@ -110,6 +108,10 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		window_border_width(n->client->window, bw);
 		window_draw_border(n, d->focus == n, m == mon);
 
+		if (frozen_pointer->action == ACTION_NONE) {
+			put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->client->window, r.width, r.height, r.x, r.y);
+		}
+
 		if (pointer_follows_focus && mon->desk->focus == n && frozen_pointer->action == ACTION_NONE) {
 			center_pointer(r);
 		}
@@ -142,8 +144,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 {
 	if (d == NULL || n == NULL)
 		return;
-
-	PRINTF("insert node %X\n", n->client->window);
 
 	/* n: new leaf node */
 	/* c: new container node */
@@ -294,7 +294,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 	put_status(SBSC_MASK_REPORT);
 }
 
-void activate(monitor_t *m, desktop_t *d, node_t *n)
+void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n != NULL) {
 		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
@@ -307,7 +307,7 @@ void activate(monitor_t *m, desktop_t *d, node_t *n)
 		}
 	}
 	d->focus = n;
-	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate 0x%X\n", n->client->window);
+	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate %s %s 0x%X\n", m->name, d->name, n->client->window);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -370,8 +370,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		stack(n, true);
 	}
 
-	PRINTF("focus node %X\n", n->client->window);
-	put_status(SBSC_MASK_WINDOW_FOCUS, "window_focus 0x%X\n", n->client->window);
+	put_status(SBSC_MASK_WINDOW_FOCUS, "window_focus %s %s 0x%X\n", m->name, d->name, n->client->window);
 
 	history_add(m, d, n);
 	set_input_focus(n);
@@ -895,8 +894,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (d == NULL || n == NULL)
 		return;
 
-	PRINTF("unlink node %X\n", n->client->window);
-
 	node_t *p = n->parent;
 
 	if (p == NULL) {
@@ -952,9 +949,8 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (n == NULL)
 		return;
 
-	PRINTF("remove node %X\n", n->client->window);
-
 	bool focused = (n == mon->desk->focus);
+
 	unlink_node(m, d, n);
 	history_remove(d, n);
 	remove_stack_node(n);
@@ -985,11 +981,12 @@ void destroy_tree(node_t *n)
 
 bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
-	if (n1 == NULL || n2 == NULL ||n1 == n2 ||
-	    (d1 != d2 && (n1->client->sticky || n2->client->sticky)))
+	if (n1 == NULL || n2 == NULL || n1 == n2
+	    || (d1 != d2 && (n1->client->sticky || n2->client->sticky))) {
 		return false;
+	}
 
-	PRINTF("swap nodes %X %X\n", n1->client->window, n2->client->window);
+	put_status(SBSC_MASK_WINDOW_SWAP, "window_swap %s %s 0x%X %s %s 0x%X\n", m1->name, d1->name, n1->client->window, m2->name, d2->name, n2->client->window);
 
 	node_t *pn1 = n1->parent;
 	node_t *pn2 = n2->parent;
@@ -1070,7 +1067,6 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		return false;
 	}
 
-	PRINTF("transfer node %X\n", ns->client->window);
 	put_status(SBSC_MASK_WINDOW_TRANSFER, "window_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->client->window, md->name, dd->name, nd!=NULL?nd->client->window:0);
 
 	bool focused = (ns == mon->desk->focus);
@@ -1105,7 +1101,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		if (focused) {
 			focus_node(md, dd, ns);
 		} else if (active) {
-			activate(md, dd, ns);
+			activate_node(md, dd, ns);
 		}
 	} else {
 		if (focused) {
@@ -1167,8 +1163,6 @@ void update_vacant_state(node_t *n)
 {
 	if (n == NULL)
 		return;
-
-	PUTS("update vacant state");
 
 	/* n is not a leaf */
 	node_t *p = n;

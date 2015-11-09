@@ -57,6 +57,15 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
 	return m;
 }
 
+void rename_monitor(monitor_t *m, const char *name)
+{
+	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename %s %s\n", m->name, name);
+
+	snprintf(m->name, sizeof(m->name), "%s", name);
+
+	put_status(SBSC_MASK_REPORT);
+}
+
 monitor_t *find_monitor(char *name)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
@@ -123,8 +132,9 @@ void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
 
 void update_root(monitor_t *m)
 {
-	xcb_rectangle_t rect = m->rectangle;
-	window_move_resize(m->root, rect.x, rect.y, rect.width, rect.height);
+	xcb_rectangle_t r = m->rectangle;
+	window_move_resize(m->root, r.x, r.y, r.width, r.height);
+	put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n", m->name, r.width, r.height, r.x, r.y);
 }
 
 void focus_monitor(monitor_t *m)
@@ -132,22 +142,23 @@ void focus_monitor(monitor_t *m)
 	if (mon == m)
 		return;
 
-	PRINTF("focus monitor %s\n", m->name);
 	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
 
 	mon = m;
 
-	if (pointer_follows_monitor)
+	if (pointer_follows_monitor) {
 		center_pointer(m->rectangle);
+	}
 
 	ewmh_update_current_desktop();
 	put_status(SBSC_MASK_REPORT);
 }
 
-monitor_t *add_monitor(xcb_rectangle_t rect)
+void add_monitor(monitor_t *m)
 {
-	monitor_t *m = make_monitor(rect);
-	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s\n", m->name);
+	xcb_rectangle_t r = m->rectangle;
+
+	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s 0x%X %ux%u+%i+%i\n", m->name, m->id, r.width, r.height, r.x, r.y);
 
 	if (mon == NULL) {
 		mon = m;
@@ -160,12 +171,10 @@ monitor_t *add_monitor(xcb_rectangle_t rect)
 	}
 
 	num_monitors++;
-	return m;
 }
 
 void remove_monitor(monitor_t *m)
 {
-	PRINTF("remove monitor %s (0x%X)\n", m->name, m->id);
 	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
 
 	while (m->desk_head != NULL) {
@@ -214,8 +223,6 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
 	if (ms == NULL || md == NULL || ms == md) {
 		return;
 	}
-
-	PRINTF("merge %s into %s\n", ms->name, md->name);
 
 	desktop_t *d = ms->desk_head;
 	while (d != NULL) {
@@ -292,9 +299,11 @@ bool is_inside_monitor(monitor_t *m, xcb_point_t pt)
 
 monitor_t *monitor_from_point(xcb_point_t pt)
 {
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		if (is_inside_monitor(m, pt))
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (is_inside_monitor(m, pt)) {
 			return m;
+		}
+	}
 	return NULL;
 }
 
@@ -347,7 +356,6 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
 
 bool update_monitors(void)
 {
-	PUTS("update monitors");
 	xcb_randr_get_screen_resources_current_reply_t *sres = xcb_randr_get_screen_resources_current_reply(dpy, xcb_randr_get_screen_resources_current(dpy, root), NULL);
 	if (sres == NULL)
 		return false;
@@ -375,19 +383,20 @@ bool update_monitors(void)
 					if (mm != NULL) {
 						mm->rectangle = rect;
 						update_root(mm);
-						for (desktop_t *d = mm->desk_head; d != NULL; d = d->next)
-							for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root))
+						for (desktop_t *d = mm->desk_head; d != NULL; d = d->next) {
+							for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 								translate_client(mm, mm, n->client);
+							}
+						}
 						arrange(mm, mm->desk);
 						mm->wired = true;
-						PRINTF("update monitor %s (0x%X)\n", mm->name, mm->id);
 					} else {
-						mm = add_monitor(rect);
+						mm = make_monitor(rect);
 						char *name = (char *)xcb_randr_get_output_info_name(info);
 						size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info) + 1);
 						snprintf(mm->name, name_len, "%s", name);
 						mm->id = outputs[i];
-						PRINTF("add monitor %s (0x%X)\n", mm->name, mm->id);
+						add_monitor(mm);
 					}
 				}
 				free(cir);

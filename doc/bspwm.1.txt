@@ -603,7 +603,7 @@ Options
 	Enable or disable the recording of window focus history.
 
 *--subscribe* (all|report|monitor|desktop|window|...)*::
-	Continuously print status information.
+	Continuously print status information. See the *EVENTS* section for the detailed description of each event.
 
 *--get-status*::
 	Print the current status information.
@@ -812,10 +812,87 @@ Default and Desktop Settings
 	Size of the gap that separates windows.
 
 
-Status Format
+Events
+------
+
+'report'::
+	See the next section for the description of the format.
+
+'monitor_add <monitor_name> <monitor_id> <monitor_geometry>'::
+	A monitor is added.
+
+'monitor_rename <old_name> <new_name>'::
+	A monitor is renamed.
+
+'monitor_remove <monitor_name>'::
+	A monitor is removed.
+
+'monitor_focus <monitor_name>'::
+	A monitor is focused.
+
+'monitor_geometry <monitor_name> <monitor_geometry>'::
+	The geometry of a monitor changed.
+
+'desktop_add <monitor_name> <desktop_name>'::
+	A desktop is added.
+
+'desktop_rename <monitor_name> <old_name> <new_name>'::
+	A desktop is renamed.
+
+'desktop_remove <monitor_name> <desktop_name>'::
+	A desktop is removed.
+
+'desktop_swap <src_monitor_name> <src_desktop_name> <dst_monitor_name> <dst_desktop_name>'::
+	A desktop is swapped.
+
+'desktop_transfer <src_monitor_name> <src_desktop_name> <dst_monitor_name>'::
+	A desktop is transferred.
+
+'desktop_focus <monitor_name> <desktop_name>'::
+	A desktop is focused.
+
+'desktop_layout <monitor_name> <desktop_name> tiled|monocle'::
+	The layout of a desktop changed.
+
+'window_manage <monitor_name> <desktop_name> <window_id> <ip_id>'::
+	A window is managed.
+
+'window_manage <monitor_name> <desktop_name> <window_id> <ip_id>'::
+	A window is managed.
+
+'window_unmanage <monitor_name> <desktop_name> <window_id>'::
+	A window is unmanaged.
+
+'window_swap <src_monitor_name> <src_desktop_name> <src_window_id> <dst_monitor_name> <dst_desktop_name> <dst_window_id>'::
+	A window is swapped.
+
+'window_transfer <src_monitor_name> <src_desktop_name> <src_window_id> <dst_monitor_name> <dst_desktop_name> <dst_window_id>'::
+	A window is transferred.
+
+'window_focus <monitor_name> <desktop_name> <window_id>'::
+	A window is focused.
+
+'window_activate <monitor_name> <desktop_name> <window_id>'::
+	A window is activated.
+
+'window_geometry <monitor_name> <desktop_name> <window_id> <window_geometry>'::
+	The geometry of a window changed.
+
+'window_state <monitor_name> <desktop_name> <window_id> tiled|pseudo_tiled|floating|fullscreen on|off'::
+	The state of a window changed.
+
+'window_flag <monitor_name> <desktop_name> <window_id> sticky|private|locked|urgent on|off'::
+	One of the flags of a window changed.
+
+'window_layer <monitor_name> <desktop_name> <window_id> below|normal|above'::
+	The layer of a window changed.
+
+Please note that *bspwm* initializes monitors before it reads messages on its socket, therefore the initial monitor events can't be received.
+
+Report Format
 -------------
 
-Status information is composed of items separated by colons.
+Each report event message is composed of items separated by colons.
 
 Each item has the form '<type><value>' where '<type>' is the first character of the item.
 

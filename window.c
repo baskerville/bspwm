@@ -79,8 +79,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		return;
 	}
 
-	PRINTF("manage %X\n", win);
-
 	if (csq->node_desc[0] != '\0') {
 		coordinates_t ref = {m, d, f};
 		coordinates_t trg = {NULL, NULL, NULL};
@@ -127,8 +125,9 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	client_t *c = make_client(win, csq->border ? d->border_width : 0);
 	update_floating_rectangle(c);
-	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0)
+	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0) {
 		csq->center = true;
+	}
 	c->min_width = csq->min_width;
 	c->max_width = csq->max_width;
 	c->min_height = csq->min_height;
@@ -147,7 +146,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	node_t *n = make_node();
 	n->client = c;
 
-	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, f!=NULL?f->client->window:0, win);
+	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, win, f!=NULL?f->client->window:0);
 	insert_node(m, d, n, f);
 
 	if (f != NULL && f->client != NULL && csq->state != NULL && *(csq->state) == STATE_FLOATING) {
@@ -171,7 +170,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	if (give_focus) {
 		focus_node(m, d, n);
 	} else if (csq->focus) {
-		activate(m, d, n);
+		activate_node(m, d, n);
 	} else {
 		stack(n, false);
 	}
@@ -202,8 +201,7 @@ void unmanage_window(xcb_window_t win)
 {
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
-		PRINTF("unmanage %X\n", win);
-		put_status(SBSC_MASK_WINDOW_UNMANAGE, "window_unmanage 0x%X\n", win);
+		put_status(SBSC_MASK_WINDOW_UNMANAGE, "window_unmanage %s %s 0x%X\n", loc.monitor, loc.desktop, win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
 		if (frozen_pointer->window == win)
 			frozen_pointer->action = ACTION_NONE;
@@ -359,8 +357,6 @@ void adopt_orphans(void)
 	if (qtr == NULL)
 		return;
 
-	PUTS("adopt orphans");
-
 	int len = xcb_query_tree_children_length(qtr);
 	xcb_window_t *wins = xcb_query_tree_children(qtr);
 	for (int i = 0; i < len; i++) {
@@ -378,8 +374,6 @@ void window_close(node_t *n)
 	if (n == NULL || n->client->locked)
 		return;
 
-	PRINTF("close window %X\n", n->client->window);
-
 	send_client_message(n->client->window, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
 }
 
@@ -389,7 +383,6 @@ void window_kill(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 
 	xcb_window_t win = n->client->window;
-	PRINTF("kill window %X\n", win);
 
 	xcb_kill_client(dpy, win);
 	remove_node(m, d, n);
@@ -405,7 +398,7 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 
 	c->layer = l;
 
-	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s 0x%X\n", LAYERSTR(l), c->window);
+	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s %s 0x%X %s\n", m->name, d->name, c->window, LAYERSTR(l));
 
 	if (d->focus == n) {
 		neutralize_obscuring_windows(m, d, n);
@@ -437,7 +430,7 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s off 0x%X\n", STATESTR(c->last_state), c->window);
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s off\n", m->name, d->name, c->window, STATESTR(c->last_state));
 
 	switch (c->state) {
 		case STATE_TILED:
@@ -451,7 +444,7 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s on 0x%X\n", STATESTR(c->state), c->window);
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s on\n", m->name, d->name, c->window, STATESTR(c->state));
 }
 
 void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -530,7 +523,7 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag locked %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X locked %s\n", m->name, d->name, c->window, ONOFFSTR(value));
 
 	c->locked = value;
 	window_draw_border(n, d->focus == n, m == mon);
@@ -543,7 +536,7 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag sticky %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X sticky %s\n", m->name, d->name, c->window, ONOFFSTR(value));
 
 	if (d != m->desk)
 		transfer_node(m, d, n, m, m->desk, m->desk->focus);
@@ -567,7 +560,7 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag private %s 0x%X\n", ONOFFSTR(value), c->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X private %s\n", m->name, d->name, c->window, ONOFFSTR(value));
 
 	c->private = value;
 	update_privacy_level(n, value);
@@ -581,7 +574,7 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->client->urgent = value;
 	window_draw_border(n, d->focus == n, m == mon);
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag urgent %s 0x%X\n", ONOFFSTR(value), n->client->window);
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->client->window, ONOFFSTR(value));
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -783,13 +776,11 @@ void window_set_visibility(xcb_window_t win, bool visible)
 
 void window_hide(xcb_window_t win)
 {
-	PRINTF("window hide %X\n", win);
 	window_set_visibility(win, false);
 }
 
 void window_show(xcb_window_t win)
 {
-	PRINTF("window show %X\n", win);
 	window_set_visibility(win, true);
 }
 
@@ -807,14 +798,12 @@ void toggle_visibility(void)
 
 void enable_motion_recorder(void)
 {
-	PUTS("motion recorder on");
 	window_raise(motion_recorder);
 	window_show(motion_recorder);
 }
 
 void disable_motion_recorder(void)
 {
-	PUTS("motion recorder off");
 	window_hide(motion_recorder);
 }
 
@@ -824,7 +813,6 @@ void update_motion_recorder(void)
 
 	if (geo != NULL) {
 		window_resize(motion_recorder, geo->width, geo->height);
-		PRINTF("update motion recorder size: %ux%u\n", geo->width, geo->height);
 	}
 
 	free(geo);

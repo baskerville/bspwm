@@ -46,8 +46,6 @@ void restore_tree(char *file_path)
 		return;
 	}
 
-	PUTS("restore tree");
-
 	char line[MAXLEN];
 	char name[MAXLEN];
 	coordinates_t loc;
@@ -228,8 +226,6 @@ void restore_history(char *file_path)
 		return;
 	}
 
-	PUTS("restore history");
-
 	char line[MAXLEN];
 	char mnm[SMALEN];
 	char dnm[SMALEN];
@@ -272,8 +268,6 @@ void restore_stack(char *file_path)
 		warn("Restore stack: can't open '%s'.\n", file_path);
 		return;
 	}
-
-	PUTS("restore stack");
 
 	char line[MAXLEN];
 	xcb_window_t win;

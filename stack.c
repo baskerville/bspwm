@@ -150,8 +150,6 @@ void stack(node_t *n, bool focused)
 		return;
 	}
 
-	PRINTF("stack %X\n", n->client->window);
-
 	if (stack_head == NULL) {
 		stack_insert_after(NULL, n);
 	} else {

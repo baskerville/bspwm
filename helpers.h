@@ -52,14 +52,6 @@
 
 #define streq(s1, s2)     (strcmp((s1), (s2)) == 0)
 
-#ifdef DEBUG
-#  define PUTS(x)         puts(x)
-#  define PRINTF(x,...)   printf(x, __VA_ARGS__)
-#else
-#  define PUTS(x)         ((void)0)
-#  define PRINTF(x,...)   ((void)0)
-#endif
-
 void warn(char *fmt, ...);
 void err(char *fmt, ...);
 bool get_color(char *col, xcb_window_t win, uint32_t *pxl);

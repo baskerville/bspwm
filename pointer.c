@@ -28,13 +28,12 @@
 #include "stack.h"
 #include "tree.h"
 #include "monitor.h"
+#include "subscribe.h"
 #include "window.h"
 #include "pointer.h"
 
 void grab_pointer(pointer_action_t pac)
 {
-	PRINTF("grab pointer %u\n", pac);
-
 	xcb_window_t win = XCB_NONE;
 	xcb_point_t pos;
 
@@ -342,5 +341,9 @@ void track_pointer(int root_x, int root_y)
 
 void ungrab_pointer(void)
 {
+	if (frozen_pointer->action != ACTION_NONE) {
+		xcb_rectangle_t r = get_rectangle(frozen_pointer->monitor, frozen_pointer->client);
+		put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->name, frozen_pointer->desktop->name, frozen_pointer->window, r.width, r.height, r.x, r.y);
+	}
 	frozen_pointer->action = ACTION_NONE;
 }

@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 11/07/2015
+.\"      Date: 11/09/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/07/2015" "Bspwm 0\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "11/09/2015" "Bspwm 0\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -966,7 +966,9 @@ Enable or disable the recording of window focus history\&.
 .PP
 \fB\-\-subscribe\fR (all|report|monitor|desktop|window|\&...)*
 .RS 4
-Continuously print status information\&.
+Continuously print status information\&. See the
+\fBEVENTS\fR
+section for the detailed description of each event\&.
 .RE
 .PP
 \fB\-\-get\-status\fR
@@ -1313,9 +1315,132 @@ Window border width\&.
 .RS 4
 Size of the gap that separates windows\&.
 .RE
-.SH "STATUS FORMAT"
+.SH "EVENTS"
+.PP
+\fIreport\fR
+.RS 4
+See the next section for the description of the format\&.
+.RE
+.PP
+\fImonitor_add <monitor_name> <monitor_id> <monitor_geometry>\fR
+.RS 4
+A monitor is added\&.
+.RE
+.PP
+\fImonitor_rename <old_name> <new_name>\fR
+.RS 4
+A monitor is renamed\&.
+.RE
+.PP
+\fImonitor_remove <monitor_name>\fR
+.RS 4
+A monitor is removed\&.
+.RE
+.PP
+\fImonitor_focus <monitor_name>\fR
+.RS 4
+A monitor is focused\&.
+.RE
+.PP
+\fImonitor_geometry <monitor_name> <monitor_geometry>\fR
+.RS 4
+The geometry of a monitor changed\&.
+.RE
+.PP
+\fIdesktop_add <monitor_name> <desktop_name>\fR
+.RS 4
+A desktop is added\&.
+.RE
+.PP
+\fIdesktop_rename <monitor_name> <old_name> <new_name>\fR
+.RS 4
+A desktop is renamed\&.
+.RE
+.PP
+\fIdesktop_remove <monitor_name> <desktop_name>\fR
+.RS 4
+A desktop is removed\&.
+.RE
+.PP
+\fIdesktop_swap <src_monitor_name> <src_desktop_name> <dst_monitor_name> <dst_desktop_name>\fR
+.RS 4
+A desktop is swapped\&.
+.RE
+.PP
+\fIdesktop_transfer <src_monitor_name> <src_desktop_name> <dst_monitor_name>\fR
+.RS 4
+A desktop is transferred\&.
+.RE
+.PP
+\fIdesktop_focus <monitor_name> <desktop_name>\fR
+.RS 4
+A desktop is focused\&.
+.RE
+.PP
+\fIdesktop_layout <monitor_name> <desktop_name> tiled|monocle\fR
+.RS 4
+The layout of a desktop changed\&.
+.RE
+.PP
+\fIwindow_manage <monitor_name> <desktop_name> <window_id> <ip_id>\fR
+.RS 4
+A window is managed\&.
+.RE
+.PP
+\fIwindow_manage <monitor_name> <desktop_name> <window_id> <ip_id>\fR
+.RS 4
+A window is managed\&.
+.RE
+.PP
+\fIwindow_unmanage <monitor_name> <desktop_name> <window_id>\fR
+.RS 4
+A window is unmanaged\&.
+.RE
+.PP
+\fIwindow_swap <src_monitor_name> <src_desktop_name> <src_window_id> <dst_monitor_name> <dst_desktop_name> <dst_window_id>\fR
+.RS 4
+A window is swapped\&.
+.RE
+.PP
+\fIwindow_transfer <src_monitor_name> <src_desktop_name> <src_window_id> <dst_monitor_name> <dst_desktop_name> <dst_window_id>\fR
+.RS 4
+A window is transferred\&.
+.RE
+.PP
+\fIwindow_focus <monitor_name> <desktop_name> <window_id>\fR
+.RS 4
+A window is focused\&.
+.RE
+.PP
+\fIwindow_activate <monitor_name> <desktop_name> <window_id>\fR
+.RS 4
+A window is activated\&.
+.RE
+.PP
+\fIwindow_geometry <monitor_name> <desktop_name> <window_id> <window_geometry>\fR
+.RS 4
+The geometry of a window changed\&.
+.RE
+.PP
+\fIwindow_state <monitor_name> <desktop_name> <window_id> tiled|pseudo_tiled|floating|fullscreen on|off\fR
+.RS 4
+The state of a window changed\&.
+.RE
+.PP
+\fIwindow_flag <monitor_name> <desktop_name> <window_id> sticky|private|locked|urgent on|off\fR
+.RS 4
+One of the flags of a window changed\&.
+.RE
+.PP
+\fIwindow_layer <monitor_name> <desktop_name> <window_id> below|normal|above\fR
+.RS 4
+The layer of a window changed\&.
+.RE
 .sp
-Status information is composed of items separated by colons\&.
+Please note that \fBbspwm\fR initializes monitors before it reads messages on its socket, therefore the initial monitor events can\(cqt be received\&.
+.SH "REPORT FORMAT"
+.sp
+Each report event message is composed of items separated by colons\&.
 .sp
 Each item has the form \fI<type><value>\fR where \fI<type>\fR is the first character of the item\&.
 .PP
