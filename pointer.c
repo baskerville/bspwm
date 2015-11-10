@@ -73,7 +73,7 @@ void grab_pointer(pointer_action_t pac)
 					frozen_pointer->is_tiled = false;
 				} else if (IS_TILED(c)) {
 					frozen_pointer->rectangle = c->tiled_rectangle;
-					frozen_pointer->is_tiled = (pac == ACTION_MOVE || c->state == STATE_PSEUDO_TILED);
+					frozen_pointer->is_tiled = (pac == ACTION_MOVE || c->state != STATE_PSEUDO_TILED);
 				} else {
 					frozen_pointer->action = ACTION_NONE;
 					return;
