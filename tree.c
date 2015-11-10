@@ -404,6 +404,7 @@ node_t *make_node(void)
 	n->split_ratio = split_ratio;
 	n->split_mode = MODE_AUTOMATIC;
 	n->split_type = TYPE_VERTICAL;
+	n->split_dir = DIR_RIGHT;
 	n->birth_rotation = 0;
 	n->privacy_level = 0;
 	n->client = NULL;
