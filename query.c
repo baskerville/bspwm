@@ -195,7 +195,7 @@ void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *
 
 		if (dom == DOMAIN_DESKTOP) {
 			json_t *jpack = json_pack(
-					"{s:{s:i, s:i, s:{s:i, s:i, s:i, s:i}, s:b, s:b, s:b, s:b}}",
+					"{s:{s:i, s:i, s:{s:i, s:i, s:i, s:i}, s:b, s:b, s:b}}",
 					d->name,
 					"Border Width", d->border_width,
 					"Window Gap", d->window_gap,
@@ -206,7 +206,6 @@ void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *
 					"Left", d->left_padding,
 					"Tiled", d->layout == LAYOUT_TILED ? 1 : 0,
 					"Monocle", d->layout == LAYOUT_MONOCLE ? 1 : 0,
-					"Floating", d->floating ? 1 : 0,
 					"Focused", d == m->desk ? 1 : 0
 					);
 			json_object_update(jdesktop, jpack);
@@ -240,7 +239,7 @@ void query_tree_json(desktop_t *d, node_t *n, json_t *jmsg)
 		char swindow[10];
 		sprintf(swindow, "0x%X", c->window);
 		json_t *jpack = json_pack(
-				"{s:i, s:{s:s, s:s}, s:s, s:i, s:{s:i, s:i, s:i, s:i}, s:s, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b}",
+				"{s:i, s:{s:s, s:s}, s:s, s:i, s:{s:i, s:i, s:i, s:i}, s:s, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b}",
 				"Birth Rotation", n->birth_rotation,
 				"Name",
 				"Class", c->class_name,
@@ -259,9 +258,10 @@ void query_tree_json(desktop_t *d, node_t *n, json_t *jmsg)
 							)
 						)
 					),
-				"Floating", c->floating ? 1 : 0,
-				"Pseudo Tiled", c->pseudo_tiled ? 1 : 0,
-				"Fullscreen", c->fullscreen ? 1 : 0,
+				"Floating", c->state == STATE_FLOATING ? 1 : 0,
+				"Pseudo Tiled", c->state == STATE_PSEUDO_TILED ? 1 : 0,
+				"Fullscreen", c->state == STATE_FULLSCREEN ? 1 : 0,
+				"Tiled", c->state == STATE_TILED ? 1 : 0,
 				"Urgent", c->urgent ? 1 : 0,
 				"Locked", c->locked ? 1 : 0,
 				"Sticky", c->sticky ? 1 : 0,
