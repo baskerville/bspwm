@@ -151,19 +151,57 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 
 		if (dom == DOMAIN_MONITOR) {
 			json_t *jpack = json_pack(
-					"{s:{s:{s:i, s:i, s:i, s:i}, s:{s:i, s:i, s:i, s:i}, s:b}}",
+					"{"
+						"s:{"
+							"s:i,"
+							"s:{"
+								"s:i,"
+								"s:i,"
+								"s:i,"
+								"s:i"
+							"},"
+							"s:i,"
+							"s:b,"
+							"s:{"
+								"s:i,"
+								"s:i,"
+								"s:i,"
+								"s:i"
+							"},"
+							"s:o,"
+							"s:o,"
+							"s:o,"
+							"s:o,"
+							"s:o,"
+							"s:o,"
+							"s:o,"
+							"s:b,"
+							"s:i"
+						"}"
+					"}",
 					m->name,
-					"Rectangle",
-					"Width", m->rectangle.width,
-					"Height", m->rectangle.height,
-					"x", m->rectangle.x,
-					"y", m->rectangle.y,
-					"Padding",
-					"Top", m->top_padding,
-					"Right", m->right_padding,
-					"Bottom", m->bottom_padding,
-					"Left", m->left_padding,
-					"Focused", m == mon ? 1 : 0
+						"id", m->id,
+						"rectangle",
+							"x", m->rectangle.x,
+							"y", m->rectangle.y,
+							"width", m->rectangle.width,
+							"height", m->rectangle.height,
+						"rootWindowId", m->root,
+						"wired", m->wired,
+						"padding",
+							"top", m->top_padding,
+							"right", m->right_padding,
+							"bottom", m->bottom_padding,
+							"left", m->left_padding,
+						"desktop", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
+						"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
+						"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
+						"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
+						"prevId", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
+						"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
+						"nextId", m->next != NULL ? json_integer(m->next->id) : json_null(),
+						"focused", m == mon ? true : false,
+						"stickyNum", m->num_sticky
 					);
 			json_object_update(jmonitor, jpack);
 			json_decref(jpack);
