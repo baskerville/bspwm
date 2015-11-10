@@ -220,9 +220,9 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 			json_decref(jpack);
 		}
 
-		if (dom == DOMAIN_DESKTOP || dom == DOMAIN_TREE) {
+		if (dom == DOMAIN_DESKTOP) {
 			json_t *jdesktop = json_object();
-			query_desktops_json(m, dom, loc, jdesktop);
+			query_desktops_json(m, loc, jdesktop);
 			json_t *jpack = json_pack("{s:{s:o}}", m->name, "desktops", jdesktop);
 			json_object_update(jmonitor, jpack);
 			json_decref(jpack);
@@ -404,7 +404,7 @@ json_t* query_desktop_json(desktop_t *d)
 	);
 }
 
-void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *jmsg)
+void query_desktops_json(monitor_t *m, coordinates_t loc, json_t *jmsg)
 {
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 		if (loc.desktop != NULL && d != loc.desktop)
@@ -426,28 +426,23 @@ void query_history_json(coordinates_t loc, json_t *jmsg)
 		if (h->loc.node != NULL)
 			win = h->loc.node->client->window;
 
-		char swindow[10];
-		sprintf(swindow, "0x%X", win);
 		json_array_append_new(jmsg, json_pack(
-					"{s:s, s:s, s:s}",
-					"Monitor Name", h->loc.monitor->name,
-					"Desktop Name", h->loc.desktop->name,
-					"Window ID", swindow
-					)
-				);
+			"{"
+				"s:s,"
+				"s:s,"
+				"s:i"
+			"}",
+				"nameMonitor", h->loc.monitor->name,
+				"nameDesktop", h->loc.desktop->name,
+				"windowIdentifier", win
+		));
 	}
 }
 
 void query_stack_json(json_t *jmsg)
 {
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-		char swindow[10];
-		sprintf(swindow, "0x%X", s->node->client->window);
-		json_array_append_new(jmsg, json_pack(
-					"{s:s}",
-					"Window ID", swindow
-					)
-				);
+		json_array_append_new(jmsg, json_integer(s->node->client->window));
 	}
 }
 
@@ -462,14 +457,7 @@ void query_windows_json(coordinates_t loc, json_t *jmsg)
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				if (loc.node != NULL && n != loc.node)
 					continue;
-
-				char swindow[10];
-				sprintf(swindow, "0x%X", n->client->window);
-				json_array_append_new(jmsg, json_pack(
-							"{s:s}",
-							"Window ID", swindow
-							)
-						);
+				json_array_append_new(jmsg, json_integer(n->client->window));
 			}
 		}
 	}
