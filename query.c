@@ -200,8 +200,8 @@ json_t* query_monitor_json(monitor_t *m)
 				"prevIdentifier", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
 				"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
 				"nextIdentifier", m->next != NULL ? json_integer(m->next->id) : json_null(),
-				"focused", m == mon ? true : false,
-				"stickyNumber", m->num_sticky
+				"stickyNumber", m->num_sticky,
+				"focused", m == mon ? true : false
 	);
 }
 
@@ -233,6 +233,102 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 	}
 }
 
+json_t* query_client_state_json(client_state_t state)
+{
+	return
+		state == STATE_TILED ? json_string("tiled") :
+		state == STATE_PSEUDO_TILED ? json_string("pseudo_tiled") :
+		state == STATE_FLOATING ? json_string("floating") :
+		state == STATE_FULLSCREEN ? json_string("fullscreen") :
+		json_null();
+}
+json_t* query_stack_layer_json(stack_layer_t layer)
+{
+	return
+		layer == LAYER_BELOW ? json_string("below") :
+		layer == LAYER_NORMAL ? json_string("normal") :
+		layer == LAYER_ABOVE ? json_string("above") :
+		json_null();
+}
+
+json_t* query_client_json(client_t *c)
+{
+	return json_pack(
+		"{"
+			"s:i,"
+			"s:s,"
+			"s:s,"
+			"s:i,"
+			"s:b,"
+			"s:b,"
+			"s:b,"
+			"s:b,"
+			"s:b,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:{"
+				"s:i,"
+				"s:i,"
+			"},"
+			"s:{"
+				"s:i,"
+				"s:i,"
+			"},"
+			"s:i"
+		"}",
+			"windowIdentifier", c->window,
+			"nameClass", c->class_name,
+			"nameInstance", c->instance_name,
+			"borderWidth", c->border_width,
+			"locked", c->locked,
+			"sticky", c->sticky,
+			"urgent", c->urgent,
+			"private", c->private,
+			"icccm_focus", c->icccm_focus,
+			"state", query_client_state_json(c->state),
+			"stateLast", query_client_state_json(c->last_state),
+			"layer", query_stack_layer_json(c->layer),
+			"layerLast", query_stack_layer_json(c->last_layer),
+			"rectangleFloating", query_rectangle_json(c->floating_rectangle),
+			"rectangleTiled", query_rectangle_json(c->tiled_rectangle),
+			"sizeMinimum",
+				"width", c->min_width,
+				"height", c->min_height,
+			"sizeMaximum",
+				"width", c->max_width,
+				"height", c->max_height,
+			"stateNumber", c->num_states
+	);
+}
+
+json_t* query_split_type_json(split_type_t t)
+{
+	return
+		t == TYPE_HORIZONTAL ? json_string("horizontal") :
+		t == TYPE_VERTICAL ? json_string("vertical") :
+		json_null();
+}
+json_t* query_split_mode_json(split_mode_t m)
+{
+	return
+		m == MODE_AUTOMATIC ? json_string("automatic") :
+		m == MODE_MANUAL ? json_string("manual") :
+		json_null();
+}
+json_t* query_split_direction_json(direction_t d)
+{
+	return
+		d == DIR_RIGHT ? json_string("right") :
+		d == DIR_DOWN ? json_string("down") :
+		d == DIR_LEFT ? json_string("left") :
+		d == DIR_UP ? json_string("up") :
+		json_null();
+}
+
 json_t* query_node_json(node_t *n)
 {
 	return json_pack(
@@ -250,31 +346,30 @@ json_t* query_node_json(node_t *n)
 			"s:o,"
 			"s:o,"
 			"s:o,"
+			"s:b"
 		"}",
 			"split",
-				"type",
-					n->split_type == TYPE_HORIZONTAL ? json_string("horizontal") :
-					n->split_type == TYPE_VERTICAL ? json_string("vertical") :
-					json_null(),
+				"type", query_split_type_json(n->split_type),
 				"ratio", n->split_ratio,
-				"mode",
-					n->split_mode == MODE_AUTOMATIC ? json_string("automatic") :
-					n->split_mode == MODE_MANUAL ? json_string("manual") :
-					json_null(),
-				"direction",
-					n->split_dir == DIR_RIGHT ? json_string("right") :
-					n->split_dir == DIR_DOWN ? json_string("down") :
-					n->split_dir == DIR_LEFT ? json_string("left") :
-					n->split_dir == DIR_UP ? json_string("up") :
-					json_null(),
+				"mode", query_split_mode_json(n->split_mode),
+				"direction", query_split_direction_json(n->split_dir),
 			"birthRotation", n->birth_rotation,
 			"rectangle", query_rectangle_json(n->rectangle),
 			"vacant", n->vacant,
 			"privacyLevel", n->privacy_level,
-			"firstChild", !is_leaf(n) ? query_node_json(n->first_child) : json_null(),
-			"secondChild", !is_leaf(n) ? query_node_json(n->second_child) : json_null(),
-			"clientWindowIdentifier", is_leaf(n) ? json_integer(n->client->window) : json_null()
+			"firstChild", n->first_child != NULL ? query_node_json(n->first_child) : json_null(),
+			"secondChild", n->second_child != NULL ? query_node_json(n->second_child) : json_null(),
+			"client", is_leaf(n) ? query_client_json(n->client) : json_null(),
+			"focused", n == mon->desk->focus ? true : false
 	);
+}
+
+json_t* query_layout_json(layout_t l)
+{
+	return
+		l == LAYOUT_TILED ? json_string("tiled") :
+		l == LAYOUT_MONOCLE ? json_string("monocle") :
+		json_null();
 }
 
 json_t* query_desktop_json(desktop_t *d)
@@ -282,7 +377,6 @@ json_t* query_desktop_json(desktop_t *d)
 	return json_pack(
 		"{"
 			"s:{"
-				"s:o,"
 				"s:o,"
 				"s:o,"
 				"s:i,"
@@ -297,12 +391,8 @@ json_t* query_desktop_json(desktop_t *d)
 			"}"
 		"}",
 			d->name,
-				"layout",
-					d->layout == LAYOUT_TILED ? json_string("tiled") :
-					d->layout == LAYOUT_MONOCLE ? json_string("monocle") :
-					json_null(),
+				"layout", query_layout_json(d->layout),
 				"nodeRoot", d->root != NULL ? query_node_json(d->root) : json_null(),
-				"nodeFocus", d->root != NULL ? query_node_json(d->focus) : json_null(),
 				"borderWidth", d->border_width,
 				"windowGap", d->window_gap,
 				"padding",
@@ -320,92 +410,10 @@ void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *
 		if (loc.desktop != NULL && d != loc.desktop)
 			continue;
 
-		json_t *jdesktop = json_object();
-
-		if (dom == DOMAIN_DESKTOP) {
-			json_t *jpack = query_desktop_json(d);
-			json_object_update(jdesktop, jpack);
-			json_decref(jpack);
-		}
-
-		if (dom == DOMAIN_TREE) {
-			json_t *jtree = json_object();
-			query_tree_json(d, d->root, jtree);
-			json_t *jpack = json_pack("{s:{s:o}}", d->name, "tree", jtree);
-			json_object_update(jdesktop, jpack);
-			json_decref(jpack);
-		}
-
+		json_t *jdesktop = query_desktop_json(d);
 		json_object_update(jmsg, jdesktop);
 		json_decref(jdesktop);
 	}
-}
-
-void query_tree_json(desktop_t *d, node_t *n, json_t *jmsg)
-{
-	if (n == NULL) {
-		return;
-	}
-
-	if (is_leaf(n)) {
-		client_t *c = n->client;
-		char swindow[10];
-		sprintf(swindow, "0x%X", c->window);
-		json_t *jpack = json_pack(
-				"{s:i, s:{s:s, s:s}, s:s, s:i, s:{s:i, s:i, s:i, s:i}, s:s, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b, s:b}",
-				"Birth Rotation", n->birth_rotation,
-				"Name",
-				"Class", c->class_name,
-				"Instance", c->instance_name,
-				"Window ID", swindow,
-				"Border Width", c->border_width,
-				"Floating Rectangle",
-				"Width", c->floating_rectangle.width,
-				"Height", c->floating_rectangle.height,
-				"x", c->floating_rectangle.x,
-				"y", c->floating_rectangle.y,
-				"Split Direction", (
-					n->split_dir == DIR_UP ? "Up" : (
-						n->split_dir == DIR_RIGHT ? "Right" : (
-							n->split_dir == DIR_DOWN ? "Down" : "Left"
-							)
-						)
-					),
-				"Floating", c->state == STATE_FLOATING ? 1 : 0,
-				"Pseudo Tiled", c->state == STATE_PSEUDO_TILED ? 1 : 0,
-				"Fullscreen", c->state == STATE_FULLSCREEN ? 1 : 0,
-				"Tiled", c->state == STATE_TILED ? 1 : 0,
-				"Urgent", c->urgent ? 1 : 0,
-				"Locked", c->locked ? 1 : 0,
-				"Sticky", c->sticky ? 1 : 0,
-				"Private", c->private ? 1 : 0,
-				"Split Mode", n->split_mode ? 1 : 0,
-				"Focused", n == d->focus ? 1 : 0
-                );
-		json_object_update(jmsg, jpack);
-		json_decref(jpack);
-	} else {
-		json_t *jpack = json_pack(
-				"{s:s, s:i, s:f}",
-				"Split Type", n->split_type == TYPE_HORIZONTAL ? "Horizontal" : "Vertical",
-				"Birth Rotation", n->birth_rotation,
-				"Split Ratio", n->split_ratio
-				);
-		json_object_update(jmsg, jpack);
-		json_decref(jpack);
-	}
-
-	json_t *jfirst = json_object();
-	query_tree_json(d, n->first_child, jfirst);
-	json_t *jsecond = json_object();
-	query_tree_json(d, n->second_child, jsecond);
-	json_t *jpack = json_pack(
-			"{s:o, s:o}",
-			"First Child", jfirst,
-			"Second Child", jsecond
-			);
-	json_object_update(jmsg, jpack);
-	json_decref(jpack);
 }
 
 void query_history_json(coordinates_t loc, json_t *jmsg)
