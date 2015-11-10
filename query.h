@@ -28,16 +28,22 @@
 #include <jansson.h>
 
 typedef enum {
+	DOMAIN_MONITORS,
 	DOMAIN_MONITOR,
+	DOMAIN_DESKTOPS,
 	DOMAIN_DESKTOP,
+	DOMAIN_WINDOWS,
 	DOMAIN_WINDOW,
 	DOMAIN_HISTORY,
 	DOMAIN_STACK
 } domain_t;
 
 json_t* query_monitors_json(coordinates_t loc);
+json_t* query_monitor_json(monitor_t *m);
 json_t* query_desktops_json(coordinates_t loc);
+json_t* query_desktop_json(desktop_t *d);
 json_t* query_windows_json(coordinates_t loc);
+json_t* query_node_json(node_t *n);
 json_t* query_history_json(coordinates_t loc);
 json_t* query_stack_json();
 client_select_t make_client_select(void);

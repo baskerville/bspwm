@@ -642,11 +642,29 @@ int cmd_query(char **args, int num, FILE *rsp)
 	bool constrained = false;
 
 	if (streq("-M", *args) || streq("--monitors", *args)) {
+		dom = DOMAIN_MONITORS;
+	} else if (streq("-m", *args) || streq("--monitor", *args)) {
 		dom = DOMAIN_MONITOR;
+		--num, ++args;
+		if (!monitor_from_desc(*args, &ref, &trg))
+			return MSG_FAILURE;
+		constrained = true;
 	} else if (streq("-D", *args) || streq("--desktops", *args)) {
+		dom = DOMAIN_DESKTOPS;
+	} else if (streq("-d", *args) || streq("--desktop", *args)) {
 		dom = DOMAIN_DESKTOP;
+		--num, ++args;
+		if (!desktop_from_desc(*args, &ref, &trg))
+			return MSG_FAILURE;
+		constrained = true;
 	} else if (streq("-W", *args) || streq("--windows", *args)) {
+		dom = DOMAIN_WINDOWS;
+	} else if (streq("-w", *args) || streq("--window", *args)) {
 		dom = DOMAIN_WINDOW;
+		--num, ++args;
+		if (!node_from_desc(*args, &ref, &trg))
+			return MSG_FAILURE;
+		constrained = true;
 	} else if (streq("-H", *args) || streq("--history", *args)) {
 		dom = DOMAIN_HISTORY;
 	} else if (streq("-S", *args) || streq("--stack", *args)) {
@@ -680,35 +698,47 @@ int cmd_query(char **args, int num, FILE *rsp)
 		--num, ++args;
 	}
 
-	if (dom == DOMAIN_MONITOR) {
-		json_t *jmsg = query_monitors_json(trg);
-		if(json_dumpf(jmsg, rsp, JSON_INDENT(0) | JSON_SORT_KEYS) == -1) {
-			warn("Print JSON failed\n");
+	json_t *jmsg;
+	switch (dom) {
+		case DOMAIN_MONITORS:
+			jmsg = query_monitors_json(trg);
+			break;
+		case DOMAIN_MONITOR:
+			jmsg = query_monitor_json(trg.monitor);
+			break;
+		case DOMAIN_DESKTOPS:
+			jmsg = query_desktops_json(trg);
+			break;
+		case DOMAIN_DESKTOP:
+			jmsg = query_desktop_json(trg.desktop);
+			break;
+		case DOMAIN_WINDOWS:
+			jmsg = query_windows_json(trg);
+			break;
+		case DOMAIN_WINDOW:
+			jmsg = query_node_json(trg.node);
+			break;
+		case DOMAIN_HISTORY:
+			jmsg = query_history_json(trg);
+			break;
+		case DOMAIN_STACK:
+			jmsg = query_stack_json();
+			break;
+		default:
 			return MSG_FAILURE;
-		}
-		json_decref(jmsg);
-	} else if (dom == DOMAIN_DESKTOP) {
-		json_t *jmsg = query_desktops_json(trg);
-		if(json_dumpf(jmsg, rsp, JSON_INDENT(0) | JSON_SORT_KEYS) == -1) {
-			warn("Print JSON failed\n");
-			return MSG_FAILURE;
-		}
-		json_decref(jmsg);
-	} else if (dom == DOMAIN_WINDOW) {
-		json_t *jmsg = query_windows_json(trg);
-		json_dumpf(jmsg, rsp, JSON_INDENT(4));
-		json_decref(jmsg);
-	} else if (dom == DOMAIN_HISTORY) {
-		json_t *jmsg = query_history_json(trg);
-		json_dumpf(jmsg, rsp, JSON_INDENT(4));
-		json_decref(jmsg);
-	} else if (dom == DOMAIN_STACK) {
-		json_t *jmsg = query_stack_json();
-		json_dumpf(jmsg, rsp, JSON_INDENT(4));
-		json_decref(jmsg);
-	} else {
-		return MSG_FAILURE;
 	}
+	if (json_is_object(jmsg)){
+		if(json_dumpf(jmsg, rsp, JSON_INDENT(4) | JSON_SORT_KEYS) == -1) {
+			warn("JSON dump failed\n");
+			return MSG_FAILURE;
+		}
+	} else {
+		if(json_dumpf(jmsg, rsp, JSON_INDENT(4)) == -1) {
+			warn("JSON dump failed\n");
+			return MSG_FAILURE;
+		}
+	}
+	json_decref(jmsg);
 
 	return MSG_SUCCESS;
 }
