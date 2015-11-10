@@ -141,6 +141,23 @@ void query_windows(coordinates_t loc, FILE *rsp)
 	}
 }
 
+json_t* query_rectangle_json(xcb_rectangle_t rec)
+{
+	return json_pack(
+		"{"
+			"s:i,"
+			"s:i,"
+			"s:i,"
+			"s:i"
+		"}",
+		"x", rec.x,
+		"y", rec.y,
+		"width", rec.width,
+		"height", rec.height
+	);
+}
+
+
 void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
@@ -154,12 +171,7 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 					"{"
 						"s:{"
 							"s:i,"
-							"s:{"
-								"s:i,"
-								"s:i,"
-								"s:i,"
-								"s:i"
-							"},"
+							"s:o"
 							"s:i,"
 							"s:b,"
 							"s:{"
@@ -180,13 +192,9 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 						"}"
 					"}",
 					m->name,
-						"id", m->id,
-						"rectangle",
-							"x", m->rectangle.x,
-							"y", m->rectangle.y,
-							"width", m->rectangle.width,
-							"height", m->rectangle.height,
-						"rootWindowId", m->root,
+						"identifier", m->id,
+						"rectangle", query_rectangle_json(m->rectangle),
+						"rootWindowIdentifier", m->root,
 						"wired", m->wired,
 						"padding",
 							"top", m->top_padding,
@@ -197,11 +205,11 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 						"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
 						"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
 						"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
-						"prevId", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
+						"prevIdentifier", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
 						"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
-						"nextId", m->next != NULL ? json_integer(m->next->id) : json_null(),
+						"nextIdentifier", m->next != NULL ? json_integer(m->next->id) : json_null(),
 						"focused", m == mon ? true : false,
-						"stickyNum", m->num_sticky
+						"stickyNumber", m->num_sticky
 					);
 			json_object_update(jmonitor, jpack);
 			json_decref(jpack);
@@ -210,10 +218,7 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 		if (dom == DOMAIN_DESKTOP || dom == DOMAIN_TREE) {
 			json_t *jdesktop = json_object();
 			query_desktops_json(m, dom, loc, jdesktop);
-			json_t *jpack = json_pack(
-					"{s:{s:o}}",
-					m->name, "Desktops", jdesktop
-					);
+			json_t *jpack = json_pack("{s:{s:o}}", m->name, "desktops", jdesktop);
 			json_object_update(jmonitor, jpack);
 			json_decref(jpack);
 		}
@@ -221,6 +226,87 @@ void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
 		json_object_update(jmsg, jmonitor);
 		json_decref(jmonitor);
 	}
+}
+
+json_t* query_node_json(node_t *n)
+{
+	return json_pack(
+			"{"
+				"s:{"
+					"s:o,"
+					"s:f,"
+					"s:o,"
+					"s:o,"
+				"},"
+				"s:i,"
+				"s:o,"
+				"s:b,"
+				"s:i,"
+				"s:o,"
+				"s:o,"
+				"s:o,"
+			"}",
+			"split",
+				"type",
+					n->split_type == TYPE_HORIZONTAL ? json_string("horizontal") :
+					n->split_type == TYPE_VERTICAL ? json_string("vertical") :
+					json_null(),
+				"ratio", n->split_ratio,
+				"mode",
+					n->split_mode == MODE_AUTOMATIC ? json_string("automatic") :
+					n->split_mode == MODE_MANUAL ? json_string("manual") :
+					json_null(),
+				"direction",
+					n->split_dir == DIR_RIGHT ? json_string("right") :
+					n->split_dir == DIR_DOWN ? json_string("down") :
+					n->split_dir == DIR_LEFT ? json_string("left") :
+					n->split_dir == DIR_UP ? json_string("up") :
+					json_null(),
+			"birthRotation", n->birth_rotation,
+			"rectangle", query_rectangle_json(n->rectangle),
+			"vacant", n->vacant,
+			"privacyLevel", n->privacy_level,
+			"firstChild", !is_leaf(n) ? query_node_json(n->first_child) : json_object(),
+			"secondChild", !is_leaf(n) ? query_node_json(n->second_child) : json_object(),
+			"clientWindowIdentifier", is_leaf(n) ? json_integer(n->client->window) : json_null()
+	);
+}
+
+json_t* query_desktop_json(desktop_t *d, monitor_t *m)
+{
+	return json_pack(
+		"{"
+			"s:{"
+				"s:o,"
+				"s:o,"
+				"s:o,"
+				"s:i,"
+				"s:i,"
+				"s:{"
+					"s:i,"
+					"s:i,"
+					"s:i,"
+					"s:i"
+				"},"
+				"s:b"
+			"}"
+		"}",
+		d->name,
+			"layout",
+				d->layout == LAYOUT_TILED ? json_string("tiled") :
+				d->layout == LAYOUT_MONOCLE ? json_string("monocle") :
+				json_null(),
+			"nodeRoot", d->root != NULL ? query_node_json(d->root) : json_null(),
+			"nodeFocus", d->root != NULL ? query_node_json(d->focus) : json_null(),
+			"borderWidth", d->border_width,
+			"windowGap", d->window_gap,
+			"padding",
+				"top", d->top_padding,
+				"right", d->right_padding,
+				"bottom", d->bottom_padding,
+				"left", d->left_padding,
+			"focused", d == m->desk ? true : false
+		);
 }
 
 void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *jmsg)
@@ -232,20 +318,7 @@ void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *
 		json_t *jdesktop = json_object();
 
 		if (dom == DOMAIN_DESKTOP) {
-			json_t *jpack = json_pack(
-					"{s:{s:i, s:i, s:{s:i, s:i, s:i, s:i}, s:b, s:b, s:b}}",
-					d->name,
-					"Border Width", d->border_width,
-					"Window Gap", d->window_gap,
-					"Padding",
-					"Top", d->top_padding,
-					"Right", d->right_padding,
-					"Bottom", d->bottom_padding,
-					"Left", d->left_padding,
-					"Tiled", d->layout == LAYOUT_TILED ? 1 : 0,
-					"Monocle", d->layout == LAYOUT_MONOCLE ? 1 : 0,
-					"Focused", d == m->desk ? 1 : 0
-					);
+			json_t *jpack = query_desktop_json(d, m);
 			json_object_update(jdesktop, jpack);
 			json_decref(jpack);
 		}
@@ -253,10 +326,7 @@ void query_desktops_json(monitor_t *m, domain_t dom, coordinates_t loc, json_t *
 		if (dom == DOMAIN_TREE) {
 			json_t *jtree = json_object();
 			query_tree_json(d, d->root, jtree);
-			json_t *jpack = json_pack(
-					"{s:{s:o}}",
-					d->name, "Tree", jtree
-					);
+			json_t *jpack = json_pack("{s:{s:o}}", d->name, "tree", jtree);
 			json_object_update(jdesktop, jpack);
 			json_decref(jpack);
 		}
