@@ -31,22 +31,15 @@ typedef enum {
 	DOMAIN_MONITOR,
 	DOMAIN_DESKTOP,
 	DOMAIN_WINDOW,
-	DOMAIN_TREE,
 	DOMAIN_HISTORY,
 	DOMAIN_STACK
 } domain_t;
 
-void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp);
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp);
-void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth);
-void query_history(coordinates_t loc, FILE *rsp);
-void query_stack(FILE *rsp);
-void query_windows(coordinates_t loc, FILE *rsp);
-void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg);
-void query_desktops_json(monitor_t *m, coordinates_t loc, json_t *jmsg);
-void query_history_json(coordinates_t loc, json_t *jmsg);
-void query_stack_json(json_t *jmsg);
-void query_windows_json(coordinates_t loc, json_t *jmsg);
+json_t* query_monitors_json(coordinates_t loc);
+json_t* query_desktops_json(coordinates_t loc);
+json_t* query_windows_json(coordinates_t loc);
+json_t* query_history_json(coordinates_t loc);
+json_t* query_stack_json();
 client_select_t make_client_select(void);
 desktop_select_t make_desktop_select(void);
 void cleanup_client_select(client_select_t *sel);

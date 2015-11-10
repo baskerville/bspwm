@@ -34,113 +34,6 @@
 #include "tree.h"
 #include "query.h"
 
-void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp)
-{
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
-			continue;
-		if (dom != DOMAIN_DESKTOP) {
-			if (dom == DOMAIN_MONITOR) {
-				fprintf(rsp, "%s\n", m->name);
-				continue;
-			} else {
-				fprintf(rsp, "%s %ux%u%+i%+i %i,%i,%i,%i%s\n", m->name,
-				         m->rectangle.width,m->rectangle.height, m->rectangle.x, m->rectangle.y,
-				         m->top_padding, m->right_padding, m->bottom_padding, m->left_padding,
-				         (m == mon ? " *" : ""));
-			}
-		}
-		query_desktops(m, dom, loc, (dom == DOMAIN_DESKTOP ? 0 : 1), rsp);
-	}
-}
-
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp)
-{
-	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-		if (loc.desktop != NULL && d != loc.desktop)
-			continue;
-		for (unsigned int i = 0; i < depth; i++)
-			fprintf(rsp, "\t");
-		if (dom == DOMAIN_DESKTOP) {
-			fprintf(rsp, "%s\n", d->name);
-			continue;
-		} else {
-			fprintf(rsp, "%s %u %i %i,%i,%i,%i %c%s\n", d->name, d->border_width,
-			        d->window_gap,
-			        d->top_padding, d->right_padding, d->bottom_padding, d->left_padding,
-			        (d->layout == LAYOUT_TILED ? 'T' : 'M'),
-			        (d == m->desk ? " *" : ""));
-		}
-		query_tree(d, d->root, rsp, depth + 1);
-	}
-}
-
-void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
-{
-	if (n == NULL)
-		return;
-
-	for (unsigned int i = 0; i < depth; i++)
-		fprintf(rsp, "\t");
-
-	if (is_leaf(n)) {
-		client_t *c = n->client;
-		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c%c %c%c %c%c%c%c%s\n",
-		         (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')),
-		         c->class_name, c->instance_name, c->window, c->border_width,
-		         c->floating_rectangle.width, c->floating_rectangle.height,
-		         c->floating_rectangle.x, c->floating_rectangle.y,
-		         (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))),
-		         (n->split_mode == MODE_AUTOMATIC ? '-' : 'p'),
-		         (c->state == STATE_TILED ? '-' : (c->state == STATE_FLOATING ? 'f' : (c->state == STATE_FULLSCREEN ? 'F' : 'p'))),
-		         (c->layer == LAYER_NORMAL ? '-' : (c->layer == LAYER_ABOVE ? 'a' : 'b')),
-		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'), (c->private ? 'i' : '-'),
-		         (n == d->focus ? " *" : ""));
-	} else {
-		fprintf(rsp, "%c %c %lf\n", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
-		        (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), n->split_ratio);
-	}
-
-	query_tree(d, n->first_child, rsp, depth + 1);
-	query_tree(d, n->second_child, rsp, depth + 1);
-}
-
-void query_history(coordinates_t loc, FILE *rsp)
-{
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
-				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
-			continue;
-		xcb_window_t win = XCB_NONE;
-		if (h->loc.node != NULL)
-			win = h->loc.node->client->window;
-		fprintf(rsp, "%s %s 0x%X\n", h->loc.monitor->name, h->loc.desktop->name, win);
-	}
-}
-
-void query_stack(FILE *rsp)
-{
-	for (stacking_list_t *s = stack_head; s != NULL; s = s->next)
-		fprintf(rsp, "0x%X\n", s->node->client->window);
-}
-
-void query_windows(coordinates_t loc, FILE *rsp)
-{
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
-			continue;
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop)
-				continue;
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				if (loc.node != NULL && n != loc.node)
-					continue;
-				fprintf(rsp, "0x%X\n", n->client->window);
-			}
-		}
-	}
-}
-
 json_t* query_rectangle_json(xcb_rectangle_t rec)
 {
 	return json_pack(
@@ -157,80 +50,76 @@ json_t* query_rectangle_json(xcb_rectangle_t rec)
 	);
 }
 
+json_t* query_desktops_array_json(monitor_t *m)
+{
+	json_t *jdesktops = json_array();
+	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+		json_array_append_new(jdesktops, json_string(d->name));
+	}
+	return jdesktops;
+}
+
 json_t* query_monitor_json(monitor_t *m)
 {
 	return json_pack(
 		"{"
+			"s:s,"
+			"s:i,"
+			"s:o,"
+			"s:i,"
+			"s:b,"
 			"s:{"
 				"s:i,"
-				"s:o"
 				"s:i,"
-				"s:b,"
-				"s:{"
-					"s:i,"
-					"s:i,"
-					"s:i,"
-					"s:i"
-				"},"
-				"s:o,"
-				"s:o,"
-				"s:o,"
-				"s:o,"
-				"s:o,"
-				"s:o,"
-				"s:o,"
-				"s:b,"
+				"s:i,"
 				"s:i"
-			"}"
+			"},"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:o,"
+			"s:i,"
+			"s:o,"
+			"s:b"
 		"}",
-			m->name,
-				"identifier", m->id,
-				"rectangle", query_rectangle_json(m->rectangle),
-				"rootWindowIdentifier", m->root,
-				"wired", m->wired,
-				"padding",
-					"top", m->top_padding,
-					"right", m->right_padding,
-					"bottom", m->bottom_padding,
-					"left", m->left_padding,
-				"desktop", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
-				"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
-				"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
-				"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
-				"prevIdentifier", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
-				"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
-				"nextIdentifier", m->next != NULL ? json_integer(m->next->id) : json_null(),
-				"stickyNumber", m->num_sticky,
-				"focused", m == mon ? true : false
+			"name", m->name,
+			"identifier", m->id,
+			"rectangle", query_rectangle_json(m->rectangle),
+			"rootWindowId", m->root,
+			"wired", m->wired,
+			"padding",
+				"top", m->top_padding,
+				"right", m->right_padding,
+				"bottom", m->bottom_padding,
+				"left", m->left_padding,
+			"desktop", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
+			"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
+			"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
+			"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
+			"prevIdentifier", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
+			"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
+			"nextIdentifier", m->next != NULL ? json_integer(m->next->id) : json_null(),
+			"stickyNumber", m->num_sticky,
+			"desktops", query_desktops_array_json(m),
+			"focused", m == mon ? true : false
 	);
 }
 
 
-void query_monitors_json(coordinates_t loc, domain_t dom, json_t *jmsg)
+json_t* query_monitors_json(coordinates_t loc)
 {
+	json_t *jmonitors = json_object();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
-
-		json_t *jmonitor = json_object();
-
-		if (dom == DOMAIN_MONITOR) {
-			json_t *jpack = query_monitor_json(m);
-			json_object_update(jmonitor, jpack);
-			json_decref(jpack);
-		}
-
-		if (dom == DOMAIN_DESKTOP) {
-			json_t *jdesktop = json_object();
-			query_desktops_json(m, loc, jdesktop);
-			json_t *jpack = json_pack("{s:{s:o}}", m->name, "desktops", jdesktop);
-			json_object_update(jmonitor, jpack);
-			json_decref(jpack);
-		}
-
-		json_object_update(jmsg, jmonitor);
+		json_t *jmonitor = json_pack("{s:o}", m->name, query_monitor_json(m));
+		json_object_update(jmonitors, jmonitor);
 		json_decref(jmonitor);
 	}
+	return jmonitors;
 }
 
 json_t* query_client_state_json(client_state_t state)
@@ -280,7 +169,7 @@ json_t* query_client_json(client_t *c)
 			"},"
 			"s:i"
 		"}",
-			"windowIdentifier", c->window,
+			"windowId", c->window,
 			"nameClass", c->class_name,
 			"nameInstance", c->instance_name,
 			"borderWidth", c->border_width,
@@ -376,48 +265,53 @@ json_t* query_desktop_json(desktop_t *d)
 {
 	return json_pack(
 		"{"
+			"s:s,"
+			"s:o,"
+			"s:o,"
+			"s:i,"
+			"s:i,"
 			"s:{"
-				"s:o,"
-				"s:o,"
 				"s:i,"
 				"s:i,"
-				"s:{"
-					"s:i,"
-					"s:i,"
-					"s:i,"
-					"s:i"
-				"},"
-				"s:b"
-			"}"
+				"s:i,"
+				"s:i"
+			"},"
+			"s:b"
 		"}",
-			d->name,
-				"layout", query_layout_json(d->layout),
-				"nodeRoot", d->root != NULL ? query_node_json(d->root) : json_null(),
-				"borderWidth", d->border_width,
-				"windowGap", d->window_gap,
-				"padding",
-					"top", d->top_padding,
-					"right", d->right_padding,
-					"bottom", d->bottom_padding,
-					"left", d->left_padding,
-				"focused", d == mon->desk ? true : false
+			"name", d->name,
+			"layout", query_layout_json(d->layout),
+			"nodeRoot", d->root != NULL ? query_node_json(d->root) : json_null(),
+			"borderWidth", d->border_width,
+			"windowGap", d->window_gap,
+			"padding",
+				"top", d->top_padding,
+				"right", d->right_padding,
+				"bottom", d->bottom_padding,
+				"left", d->left_padding,
+			"focused", d == mon->desk ? true : false
 	);
 }
 
-void query_desktops_json(monitor_t *m, coordinates_t loc, json_t *jmsg)
+json_t* query_desktops_json(coordinates_t loc)
 {
-	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-		if (loc.desktop != NULL && d != loc.desktop)
+	json_t *jdesktops = json_object();
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
-
-		json_t *jdesktop = query_desktop_json(d);
-		json_object_update(jmsg, jdesktop);
-		json_decref(jdesktop);
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			json_t *jdesktop = json_pack("{s:o}", d->name, query_desktop_json(d));
+			json_object_update(jdesktops, jdesktop);
+			json_decref(jdesktop);
+		}
 	}
+	return jdesktops;
 }
 
-void query_history_json(coordinates_t loc, json_t *jmsg)
+json_t* query_history_json(coordinates_t loc)
 {
+	json_t *jhistory = json_array();
 	for (history_t *h = history_head; h != NULL; h = h->next) {
 		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
 				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
@@ -426,28 +320,32 @@ void query_history_json(coordinates_t loc, json_t *jmsg)
 		if (h->loc.node != NULL)
 			win = h->loc.node->client->window;
 
-		json_array_append_new(jmsg, json_pack(
+		json_array_append_new(jhistory, json_pack(
 			"{"
 				"s:s,"
 				"s:s,"
 				"s:i"
 			"}",
-				"nameMonitor", h->loc.monitor->name,
-				"nameDesktop", h->loc.desktop->name,
-				"windowIdentifier", win
+				"monitorName", h->loc.monitor->name,
+				"desktopName", h->loc.desktop->name,
+				"windowId", win
 		));
 	}
+	return jhistory;
 }
 
-void query_stack_json(json_t *jmsg)
+json_t* query_stack_json()
 {
+	json_t *jstack = json_array();
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-		json_array_append_new(jmsg, json_integer(s->node->client->window));
+		json_array_append_new(jstack, json_integer(s->node->client->window));
 	}
+	return jstack;
 }
 
-void query_windows_json(coordinates_t loc, json_t *jmsg)
+json_t* query_windows_json(coordinates_t loc)
 {
+	json_t *jwindows = json_array();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
@@ -457,10 +355,11 @@ void query_windows_json(coordinates_t loc, json_t *jmsg)
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				if (loc.node != NULL && n != loc.node)
 					continue;
-				json_array_append_new(jmsg, json_integer(n->client->window));
+				json_array_append_new(jwindows, json_integer(n->client->window));
 			}
 		}
 	}
+	return jwindows;
 }
 
 client_select_t make_client_select(void)
