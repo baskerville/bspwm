@@ -86,7 +86,7 @@ json_t* query_monitor_json(monitor_t *m)
 			"s:b"
 		"}",
 			"name", m->name,
-			"identifier", m->id,
+			"id", m->id,
 			"rectangle", query_rectangle_json(m->rectangle),
 			"rootWindowId", m->root,
 			"wired", m->wired,
@@ -95,13 +95,13 @@ json_t* query_monitor_json(monitor_t *m)
 				"right", m->right_padding,
 				"bottom", m->bottom_padding,
 				"left", m->left_padding,
-			"desktop", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
+			"desktopFocused", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
 			"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
 			"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
 			"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
-			"prevIdentifier", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
+			"prevId", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
 			"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
-			"nextIdentifier", m->next != NULL ? json_integer(m->next->id) : json_null(),
+			"nextId", m->next != NULL ? json_integer(m->next->id) : json_null(),
 			"stickyNumber", m->num_sticky,
 			"desktops", query_desktops_array_json(m),
 			"focused", m == mon ? true : false
@@ -246,8 +246,8 @@ json_t* query_node_json(node_t *n)
 			"rectangle", query_rectangle_json(n->rectangle),
 			"vacant", n->vacant,
 			"privacyLevel", n->privacy_level,
-			"firstChild", n->first_child != NULL ? query_node_json(n->first_child) : json_null(),
-			"secondChild", n->second_child != NULL ? query_node_json(n->second_child) : json_null(),
+			"childFirst", n->first_child != NULL ? query_node_json(n->first_child) : json_null(),
+			"childSecond", n->second_child != NULL ? query_node_json(n->second_child) : json_null(),
 			"client", is_leaf(n) ? query_client_json(n->client) : json_null(),
 			"focused", n == mon->desk->focus ? true : false
 	);
