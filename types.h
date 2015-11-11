@@ -158,6 +158,7 @@ typedef struct {
 	bool urgent;
 	bool private;
 	bool icccm_focus;
+	bool icccm_input;
 	client_state_t state;
 	client_state_t last_state;
 	stack_layer_t layer;

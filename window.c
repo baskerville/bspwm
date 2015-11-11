@@ -828,10 +828,10 @@ void set_input_focus(node_t *n)
 	if (n == NULL) {
 		clear_input_focus();
 	} else {
-		if (n->client->icccm_focus && strstr(ICCCM_FOCUS_EXCEPTIONS, n->client->class_name) == NULL) {
+		if (n->client->icccm_input) {
+			xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_PARENT, n->client->window, XCB_CURRENT_TIME);
+		} else if (n->client->icccm_focus) {
 			send_client_message(n->client->window, ewmh->WM_PROTOCOLS, WM_TAKE_FOCUS);
-		} else {
-			xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, n->client->window, XCB_CURRENT_TIME);
 		}
 	}
 }

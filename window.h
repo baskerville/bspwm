@@ -25,11 +25,6 @@
 #ifndef BSPWM_WINDOW_H
 #define BSPWM_WINDOW_H
 
-/* A comma separated list of class names of programs that include the
- * WM_TAKE_FOCUS atom in their WM_PROTOCOLS property but don't handle the
- * corresponding client message */
-#define ICCCM_FOCUS_EXCEPTIONS  "Skype"
-
 #include <stdarg.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>

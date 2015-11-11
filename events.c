@@ -285,17 +285,21 @@ void focus_in(xcb_generic_event_t *evt)
 {
 	xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) evt;
 
-	if (e->mode == XCB_NOTIFY_MODE_GRAB ||
-	    e->mode == XCB_NOTIFY_MODE_UNGRAB)
+	if (e->mode == XCB_NOTIFY_MODE_GRAB || e->mode == XCB_NOTIFY_MODE_UNGRAB
+	    || e->detail == XCB_NOTIFY_DETAIL_POINTER || e->detail == XCB_NOTIFY_DETAIL_POINTER_ROOT
+	    || e->detail == XCB_NOTIFY_DETAIL_NONE) {
 		return;
-	/* prevent focus stealing */
-	if ((e->detail == XCB_NOTIFY_DETAIL_ANCESTOR ||
-	     e->detail == XCB_NOTIFY_DETAIL_INFERIOR ||
-	     e->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL ||
-	     e->detail == XCB_NOTIFY_DETAIL_NONLINEAR) &&
-	    (mon->desk->focus == NULL ||
-	     mon->desk->focus->client->window != e->event))
+	}
+
+	if (mon->desk->focus != NULL && e->event == mon->desk->focus->client->window) {
+		return;
+	}
+
+	coordinates_t loc;
+	if (locate_window(e->event, &loc)) {
+		// prevent input focus stealing
 		update_input_focus();
+	}
 }
 
 void enter_notify(xcb_generic_event_t *evt)
