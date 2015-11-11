@@ -634,6 +634,17 @@ int cmd_monitor(char **args, int num)
 	return MSG_SUCCESS;
 }
 
+typedef enum {
+	DOMAIN_MONITORS,
+	DOMAIN_MONITOR,
+	DOMAIN_DESKTOPS,
+	DOMAIN_DESKTOP,
+	DOMAIN_WINDOWS,
+	DOMAIN_WINDOW,
+	DOMAIN_HISTORY,
+	DOMAIN_STACK
+} domain_t;
+
 int cmd_query(char **args, int num, FILE *rsp)
 {
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
@@ -727,18 +738,12 @@ int cmd_query(char **args, int num, FILE *rsp)
 		default:
 			return MSG_FAILURE;
 	}
-	if (json_is_object(jmsg)){
-		if(json_dumpf(jmsg, rsp, JSON_INDENT(4) | JSON_SORT_KEYS) == -1) {
-			warn("JSON dump failed\n");
-			return MSG_FAILURE;
-		}
-	} else {
-		if(json_dumpf(jmsg, rsp, JSON_INDENT(4)) == -1) {
-			warn("JSON dump failed\n");
-			return MSG_FAILURE;
-		}
-	}
+	int rval = json_dumpf(jmsg, rsp, JSON_INDENT(4) | JSON_SORT_KEYS);
 	json_decref(jmsg);
+	if(rval == -1) {
+		warn("JSON dump failed\n");
+		return MSG_FAILURE;
+	}
 
 	return MSG_SUCCESS;
 }
