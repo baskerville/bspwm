@@ -83,11 +83,11 @@ void restore_tree(char *file_path)
 				continue;
 			int wg, top, right, bottom, left;
 			unsigned int bw;
-			char floating, layout = 0, end = 0;
+			char layout = 0, end = 0;
 			name[0] = '\0';
 			loc.desktop = NULL;
-			sscanf(line + level, "%s %u %i %i,%i,%i,%i %c %c %c", name,
-			       &bw, &wg, &top, &right, &bottom, &left, &layout, &floating, &end);
+			sscanf(line + level, "%s %u %i %i,%i,%i,%i %c %c", name,
+			       &bw, &wg, &top, &right, &bottom, &left, &layout, &end);
 			locate_desktop(name, &loc);
 			d = loc.desktop;
 			if (d == NULL) {
