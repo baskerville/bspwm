@@ -635,12 +635,13 @@ int cmd_monitor(char **args, int num)
 }
 
 typedef enum {
-	DOMAIN_MONITORS,
-	DOMAIN_MONITOR,
-	DOMAIN_DESKTOPS,
-	DOMAIN_DESKTOP,
 	DOMAIN_WINDOWS,
 	DOMAIN_WINDOW,
+	DOMAIN_DESKTOPS,
+	DOMAIN_DESKTOP,
+	DOMAIN_MONITORS,
+	DOMAIN_MONITOR,
+	DOMAIN_TREE,
 	DOMAIN_HISTORY,
 	DOMAIN_STACK
 } domain_t;
@@ -652,12 +653,12 @@ int cmd_query(char **args, int num, FILE *rsp)
 	domain_t dom;
 	bool constrained = false;
 
-	if (streq("-M", *args) || streq("--monitors", *args)) {
-		dom = DOMAIN_MONITORS;
-	} else if (streq("-m", *args) || streq("--monitor", *args)) {
-		dom = DOMAIN_MONITOR;
+	if (streq("-W", *args) || streq("--windows", *args)) {
+		dom = DOMAIN_WINDOWS;
+	} else if (streq("-w", *args) || streq("--window", *args)) {
+		dom = DOMAIN_WINDOW;
 		--num, ++args;
-		if (!monitor_from_desc(*args, &ref, &trg))
+		if (!node_from_desc(*args, &ref, &trg))
 			return MSG_FAILURE;
 		constrained = true;
 	} else if (streq("-D", *args) || streq("--desktops", *args)) {
@@ -668,14 +669,17 @@ int cmd_query(char **args, int num, FILE *rsp)
 		if (!desktop_from_desc(*args, &ref, &trg))
 			return MSG_FAILURE;
 		constrained = true;
-	} else if (streq("-W", *args) || streq("--windows", *args)) {
-		dom = DOMAIN_WINDOWS;
-	} else if (streq("-w", *args) || streq("--window", *args)) {
-		dom = DOMAIN_WINDOW;
+	} else if (streq("-M", *args) || streq("--monitors", *args)) {
+		dom = DOMAIN_MONITORS;
+	} else if (streq("-m", *args) || streq("--monitor", *args)) {
+		dom = DOMAIN_MONITOR;
 		--num, ++args;
-		if (!node_from_desc(*args, &ref, &trg))
+		if (!monitor_from_desc(*args, &ref, &trg))
 			return MSG_FAILURE;
 		constrained = true;
+	} else if (streq("-T", *args) || streq("--tree", *args)) {
+		dom = DOMAIN_TREE;
+		trg.node = mon->desk->focus;
 	} else if (streq("-H", *args) || streq("--history", *args)) {
 		dom = DOMAIN_HISTORY;
 	} else if (streq("-S", *args) || streq("--stack", *args)) {
@@ -687,9 +691,9 @@ int cmd_query(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (!constrained && num >= 2) {
-			if (streq("-m", *args) || streq("--monitor", *args)) {
+			if (streq("-w", *args) || streq("--window", *args)) {
 				--num, ++args;
-				if (!monitor_from_desc(*args, &ref, &trg))
+				if (!node_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
 				constrained = true;
 			} else if (streq("-d", *args) || streq("--desktop", *args)) {
@@ -697,9 +701,9 @@ int cmd_query(char **args, int num, FILE *rsp)
 				if (!desktop_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
 				constrained = true;
-			} else if (streq("-w", *args) || streq("--window", *args)) {
+			} else if (streq("-m", *args) || streq("--monitor", *args)) {
 				--num, ++args;
-				if (!node_from_desc(*args, &ref, &trg))
+				if (!monitor_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
 				constrained = true;
 			}
@@ -711,11 +715,11 @@ int cmd_query(char **args, int num, FILE *rsp)
 
 	json_t *jmsg;
 	switch (dom) {
-		case DOMAIN_MONITORS:
-			jmsg = query_monitors_json(trg);
+		case DOMAIN_WINDOWS:
+			jmsg = query_windows_json(trg);
 			break;
-		case DOMAIN_MONITOR:
-			jmsg = query_monitor_json(trg.monitor);
+		case DOMAIN_WINDOW:
+			jmsg = query_client_json(trg.node->client);
 			break;
 		case DOMAIN_DESKTOPS:
 			jmsg = query_desktops_json(trg);
@@ -723,10 +727,13 @@ int cmd_query(char **args, int num, FILE *rsp)
 		case DOMAIN_DESKTOP:
 			jmsg = query_desktop_json(trg.desktop);
 			break;
-		case DOMAIN_WINDOWS:
-			jmsg = query_windows_json(trg);
+		case DOMAIN_MONITORS:
+			jmsg = query_monitors_json(trg);
 			break;
-		case DOMAIN_WINDOW:
+		case DOMAIN_MONITOR:
+			jmsg = query_monitor_json(trg.monitor);
+			break;
+		case DOMAIN_TREE:
 			jmsg = query_node_json(trg.node);
 			break;
 		case DOMAIN_HISTORY:

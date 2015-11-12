@@ -281,17 +281,23 @@ json_t* query_monitor_json(monitor_t *m)
 	);
 }
 
-json_t* query_monitors_json(coordinates_t loc)
+json_t* query_windows_json(coordinates_t loc)
 {
-	json_t *jmonitors = json_object();
+	json_t *jwindows = json_array();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
-		json_t *jmonitor = json_pack("{s:o}", m->name, query_monitor_json(m));
-		json_object_update(jmonitors, jmonitor);
-		json_decref(jmonitor);
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (loc.node != NULL && n != loc.node)
+					continue;
+				json_array_append_new(jwindows, json_integer(n->client->window));
+			}
+		}
 	}
-	return jmonitors;
+	return jwindows;
 }
 
 json_t* query_desktops_json(coordinates_t loc)
@@ -311,23 +317,17 @@ json_t* query_desktops_json(coordinates_t loc)
 	return jdesktops;
 }
 
-json_t* query_windows_json(coordinates_t loc)
+json_t* query_monitors_json(coordinates_t loc)
 {
-	json_t *jwindows = json_array();
+	json_t *jmonitors = json_object();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop)
-				continue;
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				if (loc.node != NULL && n != loc.node)
-					continue;
-				json_array_append_new(jwindows, json_integer(n->client->window));
-			}
-		}
+		json_t *jmonitor = json_pack("{s:o}", m->name, query_monitor_json(m));
+		json_object_update(jmonitors, jmonitor);
+		json_decref(jmonitor);
 	}
-	return jwindows;
+	return jmonitors;
 }
 
 json_t* query_history_json(coordinates_t loc)
