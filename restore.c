@@ -289,26 +289,30 @@ void restore_stack(char *file_path)
 	if (file_path == NULL)
 		return;
 
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		warn("Restore stack: can't open '%s'.\n", file_path);
+	json_t *jfile;
+	json_error_t error;
+	jfile = json_load_file(file_path, 0, &error);
+	if (!jfile) {
+		warn("Restore history: %s (line: %d, column: %d)\n", error.text, error.line, error.column);
+		return;
+	}
+	if (!json_is_array(jfile)) {
+		warn("Restory history: Not a JSON array");
 		return;
 	}
 
-	char line[MAXLEN];
+	size_t index;
+	json_t *value;
 	xcb_window_t win;
 
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		if (sscanf(line, "%X", &win) == 1) {
-			coordinates_t loc;
-			if (locate_window(win, &loc))
-				stack_insert_after(stack_tail, loc.node);
-			else
-				warn("Can't locate window 0x%X.\n", win);
-		} else {
-			warn("Can't parse stack entry: '%s'\n", line);
+	json_array_foreach(jfile, index, value) {
+		coordinates_t loc;
+		win = (xcb_window_t)json_number_value(value);
+		if (!locate_window(win, &loc)) {
+			warn("Can't locate window %u\n", win);
+			continue;
 		}
+		stack_insert_after(stack_tail, loc.node);
 	}
-
-	fclose(snapshot);
+	json_decref(jfile);
 }
