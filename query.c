@@ -220,7 +220,7 @@ json_t* query_desktop_json(desktop_t *d)
 		"}",
 			"name", d->name,
 			"layout", query_layout_json(d->layout),
-			"nodeRoot", d->root != NULL ? query_node_json(d->root) : json_null(),
+			"nodes", d->root != NULL ? query_node_json(d->root) : json_null(),
 			"borderWidth", d->border_width,
 			"windowGap", d->window_gap,
 			"padding",
@@ -283,7 +283,8 @@ json_t* query_monitor_json(monitor_t *m)
 
 json_t* query_windows_json(coordinates_t loc)
 {
-	json_t *jwindows = json_array();
+	json_t *jwindows = json_object();
+	char id[11];
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
@@ -293,7 +294,10 @@ json_t* query_windows_json(coordinates_t loc)
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				if (loc.node != NULL && n != loc.node)
 					continue;
-				json_array_append_new(jwindows, json_integer(n->client->window));
+				sprintf(id, "%d", n->client->window);
+				json_t *jnode = json_pack("{s:o}", id, query_node_json(n));
+				json_object_update(jwindows, jnode);
+				json_decref(jnode);
 			}
 		}
 	}
@@ -328,6 +332,29 @@ json_t* query_monitors_json(coordinates_t loc)
 		json_decref(jmonitor);
 	}
 	return jmonitors;
+}
+
+json_t* query_tree_json(coordinates_t loc)
+{
+	json_t *jtree = json_object();
+	json_t *jdesktops = json_array();
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+		json_t *jmonitor = query_monitor_json(m);
+		json_object_set_new(jmonitor, "desktops", json_array());
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			json_array_append_new(jdesktops, query_desktop_json(d));
+		}
+		json_object_set(jmonitor, "desktops", jdesktops);
+		json_object_update(jtree, jmonitor);
+		json_object_clear(jdesktops);
+		json_decref(jmonitor);
+	}
+	json_decref(jdesktops);
+	return jtree;
 }
 
 json_t* query_history_json(coordinates_t loc)

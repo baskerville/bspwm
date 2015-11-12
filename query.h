@@ -27,13 +27,13 @@
 
 #include <jansson.h>
 
-json_t* query_client_json(client_t *c);
 json_t* query_node_json(node_t *n);
 json_t* query_desktop_json(desktop_t *d);
 json_t* query_monitor_json(monitor_t *m);
 json_t* query_windows_json(coordinates_t loc);
 json_t* query_desktops_json(coordinates_t loc);
 json_t* query_monitors_json(coordinates_t loc);
+json_t* query_tree_json(coordinates_t loc);
 json_t* query_history_json(coordinates_t loc);
 json_t* query_stack_json();
 client_select_t make_client_select(void);
