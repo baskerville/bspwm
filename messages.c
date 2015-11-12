@@ -204,9 +204,6 @@ int cmd_window(char **args, int num)
 				return MSG_SYNTAX;
 			client_state_t cst;
 			if (parse_client_state(*args, &cst)) {
-				if (trg.node->client->state == cst) {
-					cst = trg.node->client->last_state;
-				}
 				set_state(trg.monitor, trg.desktop, trg.node, cst);
 				dirty = true;
 			} else {
