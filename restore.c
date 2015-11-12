@@ -24,6 +24,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <jansson.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -34,6 +35,7 @@
 #include "tree.h"
 #include "settings.h"
 #include "restore.h"
+#include "json.h"
 
 void restore_tree(char *file_path)
 {
@@ -220,42 +222,66 @@ void restore_history(char *file_path)
 	if (file_path == NULL)
 		return;
 
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		warn("Restore history: can't open '%s'.\n", file_path);
+	json_t *jfile;
+	json_error_t error;
+	jfile = json_load_file(file_path, 0, &error);
+	if (!jfile) {
+		warn("Restore history: %s (line: %d, column: %d)\n", error.text, error.line, error.column);
+		return;
+	}
+	if (!json_is_array(jfile)) {
+		warn("Restory history: Not a JSON array");
 		return;
 	}
 
-	char line[MAXLEN];
-	char mnm[SMALEN];
-	char dnm[SMALEN];
+	size_t index;
+	json_t *value;
+	json_t *get;
 	xcb_window_t win;
+	char dnm[SMALEN];
+	char mnm[SMALEN];
 
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		if (sscanf(line, "%s %s %X", mnm, dnm, &win) == 3) {
-			coordinates_t loc;
-			if (win != XCB_NONE && !locate_window(win, &loc)) {
-				warn("Can't locate window 0x%X.\n", win);
-				continue;
-			}
-			node_t *n = (win == XCB_NONE ? NULL : loc.node);
-			if (!locate_desktop(dnm, &loc)) {
-				warn("Can't locate desktop '%s'.\n", dnm);
-				continue;
-			}
-			desktop_t *d = loc.desktop;
-			if (!locate_monitor(mnm, &loc)) {
-				warn("Can't locate monitor '%s'.\n", mnm);
-				continue;
-			}
-			monitor_t *m = loc.monitor;
-			history_add(m, d, n);
-		} else {
-			warn("Can't parse history entry: '%s'\n", line);
+	json_array_foreach(jfile, index, value) {
+		coordinates_t loc;
+		if (!(get = json_object_get(value, "windowId"))) {
+			warn("No windowId key\n");
+			continue;
 		}
-	}
+		win = (xcb_window_t)json_number_value(get);
+		if (win != XCB_NONE && !locate_window(win, &loc)) {
+			warn("Can't locate window %u\n", win);
+			continue;
+		}
+		node_t *n = (win != XCB_NONE ? loc.node : NULL);
+		json_decref(get);
 
-	fclose(snapshot);
+		if (!(get = json_object_get(value, "desktopName"))) {
+			warn("No desktopName key\n");
+			continue;
+		}
+		strcpy(dnm, json_string_value(get));
+		if (!locate_desktop(dnm, &loc)) {
+			warn("Can't locate desktop '%s'\n", dnm);
+			continue;
+		}
+		desktop_t *d = loc.desktop;
+		json_decref(get);
+
+		if (!(get = json_object_get(value, "monitorName"))) {
+			warn("No monitorName key\n");
+			continue;
+		}
+		strcpy(mnm, json_string_value(get));
+		if (!locate_monitor(mnm, &loc)) {
+			warn("Can't locate monitor '%s'.\n", mnm);
+			continue;
+		}
+		monitor_t *m = loc.monitor;
+		json_decref(get);
+
+		history_add(m, d, n);
+	}
+	json_decref(jfile);
 }
 
 void restore_stack(char *file_path)
