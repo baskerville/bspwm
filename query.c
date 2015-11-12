@@ -33,6 +33,7 @@
 #include "monitor.h"
 #include "tree.h"
 #include "query.h"
+#include "json.h"
 
 json_t* query_xcb_rectangle_json(xcb_rectangle_t rec)
 {
@@ -59,59 +60,6 @@ json_t* query_desktops_array_json(monitor_t *m)
 	return jdesktops;
 }
 
-json_t* query_split_type_json(split_type_t t)
-{
-	return
-		t == TYPE_HORIZONTAL ? json_string("horizontal") :
-		t == TYPE_VERTICAL ? json_string("vertical") :
-		json_null();
-}
-
-json_t* query_split_mode_json(split_mode_t m)
-{
-	return
-		m == MODE_AUTOMATIC ? json_string("automatic") :
-		m == MODE_MANUAL ? json_string("manual") :
-		json_null();
-}
-
-json_t* query_client_state_json(client_state_t s)
-{
-	return
-		s == STATE_TILED ? json_string("tiled") :
-		s == STATE_PSEUDO_TILED ? json_string("pseudo_tiled") :
-		s == STATE_FLOATING ? json_string("floating") :
-		s == STATE_FULLSCREEN ? json_string("fullscreen") :
-		json_null();
-}
-
-json_t* query_stack_layer_json(stack_layer_t l)
-{
-	return
-		l == LAYER_BELOW ? json_string("below") :
-		l == LAYER_NORMAL ? json_string("normal") :
-		l == LAYER_ABOVE ? json_string("above") :
-		json_null();
-}
-
-json_t* query_direction_json(direction_t d)
-{
-	return
-		d == DIR_RIGHT ? json_string("right") :
-		d == DIR_DOWN ? json_string("down") :
-		d == DIR_LEFT ? json_string("left") :
-		d == DIR_UP ? json_string("up") :
-		json_null();
-}
-
-json_t* query_layout_json(layout_t l)
-{
-	return
-		l == LAYOUT_TILED ? json_string("tiled") :
-		l == LAYOUT_MONOCLE ? json_string("monocle") :
-		json_null();
-}
-
 json_t* query_client_json(client_t *c)
 {
 	return json_pack(
@@ -125,10 +73,10 @@ json_t* query_client_json(client_t *c)
 			"s:b,"
 			"s:b,"
 			"s:b,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
+			"s:s,"
+			"s:s,"
+			"s:s,"
+			"s:s,"
 			"s:o,"
 			"s:o,"
 			"s:{"
@@ -150,10 +98,10 @@ json_t* query_client_json(client_t *c)
 			"urgent", c->urgent,
 			"private", c->private,
 			"icccmFocus", c->icccm_focus,
-			"state", query_client_state_json(c->state),
-			"stateLast", query_client_state_json(c->last_state),
-			"layer", query_stack_layer_json(c->layer),
-			"layerLast", query_stack_layer_json(c->last_layer),
+			"state", client_state_json[c->state],
+			"stateLast", client_state_json[c->last_state],
+			"layer", stack_layer_json[c->layer],
+			"layerLast", stack_layer_json[c->last_layer],
 			"rectangleFloating", query_xcb_rectangle_json(c->floating_rectangle),
 			"rectangleTiled", query_xcb_rectangle_json(c->tiled_rectangle),
 			"sizeMinimum",
@@ -171,10 +119,10 @@ json_t* query_node_json(node_t *n)
 	return json_pack(
 		"{"
 			"s:{"
-				"s:o,"
+				"s:s,"
 				"s:f,"
-				"s:o,"
-				"s:o,"
+				"s:s,"
+				"s:s,"
 			"},"
 			"s:i,"
 			"s:o,"
@@ -186,10 +134,10 @@ json_t* query_node_json(node_t *n)
 			"s:b"
 		"}",
 			"split",
-				"type", query_split_type_json(n->split_type),
+				"type", split_type_json[n->split_type],
 				"ratio", n->split_ratio,
-				"mode", query_split_mode_json(n->split_mode),
-				"direction", query_direction_json(n->split_dir),
+				"mode", split_mode_json[n->split_mode],
+				"direction", direction_json[n->split_dir],
 			"birthRotation", n->birth_rotation,
 			"rectangle", query_xcb_rectangle_json(n->rectangle),
 			"vacant", n->vacant,
@@ -206,7 +154,7 @@ json_t* query_desktop_json(desktop_t *d)
 	return json_pack(
 		"{"
 			"s:s,"
-			"s:o,"
+			"s:s,"
 			"s:o,"
 			"s:i,"
 			"s:i,"
@@ -219,7 +167,7 @@ json_t* query_desktop_json(desktop_t *d)
 			"s:b"
 		"}",
 			"name", d->name,
-			"layout", query_layout_json(d->layout),
+			"layout", layout_json[d->layout],
 			"nodes", d->root != NULL ? query_node_json(d->root) : json_null(),
 			"borderWidth", d->border_width,
 			"windowGap", d->window_gap,
