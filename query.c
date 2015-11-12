@@ -149,7 +149,7 @@ json_t* query_client_json(client_t *c)
 			"sticky", c->sticky,
 			"urgent", c->urgent,
 			"private", c->private,
-			"icccm_focus", c->icccm_focus,
+			"icccmFocus", c->icccm_focus,
 			"state", query_client_state_json(c->state),
 			"stateLast", query_client_state_json(c->last_state),
 			"layer", query_stack_layer_json(c->layer),
