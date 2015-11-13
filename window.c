@@ -74,7 +74,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	if (!csq->manage) {
 		free(csq->layer);
 		free(csq->state);
-		disable_floating_atom(win);
 		window_show(win);
 		return;
 	}
@@ -157,7 +156,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		c->layer = *(csq->layer);
 	}
 
-	disable_floating_atom(c->window);
 	set_state(m, d, n, csq->state != NULL ? *(csq->state) : c->state);
 	set_locked(m, d, n, csq->locked);
 	set_sticky(m, d, n, csq->sticky);
@@ -453,17 +451,13 @@ void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		return;
 	}
 
-	client_t *c = n->client;
-
 	n->split_mode = MODE_AUTOMATIC;
 	n->vacant = value;
 	update_vacant_state(n->parent);
 
 	if (value) {
-		enable_floating_atom(c->window);
 		unrotate_brother(n);
 	} else {
-		disable_floating_atom(c->window);
 		rotate_brother(n);
 		if (d->focus == n) {
 			neutralize_obscuring_windows(m, d, n);
@@ -576,23 +570,6 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->client->window, ONOFFSTR(value));
 	put_status(SBSC_MASK_REPORT);
-}
-
-void set_floating_atom(xcb_window_t win, uint32_t value)
-{
-	if (!apply_floating_atom)
-		return;
-	set_atom(win, _BSPWM_FLOATING_WINDOW, value);
-}
-
-void enable_floating_atom(xcb_window_t win)
-{
-	set_floating_atom(win, 1);
-}
-
-void disable_floating_atom(xcb_window_t win)
-{
-	set_floating_atom(win, 0);
 }
 
 uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor)

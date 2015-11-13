@@ -68,7 +68,6 @@ void load_settings(void)
 	focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
 	pointer_follows_focus = POINTER_FOLLOWS_FOCUS;
 	pointer_follows_monitor = POINTER_FOLLOWS_MONITOR;
-	apply_floating_atom = APPLY_FLOATING_ATOM;
 	auto_alternate = AUTO_ALTERNATE;
 	auto_cancel = AUTO_CANCEL;
 	history_aware_focus = HISTORY_AWARE_FOCUS;

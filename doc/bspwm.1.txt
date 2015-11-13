@@ -772,9 +772,6 @@ Global Settings
 'auto_cancel'::
 	Interpret consecutive identical *--presel* arguments as *--cancel-presel* option.
 
-'apply_floating_atom'::
-	Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
-
 'ignore_ewmh_focus'::
 	Ignore EWMH focus requests coming from applications.
 
