@@ -422,6 +422,7 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
 	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
+	c->icccm_input = true;
 	xcb_icccm_get_wm_protocols_reply_t protocols;
 	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
 		if (has_proto(WM_TAKE_FOCUS, &protocols)) {
@@ -432,9 +433,15 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 	c->num_states = 0;
 	xcb_ewmh_get_atoms_reply_t wm_state;
 	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
-		for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++)
+		for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++) {
 			ewmh_wm_state_add(c, wm_state.atoms[i]);
+		}
 		xcb_ewmh_get_atoms_reply_wipe(&wm_state);
+	}
+	xcb_icccm_wm_hints_t hints;
+	if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, win), &hints, NULL) == 1
+	    && (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
+		c->icccm_input = hints.input;
 	}
 	return c;
 }
