@@ -41,8 +41,10 @@ void stack_insert_after(stacking_list_t *a, node_t *n)
 	if (a == NULL) {
 		stack_head = stack_tail = s;
 	} else {
-		if (a->node == n)
+		if (a->node == n) {
+			free(s);
 			return;
+		}
 		remove_stack_node(n);
 		stacking_list_t *b = a->next;
 		if (b != NULL)
@@ -61,8 +63,10 @@ void stack_insert_before(stacking_list_t *a, node_t *n)
 	if (a == NULL) {
 		stack_head = stack_tail = s;
 	} else {
-		if (a->node == n)
+		if (a->node == n) {
+			free(s);
 			return;
+		}
 		remove_stack_node(n);
 		stacking_list_t *b = a->prev;
 		if (b != NULL)
