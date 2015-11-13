@@ -285,23 +285,20 @@ json_t* query_monitors_json(coordinates_t loc)
 json_t* query_tree_json(coordinates_t loc)
 {
 	json_t *jtree = json_object();
-	json_t *jdesktops = json_array();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
 		json_t *jmonitor = query_monitor_json(m);
-		json_object_set_new(jmonitor, "desktops", json_array());
+		json_t *jdesktops = json_array();
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			if (loc.desktop != NULL && d != loc.desktop)
 				continue;
 			json_array_append_new(jdesktops, query_desktop_json(d));
 		}
-		json_object_set(jmonitor, "desktops", jdesktops);
-		json_object_update(jtree, jmonitor);
+		json_object_set_new(jmonitor, "desktops", jdesktops);
+		json_object_set_new(jtree, m->name, jmonitor);
 		json_object_clear(jdesktops);
-		json_decref(jmonitor);
 	}
-	json_decref(jdesktops);
 	return jtree;
 }
 
