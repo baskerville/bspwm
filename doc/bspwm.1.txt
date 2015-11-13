@@ -767,10 +767,10 @@ Global Settings
 	When focusing a monitor, put the pointer at its center.
 
 'auto_alternate'::
-	Interpret two consecutive identical *use* messages as an *alternate* message.
+	Interpret consecutive identical *--focus* arguments as the *last* selector for the *monitor* and *desktop* commands.
 
 'auto_cancel'::
-	Interpret two consecutive identical *presel* messages as a *cancel* message.
+	Interpret consecutive identical *--presel* arguments as *--cancel-presel* option.
 
 'apply_floating_atom'::
 	Set the value of the '_BSPWM_FLOATING_WINDOW' atom of each window according to its floating state.
@@ -853,9 +853,6 @@ Events
 
 'desktop_layout <monitor_name> <desktop_name> tiled|monocle'::
 	The layout of a desktop changed.
-
-'window_manage <monitor_name> <desktop_name> <window_id> <ip_id>'::
-	A window is managed.
 
 'window_manage <monitor_name> <desktop_name> <window_id> <ip_id>'::
 	A window is managed.
