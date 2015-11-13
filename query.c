@@ -35,22 +35,6 @@
 #include "query.h"
 #include "json.h"
 
-json_t* query_xcb_rectangle_json(xcb_rectangle_t rec)
-{
-	return json_pack(
-		"{"
-			"s:i,"
-			"s:i,"
-			"s:i,"
-			"s:i"
-		"}",
-			"x", rec.x,
-			"y", rec.y,
-			"width", rec.width,
-			"height", rec.height
-	);
-}
-
 json_t* query_desktops_array_json(monitor_t *m)
 {
 	json_t *jdesktops = json_array();
@@ -60,173 +44,26 @@ json_t* query_desktops_array_json(monitor_t *m)
 	return jdesktops;
 }
 
-json_t* query_client_json(client_t *c)
-{
-	return json_pack(
-		"{"
-			"s:i,"
-			"s:s,"
-			"s:s,"
-			"s:i,"
-			"s:b,"
-			"s:b,"
-			"s:b,"
-			"s:b,"
-			"s:b,"
-			"s:s,"
-			"s:s,"
-			"s:s,"
-			"s:s,"
-			"s:o,"
-			"s:o,"
-			"s:{"
-				"s:i,"
-				"s:i,"
-			"},"
-			"s:{"
-				"s:i,"
-				"s:i,"
-			"},"
-			"s:i"
-		"}",
-			"windowId", c->window,
-			"nameClass", c->class_name,
-			"nameInstance", c->instance_name,
-			"borderWidth", c->border_width,
-			"locked", c->locked,
-			"sticky", c->sticky,
-			"urgent", c->urgent,
-			"private", c->private,
-			"icccmFocus", c->icccm_focus,
-			"state", client_state_json[c->state],
-			"stateLast", client_state_json[c->last_state],
-			"layer", stack_layer_json[c->layer],
-			"layerLast", stack_layer_json[c->last_layer],
-			"rectangleFloating", query_xcb_rectangle_json(c->floating_rectangle),
-			"rectangleTiled", query_xcb_rectangle_json(c->tiled_rectangle),
-			"sizeMinimum",
-				"width", c->min_width,
-				"height", c->min_height,
-			"sizeMaximum",
-				"width", c->max_width,
-				"height", c->max_height,
-			"stateNumber", c->num_states
-	);
-}
-
 json_t* query_node_json(node_t *n)
 {
-	return json_pack(
-		"{"
-			"s:{"
-				"s:s,"
-				"s:f,"
-				"s:s,"
-				"s:s,"
-			"},"
-			"s:i,"
-			"s:o,"
-			"s:b,"
-			"s:i,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:b"
-		"}",
-			"split",
-				"type", split_type_json[n->split_type],
-				"ratio", n->split_ratio,
-				"mode", split_mode_json[n->split_mode],
-				"direction", direction_json[n->split_dir],
-			"birthRotation", n->birth_rotation,
-			"rectangle", query_xcb_rectangle_json(n->rectangle),
-			"vacant", n->vacant,
-			"privacyLevel", n->privacy_level,
-			"childFirst", n->first_child != NULL ? query_node_json(n->first_child) : json_null(),
-			"childSecond", n->second_child != NULL ? query_node_json(n->second_child) : json_null(),
-			"client", is_leaf(n) ? query_client_json(n->client) : json_null(),
-			"focused", n == mon->desk->focus ? true : false
-	);
+	json_t* json = json_serialize_node(n);
+	json_object_set_new(json, "focused", n == mon->desk->focus ? json_true() : json_false());
+	return json;
 }
 
 json_t* query_desktop_json(desktop_t *d)
 {
-	return json_pack(
-		"{"
-			"s:s,"
-			"s:s,"
-			"s:o,"
-			"s:i,"
-			"s:i,"
-			"s:{"
-				"s:i,"
-				"s:i,"
-				"s:i,"
-				"s:i"
-			"},"
-			"s:b"
-		"}",
-			"name", d->name,
-			"layout", layout_json[d->layout],
-			"nodes", d->root != NULL ? query_node_json(d->root) : json_null(),
-			"borderWidth", d->border_width,
-			"windowGap", d->window_gap,
-			"padding",
-				"top", d->top_padding,
-				"right", d->right_padding,
-				"bottom", d->bottom_padding,
-				"left", d->left_padding,
-			"focused", d == mon->desk ? true : false
-	);
+	json_t* json = json_serialize_desktop(d);
+	json_object_set_new(json, "focused", d == mon->desk ? json_true() : json_false());
+	return json;
 }
 
 json_t* query_monitor_json(monitor_t *m)
 {
-	return json_pack(
-		"{"
-			"s:s,"
-			"s:i,"
-			"s:o,"
-			"s:i,"
-			"s:b,"
-			"s:{"
-				"s:i,"
-				"s:i,"
-				"s:i,"
-				"s:i"
-			"},"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:i,"
-			"s:o,"
-			"s:b"
-		"}",
-			"name", m->name,
-			"id", m->id,
-			"rectangle", query_xcb_rectangle_json(m->rectangle),
-			"rootWindowId", m->root,
-			"wired", m->wired,
-			"padding",
-				"top", m->top_padding,
-				"right", m->right_padding,
-				"bottom", m->bottom_padding,
-				"left", m->left_padding,
-			"desktopFocused", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
-			"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
-			"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
-			"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
-			"prevId", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
-			"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
-			"nextId", m->next != NULL ? json_integer(m->next->id) : json_null(),
-			"stickyNumber", m->num_sticky,
-			"desktops", query_desktops_array_json(m),
-			"focused", m == mon ? true : false
-	);
+	json_t* json = json_serialize_monitor(m);
+	json_object_set_new(json, "desktops", query_desktops_array_json(m));
+	json_object_set_new(json, "focused", m == mon ? json_true() : json_false());
+	return json;
 }
 
 json_t* query_windows_json(coordinates_t loc)

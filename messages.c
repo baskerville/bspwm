@@ -726,40 +726,40 @@ int cmd_query(char **args, int num, FILE *rsp)
 		--num, ++args;
 	}
 
-	json_t *jmsg;
+	json_t *json;
 	switch (dom) {
 		case DOMAIN_WINDOWS:
-			jmsg = query_windows_json(trg);
+			json = query_windows_json(trg);
 			break;
 		case DOMAIN_WINDOW:
-			jmsg = query_node_json(trg.node);
+			json = query_node_json(trg.node);
 			break;
 		case DOMAIN_DESKTOPS:
-			jmsg = query_desktops_json(trg);
+			json = query_desktops_json(trg);
 			break;
 		case DOMAIN_DESKTOP:
-			jmsg = query_desktop_json(trg.desktop);
+			json = query_desktop_json(trg.desktop);
 			break;
 		case DOMAIN_MONITORS:
-			jmsg = query_monitors_json(trg);
+			json = query_monitors_json(trg);
 			break;
 		case DOMAIN_MONITOR:
-			jmsg = query_monitor_json(trg.monitor);
+			json = query_monitor_json(trg.monitor);
 			break;
 		case DOMAIN_TREE:
-			jmsg = query_tree_json(trg);
+			json = query_tree_json(trg);
 			break;
 		case DOMAIN_HISTORY:
-			jmsg = query_history_json(trg);
+			json = query_history_json(trg);
 			break;
 		case DOMAIN_STACK:
-			jmsg = query_stack_json();
+			json = query_stack_json();
 			break;
 		default:
 			return MSG_FAILURE;
 	}
-	int rval = json_dumpf(jmsg, rsp, JSON_INDENT(4) | JSON_SORT_KEYS);
-	json_decref(jmsg);
+	int rval = json_dumpf(json, rsp, JSON_INDENT(4) | JSON_SORT_KEYS);
+	json_decref(json);
 	if(rval == -1) {
 		warn("JSON dump failed\n");
 		return MSG_FAILURE;

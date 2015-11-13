@@ -1,92 +1,49 @@
-static const char const *split_type_json[] __attribute__((unused)) = {
-	"horizontal",
-	"vertical"
-};
+#include <jansson.h>
 
-static const char const *split_mode_json[] __attribute__((unused)) = {
-	"automatic",
-	"manual"
-};
+#define SERIALIZE(type) \
+json_t* json_serialize_##type(type##_t *obj)
 
-static const char const *client_state_json[] __attribute__((unused)) = {
-	"tiled",
-	"pseudo_tiled",
-	"floating",
-	"fullscreen"
-};
+#define DESERIALIZE(type) \
+bool json_deserialize_##type(json_t *json, type##_t *obj)
 
-static const char const *stack_layer_json[] __attribute__((unused)) = {
-	"below",
-	"normal",
-	"above"
-};
+SERIALIZE(split_type);
+DESERIALIZE(split_type);
+SERIALIZE(split_mode);
+DESERIALIZE(split_mode);
+SERIALIZE(client_state);
+DESERIALIZE(client_state);
+SERIALIZE(stack_layer);
+DESERIALIZE(stack_layer);
+SERIALIZE(option_bool);
+DESERIALIZE(option_bool);
+SERIALIZE(alter_state);
+DESERIALIZE(alter_state);
+SERIALIZE(cycle_dir);
+DESERIALIZE(cycle_dir);
+SERIALIZE(circulate_dir);
+DESERIALIZE(circulate_dir);
+SERIALIZE(history_dir);
+DESERIALIZE(history_dir);
+SERIALIZE(direction);
+DESERIALIZE(direction);
+SERIALIZE(corner);
+DESERIALIZE(corner);
+SERIALIZE(side);
+DESERIALIZE(side);
+SERIALIZE(pointer_action);
+DESERIALIZE(pointer_action);
+SERIALIZE(layout);
+DESERIALIZE(layout);
+SERIALIZE(flip);
+DESERIALIZE(flip);
+SERIALIZE(child_polarity);
+DESERIALIZE(child_polarity);
 
-static const char const *option_bool_json[] __attribute__((unused)) = {
-	"none",
-	"true",
-	"false"
-};
+#undef SERIALIZE
+#undef DESERALIZE
 
-static const char const *alter_state_json[] __attribute__((unused)) = {
-	"toggle",
-	"set"
-};
-
-static const char const *cycle_dir_json[] __attribute__((unused)) = {
-	"next",
-	"prev"
-};
-
-static const char const *circulate_dir_json[] __attribute__((unused)) = {
-	"forward",
-	"backward"
-};
-
-static const char const *history_dir_json[] __attribute__((unused)) = {
-	"older",
-	"newer"
-};
-
-static const char const *direction_json[] __attribute__((unused)) = {
-	"right",
-	"down",
-	"left",
-	"up"
-};
-
-static const char const *corner_json[] __attribute__((unused)) = {
-	"top_left",
-	"top_right",
-	"bottom_right",
-	"bottom_left"
-};
-
-static const char const *side_json[] __attribute__((unused)) = {
-	"left",
-	"top",
-	"right",
-	"bottom"
-};
-
-static const char const *pointer_action_json[] __attribute__((unused)) = {
-	"none",
-	"focus",
-	"move",
-	"resize_side",
-	"resize_corner"
-};
-
-static const char const *layout_json[] __attribute__((unused)) = {
-	"tiled",
-	"monocle"
-};
-
-static const char const *flip_json[] __attribute__((unused)) = {
-	"horizontal",
-	"vertical"
-};
-
-static const char const *child_polarity_json[] __attribute__((unused)) = {
-	"first",
-	"second"
-};
+json_t* json_serialize_xcb_rectangle(xcb_rectangle_t rec);
+json_t* json_serialize_client(client_t *c);
+json_t* json_serialize_node(node_t *n);
+json_t* json_serialize_desktop(desktop_t *d);
+json_t* json_serialize_monitor(monitor_t *m);
