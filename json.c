@@ -336,6 +336,29 @@ SERIALIZATION(client,
 	INTEGER("statesNumber", int, &obj->num_states)
 )
 
+json_t* json_serialize_node_windowid(node_t *obj)
+{
+	if (obj == NULL || obj->client == NULL)
+		return json_null();
+	return json_integer(obj->client->window);
+}
+
+node_t* json_deserialize_node_windowid(json_t *json)
+{
+	if (json == NULL || !json_is_integer(json))
+		return NULL;
+	coordinates_t loc;
+	xcb_window_t win = (xcb_window_t)json_integer_value(json);
+	if (win == XCB_NONE || !locate_window(win, &loc))
+		return NULL;
+	return loc.node;
+}
+
+json_t* json_serialize_node_focused(node_t *obj)
+{
+	return obj == mon->desk->focus ? json_true() : json_false();
+}
+
 SERIALIZATION(node,
 	OBJECT("type", split_type_type, &obj->split_type),
 	REAL("ratio", double, &obj->split_ratio),
@@ -348,7 +371,8 @@ SERIALIZATION(node,
 	OBJECT("childFirst", node_type, obj->first_child),
 	OBJECT("childSecond", node_type, obj->second_child),
 	// parent
-	OBJECT("client", client_type, obj->client)
+	OBJECT("client", client_type, obj->client),
+	SERONLY(SERIALIZE_CUSTOM("focused", node_focused, obj))
 )
 
 json_t* json_serialize_desktop_name(desktop_t *obj)
@@ -368,19 +392,25 @@ desktop_t* json_deserialize_desktop_name(json_t *json)
 	return loc.desktop;
 }
 
+json_t* json_serialize_desktop_focused(desktop_t *obj)
+{
+	return obj == mon->desk ? json_true() : json_false();
+}
+
 SERIALIZATION(desktop,
 	STRING("name", &obj->name),
 	OBJECT("layout", layout_type, &obj->layout),
-	// root
+	OBJECT("root", node_type, obj->root),
 	// focus
-	SERONLY(SERIALIZE_CUSTOM("prevName", desktop_name, obj->prev)),
-	SERONLY(SERIALIZE_CUSTOM("nextName", desktop_name, obj->next)),
+	CUSTOM("prevName", desktop_name, obj->prev),
+	CUSTOM("nextName", desktop_name, obj->next),
 	INTEGER("paddingTop", int, &obj->top_padding),
 	INTEGER("paddingRight", int, &obj->right_padding),
 	INTEGER("paddingBottom", int, &obj->bottom_padding),
 	INTEGER("paddingLeft", int, &obj->left_padding),
 	INTEGER("windowGap", int, &obj->window_gap),
-	INTEGER("borderWidth", unsigned int, &obj->border_width)
+	INTEGER("borderWidth", unsigned int, &obj->border_width),
+	SERONLY(SERIALIZE_CUSTOM("focused", desktop_focused, obj))
 )
 
 json_t* json_serialize_monitor_name(monitor_t *obj)
@@ -407,6 +437,20 @@ json_t* json_serialize_monitor_id(monitor_t *obj)
 	return json_integer(obj->id);
 }
 
+json_t* json_serialize_monitor_desktops(monitor_t *obj)
+{
+	json_t *json = json_array();
+	for (desktop_t *d = obj->desk_head; d != NULL; d = d->next) {
+		json_array_append_new(json, json_string(d->name));
+	}
+	return json;
+}
+
+json_t* json_serialize_monitor_focused(monitor_t *obj)
+{
+	return obj == mon ? json_true() : json_false();
+}
+
 SERIALIZATION(monitor,
 	STRING("name", &obj->name),
 	INTEGER("id", xcb_randr_output_t, &obj->id),
@@ -424,7 +468,15 @@ SERIALIZATION(monitor,
 	SERONLY(SERIALIZE_CUSTOM("prevId", monitor_id, obj->prev)),
 	CUSTOM("nextName", monitor_name, obj->next),
 	SERONLY(SERIALIZE_CUSTOM("nextId", monitor_id, obj->next)),
-	INTEGER("stickyNumber", int, &obj->num_sticky)
+	INTEGER("stickyNumber", int, &obj->num_sticky),
+	SERONLY(SERIALIZE_CUSTOM("desktops", monitor_desktops, obj)),
+	SERONLY(SERIALIZE_CUSTOM("focused", monitor_focused, obj))
+)
+
+SERIALIZATION(coordinates,
+	CUSTOM("monitorName", monitor_name, obj->monitor),
+	CUSTOM("desktopName", desktop_name, obj->desktop),
+	CUSTOM("windowId", node_windowid, obj->node)
 )
 
 #undef SERIALIZE_BEGIN
@@ -449,41 +501,9 @@ SERIALIZATION(monitor,
 // Misc
 //
 
-json_t* json_serialize_desktops_array(monitor_t *m)
-{
-	json_t *jdesktops = json_array();
-	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-		json_array_append_new(jdesktops, json_string(d->name));
-	}
-	return jdesktops;
-}
-
-json_t* json_serialize_node(node_t *n)
-{
-	json_t* json = json_serialize_node_type(n);
-	json_object_set_new(json, "focused", n == mon->desk->focus ? json_true() : json_false());
-	return json;
-}
-
-json_t* json_serialize_desktop(desktop_t *d)
-{
-	json_t* json = json_serialize_desktop_type(d);
-	json_object_set_new(json, "focused", d == mon->desk ? json_true() : json_false());
-	json_object_set_new(json, "nodes", d->root != NULL ? json_serialize_node(d->root) : json_null());
-	return json;
-}
-
-json_t* json_serialize_monitor(monitor_t *m)
-{
-	json_t* json = json_serialize_monitor_type(m);
-	json_object_set_new(json, "desktops", json_serialize_desktops_array(m));
-	json_object_set_new(json, "focused", m == mon ? json_true() : json_false());
-	return json;
-}
-
 json_t* json_serialize_windows(coordinates_t loc)
 {
-	json_t *jwindows = json_object();
+	json_t *json = json_object();
 	char id[11];
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
@@ -495,68 +515,68 @@ json_t* json_serialize_windows(coordinates_t loc)
 				if (loc.node != NULL && n != loc.node)
 					continue;
 				sprintf(id, "%d", n->client->window);
-				json_t *jnode = json_pack("{s:o}", id, json_serialize_node(n));
-				json_object_update(jwindows, jnode);
+				json_t *jnode = json_pack("{s:o}", id, json_serialize_node_type(n));
+				json_object_update(json, jnode);
 				json_decref(jnode);
 			}
 		}
 	}
-	return jwindows;
+	return json;
 }
 
 json_t* json_serialize_desktops(coordinates_t loc)
 {
-	json_t *jdesktops = json_object();
+	json_t *json = json_object();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			if (loc.desktop != NULL && d != loc.desktop)
 				continue;
-			json_t *jdesktop = json_pack("{s:o}", d->name, json_serialize_desktop(d));
-			json_object_update(jdesktops, jdesktop);
+			json_t *jdesktop = json_pack("{s:o}", d->name, json_serialize_desktop_type(d));
+			json_object_update(json, jdesktop);
 			json_decref(jdesktop);
 		}
 	}
-	return jdesktops;
+	return json;
 }
 
 json_t* json_serialize_monitors(coordinates_t loc)
 {
-	json_t *jmonitors = json_object();
+	json_t *json = json_object();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
-		json_t *jmonitor = json_pack("{s:o}", m->name, json_serialize_monitor(m));
-		json_object_update(jmonitors, jmonitor);
+		json_t *jmonitor = json_pack("{s:o}", m->name, json_serialize_monitor_type(m));
+		json_object_update(json, jmonitor);
 		json_decref(jmonitor);
 	}
-	return jmonitors;
+	return json;
 }
 
 json_t* json_serialize_tree(coordinates_t loc)
 {
-	json_t *jtree = json_object();
+	json_t *json = json_object();
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
 			continue;
-		json_t *jmonitor = json_serialize_monitor(m);
+		json_t *jmonitor = json_serialize_monitor_type(m);
 		json_t *jdesktops = json_array();
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			if (loc.desktop != NULL && d != loc.desktop)
 				continue;
-			json_array_append_new(jdesktops, json_serialize_desktop(d));
+			json_array_append_new(jdesktops, json_serialize_desktop_type(d));
 		}
 		json_object_set_new(jmonitor, "desktops", jdesktops);
-		json_object_set_new(jtree, m->name, jmonitor);
+		json_object_set_new(json, m->name, jmonitor);
 		json_object_clear(jdesktops);
 	}
-	return jtree;
+	return json;
 }
 
 json_t* json_serialize_history(coordinates_t loc)
 {
-	json_t *jhistory = json_array();
+	json_t *json = json_array();
 	for (history_t *h = history_head; h != NULL; h = h->next) {
 		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
 				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
@@ -565,7 +585,7 @@ json_t* json_serialize_history(coordinates_t loc)
 		if (h->loc.node != NULL)
 			win = h->loc.node->client->window;
 
-		json_array_append_new(jhistory, json_pack(
+		json_array_append_new(json, json_pack(
 			"{"
 				"s:s,"
 				"s:s,"
@@ -576,14 +596,25 @@ json_t* json_serialize_history(coordinates_t loc)
 				"windowId", win
 		));
 	}
-	return jhistory;
+	return json;
 }
 
 json_t* json_serialize_stack()
 {
-	json_t *jstack = json_array();
+	json_t *json = json_array();
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-		json_array_append_new(jstack, json_integer(s->node->client->window));
+		json_array_append_new(json, json_integer(s->node->client->window));
 	}
-	return jstack;
+	return json;
+}
+
+json_t* json_deserialize_file(const char *file_path)
+{
+	json_error_t error;
+	json_t *json = json_load_file(file_path, 0, &error);
+	if (json == NULL) {
+		warn("JSON failed to load file: %s (line: %d, column: %d)\n", error.text, error.line, error.column);
+		return NULL;
+	}
+	return json;
 }

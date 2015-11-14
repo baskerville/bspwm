@@ -37,7 +37,7 @@
 #include "restore.h"
 #include "json.h"
 
-void restore_tree(char *file_path)
+void restore_tree(const char *file_path)
 {
 	if (file_path == NULL)
 		return;
@@ -217,102 +217,52 @@ void restore_tree(char *file_path)
 	ewmh_update_current_desktop();
 }
 
-void restore_history(char *file_path)
+void restore_history(const char *file_path)
 {
 	if (file_path == NULL)
 		return;
 
-	json_t *jfile;
-	json_error_t error;
-	jfile = json_load_file(file_path, 0, &error);
-	if (!jfile) {
-		warn("Restore history: %s (line: %d, column: %d)\n", error.text, error.line, error.column);
-		return;
-	}
-	if (!json_is_array(jfile)) {
-		warn("Restory history: Not a JSON array");
+	json_t *json = json_deserialize_file(file_path);
+	if (json == NULL || !json_is_array(json)) {
+		warn("File is not a JSON history");
 		return;
 	}
 
 	size_t index;
 	json_t *value;
-	json_t *get;
-	xcb_window_t win;
-	char dnm[SMALEN];
-	char mnm[SMALEN];
+	coordinates_t *loc;
 
-	json_array_foreach(jfile, index, value) {
-		coordinates_t loc;
-		if (!(get = json_object_get(value, "windowId"))) {
-			warn("No windowId key\n");
+	json_array_foreach(json, index, value) {
+		if ((loc = json_deserialize_coordinates_type(value)) == NULL) {
+			free(loc);
 			continue;
 		}
-		win = (xcb_window_t)json_number_value(get);
-		if (win != XCB_NONE && !locate_window(win, &loc)) {
-			warn("Can't locate window %u\n", win);
-			continue;
-		}
-		node_t *n = (win != XCB_NONE ? loc.node : NULL);
-		json_decref(get);
-
-		if (!(get = json_object_get(value, "desktopName"))) {
-			warn("No desktopName key\n");
-			continue;
-		}
-		strcpy(dnm, json_string_value(get));
-		if (!locate_desktop(dnm, &loc)) {
-			warn("Can't locate desktop '%s'\n", dnm);
-			continue;
-		}
-		desktop_t *d = loc.desktop;
-		json_decref(get);
-
-		if (!(get = json_object_get(value, "monitorName"))) {
-			warn("No monitorName key\n");
-			continue;
-		}
-		strcpy(mnm, json_string_value(get));
-		if (!locate_monitor(mnm, &loc)) {
-			warn("Can't locate monitor '%s'.\n", mnm);
-			continue;
-		}
-		monitor_t *m = loc.monitor;
-		json_decref(get);
-
-		history_add(m, d, n);
+		history_add(loc->monitor, loc->desktop, loc->node);
 	}
-	json_decref(jfile);
+	json_decref(json);
 }
 
-void restore_stack(char *file_path)
+void restore_stack(const char *file_path)
 {
 	if (file_path == NULL)
 		return;
 
-	json_t *jfile;
-	json_error_t error;
-	jfile = json_load_file(file_path, 0, &error);
-	if (!jfile) {
-		warn("Restore history: %s (line: %d, column: %d)\n", error.text, error.line, error.column);
-		return;
-	}
-	if (!json_is_array(jfile)) {
-		warn("Restory history: Not a JSON array");
+	json_t *json = json_deserialize_file(file_path);
+	if (json == NULL || !json_is_array(json)) {
+		warn("File is not a JSON stack");
 		return;
 	}
 
 	size_t index;
 	json_t *value;
-	xcb_window_t win;
+	node_t *n;
 
-	json_array_foreach(jfile, index, value) {
-		coordinates_t loc;
-		win = (xcb_window_t)json_number_value(value);
-		if (!locate_window(win, &loc)) {
-			warn("Can't locate window %u\n", win);
+	json_array_foreach(json, index, value) {
+		if ((n = json_deserialize_node_windowid(value)) == NULL) {
+			free(n);
 			continue;
 		}
-		stack_insert_after(stack_tail, loc.node);
+		stack_insert_after(stack_tail, n);
 	}
-	json_decref(jfile);
+	json_decref(json);
 }

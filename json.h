@@ -32,18 +32,26 @@ SERIALIZATION(client)
 SERIALIZATION(node)
 SERIALIZATION(desktop)
 SERIALIZATION(monitor)
+SERIALIZATION(coordinates)
 
 #undef SERIALIZE
 #undef DESERALIZE
 #undef SERIALIZATION
 
 // Misc
-json_t* json_serialize_node(node_t *n);
-json_t* json_serialize_desktop(desktop_t *d);
-json_t* json_serialize_monitor(monitor_t *m);
+json_t* json_serialize_node_windowid(node_t *obj);
+node_t* json_deserialize_node_windowid(json_t *json);
+json_t* json_serialize_desktop_name(desktop_t *obj);
+desktop_t* json_deserialize_desktop_name(json_t *json);
+json_t* json_serialize_monitor_name(monitor_t *obj);
+monitor_t* json_deserialize_monitor_name(json_t *json);
+json_t* json_serialize_monitor_id(monitor_t *obj);
+json_t* json_serialize_desktops_array(monitor_t *m);
 json_t* json_serialize_windows(coordinates_t loc);
 json_t* json_serialize_desktops(coordinates_t loc);
 json_t* json_serialize_monitors(coordinates_t loc);
 json_t* json_serialize_tree(coordinates_t loc);
 json_t* json_serialize_history(coordinates_t loc);
 json_t* json_serialize_stack();
+
+json_t* json_deserialize_file(const char *file_path);

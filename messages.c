@@ -732,19 +732,19 @@ int cmd_query(char **args, int num, FILE *rsp)
 			json = json_serialize_windows(trg);
 			break;
 		case DOMAIN_WINDOW:
-			json = json_serialize_node(trg.node);
+			json = json_serialize_node_type(trg.node);
 			break;
 		case DOMAIN_DESKTOPS:
 			json = json_serialize_desktops(trg);
 			break;
 		case DOMAIN_DESKTOP:
-			json = json_serialize_desktop(trg.desktop);
+			json = json_serialize_desktop_type(trg.desktop);
 			break;
 		case DOMAIN_MONITORS:
 			json = json_serialize_monitors(trg);
 			break;
 		case DOMAIN_MONITOR:
-			json = json_serialize_monitor(trg.monitor);
+			json = json_serialize_monitor_type(trg.monitor);
 			break;
 		case DOMAIN_TREE:
 			json = json_serialize_tree(trg);
