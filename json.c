@@ -345,7 +345,7 @@ json_t* json_serialize_node_windowid(node_t *obj)
 
 node_t* json_deserialize_node_windowid(json_t *json)
 {
-	if (json == NULL || !json_is_integer(json))
+	if (!json_is_integer(json))
 		return NULL;
 	coordinates_t loc;
 	xcb_window_t win = (xcb_window_t)json_integer_value(json);
@@ -384,7 +384,7 @@ json_t* json_serialize_desktop_name(desktop_t *obj)
 
 desktop_t* json_deserialize_desktop_name(json_t *json)
 {
-	if (json == NULL || !json_is_string(json))
+	if (!json_is_string(json))
 		return NULL;
 	coordinates_t loc;
 	if (!locate_desktop(json_string_value(json), &loc))
@@ -401,7 +401,7 @@ SERIALIZATION(desktop,
 	STRING("name", &obj->name),
 	OBJECT("layout", layout_type, &obj->layout),
 	OBJECT("root", node_type, obj->root),
-	// focus
+	CUSTOM("focusWindowId", node_windowid, obj->focus),
 	CUSTOM("prevName", desktop_name, obj->prev),
 	CUSTOM("nextName", desktop_name, obj->next),
 	INTEGER("paddingTop", int, &obj->top_padding),
@@ -422,7 +422,7 @@ json_t* json_serialize_monitor_name(monitor_t *obj)
 
 monitor_t* json_deserialize_monitor_name(json_t *json)
 {
-	if (json == NULL || !json_is_string(json))
+	if (!json_is_string(json))
 		return NULL;
 	coordinates_t loc;
 	if (!locate_monitor(json_string_value(json), &loc))
