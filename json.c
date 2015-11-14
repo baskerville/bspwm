@@ -82,16 +82,19 @@
 		if (json == NULL || !json_is_string(json)) \
 			return NULL; \
 		TYPE##_t *obj = malloc(sizeof(TYPE##_t)); \
-		const char* value = json_string_value(json); \
-		if (value == NULL) \
-			obj = NULL;
+		const char *value = json_string_value(json); \
+		if (value == NULL) { \
+			free(obj); \
+			return NULL; \
+		}
 #define DESERIALIZE_IF(ENUM, VALUE) \
-		else if (strcmp(value, VALUE) == 0) \
-			*obj = ENUM;
+		else if (strcmp(value, VALUE) == 0) { \
+			*obj = ENUM; \
+			return obj; \
+		}
 #define DESERIALIZE_END \
-		else \
-			obj = NULL; \
-		return obj; \
+		free(obj); \
+		return NULL; \
 	}
 
 SERIALIZATION(split_type,
