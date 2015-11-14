@@ -2,6 +2,7 @@
 #include <jansson.h>
 #include "types.h"
 #include "tree.h"
+#include "query.h"
 
 // Add more if __VA_ARGS__ > 25
 #define FE_1(WHAT, X) WHAT(X)
@@ -203,13 +204,13 @@ SERIALIZATION(child_polarity,
 			json_decref(json); \
 			return json_null(); \
 		}
-#define SERIALIZE_OBJECT(KEY, TYPE, MEMBER) \
-		if((json_object_set_new(json, KEY, json_serialize_##TYPE##_type(MEMBER))) == -1) { \
+#define SERIALIZE_OBJECT(KEY, FUNCTION, MEMBER) \
+		if((json_object_set_new(json, KEY, json_serialize_##FUNCTION(MEMBER))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
 #define SERIALIZE_CUSTOM(KEY, FUNCTION, MEMBER) \
-		if((json_object_set_new(json, KEY, FUNCTION(MEMBER))) == -1) { \
+		if((json_object_set_new(json, KEY, json_serialize_##FUNCTION(MEMBER))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
@@ -259,14 +260,14 @@ SERIALIZATION(child_polarity,
 		}\
 		*MEMBER = json_boolean_value(get); \
 		json_decref(get);
-#define DESERIALIZE_OBJECT(KEY, TYPE, MEMBER) \
+#define DESERIALIZE_OBJECT(KEY, FUNCTION, MEMBER) \
 		get = json_object_get(json, KEY); \
 		if (get == NULL || !json_is_object(get)) { \
 			json_decref(get); \
 			free(obj); \
 			return NULL; \
 		} \
-		*MEMBER = *json_deserialize_##TYPE##_type(get); \
+		*MEMBER = *json_deserialize_##FUNCTION(get); \
 		json_decref(get);
 #define DESERIALIZE_CUSTOM(KEY, FUNCTION, MEMBER) \
 		get = json_object_get(json, KEY); \
@@ -275,7 +276,7 @@ SERIALIZATION(child_polarity,
 			free(obj); \
 			return NULL; \
 		} \
-		MEMBER = FUNCTION(get); \
+		MEMBER = json_deserialize_##FUNCTION(get); \
 		json_decref(get);
 #define DESERIALIZE_END \
 		return obj; \
@@ -300,33 +301,33 @@ SERIALIZATION(client,
 	BOOLEAN("private", &obj->private),
 	BOOLEAN("icccmFocus", &obj->icccm_focus),
 	BOOLEAN("icccmInput", &obj->icccm_input),
-	OBJECT("state", client_state, &obj->state),
-	OBJECT("stateLast", client_state, &obj->last_state),
-	OBJECT("layer", stack_layer, &obj->layer),
-	OBJECT("layerLast", stack_layer, &obj->last_layer),
-	OBJECT("rectangleFloating", xcb_rectangle, &obj->floating_rectangle),
-	OBJECT("rectangleTiled", xcb_rectangle, &obj->tiled_rectangle),
+	OBJECT("state", client_state_type, &obj->state),
+	OBJECT("stateLast", client_state_type, &obj->last_state),
+	OBJECT("layer", stack_layer_type, &obj->layer),
+	OBJECT("layerLast", stack_layer_type, &obj->last_layer),
+	OBJECT("rectangleFloating", xcb_rectangle_type, &obj->floating_rectangle),
+	OBJECT("rectangleTiled", xcb_rectangle_type, &obj->tiled_rectangle),
 	INTEGER("minWidth", uint16_t, &obj->min_width),
 	INTEGER("maxWidth", uint16_t, &obj->max_width),
 	INTEGER("minHeight", uint16_t, &obj->min_height),
 	INTEGER("maxHeight", uint16_t, &obj->max_height),
-	// SERONLY("stateWm"),
+	// wm_state
 	INTEGER("statesNumber", int, &obj->num_states)
 )
 
 SERIALIZATION(node,
-	OBJECT("type", split_type, &obj->split_type),
+	OBJECT("type", split_type_type, &obj->split_type),
 	REAL("ratio", double, &obj->split_ratio),
-	OBJECT("mode", split_mode, &obj->split_mode),
-	OBJECT("direction", direction, &obj->split_dir),
+	OBJECT("mode", split_mode_type, &obj->split_mode),
+	OBJECT("direction", direction_type, &obj->split_dir),
 	INTEGER("birthRotation", int, &obj->birth_rotation),
-	OBJECT("rectangle", xcb_rectangle, &obj->rectangle),
+	OBJECT("rectangle", xcb_rectangle_type, &obj->rectangle),
 	BOOLEAN("vacant", &obj->vacant),
 	INTEGER("privacyLevel", int, &obj->privacy_level),
-	OBJECT("childFirst", node, obj->first_child),
-	OBJECT("childSecond", node, obj->second_child),
-	// SERONLY("parent"),
-	OBJECT("client", client, obj->client)
+	OBJECT("childFirst", node_type, obj->first_child),
+	OBJECT("childSecond", node_type, obj->second_child),
+	// parent
+	OBJECT("client", client_type, obj->client)
 )
 
 json_t* json_serialize_desktop_name(desktop_t *obj)
@@ -336,13 +337,23 @@ json_t* json_serialize_desktop_name(desktop_t *obj)
 	return json_string(obj->name);
 }
 
+desktop_t* json_deserialize_desktop_name(json_t *json)
+{
+	if (json == NULL || !json_is_string(json))
+		return NULL;
+	coordinates_t loc;
+	if (!locate_desktop(json_string_value(json), &loc))
+		return NULL;
+	return loc.desktop;
+}
+
 SERIALIZATION(desktop,
 	STRING("name", &obj->name),
-	OBJECT("layout", layout, &obj->layout),
-	// SERONLY("nodeRoot"),
-	// SERONLY("nodeFocus"),
-	SERONLY(SERIALIZE_CUSTOM("prevName", json_serialize_desktop_name, obj->prev)),
-	SERONLY(SERIALIZE_CUSTOM("nextName", json_serialize_desktop_name, obj->next)),
+	OBJECT("layout", layout_type, &obj->layout),
+	// root
+	// focus
+	SERONLY(SERIALIZE_CUSTOM("prevName", desktop_name, obj->prev)),
+	SERONLY(SERIALIZE_CUSTOM("nextName", desktop_name, obj->next)),
 	INTEGER("paddingTop", int, &obj->top_padding),
 	INTEGER("paddingRight", int, &obj->right_padding),
 	INTEGER("paddingBottom", int, &obj->bottom_padding),
@@ -358,6 +369,16 @@ json_t* json_serialize_monitor_name(monitor_t *obj)
 	return json_string(obj->name);
 }
 
+monitor_t* json_deserialize_monitor_name(json_t *json)
+{
+	if (json == NULL || !json_is_string(json))
+		return NULL;
+	coordinates_t loc;
+	if (!locate_monitor(json_string_value(json), &loc))
+		return NULL;
+	return loc.monitor;
+}
+
 json_t* json_serialize_monitor_id(monitor_t *obj)
 {
 	if (obj == NULL)
@@ -368,20 +389,20 @@ json_t* json_serialize_monitor_id(monitor_t *obj)
 SERIALIZATION(monitor,
 	STRING("name", &obj->name),
 	INTEGER("id", xcb_randr_output_t, &obj->id),
-	OBJECT("rectangle", xcb_rectangle, &obj->rectangle),
+	OBJECT("rectangle", xcb_rectangle_type, &obj->rectangle),
 	INTEGER("rootWindowId", xcb_window_t, &obj->root),
 	BOOLEAN("wired", &obj->wired),
 	INTEGER("paddingTop", int, &obj->top_padding),
 	INTEGER("paddingRight", int, &obj->right_padding),
 	INTEGER("paddingBottom", int, &obj->bottom_padding),
 	INTEGER("paddingLeft", int, &obj->left_padding),
-	SERONLY(SERIALIZE_CUSTOM("desktopFocused", json_serialize_desktop_name, obj->desk)),
-	SERONLY(SERIALIZE_CUSTOM("desktopHead", json_serialize_desktop_name, obj->desk_head)),
-	SERONLY(SERIALIZE_CUSTOM("desktopTail", json_serialize_desktop_name, obj->desk_tail)),
-	SERONLY(SERIALIZE_CUSTOM("prevName", json_serialize_monitor_name, obj->prev)),
-	SERONLY(SERIALIZE_CUSTOM("prevId", json_serialize_monitor_id, obj->prev)),
-	SERONLY(SERIALIZE_CUSTOM("nextName", json_serialize_monitor_name, obj->next)),
-	SERONLY(SERIALIZE_CUSTOM("nextId", json_serialize_monitor_id, obj->next)),
+	CUSTOM("desktopFocusedName", desktop_name, obj->desk),
+	CUSTOM("desktopHeadName", desktop_name, obj->desk_head),
+	CUSTOM("desktopTailName", desktop_name, obj->desk_tail),
+	CUSTOM("prevName", monitor_name, obj->prev),
+	SERONLY(SERIALIZE_CUSTOM("prevId", monitor_id, obj->prev)),
+	CUSTOM("nextName", monitor_name, obj->next),
+	SERONLY(SERIALIZE_CUSTOM("nextId", monitor_id, obj->next)),
 	INTEGER("stickyNumber", int, &obj->num_sticky)
 )
 
