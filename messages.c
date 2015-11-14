@@ -979,7 +979,7 @@ int cmd_quit(char **args, int num)
 	return MSG_SUCCESS;
 }
 
-int set_setting(coordinates_t loc, char *name, char *value)
+int set_setting(coordinates_t loc, const char *name, char *value)
 {
 #define DESKWINDEFSET(k, v) \
 		if (loc.node != NULL) \
@@ -1141,7 +1141,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 	return MSG_SUCCESS;
 }
 
-int get_setting(coordinates_t loc, char *name, FILE* rsp)
+int get_setting(coordinates_t loc, const char *name, FILE* rsp)
 {
 	if (streq("split_ratio", name))
 		fprintf(rsp, "%lf", split_ratio);
@@ -1218,7 +1218,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	return MSG_SUCCESS;
 }
 
-bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
+bool parse_subscriber_mask(const char *s, subscriber_mask_t *mask)
 {
 	if (streq("all", s)) {
 		*mask = SBSC_MASK_ALL;
@@ -1280,7 +1280,7 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 	return true;
 }
 
-bool parse_bool(char *value, bool *b)
+bool parse_bool(const char *value, bool *b)
 {
 	if (streq("true", value) || streq("on", value)) {
 		*b = true;
@@ -1292,7 +1292,7 @@ bool parse_bool(char *value, bool *b)
 	return false;
 }
 
-bool parse_layout(char *s, layout_t *l)
+bool parse_layout(const char *s, layout_t *l)
 {
 	if (streq("monocle", s)) {
 		*l = LAYOUT_MONOCLE;
@@ -1304,7 +1304,7 @@ bool parse_layout(char *s, layout_t *l)
 	return false;
 }
 
-bool parse_client_state(char *s, client_state_t *t)
+bool parse_client_state(const char *s, client_state_t *t)
 {
 	if (streq("tiled", s)) {
 		*t = STATE_TILED;
@@ -1322,7 +1322,7 @@ bool parse_client_state(char *s, client_state_t *t)
 	return false;
 }
 
-bool parse_stack_layer(char *s, stack_layer_t *l)
+bool parse_stack_layer(const char *s, stack_layer_t *l)
 {
 	if (streq("below", s)) {
 		*l = LAYER_BELOW;
@@ -1337,7 +1337,7 @@ bool parse_stack_layer(char *s, stack_layer_t *l)
 	return false;
 }
 
-bool parse_direction(char *s, direction_t *d)
+bool parse_direction(const char *s, direction_t *d)
 {
 	if (streq("right", s)) {
 		*d = DIR_RIGHT;
@@ -1355,7 +1355,7 @@ bool parse_direction(char *s, direction_t *d)
 	return false;
 }
 
-bool parse_cycle_direction(char *s, cycle_dir_t *d)
+bool parse_cycle_direction(const char *s, cycle_dir_t *d)
 {
 	if (streq("next", s)) {
 		*d = CYCLE_NEXT;
@@ -1367,7 +1367,7 @@ bool parse_cycle_direction(char *s, cycle_dir_t *d)
 	return false;
 }
 
-bool parse_circulate_direction(char *s, circulate_dir_t *d)
+bool parse_circulate_direction(const char *s, circulate_dir_t *d)
 {
 	if (streq("forward", s)) {
 		*d = CIRCULATE_FORWARD;
@@ -1379,7 +1379,7 @@ bool parse_circulate_direction(char *s, circulate_dir_t *d)
 	return false;
 }
 
-bool parse_history_direction(char *s, history_dir_t *d)
+bool parse_history_direction(const char *s, history_dir_t *d)
 {
 	if (streq("older", s)) {
 		*d = HISTORY_OLDER;
@@ -1392,7 +1392,7 @@ bool parse_history_direction(char *s, history_dir_t *d)
 }
 
 
-bool parse_flip(char *s, flip_t *f)
+bool parse_flip(const char *s, flip_t *f)
 {
 	if (streq("horizontal", s)) {
 		*f = FLIP_HORIZONTAL;
@@ -1404,7 +1404,7 @@ bool parse_flip(char *s, flip_t *f)
 	return false;
 }
 
-bool parse_pointer_action(char *s, pointer_action_t *a)
+bool parse_pointer_action(const char *s, pointer_action_t *a)
 {
 	if (streq("move", s)) {
 		*a = ACTION_MOVE;
@@ -1422,7 +1422,7 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
 	return false;
 }
 
-bool parse_child_polarity(char *s, child_polarity_t *p)
+bool parse_child_polarity(const char *s, child_polarity_t *p)
 {
 	if (streq("first_child", s)) {
 		*p = FIRST_CHILD;
@@ -1434,7 +1434,7 @@ bool parse_child_polarity(char *s, child_polarity_t *p)
 	return false;
 }
 
-bool parse_degree(char *s, int *d)
+bool parse_degree(const char *s, int *d)
 {
 	int i = atoi(s);
 	while (i < 0)
@@ -1449,7 +1449,7 @@ bool parse_degree(char *s, int *d)
 	}
 }
 
-bool parse_window_id(char *s, long int *i)
+bool parse_window_id(const char *s, long int *i)
 {
 	char *end;
 	errno = 0;
@@ -1479,7 +1479,7 @@ bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *sta
 	return false;
 }
 
-bool parse_index(char *s, int *i)
+bool parse_index(const char *s, int *i)
 {
 	int idx;
 	if (sscanf(s, "^%i", &idx) != 1 || idx < 1)

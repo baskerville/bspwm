@@ -209,7 +209,7 @@ void cleanup_client_select(client_select_t *sel)
 	free(sel->layer);
 }
 
-bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
+bool node_from_desc(const char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	client_select_t sel = make_client_select();
 	char *tok;
@@ -328,7 +328,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	return (dst->node != NULL);
 }
 
-bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
+bool desktop_from_desc(const char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	desktop_select_t sel = make_desktop_select();
 	char *tok;
@@ -387,7 +387,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	return (dst->desktop != NULL);
 }
 
-bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
+bool monitor_from_desc(const char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	desktop_select_t sel = make_desktop_select();
 	char *tok;
@@ -448,7 +448,7 @@ bool locate_window(xcb_window_t win, coordinates_t *loc)
 	return false;
 }
 
-bool locate_desktop(char *name, coordinates_t *loc)
+bool locate_desktop(const char *name, coordinates_t *loc)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
@@ -460,7 +460,7 @@ bool locate_desktop(char *name, coordinates_t *loc)
 	return false;
 }
 
-bool locate_monitor(char *name, coordinates_t *loc)
+bool locate_monitor(const char *name, coordinates_t *loc)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
 		if (streq(m->name, name)) {
