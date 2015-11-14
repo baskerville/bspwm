@@ -1,8 +1,9 @@
-#include <string.h>
 #include <jansson.h>
-#include "types.h"
-#include "tree.h"
+#include <string.h>
+#include "bspwm.h"
 #include "query.h"
+#include "tree.h"
+#include "types.h"
 
 // Add more if __VA_ARGS__ > 25
 #define FE_1(WHAT, X) WHAT(X)
@@ -34,7 +35,20 @@
 #define FOR_EACH(ACTION, ...) \
 	GET_MACRO(__VA_ARGS__, FE_25, FE_24, FE_23, FE_22, FE_21, FE_20, FE_19, FE_18, FE_17, FE_16, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1)(ACTION, __VA_ARGS__)
 
+#define SERIALIZE_CAT(X) SERIALIZE_##X
+#define DESERIALIZE_CAT(X) DESERIALIZE_##X
+#define SERIALIZATION(TYPE, ...) \
+	SERIALIZE_BEGIN(TYPE) \
+	FOR_EACH(SERIALIZE_CAT, __VA_ARGS__) \
+	SERIALIZE_END \
+	DESERIALIZE_BEGIN(TYPE) \
+	FOR_EACH(DESERIALIZE_CAT, __VA_ARGS__) \
+	DESERIALIZE_END
+
+//
 // Enums
+//
+
 #define SERIALIZE_BEGIN(TYPE) \
 	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
@@ -65,16 +79,6 @@
 			obj = NULL; \
 		return obj; \
 	}
-
-#define SERIALIZE_CAT(X) SERIALIZE_##X
-#define DESERIALIZE_CAT(X) DESERIALIZE_##X
-#define SERIALIZATION(TYPE, ...) \
-	SERIALIZE_BEGIN(TYPE) \
-	FOR_EACH(SERIALIZE_CAT, __VA_ARGS__) \
-	SERIALIZE_END \
-	DESERIALIZE_BEGIN(TYPE) \
-	FOR_EACH(DESERIALIZE_CAT, __VA_ARGS__) \
-	DESERIALIZE_END
 
 SERIALIZATION(split_type,
 	IF(TYPE_HORIZONTAL, "horizontal"),
@@ -177,7 +181,10 @@ SERIALIZATION(child_polarity,
 #undef DESERIALIZE_IF
 #undef DESERIALIZE_END
 
-//Structs
+//
+// Structs
+//
+
 #define SERIALIZE_BEGIN(TYPE) \
 	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
@@ -423,3 +430,146 @@ SERIALIZATION(monitor,
 #undef DESERIALIZE_OBJECT
 #undef DESERIALIZE_END
 #undef DESERIALIZE_SERONLY
+
+//
+// Misc
+//
+
+json_t* json_serialize_desktops_array(monitor_t *m)
+{
+	json_t *jdesktops = json_array();
+	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+		json_array_append_new(jdesktops, json_string(d->name));
+	}
+	return jdesktops;
+}
+
+json_t* json_serialize_node(node_t *n)
+{
+	json_t* json = json_serialize_node_type(n);
+	json_object_set_new(json, "focused", n == mon->desk->focus ? json_true() : json_false());
+	return json;
+}
+
+json_t* json_serialize_desktop(desktop_t *d)
+{
+	json_t* json = json_serialize_desktop_type(d);
+	json_object_set_new(json, "focused", d == mon->desk ? json_true() : json_false());
+	json_object_set_new(json, "nodes", d->root != NULL ? json_serialize_node(d->root) : json_null());
+	return json;
+}
+
+json_t* json_serialize_monitor(monitor_t *m)
+{
+	json_t* json = json_serialize_monitor_type(m);
+	json_object_set_new(json, "desktops", json_serialize_desktops_array(m));
+	json_object_set_new(json, "focused", m == mon ? json_true() : json_false());
+	return json;
+}
+
+json_t* json_serialize_windows(coordinates_t loc)
+{
+	json_t *jwindows = json_object();
+	char id[11];
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (loc.node != NULL && n != loc.node)
+					continue;
+				sprintf(id, "%d", n->client->window);
+				json_t *jnode = json_pack("{s:o}", id, json_serialize_node(n));
+				json_object_update(jwindows, jnode);
+				json_decref(jnode);
+			}
+		}
+	}
+	return jwindows;
+}
+
+json_t* json_serialize_desktops(coordinates_t loc)
+{
+	json_t *jdesktops = json_object();
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			json_t *jdesktop = json_pack("{s:o}", d->name, json_serialize_desktop(d));
+			json_object_update(jdesktops, jdesktop);
+			json_decref(jdesktop);
+		}
+	}
+	return jdesktops;
+}
+
+json_t* json_serialize_monitors(coordinates_t loc)
+{
+	json_t *jmonitors = json_object();
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+		json_t *jmonitor = json_pack("{s:o}", m->name, json_serialize_monitor(m));
+		json_object_update(jmonitors, jmonitor);
+		json_decref(jmonitor);
+	}
+	return jmonitors;
+}
+
+json_t* json_serialize_tree(coordinates_t loc)
+{
+	json_t *jtree = json_object();
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor)
+			continue;
+		json_t *jmonitor = json_serialize_monitor(m);
+		json_t *jdesktops = json_array();
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop)
+				continue;
+			json_array_append_new(jdesktops, json_serialize_desktop(d));
+		}
+		json_object_set_new(jmonitor, "desktops", jdesktops);
+		json_object_set_new(jtree, m->name, jmonitor);
+		json_object_clear(jdesktops);
+	}
+	return jtree;
+}
+
+json_t* json_serialize_history(coordinates_t loc)
+{
+	json_t *jhistory = json_array();
+	for (history_t *h = history_head; h != NULL; h = h->next) {
+		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
+				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
+			continue;
+		xcb_window_t win = XCB_NONE;
+		if (h->loc.node != NULL)
+			win = h->loc.node->client->window;
+
+		json_array_append_new(jhistory, json_pack(
+			"{"
+				"s:s,"
+				"s:s,"
+				"s:i"
+			"}",
+				"monitorName", h->loc.monitor->name,
+				"desktopName", h->loc.desktop->name,
+				"windowId", win
+		));
+	}
+	return jhistory;
+}
+
+json_t* json_serialize_stack()
+{
+	json_t *jstack = json_array();
+	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
+		json_array_append_new(jstack, json_integer(s->node->client->window));
+	}
+	return jstack;
+}

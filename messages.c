@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <jansson.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -42,6 +41,7 @@
 #include "common.h"
 #include "subscribe.h"
 #include "messages.h"
+#include "json.h"
 
 int handle_message(char *msg, int msg_len, FILE *rsp)
 {
@@ -729,41 +729,42 @@ int cmd_query(char **args, int num, FILE *rsp)
 	json_t *json;
 	switch (dom) {
 		case DOMAIN_WINDOWS:
-			json = query_windows_json(trg);
+			json = json_serialize_windows(trg);
 			break;
 		case DOMAIN_WINDOW:
-			json = query_node_json(trg.node);
+			json = json_serialize_node(trg.node);
 			break;
 		case DOMAIN_DESKTOPS:
-			json = query_desktops_json(trg);
+			json = json_serialize_desktops(trg);
 			break;
 		case DOMAIN_DESKTOP:
-			json = query_desktop_json(trg.desktop);
+			json = json_serialize_desktop(trg.desktop);
 			break;
 		case DOMAIN_MONITORS:
-			json = query_monitors_json(trg);
+			json = json_serialize_monitors(trg);
 			break;
 		case DOMAIN_MONITOR:
-			json = query_monitor_json(trg.monitor);
+			json = json_serialize_monitor(trg.monitor);
 			break;
 		case DOMAIN_TREE:
-			json = query_tree_json(trg);
+			json = json_serialize_tree(trg);
 			break;
 		case DOMAIN_HISTORY:
-			json = query_history_json(trg);
+			json = json_serialize_history(trg);
 			break;
 		case DOMAIN_STACK:
-			json = query_stack_json();
+			json = json_serialize_stack();
 			break;
 		default:
 			return MSG_FAILURE;
 	}
-	int rval = json_dumpf(json, rsp, JSON_INDENT(4) | JSON_SORT_KEYS);
-	json_decref(json);
-	if(rval == -1) {
+
+	if (json_dumpf(json, rsp, JSON_INDENT(4) | JSON_SORT_KEYS) == -1){
 		warn("JSON dump failed\n");
+		json_decref(json);
 		return MSG_FAILURE;
-	}
+	};
+	json_decref(json);
 
 	return MSG_SUCCESS;
 }
