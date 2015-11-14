@@ -3,404 +3,388 @@
 #include "types.h"
 #include "tree.h"
 
+// Add more if __VA_ARGS__ > 25
+#define FE_1(WHAT, X) WHAT(X)
+#define FE_2(WHAT, X, ...) WHAT(X)FE_1(WHAT, __VA_ARGS__)
+#define FE_3(WHAT, X, ...) WHAT(X)FE_2(WHAT, __VA_ARGS__)
+#define FE_4(WHAT, X, ...) WHAT(X)FE_3(WHAT, __VA_ARGS__)
+#define FE_5(WHAT, X, ...) WHAT(X)FE_4(WHAT, __VA_ARGS__)
+#define FE_6(WHAT, X, ...) WHAT(X)FE_5(WHAT, __VA_ARGS__)
+#define FE_7(WHAT, X, ...) WHAT(X)FE_6(WHAT, __VA_ARGS__)
+#define FE_8(WHAT, X, ...) WHAT(X)FE_7(WHAT, __VA_ARGS__)
+#define FE_9(WHAT, X, ...) WHAT(X)FE_8(WHAT, __VA_ARGS__)
+#define FE_10(WHAT, X, ...) WHAT(X)FE_9(WHAT, __VA_ARGS__)
+#define FE_11(WHAT, X, ...) WHAT(X)FE_10(WHAT, __VA_ARGS__)
+#define FE_12(WHAT, X, ...) WHAT(X)FE_11(WHAT, __VA_ARGS__)
+#define FE_13(WHAT, X, ...) WHAT(X)FE_12(WHAT, __VA_ARGS__)
+#define FE_14(WHAT, X, ...) WHAT(X)FE_13(WHAT, __VA_ARGS__)
+#define FE_15(WHAT, X, ...) WHAT(X)FE_14(WHAT, __VA_ARGS__)
+#define FE_16(WHAT, X, ...) WHAT(X)FE_15(WHAT, __VA_ARGS__)
+#define FE_17(WHAT, X, ...) WHAT(X)FE_16(WHAT, __VA_ARGS__)
+#define FE_18(WHAT, X, ...) WHAT(X)FE_17(WHAT, __VA_ARGS__)
+#define FE_19(WHAT, X, ...) WHAT(X)FE_18(WHAT, __VA_ARGS__)
+#define FE_20(WHAT, X, ...) WHAT(X)FE_19(WHAT, __VA_ARGS__)
+#define FE_21(WHAT, X, ...) WHAT(X)FE_20(WHAT, __VA_ARGS__)
+#define FE_22(WHAT, X, ...) WHAT(X)FE_21(WHAT, __VA_ARGS__)
+#define FE_23(WHAT, X, ...) WHAT(X)FE_22(WHAT, __VA_ARGS__)
+#define FE_24(WHAT, X, ...) WHAT(X)FE_23(WHAT, __VA_ARGS__)
+#define FE_25(WHAT, X, ...) WHAT(X)FE_24(WHAT, __VA_ARGS__)
+#define GET_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, NAME, ...) NAME
+#define FOR_EACH(action, ...) \
+	GET_MACRO(__VA_ARGS__, FE_25, FE_24, FE_23, FE_22, FE_21, FE_20, FE_19, FE_18, FE_17, FE_16, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1)(action, __VA_ARGS__)
+
+// Enums
 #define SERIALIZE_BEGIN(type) \
-json_t* json_serialize_##type(type##_t *obj) { \
-	switch (*obj) {
-#define SERIALIZE_CASE(enumerator, match) \
-		case enumerator: \
+	json_t* json_serialize_##type(type##_t *obj) \
+	{ \
+		if (obj == NULL) \
+			return json_null();
+#define SERIALIZE_IF(enumerator, match) \
+		else if (*obj == enumerator) \
 			return json_string(match);
 #define SERIALIZE_END \
-		default: \
+		else \
 			return json_null(); \
-	} \
-}
+	}
 
 #define DESERIALIZE_BEGIN(type) \
-bool json_deserialize_##type(json_t *json, type##_t *obj) { \
-	const char* value = json_string_value(json); \
-	if (value == NULL) \
-		return false;
-#define DESERIALIZE_IF(enumerator, match) \
-	if(strcmp(value, match) == 0) { \
-		*obj = enumerator; \
-		return true; \
-	}
-#define DESERIALIZE_ELIF(enumerator, match) \
-	else if(strcmp(value, match) == 0) { \
-		*obj = enumerator; \
-		return true; \
-	}
+	type##_t* json_deserialize_##type(json_t *json) \
+	{ \
+		if (json == NULL || !json_is_string(json)) \
+			return NULL; \
+		type##_t *obj = malloc(sizeof(type##_t)); \
+		const char* value = json_string_value(json); \
+		if (value == NULL) \
+			obj = NULL;
+#define DESERIALIZE_IF(enumerator,match) \
+		else if (strcmp(value, match) == 0) \
+			*obj = enumerator;
 #define DESERIALIZE_END \
-	else \
-		return false; \
-}
+		else \
+			obj = NULL; \
+		return obj; \
+	}
 
-SERIALIZE_BEGIN(split_type)
-SERIALIZE_CASE(TYPE_HORIZONTAL, "horizontal")
-SERIALIZE_CASE(TYPE_VERTICAL, "vertical")
-SERIALIZE_END
+#define SERIALIZE_CAT(X) SERIALIZE_##X
+#define DESERIALIZE_CAT(X) DESERIALIZE_##X
+#define SERIALIZATION(type, ...) \
+	SERIALIZE_BEGIN(type) \
+	FOR_EACH(SERIALIZE_CAT, __VA_ARGS__) \
+	SERIALIZE_END \
+	DESERIALIZE_BEGIN(type) \
+	FOR_EACH(DESERIALIZE_CAT, __VA_ARGS__) \
+	DESERIALIZE_END
 
-DESERIALIZE_BEGIN(split_type)
-DESERIALIZE_IF(TYPE_HORIZONTAL, "horizontal")
-DESERIALIZE_ELIF(TYPE_VERTICAL, "vertical")
-DESERIALIZE_END
+SERIALIZATION(split_type,
+	IF(TYPE_HORIZONTAL, "horizontal"),
+	IF(TYPE_VERTICAL, "vertical")
+)
 
-SERIALIZE_BEGIN(split_mode)
-SERIALIZE_CASE(MODE_AUTOMATIC, "automatic")
-SERIALIZE_CASE(MODE_MANUAL, "manual")
-SERIALIZE_END
+SERIALIZATION(split_mode,
+	IF(MODE_AUTOMATIC, "automatic"),
+	IF(MODE_MANUAL, "manual")
+)
 
-DESERIALIZE_BEGIN(split_mode)
-DESERIALIZE_IF(MODE_AUTOMATIC, "automatic")
-DESERIALIZE_ELIF(MODE_MANUAL, "manual")
-DESERIALIZE_END
+SERIALIZATION(client_state,
+	IF(STATE_TILED, "tiled"),
+	IF(STATE_PSEUDO_TILED, "pseudo_tiled"),
+	IF(STATE_FLOATING, "floating"),
+	IF(STATE_FULLSCREEN, "fullscreen")
+)
 
-SERIALIZE_BEGIN(client_state)
-SERIALIZE_CASE(STATE_TILED, "tiled")
-SERIALIZE_CASE(STATE_PSEUDO_TILED, "pseudo_tiled")
-SERIALIZE_CASE(STATE_FLOATING, "floating")
-SERIALIZE_CASE(STATE_FULLSCREEN, "fullscreen")
-SERIALIZE_END
+SERIALIZATION(stack_layer,
+	IF(LAYER_BELOW, "below"),
+	IF(LAYER_NORMAL, "normal"),
+	IF(LAYER_ABOVE, "above")
+)
 
-DESERIALIZE_BEGIN(client_state)
-DESERIALIZE_IF(STATE_TILED, "tiled")
-DESERIALIZE_ELIF(STATE_PSEUDO_TILED, "pseudo_tiled")
-DESERIALIZE_ELIF(STATE_FLOATING, "floating")
-DESERIALIZE_ELIF(STATE_FULLSCREEN, "fullscreen")
-DESERIALIZE_END
+SERIALIZATION(option_bool,
+	IF(OPTION_NONE, "none"),
+	IF(OPTION_TRUE, "true"),
+	IF(OPTION_FALSE, "false")
+)
 
-SERIALIZE_BEGIN(stack_layer)
-SERIALIZE_CASE(LAYER_BELOW, "below")
-SERIALIZE_CASE(LAYER_NORMAL, "normal")
-SERIALIZE_CASE(LAYER_ABOVE, "above")
-SERIALIZE_END
+SERIALIZATION(alter_state,
+	IF(ALTER_TOGGLE, "toggle"),
+	IF(ALTER_SET, "set")
+)
 
-DESERIALIZE_BEGIN(stack_layer)
-DESERIALIZE_IF(LAYER_BELOW, "below")
-DESERIALIZE_ELIF(LAYER_NORMAL, "normal")
-DESERIALIZE_ELIF(LAYER_ABOVE, "above")
-DESERIALIZE_END
+SERIALIZATION(cycle_dir,
+	IF(CYCLE_NEXT, "next"),
+	IF(CYCLE_PREV, "prev")
+)
 
-SERIALIZE_BEGIN(option_bool)
-SERIALIZE_CASE(OPTION_NONE, "none")
-SERIALIZE_CASE(OPTION_TRUE, "true")
-SERIALIZE_CASE(OPTION_FALSE, "false")
-SERIALIZE_END
+SERIALIZATION(circulate_dir,
+	IF(CIRCULATE_FORWARD, "forward"),
+	IF(CIRCULATE_BACKWARD, "backward")
+)
 
-DESERIALIZE_BEGIN(option_bool)
-DESERIALIZE_IF(OPTION_NONE, "none")
-DESERIALIZE_ELIF(OPTION_TRUE, "true")
-DESERIALIZE_ELIF(OPTION_FALSE, "false")
-DESERIALIZE_END
+SERIALIZATION(history_dir,
+	IF(HISTORY_OLDER, "older"),
+	IF(HISTORY_NEWER, "newer")
+)
 
-SERIALIZE_BEGIN(alter_state)
-SERIALIZE_CASE(ALTER_TOGGLE, "toggle")
-SERIALIZE_CASE(ALTER_SET, "set")
-SERIALIZE_END
+SERIALIZATION(direction,
+	IF(DIR_RIGHT, "right"),
+	IF(DIR_DOWN, "down"),
+	IF(DIR_LEFT, "left"),
+	IF(DIR_UP, "up")
+)
 
-DESERIALIZE_BEGIN(alter_state)
-DESERIALIZE_IF(ALTER_TOGGLE, "toggle")
-DESERIALIZE_ELIF(ALTER_SET, "set")
-DESERIALIZE_END
+SERIALIZATION(corner,
+	IF(CORNER_TOP_LEFT, "top_left"),
+	IF(CORNER_TOP_RIGHT, "top_right"),
+	IF(CORNER_BOTTOM_RIGHT, "bottom_right"),
+	IF(CORNER_BOTTOM_LEFT, "bottom_left")
+)
 
-SERIALIZE_BEGIN(cycle_dir)
-SERIALIZE_CASE(CYCLE_NEXT, "next")
-SERIALIZE_CASE(CYCLE_PREV, "prev")
-SERIALIZE_END
+SERIALIZATION(side,
+	IF(SIDE_LEFT, "left"),
+	IF(SIDE_TOP, "top"),
+	IF(SIDE_RIGHT, "right"),
+	IF(SIDE_BOTTOM, "bottom")
+)
 
-DESERIALIZE_BEGIN(cycle_dir)
-DESERIALIZE_IF(CYCLE_NEXT, "next")
-DESERIALIZE_ELIF(CYCLE_PREV, "prev")
-DESERIALIZE_END
+SERIALIZATION(pointer_action,
+	IF(ACTION_NONE, "none"),
+	IF(ACTION_FOCUS, "focus"),
+	IF(ACTION_MOVE, "move"),
+	IF(ACTION_RESIZE_SIDE, "resize_side"),
+	IF(ACTION_RESIZE_CORNER, "resize_corner")
+)
 
-SERIALIZE_BEGIN(circulate_dir)
-SERIALIZE_CASE(CIRCULATE_FORWARD, "forward")
-SERIALIZE_CASE(CIRCULATE_BACKWARD, "backward")
-SERIALIZE_END
+SERIALIZATION(layout,
+	IF(LAYOUT_TILED, "tiled"),
+	IF(LAYOUT_MONOCLE, "monocle")
+)
 
-DESERIALIZE_BEGIN(circulate_dir)
-DESERIALIZE_IF(CIRCULATE_FORWARD, "forward")
-DESERIALIZE_ELIF(CIRCULATE_BACKWARD, "backward")
-DESERIALIZE_END
+SERIALIZATION(flip,
+	IF(FLIP_HORIZONTAL, "horizontal"),
+	IF(FLIP_VERTICAL, "vertical")
+)
 
-SERIALIZE_BEGIN(history_dir)
-SERIALIZE_CASE(HISTORY_OLDER, "older")
-SERIALIZE_CASE(HISTORY_NEWER, "newer")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(history_dir)
-DESERIALIZE_IF(HISTORY_OLDER, "older")
-DESERIALIZE_ELIF(HISTORY_NEWER, "newer")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(direction)
-SERIALIZE_CASE(DIR_RIGHT, "right")
-SERIALIZE_CASE(DIR_DOWN, "down")
-SERIALIZE_CASE(DIR_LEFT, "left")
-SERIALIZE_CASE(DIR_UP, "up")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(direction)
-DESERIALIZE_IF(DIR_RIGHT, "right")
-DESERIALIZE_ELIF(DIR_DOWN, "down")
-DESERIALIZE_ELIF(DIR_LEFT, "left")
-DESERIALIZE_ELIF(DIR_UP, "up")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(corner)
-SERIALIZE_CASE(CORNER_TOP_LEFT, "top_left")
-SERIALIZE_CASE(CORNER_TOP_RIGHT, "top_right")
-SERIALIZE_CASE(CORNER_BOTTOM_RIGHT, "bottom_right")
-SERIALIZE_CASE(CORNER_BOTTOM_LEFT, "bottom_left")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(corner)
-DESERIALIZE_IF(CORNER_TOP_LEFT, "top_left")
-DESERIALIZE_ELIF(CORNER_TOP_RIGHT, "top_right")
-DESERIALIZE_ELIF(CORNER_BOTTOM_RIGHT, "bottom_right")
-DESERIALIZE_ELIF(CORNER_BOTTOM_LEFT, "bottom_left")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(side)
-SERIALIZE_CASE(SIDE_LEFT, "left")
-SERIALIZE_CASE(SIDE_TOP, "top")
-SERIALIZE_CASE(SIDE_RIGHT, "right")
-SERIALIZE_CASE(SIDE_BOTTOM, "bottom")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(side)
-DESERIALIZE_IF(SIDE_LEFT, "left")
-DESERIALIZE_ELIF(SIDE_TOP, "top")
-DESERIALIZE_ELIF(SIDE_RIGHT, "right")
-DESERIALIZE_ELIF(SIDE_BOTTOM, "bottom")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(pointer_action)
-SERIALIZE_CASE(ACTION_NONE, "none")
-SERIALIZE_CASE(ACTION_FOCUS, "focus")
-SERIALIZE_CASE(ACTION_MOVE, "move")
-SERIALIZE_CASE(ACTION_RESIZE_SIDE, "resize_side")
-SERIALIZE_CASE(ACTION_RESIZE_CORNER, "resize_corner")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(pointer_action)
-DESERIALIZE_IF(ACTION_NONE, "none")
-DESERIALIZE_ELIF(ACTION_FOCUS, "focus")
-DESERIALIZE_ELIF(ACTION_MOVE, "move")
-DESERIALIZE_ELIF(ACTION_RESIZE_SIDE, "resize_side")
-DESERIALIZE_ELIF(ACTION_RESIZE_CORNER, "resize_corner")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(layout)
-SERIALIZE_CASE(LAYOUT_TILED, "tiled")
-SERIALIZE_CASE(LAYOUT_MONOCLE, "monocle")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(layout)
-DESERIALIZE_IF(LAYOUT_TILED, "tiled")
-DESERIALIZE_ELIF(LAYOUT_MONOCLE, "monocle")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(flip)
-SERIALIZE_CASE(FLIP_HORIZONTAL, "horizontal")
-SERIALIZE_CASE(FLIP_VERTICAL, "vertical")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(flip)
-DESERIALIZE_IF(FLIP_HORIZONTAL, "horizontal")
-DESERIALIZE_ELIF(FLIP_VERTICAL, "vertical")
-DESERIALIZE_END
-
-SERIALIZE_BEGIN(child_polarity)
-SERIALIZE_CASE(FIRST_CHILD, "first")
-SERIALIZE_CASE(SECOND_CHILD, "second")
-SERIALIZE_END
-
-DESERIALIZE_BEGIN(child_polarity)
-DESERIALIZE_IF(FIRST_CHILD, "first")
-DESERIALIZE_ELIF(SECOND_CHILD, "second")
-DESERIALIZE_END
+SERIALIZATION(child_polarity,
+	IF(FIRST_CHILD, "first"),
+	IF(SECOND_CHILD, "second")
+)
 
 #undef SERIALIZE_BEGIN
-#undef SERIALIZE_CASE
+#undef SERIALIZE_IF
 #undef SERIALIZE_END
 
 #undef DESERIALIZE_BEGIN
 #undef DESERIALIZE_IF
+#undef DESERIALIZE_END
 
-json_t* json_serialize_xcb_rectangle(xcb_rectangle_t *rec)
+//Structs
+#define SERIALIZE_BEGIN(type) \
+	json_t* json_serialize_##type(type##_t *obj) \
+	{ \
+		if (obj == NULL) \
+			return json_null(); \
+		json_t *json = json_object();
+#define SERIALIZE_INTEGER(key, type, member) \
+		if((json_object_set_new(json, key, json_integer(*(member)))) == -1) { \
+			json_decref(json); \
+			return json_null(); \
+		}
+#define SERIALIZE_REAL(key, type, member) \
+		if((json_object_set_new(json, key, json_real(*(member)))) == -1) { \
+			json_decref(json); \
+			return json_null(); \
+		}
+#define SERIALIZE_STRING(key, member) \
+		if((json_object_set_new(json, key, json_string(*member))) == -1) { \
+			json_decref(json); \
+			return json_null(); \
+		}
+#define SERIALIZE_BOOLEAN(key, member) \
+		if((json_object_set_new(json, key, json_boolean(*member))) == -1) { \
+			json_decref(json); \
+			return json_null(); \
+		}
+#define SERIALIZE_OBJECT(key, type, member) \
+		if((json_object_set_new(json, key, json_serialize_##type(member))) == -1) { \
+			json_decref(json); \
+			return json_null(); \
+		}
+#define SERIALIZE_END \
+		return json; \
+	}
+#define SERIALIZE_SERONLY(WHAT) WHAT
+
+#define DESERIALIZE_BEGIN(type) \
+	type##_t* json_deserialize_##type(json_t *json) \
+	{ \
+		type##_t *obj = malloc(sizeof(type##_t)); \
+		json_t *get;
+#define DESERIALIZE_INTEGER(key, type, member) \
+		get = json_object_get(json, key); \
+		if (get == NULL || !json_is_integer(get)) { \
+			json_decref(get); \
+			free(obj); \
+			return NULL; \
+		}\
+		*member = (type)json_number_value(get); \
+		json_decref(get);
+#define DESERIALIZE_REAL(key, type, member) \
+		get = json_object_get(json, key); \
+		if (get == NULL || !json_is_real(get)) { \
+			json_decref(get); \
+			free(obj); \
+			return NULL; \
+		}\
+		*member = (type)json_real_value(get); \
+		json_decref(get);
+#define DESERIALIZE_STRING(key, member) \
+		get = json_object_get(json, key); \
+		if (get == NULL || !json_is_string(get)) { \
+			json_decref(get); \
+			free(obj); \
+			return NULL; \
+		} \
+		strcpy(*member, json_string_value(get)); \
+		json_decref(get);
+#define DESERIALIZE_BOOLEAN(key, member) \
+		get = json_object_get(json, key); \
+		if (get == NULL || !json_is_boolean(get)) { \
+			json_decref(get); \
+			free(obj); \
+			return NULL; \
+		}\
+		*member = json_boolean_value(get); \
+		json_decref(get);
+#define DESERIALIZE_OBJECT(key, type, member) \
+		get = json_object_get(json, key); \
+		if (get == NULL || !json_is_object(get)) { \
+			json_decref(get); \
+			free(obj); \
+			return NULL; \
+		} \
+		*member = *json_deserialize_##type(get); \
+		json_decref(get);
+#define DESERIALIZE_END \
+		return obj; \
+	}
+#define DESERIALIZE_SERONLY(WHAT)
+
+SERIALIZATION(xcb_rectangle,
+	INTEGER("x", int16_t, &obj->x),
+	INTEGER("y", int16_t, &obj->y),
+	INTEGER("height", uint16_t, &obj->height),
+	INTEGER("width", uint16_t, &obj->width)
+)
+
+SERIALIZATION(client,
+	INTEGER("windowId", xcb_window_t, &obj->window),
+	STRING("nameClass", &obj->class_name),
+	STRING("nameInstance", &obj->instance_name),
+	INTEGER("borderWidth", unsigned int, &obj->border_width),
+	BOOLEAN("locked", &obj->locked),
+	BOOLEAN("sticky", &obj->sticky),
+	BOOLEAN("urgent", &obj->urgent),
+	BOOLEAN("private", &obj->private),
+	BOOLEAN("icccmFocus", &obj->icccm_focus),
+	BOOLEAN("icccmInput", &obj->icccm_input),
+	OBJECT("state", client_state, &obj->state),
+	OBJECT("stateLast", client_state, &obj->last_state),
+	OBJECT("layer", stack_layer, &obj->layer),
+	OBJECT("layerLast", stack_layer, &obj->last_layer),
+	OBJECT("rectangleFloating", xcb_rectangle, &obj->floating_rectangle),
+	OBJECT("rectangleTiled", xcb_rectangle, &obj->tiled_rectangle),
+	INTEGER("minWidth", uint16_t, &obj->min_width),
+	INTEGER("maxWidth", uint16_t, &obj->max_width),
+	INTEGER("minHeight", uint16_t, &obj->min_height),
+	INTEGER("maxHeight", uint16_t, &obj->max_height),
+	// SERONLY("stateWm"),
+	INTEGER("statesNumber", int, &obj->num_states)
+)
+
+SERIALIZATION(node,
+	OBJECT("type", split_type, &obj->split_type),
+	REAL("ratio", double, &obj->split_ratio),
+	OBJECT("mode", split_mode, &obj->split_mode),
+	OBJECT("direction", direction, &obj->split_dir),
+	INTEGER("birthRotation", int, &obj->birth_rotation),
+	OBJECT("rectangle", xcb_rectangle, &obj->rectangle),
+	BOOLEAN("vacant", &obj->vacant),
+	INTEGER("privacyLevel", int, &obj->privacy_level),
+	OBJECT("childFirst", node, obj->first_child),
+	OBJECT("childSecond", node, obj->second_child),
+	// SERONLY("parent"),
+	OBJECT("client", client, obj->client)
+)
+
+json_t* json_serialize_desktop_name(desktop_t *obj)
 {
-	return json_pack(
-		"{"
-			"s:i,"
-			"s:i,"
-			"s:i,"
-			"s:i"
-		"}",
-			"x", rec->x,
-			"y", rec->y,
-			"width", rec->width,
-			"height", rec->height
-	);
+	if (obj == NULL)
+		return json_null();
+	return json_string(obj->name);
 }
 
-json_t* json_serialize_client(client_t *c)
+SERIALIZATION(desktop,
+	STRING("name", &obj->name),
+	OBJECT("layout", layout, &obj->layout),
+	// SERONLY("nodeRoot"),
+	// SERONLY("nodeFocus"),
+	SERONLY(SERIALIZE_OBJECT("prevName", desktop_name, obj->prev)),
+	SERONLY(SERIALIZE_OBJECT("nextName", desktop_name, obj->next)),
+	INTEGER("paddingTop", int, &obj->top_padding),
+	INTEGER("paddingRight", int, &obj->right_padding),
+	INTEGER("paddingBottom", int, &obj->bottom_padding),
+	INTEGER("paddingLeft", int, &obj->left_padding),
+	INTEGER("windowGap", int, &obj->window_gap),
+	INTEGER("borderWidth", unsigned int, &obj->border_width)
+)
+
+json_t* json_serialize_monitor_name(monitor_t *obj)
 {
-	return json_pack(
-		"{"
-			"s:i,"
-			"s:s,"
-			"s:s,"
-			"s:i,"
-			"s:b,"
-			"s:b,"
-			"s:b,"
-			"s:b,"
-			"s:b,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:{"
-				"s:i,"
-				"s:i,"
-			"},"
-			"s:{"
-				"s:i,"
-				"s:i,"
-			"},"
-			"s:i"
-		"}",
-			"windowId", c->window,
-			"nameClass", c->class_name,
-			"nameInstance", c->instance_name,
-			"borderWidth", c->border_width,
-			"locked", c->locked,
-			"sticky", c->sticky,
-			"urgent", c->urgent,
-			"private", c->private,
-			"icccmFocus", c->icccm_focus,
-			"state", json_serialize_client_state(&c->state),
-			"stateLast", json_serialize_client_state(&c->last_state),
-			"layer", json_serialize_stack_layer(&c->layer),
-			"layerLast", json_serialize_stack_layer(&c->last_layer),
-			"rectangleFloating", json_serialize_xcb_rectangle(&c->floating_rectangle),
-			"rectangleTiled", json_serialize_xcb_rectangle(&c->tiled_rectangle),
-			"sizeMinimum",
-				"width", c->min_width,
-				"height", c->min_height,
-			"sizeMaximum",
-				"width", c->max_width,
-				"height", c->max_height,
-			"stateNumber", c->num_states
-	);
+	if (obj == NULL)
+		return json_null();
+	return json_string(obj->name);
 }
 
-json_t* json_serialize_node(node_t *n)
+json_t* json_serialize_monitor_id(monitor_t *obj)
 {
-	return json_pack(
-		"{"
-			"s:{"
-				"s:o,"
-				"s:f,"
-				"s:o,"
-				"s:o,"
-			"},"
-			"s:i,"
-			"s:o,"
-			"s:b,"
-			"s:i,"
-			"s:o,"
-			"s:o,"
-			"s:o"
-		"}",
-			"split",
-				"type", json_serialize_split_type(&n->split_type),
-				"ratio", n->split_ratio,
-				"mode", json_serialize_split_mode(&n->split_mode),
-				"direction", json_serialize_direction(&n->split_dir),
-			"birthRotation", n->birth_rotation,
-			"rectangle", json_serialize_xcb_rectangle(&n->rectangle),
-			"vacant", n->vacant,
-			"privacyLevel", n->privacy_level,
-			"childFirst", n->first_child != NULL ? json_serialize_node(n->first_child) : json_null(),
-			"childSecond", n->second_child != NULL ? json_serialize_node(n->second_child) : json_null(),
-			"client", is_leaf(n) ? json_serialize_client(n->client) : json_null()
-	);
+	if (obj == NULL)
+		return json_null();
+	return json_integer(obj->id);
 }
 
-json_t* json_serialize_desktop(desktop_t *d)
-{
-	return json_pack(
-		"{"
-			"s:s,"
-			"s:o,"
-			"s:o,"
-			"s:i,"
-			"s:i,"
-			"s:{"
-				"s:i,"
-				"s:i,"
-				"s:i,"
-				"s:i"
-			"}"
-		"}",
-			"name", d->name,
-			"layout", json_serialize_layout(&d->layout),
-			"nodes", d->root != NULL ? json_serialize_node(d->root) : json_null(),
-			"borderWidth", d->border_width,
-			"windowGap", d->window_gap,
-			"padding",
-				"top", d->top_padding,
-				"right", d->right_padding,
-				"bottom", d->bottom_padding,
-				"left", d->left_padding
-	);
-}
+SERIALIZATION(monitor,
+	STRING("name", &obj->name),
+	INTEGER("id", xcb_randr_output_t, &obj->id),
+	OBJECT("rectangle", xcb_rectangle, &obj->rectangle),
+	INTEGER("rootWindowId", xcb_window_t, &obj->root),
+	BOOLEAN("wired", &obj->wired),
+	INTEGER("paddingTop", int, &obj->top_padding),
+	INTEGER("paddingRight", int, &obj->right_padding),
+	INTEGER("paddingBottom", int, &obj->bottom_padding),
+	INTEGER("paddingLeft", int, &obj->left_padding),
+	SERONLY(SERIALIZE_OBJECT("desktopFocused", desktop_name, obj->desk)),
+	SERONLY(SERIALIZE_OBJECT("desktopHead", desktop_name, obj->desk_head)),
+	SERONLY(SERIALIZE_OBJECT("desktopTail", desktop_name, obj->desk_tail)),
+	SERONLY(SERIALIZE_OBJECT("prevName", monitor_name, obj->prev)),
+	SERONLY(SERIALIZE_OBJECT("prevId", monitor_id, obj->prev)),
+	SERONLY(SERIALIZE_OBJECT("nextName", monitor_name, obj->next)),
+	SERONLY(SERIALIZE_OBJECT("nextId", monitor_id, obj->next)),
+	INTEGER("stickyNumber", int, &obj->num_sticky)
+)
 
-json_t* json_serialize_monitor(monitor_t *m)
-{
-	return json_pack(
-		"{"
-			"s:s,"
-			"s:i,"
-			"s:o,"
-			"s:i,"
-			"s:b,"
-			"s:{"
-				"s:i,"
-				"s:i,"
-				"s:i,"
-				"s:i"
-			"},"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:o,"
-			"s:i"
-		"}",
-			"name", m->name,
-			"id", m->id,
-			"rectangle", json_serialize_xcb_rectangle(&m->rectangle),
-			"rootWindowId", m->root,
-			"wired", m->wired,
-			"padding",
-				"top", m->top_padding,
-				"right", m->right_padding,
-				"bottom", m->bottom_padding,
-				"left", m->left_padding,
-			"desktopFocused", m->desk != NULL ? json_string(m->desk->name) : json_null() ,
-			"desktopHead", m->desk_head != NULL ? json_string(m->desk_head->name) : json_null(),
-			"desktopTail", m->desk_tail != NULL ? json_string(m->desk_tail->name) : json_null(),
-			"prevName", m->prev != NULL ? json_string(m->prev->name) : json_null(),
-			"prevId", m->prev != NULL ? json_integer(m->prev->id) : json_null(),
-			"nextName", m->next != NULL ? json_string(m->next->name) : json_null(),
-			"nextId", m->next != NULL ? json_integer(m->next->id) : json_null(),
-			"stickyNumber", m->num_sticky
-	);
-}
+#undef SERIALIZE_BEGIN
+#undef SERIALIZE_INTEGER
+#undef SERIALIZE_REAL
+#undef SERIALIZE_STRING
+#undef SERIALIZE_BOOLEAN
+#undef SERIALIZE_OBJECT
+#undef SERIALIZE_END
+#undef SERIALIZE_SERONLY
+
+#undef DESERIALIZE_BEGIN
+#undef DESERIALIZE_INTEGER
+#undef DESERIALIZE_REAL
+#undef DESERIALIZE_STRING
+#undef DESERIALIZE_BOOLEAN
+#undef DESERIALIZE_OBJECT
+#undef DESERIALIZE_END
+#undef DESERIALIZE_SERONLY

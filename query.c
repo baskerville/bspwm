@@ -55,6 +55,7 @@ json_t* query_desktop_json(desktop_t *d)
 {
 	json_t* json = json_serialize_desktop(d);
 	json_object_set_new(json, "focused", d == mon->desk ? json_true() : json_false());
+	json_object_set_new(json, "nodes", d->root != NULL ? query_node_json(d->root) : json_null());
 	return json;
 }
 
