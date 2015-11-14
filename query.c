@@ -46,14 +46,14 @@ json_t* query_desktops_array_json(monitor_t *m)
 
 json_t* query_node_json(node_t *n)
 {
-	json_t* json = json_serialize_node(n);
+	json_t* json = json_serialize_node_type(n);
 	json_object_set_new(json, "focused", n == mon->desk->focus ? json_true() : json_false());
 	return json;
 }
 
 json_t* query_desktop_json(desktop_t *d)
 {
-	json_t* json = json_serialize_desktop(d);
+	json_t* json = json_serialize_desktop_type(d);
 	json_object_set_new(json, "focused", d == mon->desk ? json_true() : json_false());
 	json_object_set_new(json, "nodes", d->root != NULL ? query_node_json(d->root) : json_null());
 	return json;
@@ -61,7 +61,7 @@ json_t* query_desktop_json(desktop_t *d)
 
 json_t* query_monitor_json(monitor_t *m)
 {
-	json_t* json = json_serialize_monitor(m);
+	json_t* json = json_serialize_monitor_type(m);
 	json_object_set_new(json, "desktops", query_desktops_array_json(m));
 	json_object_set_new(json, "focused", m == mon ? json_true() : json_false());
 	return json;

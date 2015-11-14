@@ -30,35 +30,35 @@
 #define FE_24(WHAT, X, ...) WHAT(X)FE_23(WHAT, __VA_ARGS__)
 #define FE_25(WHAT, X, ...) WHAT(X)FE_24(WHAT, __VA_ARGS__)
 #define GET_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, NAME, ...) NAME
-#define FOR_EACH(action, ...) \
-	GET_MACRO(__VA_ARGS__, FE_25, FE_24, FE_23, FE_22, FE_21, FE_20, FE_19, FE_18, FE_17, FE_16, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1)(action, __VA_ARGS__)
+#define FOR_EACH(ACTION, ...) \
+	GET_MACRO(__VA_ARGS__, FE_25, FE_24, FE_23, FE_22, FE_21, FE_20, FE_19, FE_18, FE_17, FE_16, FE_15, FE_14, FE_13, FE_12, FE_11, FE_10, FE_9, FE_8, FE_7, FE_6, FE_5, FE_4, FE_3, FE_2, FE_1)(ACTION, __VA_ARGS__)
 
 // Enums
-#define SERIALIZE_BEGIN(type) \
-	json_t* json_serialize_##type(type##_t *obj) \
+#define SERIALIZE_BEGIN(TYPE) \
+	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
 		if (obj == NULL) \
 			return json_null();
-#define SERIALIZE_IF(enumerator, match) \
-		else if (*obj == enumerator) \
-			return json_string(match);
+#define SERIALIZE_IF(ENUM, VALUE) \
+		else if (*obj == ENUM) \
+			return json_string(VALUE);
 #define SERIALIZE_END \
 		else \
 			return json_null(); \
 	}
 
-#define DESERIALIZE_BEGIN(type) \
-	type##_t* json_deserialize_##type(json_t *json) \
+#define DESERIALIZE_BEGIN(TYPE) \
+	TYPE##_t* json_deserialize_##TYPE##_type(json_t *json) \
 	{ \
 		if (json == NULL || !json_is_string(json)) \
 			return NULL; \
-		type##_t *obj = malloc(sizeof(type##_t)); \
+		TYPE##_t *obj = malloc(sizeof(TYPE##_t)); \
 		const char* value = json_string_value(json); \
 		if (value == NULL) \
 			obj = NULL;
-#define DESERIALIZE_IF(enumerator,match) \
-		else if (strcmp(value, match) == 0) \
-			*obj = enumerator;
+#define DESERIALIZE_IF(ENUM, VALUE) \
+		else if (strcmp(value, VALUE) == 0) \
+			*obj = ENUM;
 #define DESERIALIZE_END \
 		else \
 			obj = NULL; \
@@ -67,11 +67,11 @@
 
 #define SERIALIZE_CAT(X) SERIALIZE_##X
 #define DESERIALIZE_CAT(X) DESERIALIZE_##X
-#define SERIALIZATION(type, ...) \
-	SERIALIZE_BEGIN(type) \
+#define SERIALIZATION(TYPE, ...) \
+	SERIALIZE_BEGIN(TYPE) \
 	FOR_EACH(SERIALIZE_CAT, __VA_ARGS__) \
 	SERIALIZE_END \
-	DESERIALIZE_BEGIN(type) \
+	DESERIALIZE_BEGIN(TYPE) \
 	FOR_EACH(DESERIALIZE_CAT, __VA_ARGS__) \
 	DESERIALIZE_END
 
@@ -177,34 +177,39 @@ SERIALIZATION(child_polarity,
 #undef DESERIALIZE_END
 
 //Structs
-#define SERIALIZE_BEGIN(type) \
-	json_t* json_serialize_##type(type##_t *obj) \
+#define SERIALIZE_BEGIN(TYPE) \
+	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
 		if (obj == NULL) \
 			return json_null(); \
 		json_t *json = json_object();
-#define SERIALIZE_INTEGER(key, type, member) \
-		if((json_object_set_new(json, key, json_integer(*(member)))) == -1) { \
+#define SERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
+		if((json_object_set_new(json, KEY, json_integer(*(MEMBER)))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
-#define SERIALIZE_REAL(key, type, member) \
-		if((json_object_set_new(json, key, json_real(*(member)))) == -1) { \
+#define SERIALIZE_REAL(KEY, TYPE, MEMBER) \
+		if((json_object_set_new(json, KEY, json_real(*(MEMBER)))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
-#define SERIALIZE_STRING(key, member) \
-		if((json_object_set_new(json, key, json_string(*member))) == -1) { \
+#define SERIALIZE_STRING(KEY, MEMBER) \
+		if((json_object_set_new(json, KEY, json_string(*MEMBER))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
-#define SERIALIZE_BOOLEAN(key, member) \
-		if((json_object_set_new(json, key, json_boolean(*member))) == -1) { \
+#define SERIALIZE_BOOLEAN(KEY, MEMBER) \
+		if((json_object_set_new(json, KEY, json_boolean(*MEMBER))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
-#define SERIALIZE_OBJECT(key, type, member) \
-		if((json_object_set_new(json, key, json_serialize_##type(member))) == -1) { \
+#define SERIALIZE_OBJECT(KEY, TYPE, MEMBER) \
+		if((json_object_set_new(json, KEY, json_serialize_##TYPE##_type(MEMBER))) == -1) { \
+			json_decref(json); \
+			return json_null(); \
+		}
+#define SERIALIZE_CUSTOM(KEY, FUNCTION, MEMBER) \
+		if((json_object_set_new(json, KEY, FUNCTION(MEMBER))) == -1) { \
 			json_decref(json); \
 			return json_null(); \
 		}
@@ -213,55 +218,64 @@ SERIALIZATION(child_polarity,
 	}
 #define SERIALIZE_SERONLY(WHAT) WHAT
 
-#define DESERIALIZE_BEGIN(type) \
-	type##_t* json_deserialize_##type(json_t *json) \
+#define DESERIALIZE_BEGIN(TYPE) \
+	TYPE##_t* json_deserialize_##TYPE##_type(json_t *json) \
 	{ \
-		type##_t *obj = malloc(sizeof(type##_t)); \
+		TYPE##_t *obj = malloc(sizeof(TYPE##_t)); \
 		json_t *get;
-#define DESERIALIZE_INTEGER(key, type, member) \
-		get = json_object_get(json, key); \
+#define DESERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
+		get = json_object_get(json, KEY); \
 		if (get == NULL || !json_is_integer(get)) { \
 			json_decref(get); \
 			free(obj); \
 			return NULL; \
 		}\
-		*member = (type)json_number_value(get); \
+		*MEMBER = (TYPE)json_number_value(get); \
 		json_decref(get);
-#define DESERIALIZE_REAL(key, type, member) \
-		get = json_object_get(json, key); \
+#define DESERIALIZE_REAL(KEY, TYPE, MEMBER) \
+		get = json_object_get(json, KEY); \
 		if (get == NULL || !json_is_real(get)) { \
 			json_decref(get); \
 			free(obj); \
 			return NULL; \
 		}\
-		*member = (type)json_real_value(get); \
+		*MEMBER = (TYPE)json_real_value(get); \
 		json_decref(get);
-#define DESERIALIZE_STRING(key, member) \
-		get = json_object_get(json, key); \
+#define DESERIALIZE_STRING(KEY, MEMBER) \
+		get = json_object_get(json, KEY); \
 		if (get == NULL || !json_is_string(get)) { \
 			json_decref(get); \
 			free(obj); \
 			return NULL; \
 		} \
-		strcpy(*member, json_string_value(get)); \
+		strcpy(*MEMBER, json_string_value(get)); \
 		json_decref(get);
-#define DESERIALIZE_BOOLEAN(key, member) \
-		get = json_object_get(json, key); \
+#define DESERIALIZE_BOOLEAN(KEY, MEMBER) \
+		get = json_object_get(json, KEY); \
 		if (get == NULL || !json_is_boolean(get)) { \
 			json_decref(get); \
 			free(obj); \
 			return NULL; \
 		}\
-		*member = json_boolean_value(get); \
+		*MEMBER = json_boolean_value(get); \
 		json_decref(get);
-#define DESERIALIZE_OBJECT(key, type, member) \
-		get = json_object_get(json, key); \
+#define DESERIALIZE_OBJECT(KEY, TYPE, MEMBER) \
+		get = json_object_get(json, KEY); \
 		if (get == NULL || !json_is_object(get)) { \
 			json_decref(get); \
 			free(obj); \
 			return NULL; \
 		} \
-		*member = *json_deserialize_##type(get); \
+		*MEMBER = *json_deserialize_##TYPE##_type(get); \
+		json_decref(get);
+#define DESERIALIZE_CUSTOM(KEY, FUNCTION, MEMBER) \
+		get = json_object_get(json, KEY); \
+		if (get == NULL) { \
+			json_decref(get); \
+			free(obj); \
+			return NULL; \
+		} \
+		MEMBER = FUNCTION(get); \
 		json_decref(get);
 #define DESERIALIZE_END \
 		return obj; \
@@ -327,8 +341,8 @@ SERIALIZATION(desktop,
 	OBJECT("layout", layout, &obj->layout),
 	// SERONLY("nodeRoot"),
 	// SERONLY("nodeFocus"),
-	SERONLY(SERIALIZE_OBJECT("prevName", desktop_name, obj->prev)),
-	SERONLY(SERIALIZE_OBJECT("nextName", desktop_name, obj->next)),
+	SERONLY(SERIALIZE_CUSTOM("prevName", json_serialize_desktop_name, obj->prev)),
+	SERONLY(SERIALIZE_CUSTOM("nextName", json_serialize_desktop_name, obj->next)),
 	INTEGER("paddingTop", int, &obj->top_padding),
 	INTEGER("paddingRight", int, &obj->right_padding),
 	INTEGER("paddingBottom", int, &obj->bottom_padding),
@@ -361,13 +375,13 @@ SERIALIZATION(monitor,
 	INTEGER("paddingRight", int, &obj->right_padding),
 	INTEGER("paddingBottom", int, &obj->bottom_padding),
 	INTEGER("paddingLeft", int, &obj->left_padding),
-	SERONLY(SERIALIZE_OBJECT("desktopFocused", desktop_name, obj->desk)),
-	SERONLY(SERIALIZE_OBJECT("desktopHead", desktop_name, obj->desk_head)),
-	SERONLY(SERIALIZE_OBJECT("desktopTail", desktop_name, obj->desk_tail)),
-	SERONLY(SERIALIZE_OBJECT("prevName", monitor_name, obj->prev)),
-	SERONLY(SERIALIZE_OBJECT("prevId", monitor_id, obj->prev)),
-	SERONLY(SERIALIZE_OBJECT("nextName", monitor_name, obj->next)),
-	SERONLY(SERIALIZE_OBJECT("nextId", monitor_id, obj->next)),
+	SERONLY(SERIALIZE_CUSTOM("desktopFocused", json_serialize_desktop_name, obj->desk)),
+	SERONLY(SERIALIZE_CUSTOM("desktopHead", json_serialize_desktop_name, obj->desk_head)),
+	SERONLY(SERIALIZE_CUSTOM("desktopTail", json_serialize_desktop_name, obj->desk_tail)),
+	SERONLY(SERIALIZE_CUSTOM("prevName", json_serialize_monitor_name, obj->prev)),
+	SERONLY(SERIALIZE_CUSTOM("prevId", json_serialize_monitor_id, obj->prev)),
+	SERONLY(SERIALIZE_CUSTOM("nextName", json_serialize_monitor_name, obj->next)),
+	SERONLY(SERIALIZE_CUSTOM("nextId", json_serialize_monitor_id, obj->next)),
 	INTEGER("stickyNumber", int, &obj->num_sticky)
 )
 

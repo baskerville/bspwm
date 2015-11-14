@@ -1,12 +1,12 @@
 #include <jansson.h>
 
-#define SERIALIZE(type) \
-json_t* json_serialize_##type(type##_t *obj);
+#define SERIALIZE(TYPE) \
+json_t* json_serialize_##TYPE##_type(TYPE##_t *obj);
 
-#define DESERIALIZE(type) \
-type##_t* json_deserialize_##type(json_t *json);
+#define DESERIALIZE(TYPE) \
+TYPE##_t* json_deserialize_##TYPE##_type(json_t *json);
 
-#define SERIALIZATION(type) SERIALIZE(type) DESERIALIZE(type)
+#define SERIALIZATION(TYPE) SERIALIZE(TYPE) DESERIALIZE(TYPE)
 
 //Enums
 SERIALIZATION(split_type)
