@@ -231,7 +231,7 @@ SERIALIZATION(child_polarity,
 		}
 #define SERIALIZE_STRUCT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
 		if ((json_object_set_new(json, KEY, json_serialize_##FUNCTION(&MEMBER))) == -1) { \
-			warn("JSON serialize failed: Object: "KEY"\n"); \
+			warn("JSON serialize failed: Struct: "KEY"\n"); \
 			json_decref(json); \
 			return json_null(); \
 		}
@@ -294,14 +294,14 @@ SERIALIZATION(child_polarity,
 		MEMBER = json_boolean_value(get);
 #define DESERIALIZE_STRUCT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
 		get = json_object_get(json, KEY); \
-		if (get == NULL) { \
-			warn("JSON deserialize failed: Object: "KEY"\n"); \
+		if (get == NULL || !json_is_object(get)) { \
+			warn("JSON deserialize failed: Struct: "KEY"\n"); \
 			free(obj); \
 			return NULL; \
 		} \
 		TYPE *VAR; \
 		if ((VAR = json_deserialize_##FUNCTION(get)) == NULL) { \
-			warn("JSON deserialize failed: Object: "KEY"\n"); \
+			warn("JSON deserialize failed: Struct: "KEY"\n"); \
 			free(obj); \
 			return NULL; \
 		} \
@@ -309,7 +309,7 @@ SERIALIZATION(child_polarity,
 		free(VAR);
 #define DESERIALIZE_ENUM(KEY, FUNCTION, MEMBER) \
 		get = json_object_get(json, KEY); \
-		if (get == NULL) { \
+		if (get == NULL || !json_is_string(get)) { \
 			warn("JSON deserialize failed: Enum: "KEY"\n"); \
 			free(obj); \
 			return NULL; \
@@ -365,8 +365,8 @@ SERIALIZATION(client,
 	ENUM("lastState", client_state_type, obj->last_state),
 	ENUM("layer", stack_layer_type, obj->layer),
 	ENUM("lastLayer", stack_layer_type, obj->last_layer),
-	STRUCT("floatingRectangle", rectangle_floating, xcb_rectangle_t, xcb_rectangle_type, obj->floating_rectangle),
-	STRUCT("tiledRectangle", rectangle_tiled, xcb_rectangle_t, xcb_rectangle_type, obj->tiled_rectangle),
+	STRUCT("floatingRectangle", floating_rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->floating_rectangle),
+	STRUCT("tiledRectangle", tiled_rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->tiled_rectangle),
 	INTEGER("minWidth", uint16_t, obj->min_width),
 	INTEGER("maxWidth", uint16_t, obj->max_width),
 	INTEGER("minHeight", uint16_t, obj->min_height),
