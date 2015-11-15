@@ -21,7 +21,7 @@ The default configuration file is `$XDG_CONFIG_HOME/bspwm/bspwmrc`: this is simp
 
 Keyboard and pointer bindings are defined with [sxhkd](https://github.com/baskerville/sxhkd).
 
-Example configuration files can be found in the [examples](https://github.com/baskerville/bspwm/tree/master/examples) directory.
+Example configuration files can be found in the [examples](examples) directory.
 
 ## Monitors, desktops and windows
 
