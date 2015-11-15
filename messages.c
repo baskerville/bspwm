@@ -759,7 +759,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 			return MSG_FAILURE;
 	}
 
-	if (json_dumpf(json, rsp, JSON_INDENT(4) | JSON_SORT_KEYS) == -1){
+	if (json_dumpf(json, rsp, JSON_INDENT(4) | JSON_PRESERVE_ORDER) == -1){
 		warn("JSON dump failed\n");
 		json_decref(json);
 		return MSG_FAILURE;
