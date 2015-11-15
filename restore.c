@@ -154,11 +154,10 @@ void restore_history(const char *file_path)
 	coordinates_t *loc;
 
 	json_array_foreach(json, index, value) {
-		if ((loc = json_deserialize_coordinates_type(value)) == NULL) {
-			free(loc);
+		if ((loc = json_deserialize_coordinates_type(value)) == NULL)
 			continue;
-		}
 		history_add(loc->monitor, loc->desktop, loc->node);
+		free(loc);
 	}
 	json_decref(json);
 }
@@ -179,10 +178,8 @@ void restore_stack(const char *file_path)
 	node_t *n;
 
 	json_array_foreach(json, index, value) {
-		if ((n = json_deserialize_node_window(value)) == NULL) {
-			free(n);
+		if ((n = json_deserialize_node_window(value)) == NULL)
 			continue;
-		}
 		stack_insert_after(stack_tail, n);
 	}
 	json_decref(json);
