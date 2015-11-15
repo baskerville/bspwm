@@ -179,7 +179,7 @@ void restore_stack(const char *file_path)
 	node_t *n;
 
 	json_array_foreach(json, index, value) {
-		if ((n = json_deserialize_node_windowid(value)) == NULL) {
+		if ((n = json_deserialize_node_window(value)) == NULL) {
 			free(n);
 			continue;
 		}

@@ -347,9 +347,9 @@ SERIALIZATION(xcb_rectangle,
 )
 
 SERIALIZATION(client,
-	INTEGER("windowId", xcb_window_t, obj->window),
-	STRING("nameClass", obj->class_name),
-	STRING("nameInstance", obj->instance_name),
+	INTEGER("window", xcb_window_t, obj->window),
+	STRING("className", obj->class_name),
+	STRING("instanceName", obj->instance_name),
 	INTEGER("borderWidth", unsigned int, obj->border_width),
 	BOOLEAN("locked", obj->locked),
 	BOOLEAN("sticky", obj->sticky),
@@ -358,27 +358,27 @@ SERIALIZATION(client,
 	BOOLEAN("icccmFocus", obj->icccm_focus),
 	BOOLEAN("icccmInput", obj->icccm_input),
 	ENUM("state", client_state_type, obj->state),
-	ENUM("stateLast", client_state_type, obj->last_state),
+	ENUM("lastState", client_state_type, obj->last_state),
 	ENUM("layer", stack_layer_type, obj->layer),
-	ENUM("layerLast", stack_layer_type, obj->last_layer),
-	STRUCT("rectangleFloating", rectangle_floating, xcb_rectangle_t, xcb_rectangle_type, obj->floating_rectangle),
-	STRUCT("rectangleTiled", rectangle_tiled, xcb_rectangle_t, xcb_rectangle_type, obj->tiled_rectangle),
+	ENUM("lastLayer", stack_layer_type, obj->last_layer),
+	STRUCT("floatingRectangle", rectangle_floating, xcb_rectangle_t, xcb_rectangle_type, obj->floating_rectangle),
+	STRUCT("tiledRectangle", rectangle_tiled, xcb_rectangle_t, xcb_rectangle_type, obj->tiled_rectangle),
 	INTEGER("minWidth", uint16_t, obj->min_width),
 	INTEGER("maxWidth", uint16_t, obj->max_width),
 	INTEGER("minHeight", uint16_t, obj->min_height),
 	INTEGER("maxHeight", uint16_t, obj->max_height),
 	// wm_state
-	INTEGER("statesNumber", int, obj->num_states)
+	INTEGER("numStates", int, obj->num_states)
 )
 
-json_t* json_serialize_node_windowid(node_t *obj)
+json_t* json_serialize_node_window(node_t *obj)
 {
-	if (obj == NULL || obj->client == NULL)
+	if (obj == NULL || obj->client == NULL || obj->client->window == XCB_NONE)
 		return json_null();
 	return json_integer(obj->client->window);
 }
 
-node_t* json_deserialize_node_windowid(json_t *json)
+node_t* json_deserialize_node_window(json_t *json)
 {
 	if (!json_is_integer(json))
 		return NULL;
@@ -404,16 +404,16 @@ json_t* json_serialize_node_focused(node_t *obj)
 }
 
 SERIALIZATION(node,
-	ENUM("type", split_type_type, obj->split_type),
-	REAL("ratio", double, obj->split_ratio),
-	ENUM("mode", split_mode_type, obj->split_mode),
-	ENUM("direction", direction_type, obj->split_dir),
+	ENUM("splitType", split_type_type, obj->split_type),
+	REAL("splitRatio", double, obj->split_ratio),
+	ENUM("splitMode", split_mode_type, obj->split_mode),
+	ENUM("splitDir", direction_type, obj->split_dir),
 	INTEGER("birthRotation", int, obj->birth_rotation),
 	STRUCT("rectangle", rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->rectangle),
 	BOOLEAN("vacant", obj->vacant),
 	INTEGER("privacyLevel", int, obj->privacy_level),
-	POINTER("childFirst", node_type, obj->first_child),
-	POINTER("childSecond", node_type, obj->second_child),
+	POINTER("firstChild", node_type, obj->first_child),
+	POINTER("secondChild", node_type, obj->second_child),
 	DESERONLY(DESERIALIZE_FUNCTION(node_parent, obj)),
 	POINTER("client", client_type, obj->client),
 	SERONLY(SERIALIZE_POINTER("focused", node_focused, obj))
@@ -445,13 +445,13 @@ SERIALIZATION(desktop,
 	STRING("name", obj->name),
 	ENUM("layout", layout_type, obj->layout),
 	POINTER("root", node_type, obj->root),
-	POINTER("focusWindowId", node_windowid, obj->focus),
+	POINTER("focusWindow", node_window, obj->focus),
 	POINTER("prevName", desktop_name, obj->prev),
 	POINTER("nextName", desktop_name, obj->next),
-	INTEGER("paddingTop", int, obj->top_padding),
-	INTEGER("paddingRight", int, obj->right_padding),
-	INTEGER("paddingBottom", int, obj->bottom_padding),
-	INTEGER("paddingLeft", int, obj->left_padding),
+	INTEGER("topPadding", int, obj->top_padding),
+	INTEGER("rightPadding", int, obj->right_padding),
+	INTEGER("bottomPadding", int, obj->bottom_padding),
+	INTEGER("leftPadding", int, obj->left_padding),
 	INTEGER("windowGap", int, obj->window_gap),
 	INTEGER("borderWidth", unsigned int, obj->border_width),
 	SERONLY(SERIALIZE_POINTER("focused", desktop_focused, obj))
@@ -499,20 +499,20 @@ SERIALIZATION(monitor,
 	STRING("name", obj->name),
 	INTEGER("id", xcb_randr_output_t, obj->id),
 	STRUCT("rectangle", rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->rectangle),
-	INTEGER("rootWindowId", xcb_window_t, obj->root),
+	INTEGER("rootWindow", xcb_window_t, obj->root),
 	BOOLEAN("wired", obj->wired),
-	INTEGER("paddingTop", int, obj->top_padding),
-	INTEGER("paddingRight", int, obj->right_padding),
-	INTEGER("paddingBottom", int, obj->bottom_padding),
-	INTEGER("paddingLeft", int, obj->left_padding),
-	POINTER("desktopFocusedName", desktop_name, obj->desk),
-	POINTER("desktopHeadName", desktop_name, obj->desk_head),
-	POINTER("desktopTailName", desktop_name, obj->desk_tail),
+	INTEGER("topPadding", int, obj->top_padding),
+	INTEGER("rightPadding", int, obj->right_padding),
+	INTEGER("bottomPadding", int, obj->bottom_padding),
+	INTEGER("leftPadding", int, obj->left_padding),
+	POINTER("deskName", desktop_name, obj->desk),
+	POINTER("deskHeadName", desktop_name, obj->desk_head),
+	POINTER("deskTailName", desktop_name, obj->desk_tail),
 	POINTER("prevName", monitor_name, obj->prev),
 	SERONLY(SERIALIZE_POINTER("prevId", monitor_id, obj->prev)),
 	POINTER("nextName", monitor_name, obj->next),
 	SERONLY(SERIALIZE_POINTER("nextId", monitor_id, obj->next)),
-	INTEGER("stickyNumber", int, obj->num_sticky),
+	INTEGER("numSticky", int, obj->num_sticky),
 	SERONLY(SERIALIZE_POINTER("desktops", monitor_desktops, obj)),
 	SERONLY(SERIALIZE_POINTER("focused", monitor_focused, obj))
 )
@@ -520,7 +520,7 @@ SERIALIZATION(monitor,
 SERIALIZATION(coordinates,
 	POINTER("monitorName", monitor_name, obj->monitor),
 	POINTER("desktopName", desktop_name, obj->desktop),
-	POINTER("windowId", node_windowid, obj->node)
+	POINTER("nodeWindow", node_window, obj->node)
 )
 
 #undef SERIALIZE_BEGIN
@@ -625,20 +625,7 @@ json_t* json_serialize_history(coordinates_t loc)
 		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
 				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
 			continue;
-		xcb_window_t win = XCB_NONE;
-		if (h->loc.node != NULL)
-			win = h->loc.node->client->window;
-
-		json_array_append_new(json, json_pack(
-			"{"
-				"s:s,"
-				"s:s,"
-				"s:i"
-			"}",
-				"monitorName", h->loc.monitor->name,
-				"desktopName", h->loc.desktop->name,
-				"windowId", win
-		));
+		json_array_append_new(json, json_serialize_coordinates_type(&h->loc));
 	}
 	return json;
 }
@@ -647,7 +634,7 @@ json_t* json_serialize_stack()
 {
 	json_t *json = json_array();
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-		json_array_append_new(json, json_integer(s->node->client->window));
+		json_array_append_new(json, json_serialize_node_window(s->node));
 	}
 	return json;
 }

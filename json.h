@@ -39,8 +39,8 @@ SERIALIZATION(coordinates)
 #undef SERIALIZATION
 
 // Misc
-json_t* json_serialize_node_windowid(node_t *obj);
-node_t* json_deserialize_node_windowid(json_t *json);
+json_t* json_serialize_node_window(node_t *obj);
+node_t* json_deserialize_node_window(json_t *json);
 json_t* json_serialize_desktop_name(desktop_t *obj);
 desktop_t* json_deserialize_desktop_name(json_t *json);
 json_t* json_serialize_monitor_name(monitor_t *obj);
