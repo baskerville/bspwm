@@ -42,9 +42,9 @@ bool restore_monitor(json_t *json)
 	monitor_t *m, *md;
 	json_t *jbool;
 
-	if ((md = json_deserialize_monitor_type(json)) == NULL) {
+	if ((md = json_deserialize_monitor_type(json)) == NULL)
 		return false;
-	}
+
 	if ((m = find_monitor(md->name)) == NULL) {
 		warn("Could not find monitor: %s\n", md->name);
 		free(md);
@@ -54,9 +54,8 @@ bool restore_monitor(json_t *json)
 	*m = *md;
 	free(md);
 
-	if ((jbool = json_object_get(json, "focused")) != NULL && json_is_true(jbool)) {
+	if ((jbool = json_object_get(json, "focused")) != NULL && json_is_true(jbool))
 		mon = m;
-	}
 
 	return true;
 }
@@ -105,15 +104,15 @@ void restore_tree(const char *file_path)
 			warn("Failed to restore monitor: %s\n", mkey);
 			continue;
 
-		// if ((jdesktops = json_object_get(mvalue, "desktops")) == NULL || !json_is_array(jdesktops)) {
-		// 	warn("Key not found: desktops\n");
-		// 	continue;
-		// }
-		// json_array_foreach(jdesktops, dindex, dvalue) {
-		// 	if (!restore_desktop(dvalue))
-		// 		warn("Failed to restore desktop at index: %u\n", dindex);
-		// 		continue;
-		// }
+		if ((jdesktops = json_object_get(mvalue, "desktops")) == NULL || !json_is_array(jdesktops)) {
+			warn("Key not found: desktops\n");
+			continue;
+		}
+		json_array_foreach(jdesktops, dindex, dvalue) {
+			if (!restore_desktop(dvalue))
+				warn("Failed to restore desktop at index: %u\n", dindex);
+				continue;
+		}
 	}
 	json_decref(json);
 

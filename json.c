@@ -301,6 +301,7 @@ SERIALIZATION(child_polarity,
 		} \
 		TYPE *VAR; \
 		if ((VAR = json_deserialize_##FUNCTION(get)) == NULL) { \
+			warn("JSON deserialize failed: Object: "KEY"\n"); \
 			free(obj); \
 			return NULL; \
 		} \
@@ -314,6 +315,7 @@ SERIALIZATION(child_polarity,
 			return NULL; \
 		} \
 		if (!json_deserialize_##FUNCTION(get, &MEMBER)) { \
+			warn("JSON deserialize failed: Enum: "KEY"\n"); \
 			free(obj); \
 			return NULL; \
 		}
@@ -325,11 +327,13 @@ SERIALIZATION(child_polarity,
 			return NULL; \
 		} \
 		if ((MEMBER = json_deserialize_##FUNCTION(get)) == NULL) { \
+			warn("JSON deserialize failed: Pointer: "KEY"\n"); \
 			free(obj); \
 			return NULL; \
 		}
 #define DESERIALIZE_FUNCTION(FUNCTION, MEMBER) \
 		if (!json_deserialize_##FUNCTION(MEMBER)) { \
+			warn("JSON deserialize failed: Function: "#FUNCTION"\n"); \
 			free(obj); \
 			return NULL; \
 		}
