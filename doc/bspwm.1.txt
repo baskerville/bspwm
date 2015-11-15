@@ -37,74 +37,6 @@ Options
 *-c* 'CONFIG_PATH'::
 	Use the given configuration file.
 
-Configuration
--------------
-
-*bspwm* has only two sources of informations: the X events it receives and the messages it reads on a dedicated socket.
-
-The default configuration file is '$XDG_CONFIG_HOME/bspwm/bspwmrc'.
-
-Keyboard and pointer bindings are defined with https://github.com/baskerville/sxhkd[sxhkd].
-
-Example configuration files can be found in the *examples* directory.
-
-Splitting Modes
----------------
-
-New windows are inserted in the tree as close as possible to the focused window.
-
-There are only two splitting modes: 'automatic' and 'manual'.
-
-The default mode is 'automatic'. The 'manual' mode is entered by sending a *preselection* message.
-
-Example: insertion of a new node (number 4) into the given tree in 'automatic' mode:
-
-----
-              b                                   c
-             / \                                 / \
-            3   a              -->              4   b
-            ^  / \                              ^  / \
-              2   1                               3   a
-                                                     / \
-                                                    2   1
- +-------------------------+         +-------------------------+
- |            |            |         |            |            |
- |            |     2      |         |            |     3      |
- |            |            |         |            |            |
- |     3      |------------|   -->   |     4      |------------|
- |     ^      |            |         |     ^      |     |      |
- |            |     1      |         |            |  1  |  2   |
- |            |            |         |            |     |      |
- +-------------------------+         +-------------------------+
-----
-
-Same action, but the mode is 'manual', and a *window --presel up* message was sent beforehand:
-
-----
-             b                                   b
-            / \                                 / \
-           3   a              -->              c   a
-           ^  / \                             / \ / \
-             2   1                           4  3 2  1
-                                             ^
-+-------------------------+         +-------------------------+
-|            |            |         |            |            |
-|            |     2      |         |     4      |     2      |
-|            |            |         |     ^      |            |
-|     3      |------------|   -->   |------------|------------|
-|     ^      |            |         |            |            |
-|            |     1      |         |     3      |     1      |
-|            |            |         |            |            |
-+-------------------------+         +-------------------------+
-----
-
-Containers
-----------
-
-Each monitor contains at least one desktop.
-
-Each desktop contains at most one tree.
-
 Common Definitions
 ------------------
 
@@ -372,7 +304,7 @@ Window Flags
 -------------
 
 locked::
-	Ignores the *close* message.
+	Ignores the *window --close* message.
 
 sticky::
 	Stays in the focused desktop of its monitor.
@@ -698,7 +630,7 @@ Global Settings
 	Color of the border of an unfocused window.
 
 'presel_border_color'::
-	Color of the *presel* message feedback.
+	Color of the *window --presel* message feedback.
 
 'focused_locked_border_color'::
 	Color of the border of a focused locked window of a focused monitor.
@@ -923,20 +855,6 @@ Environment Variables
 'BSPWM_SOCKET'::
 	The path of the socket used for the communication between *bspc* and *bspwm*. If it isn't defined, then the following path is used: '/tmp/bspwm<host_name>_<display_number>_<screen_number>-socket'.
 
-Panels
-------
-
-* Any EWMH compliant panel (e.g.: 'tint2', 'bmpanel2', etc.).
-* A custom panel (have a look at the files in 'examples/panel').
-
-Key Features
-------------
-
-* Configured and controlled through messages.
-* Multiple monitors support.
-* EWMH support.
-* Hybrid tiling.
-
 Contributors
 ------------
 
@@ -948,11 +866,6 @@ Author
 ------
 
 Bastien Dejean <nihilhill at gmail.com>
-
-Mailing List
-------------
-
-bspwm at librelist.com
 
 ////
 vim: set ft=asciidoc:

@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 11/13/2015
+.\"      Date: 11/15/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/13/2015" "Bspwm 0\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "11/15/2015" "Bspwm 0\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -55,80 +55,6 @@ Print the version and exit\&.
 .RS 4
 Use the given configuration file\&.
 .RE
-.SH "CONFIGURATION"
-.sp
-\fBbspwm\fR has only two sources of informations: the X events it receives and the messages it reads on a dedicated socket\&.
-.sp
-The default configuration file is \fI$XDG_CONFIG_HOME/bspwm/bspwmrc\fR\&.
-.sp
-Keyboard and pointer bindings are defined with sxhkd\&.
-.sp
-Example configuration files can be found in the \fBexamples\fR directory\&.
-.SH "SPLITTING MODES"
-.sp
-New windows are inserted in the tree as close as possible to the focused window\&.
-.sp
-There are only two splitting modes: \fIautomatic\fR and \fImanual\fR\&.
-.sp
-The default mode is \fIautomatic\fR\&. The \fImanual\fR mode is entered by sending a \fBpreselection\fR message\&.
-.sp
-Example: insertion of a new node (number 4) into the given tree in \fIautomatic\fR mode:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-              b                                   c
-             / \e                                 / \e
-            3   a              \-\->              4   b
-            ^  / \e                              ^  / \e
-              2   1                               3   a
-                                                     / \e
-                                                    2   1
- +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
- |            |            |         |            |            |
- |            |     2      |         |            |     3      |
- |            |            |         |            |            |
- |     3      |\-\-\-\-\-\-\-\-\-\-\-\-|   \-\->   |     4      |\-\-\-\-\-\-\-\-\-\-\-\-|
- |     ^      |            |         |     ^      |     |      |
- |            |     1      |         |            |  1  |  2   |
- |            |            |         |            |     |      |
- +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-Same action, but the mode is \fImanual\fR, and a \fBwindow \-\-presel up\fR message was sent beforehand:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-             b                                   b
-            / \e                                 / \e
-           3   a              \-\->              c   a
-           ^  / \e                             / \e / \e
-             2   1                           4  3 2  1
-                                             ^
-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
-|            |            |         |            |            |
-|            |     2      |         |     4      |     2      |
-|            |            |         |     ^      |            |
-|     3      |\-\-\-\-\-\-\-\-\-\-\-\-|   \-\->   |\-\-\-\-\-\-\-\-\-\-\-\-|\-\-\-\-\-\-\-\-\-\-\-\-|
-|     ^      |            |         |            |            |
-|            |     1      |         |     3      |     1      |
-|            |            |         |            |            |
-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+         +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
-.fi
-.if n \{\
-.RE
-.\}
-.SH "CONTAINERS"
-.sp
-Each monitor contains at least one desktop\&.
-.sp
-Each desktop contains at most one tree\&.
 .SH "COMMON DEFINITIONS"
 .sp
 .if n \{\
@@ -572,7 +498,7 @@ Fills its monitor rectangle and has no borders\&. It is send in the ABOVE layer 
 locked
 .RS 4
 Ignores the
-\fBclose\fR
+\fBwindow \-\-close\fR
 message\&.
 .RE
 .PP
@@ -1121,7 +1047,7 @@ Color of the border of an unfocused window\&.
 \fIpresel_border_color\fR
 .RS 4
 Color of the
-\fBpresel\fR
+\fBwindow \-\-presel\fR
 message feedback\&.
 .RE
 .PP
@@ -1490,77 +1416,6 @@ and
 \fBbspwm\fR\&. If it isn\(cqt defined, then the following path is used:
 \fI/tmp/bspwm<host_name>_<display_number>_<screen_number>\-socket\fR\&.
 .RE
-.SH "PANELS"
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-Any EWMH compliant panel (e\&.g\&.:
-\fItint2\fR,
-\fIbmpanel2\fR, etc\&.)\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-A custom panel (have a look at the files in
-\fIexamples/panel\fR)\&.
-.RE
-.SH "KEY FEATURES"
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-Configured and controlled through messages\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-Multiple monitors support\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-EWMH support\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-Hybrid tiling\&.
-.RE
 .SH "CONTRIBUTORS"
 .sp
 .RS 4
@@ -1598,6 +1453,3 @@ Ivan Kanakarakis <ivan\&.kanak at gmail\&.com>
 .SH "AUTHOR"
 .sp
 Bastien Dejean <nihilhill at gmail\&.com>
-.SH "MAILING LIST"
-.sp
-bspwm at librelist\&.com

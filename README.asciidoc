@@ -1,1 +1,0 @@
-doc/bspwm.1.txt
