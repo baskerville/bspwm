@@ -26,6 +26,7 @@ SERIALIZATION(pointer_action)
 SERIALIZATION(layout)
 SERIALIZATION(flip)
 SERIALIZATION(child_polarity)
+SERIALIZATION(subscriber_mask)
 
 // Structs
 SERIALIZATION(xcb_rectangle)

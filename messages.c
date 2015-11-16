@@ -561,7 +561,6 @@ int cmd_monitor(char **args, int num)
 				d = d->next;
 				num--, args++;
 			}
-			put_status(SBSC_MASK_REPORT, NULL);
 			while (num > 0) {
 				add_desktop(trg.monitor, make_desktop(*args));
 				num--, args++;
@@ -900,7 +899,7 @@ int cmd_control(char **args, int num, FILE *rsp)
 			num--, args++;
 			int field = 0;
 			if (num < 1) {
-				field = SBSC_MASK_REPORT;
+				field = SBSC_MASK_ALL;
 			} else {
 				subscriber_mask_t mask;
 				while (num > 0) {
@@ -914,8 +913,6 @@ int cmd_control(char **args, int num, FILE *rsp)
 			}
 			add_subscriber(rsp, field);
 			return MSG_SUBSCRIBE;
-		} else if (streq("--get-status", *args)) {
-			print_report(rsp);
 		} else if (streq("--record-history", *args)) {
 			num--, args++;
 			if (num < 1)
@@ -1269,12 +1266,12 @@ bool parse_subscriber_mask(const char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_MONITOR_RENAME;
 	} else if (streq("monitor_remove", s)) {
 		*mask = SBSC_MASK_MONITOR_REMOVE;
+	} else if (streq("monitor_swap", s)) {
+		*mask = SBSC_MASK_MONITOR_SWAP;
 	} else if (streq("monitor_focus", s)) {
 		*mask = SBSC_MASK_MONITOR_FOCUS;
 	} else if (streq("monitor_geometry", s)) {
 		*mask = SBSC_MASK_MONITOR_GEOMETRY;
-	} else if (streq("report", s)) {
-		*mask = SBSC_MASK_REPORT;
 	} else {
 		return false;
 	}

@@ -293,8 +293,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 	if (n->client->sticky) {
 		m->num_sticky++;
 	}
-
-	put_status(SBSC_MASK_REPORT, NULL);
 }
 
 void activate_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -337,7 +335,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (n != NULL) {
 		if (n->client->urgent) {
 			n->client->urgent = false;
-			put_status(SBSC_MASK_REPORT, NULL);
 		}
 		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
 			neutralize_obscuring_windows(m, d, n);
@@ -957,8 +954,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 	if (n->client->sticky)
 		m->num_sticky--;
-
-	put_status(SBSC_MASK_REPORT, NULL);
 }
 
 void remove_node(monitor_t *m, desktop_t *d, node_t *n)

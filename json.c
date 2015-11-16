@@ -196,7 +196,6 @@ SERIALIZATION(child_polarity,
 )
 
 SERIALIZATION(subscriber_mask,
-	IF(SBSC_MASK_REPORT, "report"),
 	IF(SBSC_MASK_MONITOR_ADD, "monitorAdd"),
 	IF(SBSC_MASK_MONITOR_RENAME, "monitorRename"),
 	IF(SBSC_MASK_MONITOR_REMOVE, "monitorRemove"),
