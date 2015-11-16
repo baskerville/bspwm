@@ -13,7 +13,7 @@ BASHCPL = $(PREFIX)/share/bash-completion/completions
 ZSHCPL = $(PREFIX)/share/zsh/site-functions
 DOCPREFIX = $(PREFIX)/share/doc/bspwm
 
-MD_DOCS = doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
+MD_DOCS = README.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
 XSESSIONS = $(PREFIX)/share/xsessions
 
 WM_SRC = bspwm.c helpers.c settings.c monitor.c desktop.c tree.c stack.c history.c \
@@ -70,7 +70,7 @@ uninstall:
 	rm -f "$(DESTDIR)$(XSESSIONS)"/bspwm.desktop
 
 doc:
-	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.txt
+	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.asciidoc
 
 clean:
 	rm -f $(WM_OBJ) $(CL_OBJ) bspwm bspc
