@@ -75,7 +75,7 @@
 #define SERIALIZE_BEGIN(TYPE) \
 	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
-		if (obj == NULL) \
+		if (!obj) \
 			return NULL;
 #define SERIALIZE_IF(ENUM, VALUE) \
 		else if (*obj == ENUM) \
@@ -88,10 +88,10 @@
 #define DESERIALIZE_BEGIN(TYPE) \
 	bool json_deserialize_##TYPE##_type(json_t *json, TYPE##_t *obj) \
 	{ \
-		if (json == NULL || !json_is_string(json)) \
+		if (!json_is_string(json)) \
 			return false; \
 		const char *value = json_string_value(json); \
-		if (value == NULL) \
+		if (!value) \
 			return false;
 #define DESERIALIZE_IF(ENUM, VALUE) \
 		else if (strcmp(value, VALUE) == 0) { \
@@ -237,120 +237,67 @@ SERIALIZATION(subscriber_mask,
 // Structs
 //
 
+#define SERIALIZE_INIT_OBJECT(TYPE) \
+		json_t *json = json_object(); \
+		if (!json) { \
+			warn("JSON serialize failed: "#TYPE": init_object\n"); \
+			return NULL; \
+		}
+#define SERIALIZE_INIT_ARRAY(TYPE) \
+		json_t *json = json_array(); \
+		if (!json) { \
+			warn("JSON serialize failed: "#TYPE": init_array\n"); \
+			return NULL; \
+		}
+
+
+#define SERIALIZE_SET_JSONNULL(TYPE, KEY) \
+		if (json_is_null(set)) { \
+			json_decref(set); \
+			json_decref(json); \
+			warn("JSON serialize failed: "#TYPE": "KEY": json_is_null\n"); \
+			return NULL; \
+		}
+#define SERIALIZE_SET_OBJECT_NEW(TYPE, KEY) \
+		if (json_object_set_new(json, KEY, set) == -1) { \
+			json_decref(json); \
+			warn("JSON serialize failed: "#TYPE": "KEY": json_object_set_new\n"); \
+			return NULL; \
+		}
+
 #define SERIALIZE_BEGIN(TYPE) \
 	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
-		if (obj == NULL) \
+		if (!obj) \
 			return json_null(); \
-		json_t *json = json_object(); \
-		if (json == NULL) { \
-			warn("JSON serialize failed: "#TYPE"\n"); \
-			return NULL; \
-		} \
+		SERIALIZE_INIT_OBJECT(TYPE) \
 		json_t *set;
 #define SERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
 		set = json_integer(MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: Integer: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Integer: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_OBJECT_NEW(integer, KEY)
 #define SERIALIZE_REAL(KEY, TYPE, MEMBER) \
 		set = json_real(MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: Real: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Real: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_OBJECT_NEW(real, KEY)
 #define SERIALIZE_STRING(KEY, MEMBER) \
 		set = json_string(MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: String: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: String: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_OBJECT_NEW(string, KEY)
 #define SERIALIZE_BOOLEAN(KEY, MEMBER) \
 		set = json_boolean(MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: Boolean: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Boolean: "KEY"\n"); \
-			return NULL; \
-		}
-#define SERIALIZE_STRUCT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
+		SERIALIZE_SET_OBJECT_NEW(boolean, KEY)
+#define SERIALIZE_OBJECT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(&MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: Struct: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Struct: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_JSONNULL(object, KEY) \
+		SERIALIZE_SET_OBJECT_NEW(object, KEY)
 #define SERIALIZE_ENUM(KEY, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(&MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			return NULL; \
-		} \
-		if (json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Enum: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_OBJECT_NEW(enum, KEY)
 #define SERIALIZE_POINTER(KEY, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: Pointer: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Pointer: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_JSONNULL(pointer, KEY) \
+		SERIALIZE_SET_OBJECT_NEW(pointer, KEY)
 #define SERIALIZE_POINTER_NULLABLE(KEY, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(MEMBER); \
-		if (set == NULL) { \
-			json_decref(json); \
-			warn("JSON serialize failed: Pointer Nullable: "KEY"\n"); \
-			return NULL; \
-		} \
-		if (json_object_set_new(json, KEY, set) == -1) { \
-			json_decref(set); \
-			json_decref(json); \
-			warn("JSON serialize failed: Pointer Nullable: "KEY"\n"); \
-			return NULL; \
-		}
+		SERIALIZE_SET_OBJECT_NEW(pointer_nullable, KEY)
 #define SERIALIZE_FUNCTION(FUNCTION, MEMBER) \
 		json_serialize_##FUNCTION(MEMBER);
 #define SERIALIZE_END \
@@ -359,80 +306,70 @@ SERIALIZATION(subscriber_mask,
 #define SERIALIZE_SERONLY(WHAT) WHAT
 #define SERIALIZE_DESERONLY(WHAT)
 
+#define DESERIALIZE_GET_IS(TYPE, KEY) \
+		get = json_object_get(json, KEY); \
+		if (!json_is_##TYPE(get)) { \
+			warn("JSON deserialize failed: "#TYPE": "KEY": !json_is_"#TYPE"\n"); \
+			free(obj); \
+			return NULL; \
+		}
+
 #define DESERIALIZE_BEGIN(TYPE) \
 	TYPE##_t* json_deserialize_##TYPE##_type(json_t *json) \
 	{ \
-		TYPE##_t *obj = malloc(sizeof(TYPE##_t)); \
-		if (obj == NULL) \
-			return NULL; \
-		json_t *get;
-#define DESERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
-		get = json_object_get(json, KEY); \
-		if (get == NULL || !json_is_integer(get)) { \
-			warn("JSON deserialize failed: Integer: "KEY"\n"); \
-			free(obj); \
-			return NULL; \
-		}\
-		MEMBER = (TYPE)json_number_value(get);
-#define DESERIALIZE_REAL(KEY, TYPE, MEMBER) \
-		get = json_object_get(json, KEY); \
-		if (get == NULL || !json_is_real(get)) { \
-			warn("JSON deserialize failed: Real: "KEY"\n"); \
-			free(obj); \
-			return NULL; \
-		}\
-		MEMBER = (TYPE)json_real_value(get);
-#define DESERIALIZE_STRING(KEY, MEMBER) \
-		get = json_object_get(json, KEY); \
-		if (get == NULL || !json_is_string(get)) { \
-			warn("JSON deserialize failed: String: "KEY"\n"); \
-			free(obj); \
+		if (!json_is_object(json)) { \
+			warn("JSON deserialize failed: Not an object"); \
 			return NULL; \
 		} \
+		TYPE##_t *obj = malloc(sizeof(TYPE##_t)); \
+		if (!obj) { \
+			warn("JSON deserialize failed: malloc"); \
+			return NULL; \
+		} \
+		json_t *get;
+#define DESERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
+		DESERIALIZE_GET_IS(integer, KEY) \
+		MEMBER = (TYPE)json_number_value(get);
+#define DESERIALIZE_REAL(KEY, TYPE, MEMBER) \
+		DESERIALIZE_GET_IS(real, KEY) \
+		MEMBER = (TYPE)json_real_value(get);
+#define DESERIALIZE_STRING(KEY, MEMBER) \
+		DESERIALIZE_GET_IS(string, KEY) \
 		strcpy(MEMBER, json_string_value(get));
 #define DESERIALIZE_BOOLEAN(KEY, MEMBER) \
-		get = json_object_get(json, KEY); \
-		if (get == NULL || !json_is_boolean(get)) { \
-			warn("JSON deserialize failed: Boolean: "KEY"\n"); \
-			free(obj); \
-			return NULL; \
-		}\
+		DESERIALIZE_GET_IS(boolean, KEY) \
 		MEMBER = json_boolean_value(get);
-#define DESERIALIZE_STRUCT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
-		get = json_object_get(json, KEY); \
-		TYPE *VAR; \
-		if (get == NULL || !json_is_object(get) || (VAR = json_deserialize_##FUNCTION(get)) == NULL) { \
-			warn("JSON deserialize failed: Struct: "KEY"\n"); \
+#define DESERIALIZE_OBJECT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
+		DESERIALIZE_GET_IS(object, KEY) \
+		TYPE *VAR = json_deserialize_##FUNCTION(get); \
+		if (!VAR) { \
+			warn("JSON deserialize failed: object: "KEY": !"#FUNCTION"\n"); \
 			free(obj); \
 			return NULL; \
 		} \
 		MEMBER = *VAR; \
 		free(VAR);
 #define DESERIALIZE_ENUM(KEY, FUNCTION, MEMBER) \
-		get = json_object_get(json, KEY); \
-		if (get == NULL || !json_is_string(get) || !json_deserialize_##FUNCTION(get, &MEMBER)) { \
-			warn("JSON deserialize failed: Enum: "KEY"\n"); \
+		DESERIALIZE_GET_IS(string, KEY) \
+		if (!json_deserialize_##FUNCTION(get, &MEMBER)) { \
+			warn("JSON deserialize failed: enum: "KEY": !"#FUNCTION"\n"); \
 			free(obj); \
 			return NULL; \
 		}
 #define DESERIALIZE_POINTER(KEY, FUNCTION, MEMBER) \
 		get = json_object_get(json, KEY); \
-		if (get == NULL || (MEMBER = json_deserialize_##FUNCTION(get)) == NULL) { \
-			warn("JSON deserialize failed: Pointer: "KEY"\n"); \
+		MEMBER = json_deserialize_##FUNCTION(get); \
+		if (!MEMBER) { \
+			warn("JSON deserialize failed: pointer: "KEY": !"#FUNCTION"\n"); \
 			free(obj); \
 			return NULL; \
 		}
 #define DESERIALIZE_POINTER_NULLABLE(KEY, FUNCTION, MEMBER) \
 		get = json_object_get(json, KEY); \
-		if (get == NULL) { \
-			warn("JSON deserialize failed: Pointer Nullable: "KEY"\n"); \
-			free(obj); \
-			return NULL; \
-		} \
 		MEMBER = json_deserialize_##FUNCTION(get);
 #define DESERIALIZE_FUNCTION(FUNCTION, MEMBER) \
 		if (!json_deserialize_##FUNCTION(MEMBER)) { \
-			warn("JSON deserialize failed: Function: "#FUNCTION"\n"); \
+			warn("JSON deserialize failed: function: !"#FUNCTION"\n"); \
 			free(obj); \
 			return NULL; \
 		}
@@ -464,8 +401,8 @@ SERIALIZATION(client,
 	ENUM("lastState", client_state_type, obj->last_state),
 	ENUM("layer", stack_layer_type, obj->layer),
 	ENUM("lastLayer", stack_layer_type, obj->last_layer),
-	STRUCT("floatingRectangle", floating_rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->floating_rectangle),
-	STRUCT("tiledRectangle", tiled_rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->tiled_rectangle),
+	OBJECT("floatingRectangle", floating_rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->floating_rectangle),
+	OBJECT("tiledRectangle", tiled_rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->tiled_rectangle),
 	INTEGER("minWidth", uint16_t, obj->min_width),
 	INTEGER("maxWidth", uint16_t, obj->max_width),
 	INTEGER("minHeight", uint16_t, obj->min_height),
@@ -476,7 +413,7 @@ SERIALIZATION(client,
 
 json_t* json_serialize_node_window(node_t *obj)
 {
-	if (obj == NULL || obj->client == NULL || obj->client->window == XCB_NONE)
+	if (!obj || !obj->client || obj->client->window == XCB_NONE)
 		return json_null();
 	return json_integer(obj->client->window);
 }
@@ -494,9 +431,9 @@ node_t* json_deserialize_node_window(json_t *json)
 
 bool json_deserialize_node_parent(node_t *obj)
 {
-	if (obj->first_child != NULL)
+	if (obj->first_child)
 		obj->first_child->parent = obj;
-	if (obj->second_child != NULL)
+	if (obj->second_child)
 		obj->second_child->parent = obj;
 	return true;
 }
@@ -512,7 +449,7 @@ SERIALIZATION(node,
 	ENUM("splitMode", split_mode_type, obj->split_mode),
 	ENUM("splitDir", direction_type, obj->split_dir),
 	INTEGER("birthRotation", int, obj->birth_rotation),
-	STRUCT("rectangle", rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->rectangle),
+	OBJECT("rectangle", rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->rectangle),
 	BOOLEAN("vacant", obj->vacant),
 	INTEGER("privacyLevel", int, obj->privacy_level),
 	POINTER_NULLABLE("firstChild", node_type, obj->first_child),
@@ -524,7 +461,7 @@ SERIALIZATION(node,
 
 json_t* json_serialize_desktop_name(desktop_t *obj)
 {
-	if (obj == NULL)
+	if (!obj)
 		return json_null();
 	return json_string(obj->name);
 }
@@ -541,7 +478,7 @@ desktop_t* json_deserialize_desktop_name(json_t *json)
 
 json_t* json_serialize_desktop_focused(desktop_t *obj)
 {
-	if (obj == NULL)
+	if (!obj)
 		return NULL;
 	return obj == mon->desk ? json_true() : json_false();
 }
@@ -564,7 +501,7 @@ SERIALIZATION(desktop,
 
 json_t* json_serialize_monitor_name(monitor_t *obj)
 {
-	if (obj == NULL)
+	if (!obj)
 		return json_null();
 	return json_string(obj->name);
 }
@@ -581,17 +518,15 @@ monitor_t* json_deserialize_monitor_name(json_t *json)
 
 json_t* json_serialize_monitor_id(monitor_t *obj)
 {
-	if (obj == NULL)
+	if (!obj)
 		return json_null();
 	return json_integer(obj->id);
 }
 
 json_t* json_serialize_monitor_desktops(monitor_t *obj)
 {
-	json_t *json = json_array();
-	if (json == NULL)
-		return NULL;
-	for (desktop_t *d = obj->desk_head; d != NULL; d = d->next) {
+	SERIALIZE_INIT_ARRAY(monitor_desktops)
+	for (desktop_t *d = obj->desk_head; d; d = d->next) {
 		json_array_append_new(json, json_string(d->name));
 	}
 	return json;
@@ -599,7 +534,7 @@ json_t* json_serialize_monitor_desktops(monitor_t *obj)
 
 json_t* json_serialize_monitor_focused(monitor_t *obj)
 {
-	if (obj == NULL)
+	if (!obj)
 		return NULL;
 	return obj == mon ? json_true() : json_false();
 }
@@ -607,7 +542,7 @@ json_t* json_serialize_monitor_focused(monitor_t *obj)
 SERIALIZATION(monitor,
 	STRING("name", obj->name),
 	INTEGER("id", xcb_randr_output_t, obj->id),
-	STRUCT("rectangle", rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->rectangle),
+	OBJECT("rectangle", rectangle, xcb_rectangle_t, xcb_rectangle_type, obj->rectangle),
 	INTEGER("rootWindow", xcb_window_t, obj->root),
 	BOOLEAN("wired", obj->wired),
 	INTEGER("topPadding", int, obj->top_padding),
@@ -632,11 +567,36 @@ SERIALIZATION(coordinates,
 	POINTER_NULLABLE("nodeWindow", node_window, obj->node)
 )
 
+#define SERIALIZE_STATUS_IS(TYPE) \
+	if (!json_is_object(json)) { \
+		json_decref(json); \
+		warn("JSON serialize failed: status_"#TYPE": !json_is_object\n"); \
+		return NULL; \
+	}
+#define SERIALIZE_STATUS_IS_NULLABLE(TYPE) \
+	if (!json_is_object(json)) { \
+		json_decref(json); \
+		json = json_object(); \
+		if (!json) { \
+			warn("JSON serialize failed: status_"#TYPE": !json\n"); \
+			return NULL; \
+		} \
+	}
+
 json_t* json_serialize_status_node(monitor_t *m, desktop_t *d, node_t *n)
 {
 	json_t *json = json_serialize_node_type(n);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(node)
+	json_t *set;
+	SERIALIZE_POINTER("monitor", monitor_type, m)
+	SERIALIZE_POINTER("desktop", desktop_type, d)
+	return json;
+}
+
+json_t* json_serialize_status_node_nullable(monitor_t *m, desktop_t *d, node_t *n)
+{
+	json_t *json = json_serialize_node_type(n);
+	SERIALIZE_STATUS_IS_NULLABLE(node_nullable)
 	json_t *set;
 	SERIALIZE_POINTER("monitor", monitor_type, m)
 	SERIALIZE_POINTER("desktop", desktop_type, d)
@@ -646,18 +606,16 @@ json_t* json_serialize_status_node(monitor_t *m, desktop_t *d, node_t *n)
 json_t* json_serialize_status_node_swap(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
 	json_t *json = json_serialize_status_node(m2, d2, n2);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(node_swap)
 	json_t *set;
 	SERIALIZE_POINTER("swap", status_node, m1 COMMA d1 COMMA n1)
 	return json;
 }
 
-json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
+json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *nd)
 {
-	json_t *json = json_serialize_status_node(md, dd, n);
-	if (json == NULL)
-		return NULL;
+	json_t *json = json_serialize_status_node(md, dd, nd);
+	SERIALIZE_STATUS_IS(node_transfer)
 	json_t *set;
 	SERIALIZE_POINTER("monitorLast", monitor_type, ms)
 	SERIALIZE_POINTER("desktopLast", desktop_type, ds)
@@ -667,8 +625,7 @@ json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monito
 json_t* json_serialize_status_desktop(monitor_t *m, desktop_t *d)
 {
 	json_t *json = json_serialize_desktop_type(d);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(desktop)
 	json_t *set;
 	SERIALIZE_POINTER("monitor", monitor_type, m)
 	return json;
@@ -677,8 +634,7 @@ json_t* json_serialize_status_desktop(monitor_t *m, desktop_t *d)
 json_t* json_serialize_status_desktop_transfer(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
 	json_t *json = json_serialize_status_desktop(md, d);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(desktop_transfer)
 	json_t *set;
 	SERIALIZE_POINTER("monitorLast", monitor_type, ms)
 	return json;
@@ -687,8 +643,7 @@ json_t* json_serialize_status_desktop_transfer(monitor_t *ms, monitor_t *md, des
 json_t* json_serialize_status_desktop_rename(monitor_t *m, desktop_t *d, const char *name_last)
 {
 	json_t *json = json_serialize_status_desktop(m, d);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(desktop_rename)
 	json_t *set;
 	SERIALIZE_STRING("nameLast", name_last)
 	return json;
@@ -697,8 +652,7 @@ json_t* json_serialize_status_desktop_rename(monitor_t *m, desktop_t *d, const c
 json_t* json_serialize_status_desktop_swap(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 {
 	json_t *json = json_serialize_status_desktop(m1, d1);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(desktop_swap)
 	json_t *set;
 	SERIALIZE_POINTER("swap", status_desktop, m2 COMMA d2)
 	return json;
@@ -707,8 +661,7 @@ json_t* json_serialize_status_desktop_swap(monitor_t *m1, desktop_t *d1, monitor
 json_t* json_serialize_status_monitor_rename(monitor_t *m, const char *name_last)
 {
 	json_t *json = json_serialize_monitor_type(m);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(monitor_rename)
 	json_t *set;
 	SERIALIZE_STRING("nameLast", name_last)
 	return json;
@@ -717,19 +670,21 @@ json_t* json_serialize_status_monitor_rename(monitor_t *m, const char *name_last
 json_t* json_serialize_status_monitor_swap(monitor_t *m1, monitor_t *m2)
 {
 	json_t *json = json_serialize_monitor_type(m1);
-	if (json == NULL)
-		return NULL;
+	SERIALIZE_STATUS_IS(monitor_swap)
 	json_t *set;
 	SERIALIZE_POINTER("swap", monitor_type, m2)
 	return json;
 }
+
+#undef SERIALIZE_STATUS_IS
+#undef SERIALIZE_STATUS_IS_NULLABLE
 
 #undef SERIALIZE_BEGIN
 #undef SERIALIZE_INTEGER
 #undef SERIALIZE_REAL
 #undef SERIALIZE_STRING
 #undef SERIALIZE_BOOLEAN
-#undef SERIALIZE_STRUCT
+#undef SERIALIZE_OBJECT
 #undef SERIALIZE_END
 #undef SERIALIZE_SERONLY
 
@@ -738,7 +693,7 @@ json_t* json_serialize_status_monitor_swap(monitor_t *m1, monitor_t *m2)
 #undef DESERIALIZE_REAL
 #undef DESERIALIZE_STRING
 #undef DESERIALIZE_BOOLEAN
-#undef DESERIALIZE_STRUCT
+#undef DESERIALIZE_OBJECT
 #undef DESERIALIZE_END
 #undef DESERIALIZE_SERONLY
 
@@ -748,26 +703,22 @@ json_t* json_serialize_status_monitor_swap(monitor_t *m1, monitor_t *m2)
 
 json_t* json_serialize_windows(coordinates_t loc)
 {
-	json_t *json = json_object();
-	if (json == NULL)
-		return NULL;
-	json_t *set;
+	SERIALIZE_INIT_OBJECT(windows)
 	char id[11];
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
+	for (monitor_t *m = mon_head; m; m = m->next) {
+		if (loc.monitor && m != loc.monitor)
 			continue;
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop)
+		for (desktop_t *d = m->desk_head; d; d = d->next) {
+			if (loc.desktop && d != loc.desktop)
 				continue;
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				if (loc.node != NULL && n != loc.node)
+			for (node_t *n = first_extrema(d->root); n; n = next_leaf(n, d->root)) {
+				if (loc.node && n != loc.node)
 					continue;
 				sprintf(id, "%d", n->client->window);
-				if ((set = json_serialize_node_type(n)) == NULL)
-					continue;
-				json_t *jnode = json_pack("{s:o}", id, set);
-				json_object_update(json, jnode);
-				json_decref(jnode);
+				if (json_object_set_new(json, id, json_serialize_node_type(n)) == -1) {
+					json_decref(json);
+					return NULL;
+				}
 			}
 		}
 	}
@@ -776,21 +727,17 @@ json_t* json_serialize_windows(coordinates_t loc)
 
 json_t* json_serialize_desktops(coordinates_t loc)
 {
-	json_t *json = json_object();
-	if (json == NULL)
-		return NULL;
-	json_t *set;
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
+	SERIALIZE_INIT_OBJECT(desktops)
+	for (monitor_t *m = mon_head; m; m = m->next) {
+		if (loc.monitor && m != loc.monitor)
 			continue;
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop)
+		for (desktop_t *d = m->desk_head; d; d = d->next) {
+			if (loc.desktop && d != loc.desktop)
 				continue;
-			if ((set = json_serialize_desktop_type(d)) == NULL)
-				continue;
-			json_t *jdesktop = json_pack("{s:o}", d->name, set);
-			json_object_update(json, jdesktop);
-			json_decref(jdesktop);
+			if (json_object_set_new(json, d->name, json_serialize_desktop_type(d)) == -1) {
+				json_decref(json);
+				return NULL;
+			}
 		}
 	}
 	return json;
@@ -798,74 +745,73 @@ json_t* json_serialize_desktops(coordinates_t loc)
 
 json_t* json_serialize_monitors(coordinates_t loc)
 {
-	json_t *json = json_object();
-	if (json == NULL)
-		return NULL;
-	json_t *set;
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
+	SERIALIZE_INIT_OBJECT(monitors)
+	for (monitor_t *m = mon_head; m; m = m->next) {
+		if (loc.monitor && m != loc.monitor)
 			continue;
-		if ((set = json_serialize_monitor_type(m)) == NULL)
-			continue;
-		json_t *jmonitor = json_pack("{s:o}", m->name, set);
-		json_object_update(json, jmonitor);
-		json_decref(jmonitor);
+		if (json_object_set_new(json, m->name, json_serialize_monitor_type(m)) == -1) {
+			json_decref(json);
+			return NULL;
+		}
 	}
 	return json;
 }
 
 json_t* json_serialize_tree(coordinates_t loc)
 {
-	json_t *json = json_object();
-	if (json == NULL)
-		return NULL;
-	json_t *set;
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
+	SERIALIZE_INIT_OBJECT(tree)
+	json_t *jmonitor, *jdesktops;
+	for (monitor_t *m = mon_head; m; m = m->next) {
+		if (loc.monitor && m != loc.monitor)
 			continue;
-		json_t *jmonitor = json_serialize_monitor_type(m);
-		json_t *jdesktops = json_array();
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop)
+		jmonitor = json_serialize_monitor_type(m);
+		jdesktops = json_array();
+		for (desktop_t *d = m->desk_head; d; d = d->next) {
+			if (loc.desktop && d != loc.desktop)
 				continue;
-			if ((set = json_serialize_desktop_type(d)) == NULL)
-				continue;
-			json_array_append_new(jdesktops, set);
+			if (json_array_append_new(jdesktops, json_serialize_desktop_type(d)) == -1) {
+				json_decref(jdesktops);
+				json_decref(jmonitor);
+				json_decref(json);
+				return NULL;
+			}
 		}
-		json_object_set_new(jmonitor, "desktops", jdesktops);
-		json_object_set_new(json, m->name, jmonitor);
-		json_object_clear(jdesktops);
+		if (json_object_set_new(jmonitor, "desktops", jdesktops) == -1) {
+			json_decref(jmonitor);
+			json_decref(json);
+			return NULL;
+		}
+		if (json_object_set_new(json, m->name, jmonitor) == -1) {
+			json_decref(json);
+			return NULL;
+		}
 	}
 	return json;
 }
 
 json_t* json_serialize_history(coordinates_t loc)
 {
-	json_t *json = json_array();
-	if (json == NULL)
-		return NULL;
-	json_t *set;
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
-				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
+	SERIALIZE_INIT_ARRAY(history)
+	for (history_t *h = history_head; h; h = h->next) {
+		if ((loc.monitor && h->loc.monitor != loc.monitor)
+				|| (loc.desktop && h->loc.desktop != loc.desktop))
 			continue;
-		if ((set = json_serialize_coordinates_type(&h->loc)) == NULL)
-			continue;
-		json_array_append_new(json, set);
+		if (json_array_append_new(json, json_serialize_coordinates_type(&h->loc)) == -1) {
+			json_decref(json);
+			return NULL;
+		}
 	}
 	return json;
 }
 
 json_t* json_serialize_stack()
 {
-	json_t *json = json_array();
-	if (json == NULL)
-		return NULL;
-	json_t *set;
-	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
-		if ((set = json_serialize_node_window(s->node)) == NULL)
-			continue;
-		json_array_append_new(json, set);
+	SERIALIZE_INIT_ARRAY(stack)
+	for (stacking_list_t *s = stack_head; s; s = s->next) {
+		if (json_array_append_new(json, json_serialize_node_window(s->node)) == -1) {
+			json_decref(json);
+			return NULL;
+		}
 	}
 	return json;
 }
@@ -874,7 +820,7 @@ json_t* json_deserialize_file(const char *file_path)
 {
 	json_error_t error;
 	json_t *json = json_load_file(file_path, 0, &error);
-	if (json == NULL) {
+	if (!json) {
 		warn("JSON failed to load file: %s (line: %d, column: %d)\n", error.text, error.line, error.column);
 		return NULL;
 	}

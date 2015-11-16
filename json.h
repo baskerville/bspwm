@@ -51,7 +51,8 @@ json_t* json_serialize_monitor_name(monitor_t *obj);
 monitor_t* json_deserialize_monitor_name(json_t *json);
 
 json_t* json_serialize_status_node(monitor_t *m, desktop_t *d, node_t *n);
-json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n);
+json_t* json_serialize_status_node_nullable(monitor_t *m, desktop_t *d, node_t *n);
+json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *nd);
 json_t* json_serialize_status_node_swap(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2);
 json_t* json_serialize_status_desktop(monitor_t *m, desktop_t *d);
 json_t* json_serialize_status_desktop_transfer(monitor_t *ms, monitor_t *md, desktop_t *d);

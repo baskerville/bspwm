@@ -368,7 +368,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		history_add(m, d, NULL);
 		ewmh_update_active_window();
 		if (exists_subscriber(SBSC_MASK_WINDOW_FOCUS))
-			put_status(SBSC_MASK_WINDOW_FOCUS, json_serialize_status_node(m, d, n));
+			put_status(SBSC_MASK_WINDOW_FOCUS, json_serialize_status_node_nullable(m, d, n));
 		return;
 	} else {
 		stack(n, true);

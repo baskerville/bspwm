@@ -82,41 +82,41 @@ bool exists_subscriber(subscriber_mask_t mask)
 
 void put_status(subscriber_mask_t mask, json_t *json)
 {
-	if (json == NULL)
+	json_t *jkey = json_serialize_subscriber_mask_type(&mask);
+	if (!json_is_string(jkey)) {
+		warn("put_status failed: !json_is_string(jkey)\n");
+		json_decref(json);
 		return;
+	}
+	if (!json_is_object(json)) {
+		warn("put_status failed: !json_is_object(json): %s\n", json_string_value(jkey));
+		json_decref(jkey);
+		return;
+	}
 
 	subscriber_list_t *sb = subscribe_head;
 	subscriber_list_t *next;
 	int ret;
-	while (sb != NULL) {
+	while (sb) {
 		next = sb->next;
 		if (sb->field & mask) {
 			if (sb->field == SBSC_MASK_ALL) {
-				json_t *jkey = json_serialize_subscriber_mask_type(&mask);
-				const char *key;
-				if (jkey == NULL || (key = json_string_value(jkey)) == NULL) {
-					json_decref(jkey);
-					break;
-				}
 				json_t *jobj = json_object();
-				if (jobj == NULL || json_object_set(jobj, key, json) == -1) {
-					json_decref(jkey);
+				if (json_object_set(jobj, json_string_value(jkey), json) == -1) {
 					json_decref(jobj);
+					warn("put_status failed: json_object_set: %s\n", json_string_value(jkey));
 					break;
 				}
-				json_decref(jkey);
 				ret = json_dumpf(jobj, sb->stream, JSON_COMPACT | JSON_PRESERVE_ORDER);
 				json_decref(jobj);
 			} else {
 				ret = json_dumpf(json, sb->stream, JSON_COMPACT | JSON_PRESERVE_ORDER);
 			}
-			if (ret == -1) {
+			if (ret == -1 || fprintf(sb->stream, "\n") < 0)
 				remove_subscriber(sb);
-			} else {
-				fprintf(sb->stream, "\n");
-			}
 		}
 		sb = next;
 	}
+	json_decref(jkey);
 	json_decref(json);
 }
