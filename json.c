@@ -76,7 +76,7 @@
 	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
 		if (obj == NULL) \
-			return json_null();
+			return NULL;
 #define SERIALIZE_IF(ENUM, VALUE) \
 		else if (*obj == ENUM) \
 			return json_string(VALUE);
@@ -240,75 +240,115 @@ SERIALIZATION(subscriber_mask,
 #define SERIALIZE_BEGIN(TYPE) \
 	json_t* json_serialize_##TYPE##_type(TYPE##_t *obj) \
 	{ \
-		if (obj == NULL) { \
+		if (obj == NULL) \
 			return json_null(); \
-		} \
 		json_t *json = json_object(); \
-		if (json == NULL) \
+		if (json == NULL) { \
+			warn("JSON serialize failed: "#TYPE"\n"); \
 			return NULL; \
+		} \
 		json_t *set;
 #define SERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
 		set = json_integer(MEMBER); \
-		if (set == NULL || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: Integer: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Integer: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_REAL(KEY, TYPE, MEMBER) \
 		set = json_real(MEMBER); \
-		if (set == NULL || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: Real: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Real: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_STRING(KEY, MEMBER) \
 		set = json_string(MEMBER); \
-		if (set == NULL || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: String: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: String: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_BOOLEAN(KEY, MEMBER) \
 		set = json_boolean(MEMBER); \
-		if (set == NULL || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: Boolean: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Boolean: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_STRUCT(KEY, VAR, TYPE, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(&MEMBER); \
-		if (set == NULL || json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: Struct: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Struct: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_ENUM(KEY, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(&MEMBER); \
-		if (set == NULL || json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
-			warn("JSON serialize failed: Enum: "KEY"\n"); \
+		if (set == NULL) { \
+			json_decref(json); \
+			return NULL; \
+		} \
+		if (json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Enum: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_POINTER(KEY, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(MEMBER); \
-		if (set == NULL || json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: Pointer: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_is_null(set) || json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Pointer: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_POINTER_NULLABLE(KEY, FUNCTION, MEMBER) \
 		set = json_serialize_##FUNCTION(MEMBER); \
-		if (set == NULL || json_object_set_new(json, KEY, set) == -1) { \
+		if (set == NULL) { \
+			json_decref(json); \
 			warn("JSON serialize failed: Pointer Nullable: "KEY"\n"); \
+			return NULL; \
+		} \
+		if (json_object_set_new(json, KEY, set) == -1) { \
 			json_decref(set); \
 			json_decref(json); \
+			warn("JSON serialize failed: Pointer Nullable: "KEY"\n"); \
 			return NULL; \
 		}
 #define SERIALIZE_FUNCTION(FUNCTION, MEMBER) \
