@@ -866,7 +866,3 @@ Author
 ------
 
 Bastien Dejean <nihilhill at gmail.com>
-
-////
-vim: set ft=asciidoc:
-////
