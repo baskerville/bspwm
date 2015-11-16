@@ -57,9 +57,9 @@ typedef enum {
 	SBSC_MASK_ALL = (1 << 23) - 1
 } subscriber_mask_t;
 
-subscriber_list_t *make_subscriber_list(FILE *stream, int field);
+subscriber_list_t *make_subscriber_list(FILE *stream, unsigned int field);
 void remove_subscriber(subscriber_list_t *sb);
-void add_subscriber(FILE *stream, int field);
+void add_subscriber(FILE *stream, unsigned int field);
 bool exists_subscriber(subscriber_mask_t mask);
 void put_status(subscriber_mask_t mask, json_t *json);
 

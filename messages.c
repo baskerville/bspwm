@@ -898,7 +898,7 @@ int cmd_control(char **args, int num, FILE *rsp)
 			toggle_visibility();
 		} else if (streq("--subscribe", *args)) {
 			num--, args++;
-			int field = 0;
+			unsigned int field = 0;
 			if (num < 1) {
 				field = SBSC_MASK_ALL;
 			} else {

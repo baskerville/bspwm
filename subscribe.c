@@ -32,7 +32,7 @@
 #include "subscribe.h"
 #include "json.h"
 
-subscriber_list_t *make_subscriber_list(FILE *stream, int field)
+subscriber_list_t *make_subscriber_list(FILE *stream, unsigned int field)
 {
 	subscriber_list_t *sb = malloc(sizeof(subscriber_list_t));
 	sb->prev = sb->next = NULL;
@@ -59,7 +59,7 @@ void remove_subscriber(subscriber_list_t *sb)
 	free(sb);
 }
 
-void add_subscriber(FILE *stream, int field)
+void add_subscriber(FILE *stream, unsigned int field)
 {
 	subscriber_list_t *sb = make_subscriber_list(stream, field);
 	if (subscribe_head == NULL) {
