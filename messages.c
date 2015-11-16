@@ -763,6 +763,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 		json_decref(json);
 		return MSG_FAILURE;
 	};
+	fprintf(rsp, "\n");
 	json_decref(json);
 
 	return MSG_SUCCESS;
