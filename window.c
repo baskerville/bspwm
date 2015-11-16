@@ -324,15 +324,14 @@ xcb_rectangle_t get_rectangle(monitor_t *m, client_t *c)
 	switch (c->state) {
 		case STATE_TILED:
 			return c->tiled_rectangle;
-			break;
 		case STATE_PSEUDO_TILED:
 		case STATE_FLOATING:
 			return c->floating_rectangle;
-			break;
 		case STATE_FULLSCREEN:
 			return m->rectangle;
-			break;
-	 }
+		default:
+			return c->tiled_rectangle;
+	}
 }
 
 void get_side_handle(client_t *c, direction_t dir, xcb_point_t *pt)
