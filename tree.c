@@ -405,15 +405,16 @@ void update_current(void)
 node_t *make_node(void)
 {
 	node_t *n = malloc(sizeof(node_t));
-	n->parent = n->first_child = n->second_child = NULL;
+	n->split_type = TYPE_VERTICAL;
 	n->split_ratio = split_ratio;
 	n->split_mode = MODE_AUTOMATIC;
-	n->split_type = TYPE_VERTICAL;
 	n->split_dir = DIR_RIGHT;
 	n->birth_rotation = 0;
-	n->privacy_level = 0;
-	n->client = NULL;
+	n->rectangle = (xcb_rectangle_t) {0, 0, 0, 0};
 	n->vacant = false;
+	n->privacy_level = 0;
+	n->parent = n->first_child = n->second_child = NULL;
+	n->client = NULL;
 	return n;
 }
 
@@ -421,13 +422,16 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 {
 	client_t *c = malloc(sizeof(client_t));
 	c->window = win;
-	c->state = c->last_state = STATE_TILED;
-	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
-	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
-	c->icccm_input = true;
+	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = c->icccm_input = false;
+	c->state = c->last_state = STATE_TILED;
+	c->layer = c->last_layer = LAYER_NORMAL;
+	c->floating_rectangle = c->tiled_rectangle = (xcb_rectangle_t) {0, 0, 0, 0};
+	c->min_width = c->max_width = c->min_height = c->max_height = 0;
+	c->num_states = 0;
+
 	xcb_icccm_get_wm_protocols_reply_t protocols;
 	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
 		if (has_proto(WM_TAKE_FOCUS, &protocols)) {
@@ -435,7 +439,6 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 		}
 		xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
 	}
-	c->num_states = 0;
 	xcb_ewmh_get_atoms_reply_t wm_state;
 	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
 		for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++) {
@@ -448,6 +451,7 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 	    && (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
 		c->icccm_input = hints.input;
 	}
+
 	return c;
 }
 

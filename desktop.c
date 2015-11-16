@@ -126,8 +126,8 @@ desktop_t *make_desktop(const char *name)
 		snprintf(d->name, sizeof(d->name), "%s%d", DEFAULT_DESK_NAME, ++desktop_uid);
 	else
 		snprintf(d->name, sizeof(d->name), "%s", name);
-	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
+	d->prev = d->next = NULL;
 	initialize_desktop(d);
 	return d;
 }

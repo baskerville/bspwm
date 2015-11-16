@@ -501,6 +501,8 @@ desktop_t* json_deserialize_desktop_name(json_t *json)
 
 json_t* json_serialize_desktop_focused(desktop_t *obj)
 {
+	if (obj == NULL)
+		return NULL;
 	return obj == mon->desk ? json_true() : json_false();
 }
 
@@ -547,6 +549,8 @@ json_t* json_serialize_monitor_id(monitor_t *obj)
 json_t* json_serialize_monitor_desktops(monitor_t *obj)
 {
 	json_t *json = json_array();
+	if (json == NULL)
+		return NULL;
 	for (desktop_t *d = obj->desk_head; d != NULL; d = d->next) {
 		json_array_append_new(json, json_string(d->name));
 	}
@@ -555,6 +559,8 @@ json_t* json_serialize_monitor_desktops(monitor_t *obj)
 
 json_t* json_serialize_monitor_focused(monitor_t *obj)
 {
+	if (obj == NULL)
+		return NULL;
 	return obj == mon ? json_true() : json_false();
 }
 

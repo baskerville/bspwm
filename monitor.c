@@ -41,20 +41,22 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
 {
 	monitor_t *m = malloc(sizeof(monitor_t));
 	snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
-	m->prev = m->next = NULL;
-	m->desk = m->desk_head = m->desk_tail = NULL;
 	m->rectangle = rect;
-	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
-	m->wired = true;
-	m->num_sticky = 0;
-	uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
 	m->root = xcb_generate_id(dpy);
+	m->wired = true;
+	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
+	m->desk = m->desk_head = m->desk_tail = NULL;
+	m->prev = m->next = NULL;
+	m->num_sticky = 0;
+
+	uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, rect.x, rect.y, rect.width, rect.height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
 	xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
 	window_lower(m->root);
 	if (focus_follows_pointer) {
 		window_show(m->root);
 	}
+
 	return m;
 }
 
