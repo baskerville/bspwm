@@ -100,7 +100,7 @@ void put_status(subscriber_mask_t mask, json_t *json)
 	while (sb) {
 		next = sb->next;
 		if (sb->field & mask) {
-			if (sb->field == SBSC_MASK_ALL) {
+			if (sb->field != mask) {
 				json_t *jobj = json_object();
 				if (json_object_set(jobj, json_string_value(jkey), json) == -1) {
 					json_decref(jobj);
