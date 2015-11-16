@@ -30,6 +30,7 @@
 #include "tree.h"
 #include "settings.h"
 #include "subscribe.h"
+#include "json.h"
 
 subscriber_list_t *make_subscriber_list(FILE *stream, int field)
 {
@@ -68,54 +69,54 @@ void add_subscriber(FILE *stream, int field)
 		sb->prev = subscribe_tail;
 		subscribe_tail = sb;
 	}
-	if (sb->field & SBSC_MASK_REPORT) {
-		print_report(sb->stream);
-	}
 }
 
-int print_report(FILE *stream)
+bool exists_subscriber(subscriber_mask_t mask)
 {
-	fprintf(stream, "%s", status_prefix);
-	bool urgent = false;
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		fprintf(stream, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-			for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
-				urgent |= n->client->urgent;
-			char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
-			if (m->desk == d)
-				c = toupper(c);
-			fprintf(stream, "%c%s:", c, d->name);
-		}
-		if (m->desk != NULL)
-			fprintf(stream, "L%c%s", (m->desk->layout == LAYOUT_TILED ? 'T' : 'M'), (m != mon_tail ? ":" : ""));
+	for (subscriber_list_t *sb = subscribe_head; sb != NULL; sb = sb->next) {
+		if (sb->field & mask)
+			return true;
 	}
-	fprintf(stream, "%s", "\n");
-	return fflush(stream);
+	return false;
 }
 
-void put_status(subscriber_mask_t mask, ...)
+void put_status(subscriber_mask_t mask, json_t *json)
 {
+	if (json == NULL)
+		return;
+
 	subscriber_list_t *sb = subscribe_head;
+	subscriber_list_t *next;
 	int ret;
 	while (sb != NULL) {
-		subscriber_list_t *next = sb->next;
+		next = sb->next;
 		if (sb->field & mask) {
-			if (mask == SBSC_MASK_REPORT) {
-				ret = print_report(sb->stream);
+			if (sb->field == SBSC_MASK_ALL) {
+				json_t *jkey = json_serialize_subscriber_mask_type(&mask);
+				const char *key;
+				if (jkey == NULL || (key = json_string_value(jkey)) == NULL) {
+					json_decref(jkey);
+					break;
+				}
+				json_t *jobj;
+				if ((jobj = json_object()) == NULL || json_object_set(jobj, key, json) == -1) {
+					json_decref(jkey);
+					json_decref(jobj);
+					break;
+				}
+				json_decref(jkey);
+				ret = json_dumpf(jobj, sb->stream, JSON_COMPACT | JSON_PRESERVE_ORDER);
+				json_decref(jobj);
 			} else {
-				char *fmt;
-				va_list args;
-				va_start(args, mask);
-				fmt = va_arg(args, char *);
-				vfprintf(sb->stream, fmt, args);
-				va_end(args);
-				ret = fflush(sb->stream);
+				ret = json_dumpf(json, sb->stream, JSON_COMPACT | JSON_PRESERVE_ORDER);
 			}
-			if (ret != 0) {
+			if (ret == -1) {
 				remove_subscriber(sb);
+			} else {
+				fprintf(sb->stream, "\n");
 			}
 		}
 		sb = next;
 	}
+	json_decref(json);
 }

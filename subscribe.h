@@ -25,11 +25,13 @@
 #ifndef BSPWM_SUBSCRIBE_H
 #define BSPWM_SUBSCRIBE_H
 
+#include <jansson.h>
+
 typedef enum {
-	SBSC_MASK_REPORT = 1 << 0,
-	SBSC_MASK_MONITOR_ADD = 1 << 1,
-	SBSC_MASK_MONITOR_RENAME = 1 << 2,
-	SBSC_MASK_MONITOR_REMOVE = 1 << 3,
+	SBSC_MASK_MONITOR_ADD = 1 << 0,
+	SBSC_MASK_MONITOR_RENAME = 1 << 1,
+	SBSC_MASK_MONITOR_REMOVE = 1 << 2,
+	SBSC_MASK_MONITOR_SWAP = 1 << 3,
 	SBSC_MASK_MONITOR_FOCUS = 1 << 4,
 	SBSC_MASK_MONITOR_GEOMETRY = 1 << 5,
 	SBSC_MASK_DESKTOP_ADD = 1 << 6,
@@ -49,16 +51,16 @@ typedef enum {
 	SBSC_MASK_WINDOW_STATE = 1 << 20,
 	SBSC_MASK_WINDOW_FLAG = 1 << 21,
 	SBSC_MASK_WINDOW_LAYER = 1 << 22,
-	SBSC_MASK_MONITOR = (1 << 6) - (1 << 1),
+	SBSC_MASK_MONITOR = (1 << 6) - (1 << 0),
 	SBSC_MASK_DESKTOP = (1 << 13) - (1 << 6),
-	SBSC_MASK_WINDOW = (1 << 23) - (1 << 13),
+	SBSC_MASK_WINDOW = (1 << 22) - (1 << 13),
 	SBSC_MASK_ALL = (1 << 23) - 1
 } subscriber_mask_t;
 
 subscriber_list_t *make_subscriber_list(FILE *stream, int field);
 void remove_subscriber(subscriber_list_t *sb);
 void add_subscriber(FILE *stream, int field);
-int print_report(FILE *stream);
-void put_status(subscriber_mask_t mask, ...);
+bool exists_subscriber(subscriber_mask_t mask);
+void put_status(subscriber_mask_t mask, json_t *json);
 
 #endif

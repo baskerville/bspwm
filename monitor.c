@@ -35,6 +35,7 @@
 #include "subscribe.h"
 #include "window.h"
 #include "monitor.h"
+#include "json.h"
 
 monitor_t *make_monitor(xcb_rectangle_t rect)
 {
@@ -59,11 +60,12 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
 
 void rename_monitor(monitor_t *m, const char *name)
 {
-	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename %s %s\n", m->name, name);
+	const char *name_last = name;
 
 	snprintf(m->name, sizeof(m->name), "%s", name);
 
-	put_status(SBSC_MASK_REPORT);
+	if (exists_subscriber(SBSC_MASK_MONITOR_RENAME))
+		put_status(SBSC_MASK_MONITOR_RENAME, json_serialize_status_monitor_rename(m, name_last));
 }
 
 monitor_t *find_monitor(char *name)
@@ -134,15 +136,15 @@ void update_root(monitor_t *m)
 {
 	xcb_rectangle_t r = m->rectangle;
 	window_move_resize(m->root, r.x, r.y, r.width, r.height);
-	put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n", m->name, r.width, r.height, r.x, r.y);
+
+	if (exists_subscriber(SBSC_MASK_MONITOR_GEOMETRY))
+		put_status(SBSC_MASK_MONITOR_GEOMETRY, json_serialize_monitor_type(m));
 }
 
 void focus_monitor(monitor_t *m)
 {
 	if (mon == m)
 		return;
-
-	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
 
 	mon = m;
 
@@ -151,15 +153,13 @@ void focus_monitor(monitor_t *m)
 	}
 
 	ewmh_update_current_desktop();
-	put_status(SBSC_MASK_REPORT);
+
+	if (exists_subscriber(SBSC_MASK_MONITOR_FOCUS))
+		put_status(SBSC_MASK_MONITOR_FOCUS, json_serialize_monitor_type(m));
 }
 
 void add_monitor(monitor_t *m)
 {
-	xcb_rectangle_t r = m->rectangle;
-
-	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s 0x%X %ux%u+%i+%i\n", m->name, m->id, r.width, r.height, r.x, r.y);
-
 	if (mon == NULL) {
 		mon = m;
 		mon_head = m;
@@ -171,11 +171,18 @@ void add_monitor(monitor_t *m)
 	}
 
 	num_monitors++;
+	if (exists_subscriber(SBSC_MASK_MONITOR_ADD))
+		put_status(SBSC_MASK_MONITOR_ADD, json_serialize_monitor_type(m));
 }
 
 void remove_monitor(monitor_t *m)
 {
-	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
+	bool put_status_bool = false;
+	json_t *json;
+	if (exists_subscriber(SBSC_MASK_MONITOR_REMOVE)) {
+		json = json_serialize_monitor_type(m);
+		put_status_bool = true;
+	}
 
 	while (m->desk_head != NULL) {
 		remove_desktop(m, m->desk_head);
@@ -215,7 +222,9 @@ void remove_monitor(monitor_t *m)
 	xcb_destroy_window(dpy, m->root);
 	free(m);
 	num_monitors--;
-	put_status(SBSC_MASK_REPORT);
+
+	if (put_status_bool)
+		put_status(SBSC_MASK_MONITOR_REMOVE, json);
 }
 
 void merge_monitors(monitor_t *ms, monitor_t *md)
@@ -269,7 +278,9 @@ void swap_monitors(monitor_t *m1, monitor_t *m2)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	put_status(SBSC_MASK_REPORT);
+
+	if (exists_subscriber(SBSC_MASK_MONITOR_SWAP))
+		put_status(SBSC_MASK_MONITOR_SWAP, json_serialize_status_monitor_swap(m1, m2));
 }
 
 monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, desktop_select_t sel)

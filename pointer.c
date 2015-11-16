@@ -31,6 +31,7 @@
 #include "subscribe.h"
 #include "window.h"
 #include "pointer.h"
+#include "json.h"
 
 void grab_pointer(pointer_action_t pac)
 {
@@ -341,9 +342,8 @@ void track_pointer(int root_x, int root_y)
 
 void ungrab_pointer(void)
 {
-	if (frozen_pointer->action != ACTION_NONE) {
-		xcb_rectangle_t r = get_rectangle(frozen_pointer->monitor, frozen_pointer->client);
-		put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->name, frozen_pointer->desktop->name, frozen_pointer->window, r.width, r.height, r.x, r.y);
-	}
+	if (frozen_pointer->action != ACTION_NONE)
+		if (exists_subscriber(SBSC_MASK_WINDOW_GEOMETRY))
+			put_status(SBSC_MASK_WINDOW_GEOMETRY, json_serialize_status_node(frozen_pointer->monitor, frozen_pointer->desktop, frozen_pointer->node));
 	frozen_pointer->action = ACTION_NONE;
 }

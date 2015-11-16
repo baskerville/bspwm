@@ -35,6 +35,7 @@
 #include "subscribe.h"
 #include "messages.h"
 #include "window.h"
+#include "json.h"
 
 void schedule_window(xcb_window_t win)
 {
@@ -145,7 +146,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	node_t *n = make_node();
 	n->client = c;
 
-	put_status(SBSC_MASK_WINDOW_MANAGE, "window_manage %s %s 0x%X 0x%X\n", m->name, d->name, win, f!=NULL?f->client->window:0);
 	insert_node(m, d, n, f);
 
 	if (f != NULL && f->client != NULL && csq->state != NULL && *(csq->state) == STATE_FLOATING) {
@@ -193,17 +193,27 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	ewmh_update_client_list();
 	free(csq->layer);
 	free(csq->state);
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_MANAGE))
+		put_status(SBSC_MASK_WINDOW_MANAGE, json_serialize_status_node(m, d, n));
 }
 
 void unmanage_window(xcb_window_t win)
 {
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
-		put_status(SBSC_MASK_WINDOW_UNMANAGE, "window_unmanage %s %s 0x%X\n", loc.monitor, loc.desktop, win);
+		bool put_status_bool = false;
+		json_t *json;
+		if (exists_subscriber(SBSC_MASK_WINDOW_UNMANAGE)) {
+			json = json_serialize_status_node(loc.monitor, loc.desktop, loc.node);
+			put_status_bool = true;
+		}
 		remove_node(loc.monitor, loc.desktop, loc.node);
 		if (frozen_pointer->window == win)
 			frozen_pointer->action = ACTION_NONE;
 		arrange(loc.monitor, loc.desktop);
+		if (put_status_bool)
+			put_status(SBSC_MASK_WINDOW_UNMANAGE, json);
 	} else {
 		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
 			if (pr->win == win) {
@@ -396,13 +406,14 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 
 	c->layer = l;
 
-	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s %s 0x%X %s\n", m->name, d->name, c->window, LAYERSTR(l));
-
 	if (d->focus == n) {
 		neutralize_obscuring_windows(m, d, n);
 	}
 
 	stack(n, (d->focus == n));
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_LAYER))
+		put_status(SBSC_MASK_WINDOW_LAYER, json_serialize_status_node(m, d, n));
 }
 
 void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
@@ -428,8 +439,6 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s off\n", m->name, d->name, c->window, STATESTR(c->last_state));
-
 	switch (c->state) {
 		case STATE_TILED:
 		case STATE_PSEUDO_TILED:
@@ -442,7 +451,8 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s on\n", m->name, d->name, c->window, STATESTR(c->state));
+	if (exists_subscriber(SBSC_MASK_WINDOW_STATE))
+		put_status(SBSC_MASK_WINDOW_STATE, json_serialize_status_node(m, d, n));
 }
 
 void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -517,10 +527,11 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X locked %s\n", m->name, d->name, c->window, ONOFFSTR(value));
-
 	c->locked = value;
 	window_draw_border(n, d->focus == n, m == mon);
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_FLAG))
+		put_status(SBSC_MASK_WINDOW_FLAG, json_serialize_status_node(m, d, n));
 }
 
 void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -529,8 +540,6 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		return;
 
 	client_t *c = n->client;
-
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X sticky %s\n", m->name, d->name, c->window, ONOFFSTR(value));
 
 	if (d != m->desk)
 		transfer_node(m, d, n, m, m->desk, m->desk->focus);
@@ -545,6 +554,9 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	}
 
 	window_draw_border(n, d->focus == n, m == mon);
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_FLAG))
+		put_status(SBSC_MASK_WINDOW_FLAG, json_serialize_status_node(m, d, n));
 }
 
 void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -554,11 +566,12 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X private %s\n", m->name, d->name, c->window, ONOFFSTR(value));
-
 	c->private = value;
 	update_privacy_level(n, value);
 	window_draw_border(n, d->focus == n, m == mon);
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_FLAG))
+		put_status(SBSC_MASK_WINDOW_FLAG, json_serialize_status_node(m, d, n));
 }
 
 void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -568,8 +581,8 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->client->urgent = value;
 	window_draw_border(n, d->focus == n, m == mon);
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->client->window, ONOFFSTR(value));
-	put_status(SBSC_MASK_REPORT);
+	if (exists_subscriber(SBSC_MASK_WINDOW_FLAG))
+		put_status(SBSC_MASK_WINDOW_FLAG, json_serialize_status_node(m, d, n));
 }
 
 uint32_t get_border_color(client_t *c, bool focused_window, bool focused_monitor)

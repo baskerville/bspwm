@@ -4,8 +4,9 @@
 #include "query.h"
 #include "tree.h"
 #include "types.h"
+#include "subscribe.h"
 
-// Add more if __VA_ARGS__ > 25
+// Add more if __VA_ARGS__ > 30
 #define FE_1(WHAT, X) WHAT(X)
 #define FE_2(WHAT, X, ...) WHAT(X)FE_1(WHAT, __VA_ARGS__)
 #define FE_3(WHAT, X, ...) WHAT(X)FE_2(WHAT, __VA_ARGS__)
@@ -31,17 +32,24 @@
 #define FE_23(WHAT, X, ...) WHAT(X)FE_22(WHAT, __VA_ARGS__)
 #define FE_24(WHAT, X, ...) WHAT(X)FE_23(WHAT, __VA_ARGS__)
 #define FE_25(WHAT, X, ...) WHAT(X)FE_24(WHAT, __VA_ARGS__)
+#define FE_26(WHAT, X, ...) WHAT(X)FE_25(WHAT, __VA_ARGS__)
+#define FE_27(WHAT, X, ...) WHAT(X)FE_26(WHAT, __VA_ARGS__)
+#define FE_28(WHAT, X, ...) WHAT(X)FE_27(WHAT, __VA_ARGS__)
+#define FE_29(WHAT, X, ...) WHAT(X)FE_28(WHAT, __VA_ARGS__)
+#define FE_30(WHAT, X, ...) WHAT(X)FE_29(WHAT, __VA_ARGS__)
 #define GET_MACRO( \
 	_1, _2, _3, _4, _5, \
 	_6, _7, _8, _9, _10, \
 	_11, _12, _13, _14, _15, \
 	_16, _17, _18, _19, _20, \
 	_21, _22, _23, _24, _25, \
+	_26, _27, _28, _29, _30, \
 	NAME, ... \
 ) NAME
 #define FOR_EACH(ACTION, ...) \
 	GET_MACRO( \
 		__VA_ARGS__, \
+		FE_30, FE_29, FE_28, FE_27, FE_26, \
 		FE_25, FE_24, FE_23, FE_22, FE_21, \
 		FE_20, FE_19, FE_18, FE_17, FE_16, \
 		FE_15, FE_14, FE_13, FE_12, FE_11, \
@@ -49,6 +57,7 @@
 		FE_5, FE_4, FE_3, FE_2, FE_1 \
 	)(ACTION, __VA_ARGS__)
 
+#define COMMA ,
 #define SERIALIZE_CAT(X) SERIALIZE_##X
 #define DESERIALIZE_CAT(X) DESERIALIZE_##X
 #define SERIALIZATION(TYPE, ...) \
@@ -186,6 +195,37 @@ SERIALIZATION(child_polarity,
 	IF(SECOND_CHILD, "second")
 )
 
+SERIALIZATION(subscriber_mask,
+	IF(SBSC_MASK_REPORT, "report"),
+	IF(SBSC_MASK_MONITOR_ADD, "monitorAdd"),
+	IF(SBSC_MASK_MONITOR_RENAME, "monitorRename"),
+	IF(SBSC_MASK_MONITOR_REMOVE, "monitorRemove"),
+	IF(SBSC_MASK_MONITOR_FOCUS, "monitorFocus"),
+	IF(SBSC_MASK_MONITOR_GEOMETRY, "monitorGeometry"),
+	IF(SBSC_MASK_MONITOR_SWAP, "monitorSwap"),
+	IF(SBSC_MASK_DESKTOP_ADD, "desktopAdd"),
+	IF(SBSC_MASK_DESKTOP_RENAME, "desktopRename"),
+	IF(SBSC_MASK_DESKTOP_REMOVE, "desktopRemove"),
+	IF(SBSC_MASK_DESKTOP_SWAP, "desktopSwap"),
+	IF(SBSC_MASK_DESKTOP_TRANSFER, "desktopTransfer"),
+	IF(SBSC_MASK_DESKTOP_FOCUS, "desktopFocus"),
+	IF(SBSC_MASK_DESKTOP_LAYOUT, "desktopLayout"),
+	IF(SBSC_MASK_WINDOW_MANAGE, "windowManage"),
+	IF(SBSC_MASK_WINDOW_UNMANAGE, "windowUnmanage"),
+	IF(SBSC_MASK_WINDOW_SWAP, "windowSwap"),
+	IF(SBSC_MASK_WINDOW_TRANSFER, "windowTransfer"),
+	IF(SBSC_MASK_WINDOW_FOCUS, "windowFocus"),
+	IF(SBSC_MASK_WINDOW_ACTIVATE, "windowActivate"),
+	IF(SBSC_MASK_WINDOW_GEOMETRY, "windowGeometry"),
+	IF(SBSC_MASK_WINDOW_STATE, "windowState"),
+	IF(SBSC_MASK_WINDOW_FLAG, "windowFlag"),
+	IF(SBSC_MASK_WINDOW_LAYER, "windowLayer"),
+	IF(SBSC_MASK_MONITOR, "monitor"),
+	IF(SBSC_MASK_DESKTOP, "desktop"),
+	IF(SBSC_MASK_WINDOW, "window"),
+	IF(SBSC_MASK_ALL, "all")
+)
+
 #undef SERIALIZE_BEGIN
 #undef SERIALIZE_IF
 #undef SERIALIZE_END
@@ -204,7 +244,9 @@ SERIALIZATION(child_polarity,
 		if (obj == NULL) { \
 			return json_null(); \
 		} \
-		json_t *json = json_object(); \
+		json_t *json; \
+		if ((json = json_object()) == NULL) \
+			return NULL; \
 		json_t *set;
 #define SERIALIZE_INTEGER(KEY, TYPE, MEMBER) \
 		set = json_integer(MEMBER); \
@@ -543,6 +585,98 @@ SERIALIZATION(coordinates,
 	POINTER_NULLABLE("nodeWindow", node_window, obj->node)
 )
 
+json_t* json_serialize_status_node(monitor_t *m, desktop_t *d, node_t *n)
+{
+	json_t *json = json_serialize_node_type(n);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("monitor", monitor_type, m)
+	SERIALIZE_POINTER("desktop", desktop_type, d)
+	return json;
+}
+
+json_t* json_serialize_status_node_swap(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
+{
+	json_t *json = json_serialize_status_node(m2, d2, n2);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("swap", status_node, m1 COMMA d1 COMMA n1);
+	return json;
+}
+
+json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
+{
+	json_t *json = json_serialize_status_node(md, dd, n);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("monitorLast", monitor_type, ms)
+	SERIALIZE_POINTER("desktopLast", desktop_type, ds)
+	return json;
+}
+
+json_t* json_serialize_status_desktop(monitor_t *m, desktop_t *d)
+{
+	json_t *json = json_serialize_desktop_type(d);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("monitor", monitor_type, m)
+	return json;
+}
+
+json_t* json_serialize_status_desktop_transfer(monitor_t *ms, monitor_t *md, desktop_t *d)
+{
+	json_t *json = json_serialize_status_desktop(md, d);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("monitorLast", monitor_type, ms)
+	return json;
+}
+
+json_t* json_serialize_status_desktop_rename(monitor_t *m, desktop_t *d, const char *name_last)
+{
+	json_t *json = json_serialize_status_desktop(m, d);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_STRING("nameLast", name_last)
+	return json;
+}
+
+json_t* json_serialize_status_desktop_swap(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
+{
+	json_t *json = json_serialize_status_desktop(m1, d1);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("swap", status_desktop, m2 COMMA d2);
+	return json;
+}
+
+json_t* json_serialize_status_monitor_rename(monitor_t *m, const char *name_last)
+{
+	json_t *json = json_serialize_monitor_type(m);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_STRING("nameLast", name_last)
+	return json;
+}
+
+json_t* json_serialize_status_monitor_swap(monitor_t *m1, monitor_t *m2)
+{
+	json_t *json = json_serialize_monitor_type(m1);
+	if (json == NULL)
+		return NULL;
+	json_t *set;
+	SERIALIZE_POINTER("swap", monitor_type, m2);
+	return json;
+}
+
 #undef SERIALIZE_BEGIN
 #undef SERIALIZE_INTEGER
 #undef SERIALIZE_REAL
@@ -567,7 +701,9 @@ SERIALIZATION(coordinates,
 
 json_t* json_serialize_windows(coordinates_t loc)
 {
-	json_t *json = json_object();
+	json_t *json;
+	if ((json = json_object()) == NULL)
+		return NULL;
 	json_t *set;
 	char id[11];
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
@@ -593,7 +729,9 @@ json_t* json_serialize_windows(coordinates_t loc)
 
 json_t* json_serialize_desktops(coordinates_t loc)
 {
-	json_t *json = json_object();
+	json_t *json;
+	if ((json = json_object()) == NULL)
+		return NULL;
 	json_t *set;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
@@ -613,7 +751,9 @@ json_t* json_serialize_desktops(coordinates_t loc)
 
 json_t* json_serialize_monitors(coordinates_t loc)
 {
-	json_t *json = json_object();
+	json_t *json;
+	if ((json = json_object()) == NULL)
+		return NULL;
 	json_t *set;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)
@@ -629,7 +769,9 @@ json_t* json_serialize_monitors(coordinates_t loc)
 
 json_t* json_serialize_tree(coordinates_t loc)
 {
-	json_t *json = json_object();
+	json_t *json;
+	if ((json = json_object()) == NULL)
+		return NULL;
 	json_t *set;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor)

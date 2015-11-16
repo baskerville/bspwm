@@ -561,7 +561,7 @@ int cmd_monitor(char **args, int num)
 				d = d->next;
 				num--, args++;
 			}
-			put_status(SBSC_MASK_REPORT);
+			put_status(SBSC_MASK_REPORT, NULL);
 			while (num > 0) {
 				add_desktop(trg.monitor, make_desktop(*args));
 				num--, args++;
