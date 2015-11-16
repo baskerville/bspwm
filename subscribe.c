@@ -98,8 +98,8 @@ void put_status(subscriber_mask_t mask, json_t *json)
 					json_decref(jkey);
 					break;
 				}
-				json_t *jobj;
-				if ((jobj = json_object()) == NULL || json_object_set(jobj, key, json) == -1) {
+				json_t *jobj = json_object();
+				if (jobj == NULL || json_object_set(jobj, key, json) == -1) {
 					json_decref(jkey);
 					json_decref(jobj);
 					break;
