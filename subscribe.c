@@ -112,7 +112,7 @@ void put_status(subscriber_mask_t mask, json_t *json)
 			} else {
 				ret = json_dumpf(json, sb->stream, JSON_COMPACT | JSON_PRESERVE_ORDER);
 			}
-			if (ret == -1 || fprintf(sb->stream, "\n") < 0)
+			if (ret == -1 || fprintf(sb->stream, "\n") < 0 || fflush(sb->stream) != 0)
 				remove_subscriber(sb);
 		}
 		sb = next;
