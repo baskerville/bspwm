@@ -100,7 +100,7 @@ tiled::
 	Only consider tiled windows.
 
 nontiled::
-	Only consider tiled windows.
+	Only consider non tiled windows.
 
 pseudotiled::
 	Only consider pseudo-tiled windows.
