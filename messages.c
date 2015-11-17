@@ -700,25 +700,36 @@ int cmd_query(char **args, int num, FILE *rsp)
 	--num, ++args;
 
 	while (num > 0) {
-		if (num >= 2 && *(args + 1)[0] != OPT_CHR){
-			if (!constrained && (streq("-w", *args) || streq("--window", *args))) {
+		if (!constrained && (streq("-w", *args) || streq("--window", *args))) {
+			if (num >= 2 && *(args + 1)[0] != OPT_CHR) {
 				--num, ++args;
 				if (!node_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
-				constrained = true;
-			} else if (!constrained && (streq("-d", *args) || streq("--desktop", *args))) {
+			} else {
+				trg.node = ref.node;
+				trg.desktop = ref.desktop;
+				trg.monitor = ref.monitor;
+			}
+			constrained = true;
+		} else if (!constrained && (streq("-d", *args) || streq("--desktop", *args))) {
+			if (num >= 2 && *(args + 1)[0] != OPT_CHR) {
 				--num, ++args;
 				if (!desktop_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
-				constrained = true;
-			} else if (!constrained && (streq("-m", *args) || streq("--monitor", *args))) {
+			} else {
+				trg.desktop = ref.desktop;
+				trg.monitor = ref.monitor;
+			}
+			constrained = true;
+		} else if (!constrained && (streq("-m", *args) || streq("--monitor", *args))) {
+			if (num >= 2 && *(args + 1)[0] != OPT_CHR) {
 				--num, ++args;
 				if (!monitor_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
-				constrained = true;
 			} else {
-				return MSG_SYNTAX;
+				trg.monitor = ref.monitor;
 			}
+			constrained = true;
 		} else {
 			return MSG_SYNTAX;
 		}
