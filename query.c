@@ -185,51 +185,51 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		tok++;
 		if (streq("tiled", tok)) {
 			sel.tiled = OPTION_TRUE;
-		} else if (streq("nontiled", tok)) {
+		} else if (streq("!tiled", tok)) {
 			sel.tiled = OPTION_FALSE;
-		} else if (streq("pseudotiled", tok)) {
+		} else if (streq("pseudo_tiled", tok)) {
 			sel.pseudo_tiled = OPTION_TRUE;
-		} else if (streq("nonpseudotiled", tok)) {
+		} else if (streq("!pseudo_tiled", tok)) {
 			sel.pseudo_tiled = OPTION_FALSE;
 		} else if (streq("floating", tok)) {
 			sel.floating = OPTION_TRUE;
-		} else if (streq("nonfloating", tok)) {
+		} else if (streq("!floating", tok)) {
 			sel.floating = OPTION_FALSE;
-		} else if (streq("like", tok)) {
+		} else if (streq("same_class", tok)) {
 			sel.same_class = OPTION_TRUE;
-		} else if (streq("unlike", tok)) {
+		} else if (streq("!same_class", tok)) {
 			sel.same_class = OPTION_FALSE;
 		} else if (streq("automatic", tok)) {
 			sel.automatic = OPTION_TRUE;
-		} else if (streq("manual", tok)) {
+		} else if (streq("!automatic", tok)) {
 			sel.automatic = OPTION_FALSE;
 		} else if (streq("fullscreen", tok)) {
 			sel.fullscreen = OPTION_TRUE;
-		} else if (streq("nonfullscreen", tok)) {
+		} else if (streq("!fullscreen", tok)) {
 			sel.fullscreen = OPTION_FALSE;
 		} else if (streq("urgent", tok)) {
 			sel.urgent = OPTION_TRUE;
-		} else if (streq("nonurgent", tok)) {
+		} else if (streq("!urgent", tok)) {
 			sel.urgent = OPTION_FALSE;
 		} else if (streq("local", tok)) {
 			sel.local = OPTION_TRUE;
-		} else if (streq("foreign", tok)) {
+		} else if (streq("!local", tok)) {
 			sel.local = OPTION_FALSE;
 		} else if (streq("private", tok)) {
 			sel.private = OPTION_TRUE;
-		} else if (streq("public", tok)) {
+		} else if (streq("!private", tok)) {
 			sel.private = OPTION_FALSE;
 		} else if (streq("sticky", tok)) {
 			sel.sticky = OPTION_TRUE;
-		} else if (streq("nonsticky", tok)) {
+		} else if (streq("!sticky", tok)) {
 			sel.sticky = OPTION_FALSE;
 		} else if (streq("locked", tok)) {
 			sel.locked = OPTION_TRUE;
-		} else if (streq("unlocked", tok)) {
+		} else if (streq("!locked", tok)) {
 			sel.locked = OPTION_FALSE;
 		} else if (streq("focused", tok)) {
 			sel.focused = OPTION_TRUE;
-		} else if (streq("unfocused", tok)) {
+		} else if (streq("!focused", tok)) {
 			sel.focused = OPTION_FALSE;
 		} else if (streq("below", tok)) {
 			sel.layer = malloc(sizeof(stack_layer_t));
@@ -296,17 +296,17 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
-		if (streq("free", tok)) {
+		if (streq("occupied", tok)) {
 			sel.occupied = OPTION_FALSE;
-		} else if (streq("occupied", tok)) {
+		} else if (streq("!occupied", tok)) {
 			sel.occupied = OPTION_TRUE;
 		} else if (streq("urgent", tok)) {
 			sel.urgent = OPTION_TRUE;
-		} else if (streq("nonurgent", tok)) {
+		} else if (streq("!urgent", tok)) {
 			sel.urgent = OPTION_FALSE;
 		} else if (streq("local", tok)) {
 			sel.local = OPTION_TRUE;
-		} else if (streq("foreign", tok)) {
+		} else if (streq("!local", tok)) {
 			sel.local = OPTION_FALSE;
 		}
 	}
@@ -355,9 +355,9 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
-		if (streq("free", tok)) {
+		if (streq("occupied", tok)) {
 			sel.occupied = OPTION_FALSE;
-		} else if (streq("occupied", tok)) {
+		} else if (streq("!occupied", tok)) {
 			sel.occupied = OPTION_TRUE;
 		}
 	}

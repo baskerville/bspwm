@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 11/15/2015
+.\"      Date: 11/17/2015
 .\"    Manual: Bspwm Manual
 .\"    Source: Bspwm 0.9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/15/2015" "Bspwm 0\&.9" "Bspwm Manual"
+.TH "BSPWM" "1" "11/17/2015" "Bspwm 0\&.9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -84,6 +84,8 @@ PRIMARY_SELECTOR[\&.MODIFIER]*
 .\}
 .sp
 For obvious reasons, neither desktop nor monitor names may be valid descriptive selectors\&.
+.sp
+An exclamation mark can be prepended to certain modifiers in order to reverse their meaning\&.
 .SS "Window"
 .sp
 Select a window\&.
@@ -93,7 +95,7 @@ Select a window\&.
 .\}
 .nf
 WINDOW_SEL := <window_id>
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.manual|\&.automatic][\&.tiled|nontiled][\&.pseudotiled|\&.nonpseudotiled][\&.floating|\&.nonfloating][\&.fullscreen|\&.nonfullscreen][\&.below|\&.normal|\&.above][\&.local|\&.foreign][\&.like|\&.unlike][\&.focused|\&.unfocused][\&.urgent|\&.nonurgent][\&.sticky|\&.nonsticky][\&.public|\&.private][\&.locked|\&.unlocked]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[\&.[!]automatic][\&.[!](tiled|pseudo_tiled|floating|fullscreen)][\&.below|\&.normal|\&.above][\&.[!]local][\&.[!]same_class][\&.[!]focused][\&.[!](urgent|sticky|private|locked)]
 .fi
 .if n \{\
 .RE
@@ -151,139 +153,39 @@ Selects the window newer than the focused window in the history\&.
 \fBModifiers\fR
 .RS 4
 .PP
-tiled
+[!](tiled|pseudo_tiled|floating|fullscreen)
 .RS 4
-Only consider tiled windows\&.
+Only consider windows having or not having the given state\&.
 .RE
 .PP
-nontiled
+[!]automatic
 .RS 4
-Only consider non tiled windows\&.
+Only consider windows in automatic or manual insertion mode\&.
 .RE
 .PP
-pseudotiled
+[!]focused
 .RS 4
-Only consider pseudo\-tiled windows\&.
+Only consider focused or unfocused windows\&.
 .RE
 .PP
-nonpseudotiled
+[!]same_class
 .RS 4
-Only consider non pseudo\-tiled windows\&.
+Only consider windows that have or don\(cqt have the same class as the current window\&.
 .RE
 .PP
-floating
+[!]local
 .RS 4
-Only consider floating windows\&.
+Only consider windows in or not in the current desktop\&.
 .RE
 .PP
-nonfloating
+[!](private|urgent|sticky|locked)
 .RS 4
-Only consider non floating windows\&.
+Only consider windows that have or don\(cqt have the given flag set\&.
 .RE
 .PP
-fullscreen
+below|normal|above
 .RS 4
-Only consider fullscreen windows\&.
-.RE
-.PP
-nonfullscreen
-.RS 4
-Only consider non fullscreen windows\&.
-.RE
-.PP
-manual
-.RS 4
-Only consider windows in manual splitting mode\&.
-.RE
-.PP
-automatic
-.RS 4
-Only consider windows in automatic splitting mode\&.
-.RE
-.PP
-focused
-.RS 4
-Only consider focused windows\&.
-.RE
-.PP
-unfocused
-.RS 4
-Only consider unfocused windows\&.
-.RE
-.PP
-below
-.RS 4
-Only consider windows of the BELOW layer\&.
-.RE
-.PP
-normal
-.RS 4
-Only consider windows of the NORMAL layer\&.
-.RE
-.PP
-above
-.RS 4
-Only consider windows of the ABOVE layer\&.
-.RE
-.PP
-like
-.RS 4
-Only consider windows that have the same class as the current window\&.
-.RE
-.PP
-unlike
-.RS 4
-Only consider windows that have a different class than the current window\&.
-.RE
-.PP
-local
-.RS 4
-Only consider windows of the current desktop\&.
-.RE
-.PP
-foreign
-.RS 4
-Only consider windows outside of the current desktop\&.
-.RE
-.PP
-private
-.RS 4
-Only consider private windows\&.
-.RE
-.PP
-public
-.RS 4
-Only consider non private windows\&.
-.RE
-.PP
-urgent
-.RS 4
-Only consider urgent windows\&.
-.RE
-.PP
-nonurgent
-.RS 4
-Only consider non urgent windows\&.
-.RE
-.PP
-sticky
-.RS 4
-Only consider sticky windows\&.
-.RE
-.PP
-nonsticky
-.RS 4
-Only consider non sticky windows\&.
-.RE
-.PP
-locked
-.RS 4
-Only consider locked windows\&.
-.RE
-.PP
-unlocked
-.RS 4
-Only consider non locked windows\&.
+Only consider windows of the given layer\&.
 .RE
 .RE
 .SS "Desktop"
@@ -296,7 +198,7 @@ Select a desktop\&.
 .nf
 DESKTOP_SEL := <desktop_name>
              | [MONITOR_SEL:]^<n>
-             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[\&.occupied|\&.free][\&.urgent|\&.nonurgent][\&.local|\&.foreign]
+             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[\&.[!]occupied][\&.[!]urgent][\&.[!]local]
 .fi
 .if n \{\
 .RE
@@ -354,34 +256,19 @@ Selects the desktop newer than the focused desktop in the history\&.
 \fBModifiers\fR
 .RS 4
 .PP
-occupied
+[!]occupied
 .RS 4
-Only consider occupied desktops\&.
+Only consider occupied or free desktops\&.
 .RE
 .PP
-free
+[!]urgent
 .RS 4
-Only consider free desktops\&.
+Only consider urgent or non urgent desktops\&.
 .RE
 .PP
-urgent
+[!]local
 .RS 4
-Only consider urgent desktops\&.
-.RE
-.PP
-nonurgent
-.RS 4
-Only consider non urgent desktops\&.
-.RE
-.PP
-local
-.RS 4
-Only consider desktops of the current monitor\&.
-.RE
-.PP
-foreign
-.RS 4
-Only consider desktops outside of the current monitor\&.
+Only consider inside or outside of the current monitor\&.
 .RE
 .RE
 .SS "Monitor"
@@ -394,7 +281,7 @@ Select a monitor\&.
 .nf
 MONITOR_SEL := <monitor_name>
              | ^<n>
-             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[\&.occupied|\&.free]
+             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[\&.[!]occupied]
 .fi
 .if n \{\
 .RE
@@ -462,14 +349,9 @@ Selects the monitor newer than the focused monitor in the history\&.
 \fBModifiers\fR
 .RS 4
 .PP
-occupied
+[!]occupied
 .RS 4
-Only consider monitors where the focused desktop is occupied\&.
-.RE
-.PP
-free
-.RS 4
-Only consider monitors where the focused desktop is free\&.
+Only consider monitors where the focused desktop is occupied or free\&.
 .RE
 .RE
 .SH "WINDOW STATES"

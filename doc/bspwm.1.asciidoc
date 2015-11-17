@@ -59,6 +59,8 @@ of non-conflicting modifiers as follows:
 For obvious reasons, neither desktop nor monitor names may be valid descriptive
 selectors.
 
+An exclamation mark can be prepended to certain modifiers in order to reverse their meaning.
+
 Window
 ~~~~~~
 
@@ -66,7 +68,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.manual|.automatic][.tiled|nontiled][.pseudotiled|.nonpseudotiled][.floating|.nonfloating][.fullscreen|.nonfullscreen][.below|.normal|.above][.local|.foreign][.like|.unlike][.focused|.unfocused][.urgent|.nonurgent][.sticky|.nonsticky][.public|.private][.locked|.unlocked]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.[!]automatic][.[!](tiled|pseudo_tiled|floating|fullscreen)][.below|.normal|.above][.[!]local][.[!]same_class][.[!]focused][.[!](urgent|sticky|private|locked)]
 ----
 
 Primary Selectors
@@ -96,86 +98,26 @@ newer::
 Modifiers
 ^^^^^^^^^
 
-tiled::
-	Only consider tiled windows.
+[!](tiled|pseudo_tiled|floating|fullscreen)::
+	Only consider windows having or not having the given state.
 
-nontiled::
-	Only consider non tiled windows.
+[!]automatic::
+	Only consider windows in automatic or manual insertion mode.
 
-pseudotiled::
-	Only consider pseudo-tiled windows.
+[!]focused::
+	Only consider focused or unfocused windows.
 
-nonpseudotiled::
-	Only consider non pseudo-tiled windows.
+[!]same_class::
+	Only consider windows that have or don't have the same class as the current window.
 
-floating::
-	Only consider floating windows.
+[!]local::
+	Only consider windows in or not in the current desktop.
 
-nonfloating::
-	Only consider non floating windows.
+[!](private|urgent|sticky|locked)::
+	Only consider windows that have or don't have the given flag set.
 
-fullscreen::
-	Only consider fullscreen windows.
-
-nonfullscreen::
-	Only consider non fullscreen windows.
-
-manual::
-	Only consider windows in manual splitting mode.
-
-automatic::
-	Only consider windows in automatic splitting mode.
-
-focused::
-	Only consider focused windows.
-
-unfocused::
-	Only consider unfocused windows.
-
-below::
-	Only consider windows of the BELOW layer.
-
-normal::
-	Only consider windows of the NORMAL layer.
-
-above::
-	Only consider windows of the ABOVE layer.
-
-like::
-	Only consider windows that have the same class as the current window.
-
-unlike::
-	Only consider windows that have a different class than the current window.
-
-local::
-	Only consider windows of the current desktop.
-
-foreign::
-	Only consider windows outside of the current desktop.
-
-private::
-	Only consider private windows.
-
-public::
-	Only consider non private windows.
-
-urgent::
-	Only consider urgent windows.
-
-nonurgent::
-	Only consider non urgent windows.
-
-sticky::
-	Only consider sticky windows.
-
-nonsticky::
-	Only consider non sticky windows.
-
-locked::
-	Only consider locked windows.
-
-unlocked::
-	Only consider non locked windows.
+below|normal|above::
+	Only consider windows of the given layer.
 
 Desktop
 ~~~~~~~
@@ -185,7 +127,7 @@ Select a desktop.
 ----
 DESKTOP_SEL := <desktop_name>
              | [MONITOR_SEL:]^<n>
-             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[.occupied|.free][.urgent|.nonurgent][.local|.foreign]
+             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[.[!]occupied][.[!]urgent][.[!]local]
 ----
 
 Primary Selectors
@@ -215,23 +157,14 @@ newer::
 Modifiers
 ^^^^^^^^^
 
-occupied::
-	Only consider occupied desktops.
+[!]occupied::
+	Only consider occupied or free desktops.
 
-free::
-	Only consider free desktops.
+[!]urgent::
+	Only consider urgent or non urgent desktops.
 
-urgent::
-	Only consider urgent desktops.
-
-nonurgent::
-	Only consider non urgent desktops.
-
-local::
-	Only consider desktops of the current monitor.
-
-foreign::
-	Only consider desktops outside of the current monitor.
+[!]local::
+	Only consider inside or outside of the current monitor.
 
 Monitor
 ~~~~~~~
@@ -241,7 +174,7 @@ Select a monitor.
 ----
 MONITOR_SEL := <monitor_name>
              | ^<n>
-             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[.occupied|.free]
+             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied]
 ----
 
 Primary Selectors
@@ -277,11 +210,8 @@ newer::
 Modifiers
 ^^^^^^^^^
 
-occupied::
-	Only consider monitors where the focused desktop is occupied.
-
-free::
-	Only consider monitors where the focused desktop is free.
+[!]occupied::
+	Only consider monitors where the focused desktop is occupied or free.
 
 
 Window States
