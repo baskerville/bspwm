@@ -303,9 +303,9 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		tok[0] = '\0';
 		tok++;
 		if (streq("occupied", tok)) {
-			sel.occupied = OPTION_FALSE;
-		} else if (streq("!occupied", tok)) {
 			sel.occupied = OPTION_TRUE;
+		} else if (streq("!occupied", tok)) {
+			sel.occupied = OPTION_FALSE;
 		} else if (streq("urgent", tok)) {
 			sel.urgent = OPTION_TRUE;
 		} else if (streq("!urgent", tok)) {
@@ -362,9 +362,9 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		tok[0] = '\0';
 		tok++;
 		if (streq("occupied", tok)) {
-			sel.occupied = OPTION_FALSE;
-		} else if (streq("!occupied", tok)) {
 			sel.occupied = OPTION_TRUE;
+		} else if (streq("!occupied", tok)) {
+			sel.occupied = OPTION_FALSE;
 		}
 	}
 
