@@ -39,13 +39,12 @@
 
 bool restore_monitor(json_t *json)
 {
-	monitor_t *m, *md;
-	json_t *jbool;
-
-	if ((md = json_deserialize_monitor_type(json)) == NULL)
+	monitor_t *md = json_deserialize_monitor_type(json);
+	if (!md)
 		return false;
 
-	if ((m = find_monitor(md->name)) == NULL) {
+	monitor_t *m = find_monitor(md->name);
+	if (!m) {
 		warn("Could not find monitor: %s\n", md->name);
 		free(md);
 		return false;
@@ -54,7 +53,7 @@ bool restore_monitor(json_t *json)
 	*m = *md;
 	free(md);
 
-	if ((jbool = json_object_get(json, "focused")) != NULL && json_is_true(jbool))
+	if (json_is_true(json_object_get(json, "focused")))
 		mon = m;
 
 	return true;
@@ -62,17 +61,13 @@ bool restore_monitor(json_t *json)
 
 bool restore_desktop(json_t *json)
 {
-	desktop_t *dd;
-	coordinates_t loc;
-
-	if ((dd = json_deserialize_desktop_type(json)) == NULL) {
-		warn("Failed to deserialize desktop\n");
+	desktop_t *dd = json_deserialize_desktop_type(json);
+	if (!dd)
 		return false;
-	}
 
+	coordinates_t loc;
 	locate_desktop(dd->name, &loc);
-
-	if (loc.desktop == NULL) {
+	if (!loc.desktop) {
 		warn("Failed to find desktop: %s\n", dd->name);
 		free(dd);
 		return false;
@@ -86,11 +81,11 @@ bool restore_desktop(json_t *json)
 
 void restore_tree(const char *file_path)
 {
-	if (file_path == NULL)
+	if (!file_path)
 		return;
 
 	json_t *json = json_deserialize_file(file_path);
-	if (json == NULL || !json_is_object(json)) {
+	if (!json_is_object(json)) {
 		warn("File is not a JSON tree");
 		return;
 	}
@@ -100,25 +95,28 @@ void restore_tree(const char *file_path)
 	json_t *mvalue, *dvalue, *jdesktops;
 
 	json_object_foreach(json, mkey, mvalue) {
-		if (!restore_monitor(mvalue))
+		if (!restore_monitor(mvalue)) {
 			warn("Failed to restore monitor: %s\n", mkey);
 			continue;
+		}
 
-		if ((jdesktops = json_object_get(mvalue, "desktops")) == NULL || !json_is_array(jdesktops)) {
+		jdesktops = json_object_get(mvalue, "desktops");
+		if (!json_is_array(jdesktops)) {
 			warn("Key not found: desktops\n");
 			continue;
 		}
 		json_array_foreach(jdesktops, dindex, dvalue) {
-			if (!restore_desktop(dvalue))
+			if (!restore_desktop(dvalue)) {
 				warn("Failed to restore desktop at index: %u\n", dindex);
 				continue;
+			}
 		}
 	}
 	json_decref(json);
 
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+	for (monitor_t *m = mon_head; m; m = m->next) {
+		for (desktop_t *d = m->desk_head; d; d = d->next) {
+			for (node_t *n = first_extrema(d->root); n; n = next_leaf(n, d->root)) {
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 				xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
 				if (!IS_TILED(n->client)) {
@@ -139,11 +137,11 @@ void restore_tree(const char *file_path)
 
 void restore_history(const char *file_path)
 {
-	if (file_path == NULL)
+	if (!file_path)
 		return;
 
 	json_t *json = json_deserialize_file(file_path);
-	if (json == NULL || !json_is_array(json)) {
+	if (!json_is_array(json)) {
 		warn("File is not a JSON history");
 		return;
 	}
@@ -153,7 +151,8 @@ void restore_history(const char *file_path)
 	coordinates_t *loc;
 
 	json_array_foreach(json, index, value) {
-		if ((loc = json_deserialize_coordinates_type(value)) == NULL)
+		loc = json_deserialize_coordinates_type(value);
+		if (!loc)
 			continue;
 		history_add(loc->monitor, loc->desktop, loc->node);
 		free(loc);
@@ -163,11 +162,11 @@ void restore_history(const char *file_path)
 
 void restore_stack(const char *file_path)
 {
-	if (file_path == NULL)
+	if (!file_path)
 		return;
 
 	json_t *json = json_deserialize_file(file_path);
-	if (json == NULL || !json_is_array(json)) {
+	if (!json_is_array(json)) {
 		warn("File is not a JSON stack");
 		return;
 	}
@@ -177,7 +176,8 @@ void restore_stack(const char *file_path)
 	node_t *n;
 
 	json_array_foreach(json, index, value) {
-		if ((n = json_deserialize_node_window(value)) == NULL)
+		n = json_deserialize_node_window(value);
+		if (!n)
 			continue;
 		stack_insert_after(stack_tail, n);
 	}
