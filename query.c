@@ -144,19 +144,19 @@ void query_windows(coordinates_t loc, FILE *rsp)
 client_select_t make_client_select(void)
 {
 	client_select_t sel = {
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE,
-		NULL
+		.tiled = OPTION_NONE,
+		.pseudo_tiled = OPTION_NONE,
+		.floating = OPTION_NONE,
+		.fullscreen = OPTION_NONE,
+		.locked = OPTION_NONE,
+		.sticky = OPTION_NONE,
+		.private = OPTION_NONE,
+		.urgent = OPTION_NONE,
+		.same_class = OPTION_NONE,
+		.automatic = OPTION_NONE,
+		.local = OPTION_NONE,
+		.focused = OPTION_NONE,
+		.layer = NULL
 	};
 	return sel;
 }
@@ -164,9 +164,9 @@ client_select_t make_client_select(void)
 desktop_select_t make_desktop_select(void)
 {
 	desktop_select_t sel = {
-		OPTION_NONE,
-		OPTION_NONE,
-		OPTION_NONE
+		.occupied = OPTION_NONE,
+		.urgent = OPTION_NONE,
+		.local = OPTION_NONE
 	};
 	return sel;
 }
