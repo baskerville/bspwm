@@ -5,7 +5,7 @@ You must be comfortable with [C][1], [XCB][2] and [Git][3].
 ## Coding Style
 
 I follow the [Linux Coding Style][4] with the following variations:
-- [Ident with tabs, align with spaces][5].
+- [Indent with tabs, align with spaces][5].
 - Always use braces with if/else.
 
 ## Browsing the Code
