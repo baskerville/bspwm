@@ -232,13 +232,19 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		} else if (streq("!focused", tok)) {
 			sel.focused = OPTION_FALSE;
 		} else if (streq("below", tok)) {
-			sel.layer = malloc(sizeof(stack_layer_t));
+			if (sel.layer == NULL) {
+				sel.layer = malloc(sizeof(stack_layer_t));
+			}
 			*(sel.layer) = LAYER_BELOW;
 		} else if (streq("normal", tok)) {
-			sel.layer = malloc(sizeof(stack_layer_t));
+			if (sel.layer == NULL) {
+				sel.layer = malloc(sizeof(stack_layer_t));
+			}
 			*(sel.layer) = LAYER_NORMAL;
 		} else if (streq("above", tok)) {
-			sel.layer = malloc(sizeof(stack_layer_t));
+			if (sel.layer == NULL) {
+				sel.layer = malloc(sizeof(stack_layer_t));
+			}
 			*(sel.layer) = LAYER_ABOVE;
 		}
 	}
