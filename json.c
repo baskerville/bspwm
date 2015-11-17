@@ -317,6 +317,9 @@ SERIALIZATION(subscriber_mask,
 #define DESERIALIZE_BEGIN(TYPE) \
 	TYPE##_t* json_deserialize_##TYPE##_type(json_t *json) \
 	{ \
+		if (json_is_null(json)) { \
+			return NULL; \
+		} \
 		if (!json_is_object(json)) { \
 			warn("JSON deserialize failed: Not an object"); \
 			return NULL; \
