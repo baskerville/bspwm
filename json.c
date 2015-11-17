@@ -321,12 +321,12 @@ SERIALIZATION(subscriber_mask,
 			return NULL; \
 		} \
 		if (!json_is_object(json)) { \
-			warn("JSON deserialize failed: Not an object"); \
+			warn("JSON deserialize failed: "#TYPE": !json_is_object\n"); \
 			return NULL; \
 		} \
 		TYPE##_t *obj = malloc(sizeof(TYPE##_t)); \
 		if (!obj) { \
-			warn("JSON deserialize failed: malloc"); \
+			warn("JSON deserialize failed: "#TYPE": malloc\n"); \
 			return NULL; \
 		} \
 		json_t *get;

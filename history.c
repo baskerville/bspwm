@@ -64,6 +64,17 @@ void history_transfer_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 }
 
+void history_replace_node(node_t* ns, monitor_t *md, desktop_t *dd, node_t *nd)
+{
+	for (history_t *h = history_head; h; h = h->next) {
+		if (h->loc.node == ns) {
+			h->loc.monitor = md;
+			h->loc.desktop = dd;
+			h->loc.node = nd;
+		}
+	}
+}
+
 void history_transfer_desktop(monitor_t *m, desktop_t *d)
 {
 	for (history_t *h = history_head; h != NULL; h = h->next)
