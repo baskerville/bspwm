@@ -1133,7 +1133,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	}
 
 	if (exists_subscriber(SBSC_MASK_WINDOW_TRANSFER))
-		put_status(SBSC_MASK_WINDOW_TRANSFER, json_serialize_status_node_transfer(ms, ds, md, dd, nd));
+		put_status(SBSC_MASK_WINDOW_TRANSFER, json_serialize_status_node_transfer(ms, ds, ns, md, dd));
 
 	return true;
 }

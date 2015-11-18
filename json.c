@@ -649,13 +649,13 @@ json_t* json_serialize_status_node_swap(monitor_t *m1, desktop_t *d1, node_t *n1
 	return json;
 }
 
-json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *nd)
+json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd)
 {
 	SERIALIZE_INIT_OBJECT(status_node_transfer)
 	json_t *set;
 	SERIALIZE_POINTER("monitor", monitor_type, md)
 	SERIALIZE_POINTER("desktop", desktop_type, dd)
-	SERIALIZE_POINTER("node", node_type, nd)
+	SERIALIZE_POINTER("node", node_type, ns)
 	SERIALIZE_POINTER_EQUALS("monitorLast", monitor_type, ms, "monitor", md)
 	SERIALIZE_POINTER("desktopLast", desktop_type, ds)
 	return json;
