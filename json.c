@@ -603,97 +603,119 @@ SERIALIZATION(coordinates,
 			return NULL; \
 		} \
 	}
+#define SERIALIZE_POINTER_EQUALS(KEY1, TYPE, OBJ1, KEY2, OBJ2) \
+	if (OBJ1 == OBJ2) { \
+		json_object_set(json, KEY1, json_object_get(json, KEY2)); \
+	} else { \
+		SERIALIZE_POINTER(KEY1, TYPE, OBJ1) \
+	}
+#define SERIALIZE_STRING_NESTED(KEY1, OBJ, KEY2) \
+	if (json_object_set_new(json_object_get(json, KEY2), KEY1, json_string(OBJ)) == -1) { \
+		json_decref(json); \
+		warn("JSON serialize failed: string: "KEY1": json_object_set_new\n"); \
+		return NULL; \
+	}
 
 json_t* json_serialize_status_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	json_t *json = json_serialize_node_type(n);
-	SERIALIZE_IS_OBJECT(status_node)
+	SERIALIZE_INIT_OBJECT(status_node)
 	json_t *set;
 	SERIALIZE_POINTER("monitor", monitor_type, m)
 	SERIALIZE_POINTER("desktop", desktop_type, d)
+	SERIALIZE_POINTER("node", node_type, n)
 	return json;
 }
 
 json_t* json_serialize_status_node_nullable(monitor_t *m, desktop_t *d, node_t *n)
 {
-	json_t *json = json_serialize_node_type(n);
-	SERIALIZE_IS_OBJECT_NULLABLE(status_node_nullable)
+	SERIALIZE_INIT_OBJECT(status_node_nullable)
 	json_t *set;
 	SERIALIZE_POINTER("monitor", monitor_type, m)
 	SERIALIZE_POINTER("desktop", desktop_type, d)
+	SERIALIZE_POINTER_NULLABLE("node", node_type, n)
 	return json;
 }
 
 json_t* json_serialize_status_node_swap(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
-	json_t *json = json_serialize_status_node(m2, d2, n2);
-	SERIALIZE_IS_OBJECT(status_node_swap)
+	SERIALIZE_INIT_OBJECT(status_node_swap)
 	json_t *set;
-	SERIALIZE_POINTER("swap", status_node, m1 COMMA d1 COMMA n1)
+	SERIALIZE_POINTER("monitor1", monitor_type, m1)
+	SERIALIZE_POINTER("desktop1", desktop_type, d1)
+	SERIALIZE_POINTER("node1", node_type, n2)
+	SERIALIZE_POINTER_EQUALS("monitor2", monitor_type, m2, "monitor1", m1)
+	SERIALIZE_POINTER_EQUALS("desktop2", desktop_type, d2, "desktop1", d1)
+	SERIALIZE_POINTER("node2", node_type, n1)
 	return json;
 }
 
 json_t* json_serialize_status_node_transfer(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *nd)
 {
-	json_t *json = json_serialize_status_node(md, dd, nd);
-	SERIALIZE_IS_OBJECT(status_node_transfer)
+	SERIALIZE_INIT_OBJECT(status_node_transfer)
 	json_t *set;
-	SERIALIZE_POINTER("monitorLast", monitor_type, ms)
+	SERIALIZE_POINTER("monitor", monitor_type, md)
+	SERIALIZE_POINTER("desktop", desktop_type, dd)
+	SERIALIZE_POINTER("node", node_type, nd)
+	SERIALIZE_POINTER_EQUALS("monitorLast", monitor_type, ms, "monitor", md)
 	SERIALIZE_POINTER("desktopLast", desktop_type, ds)
 	return json;
 }
 
 json_t* json_serialize_status_desktop(monitor_t *m, desktop_t *d)
 {
-	json_t *json = json_serialize_desktop_type(d);
-	SERIALIZE_IS_OBJECT(status_desktop)
+	SERIALIZE_INIT_OBJECT(status_desktop)
 	json_t *set;
 	SERIALIZE_POINTER("monitor", monitor_type, m)
+	SERIALIZE_POINTER("desktop", desktop_type, d)
 	return json;
 }
 
 json_t* json_serialize_status_desktop_transfer(monitor_t *ms, monitor_t *md, desktop_t *d)
 {
-	json_t *json = json_serialize_status_desktop(md, d);
-	SERIALIZE_IS_OBJECT(status_desktop_transfer)
+	SERIALIZE_INIT_OBJECT(status_desktop_transfer)
 	json_t *set;
+	SERIALIZE_POINTER("monitor", monitor_type, md)
+	SERIALIZE_POINTER("desktop", desktop_type, d)
 	SERIALIZE_POINTER("monitorLast", monitor_type, ms)
 	return json;
 }
 
 json_t* json_serialize_status_desktop_rename(monitor_t *m, desktop_t *d, const char *name_last)
 {
-	json_t *json = json_serialize_status_desktop(m, d);
-	SERIALIZE_IS_OBJECT(status_desktop_rename)
+	SERIALIZE_INIT_OBJECT(status_desktop_rename)
 	json_t *set;
-	SERIALIZE_STRING("nameLast", name_last)
+	SERIALIZE_POINTER("monitor", monitor_type, m)
+	SERIALIZE_POINTER("desktop", desktop_type, d)
+	SERIALIZE_STRING_NESTED("nameLast", name_last, "desktop")
 	return json;
 }
 
 json_t* json_serialize_status_desktop_swap(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 {
-	json_t *json = json_serialize_status_desktop(m1, d1);
-	SERIALIZE_IS_OBJECT(status_desktop_swap)
+	SERIALIZE_INIT_OBJECT(status_desktop_swap)
 	json_t *set;
-	SERIALIZE_POINTER("swap", status_desktop, m2 COMMA d2)
+	SERIALIZE_POINTER("monitor1", monitor_type, m1)
+	SERIALIZE_POINTER("desktop1", desktop_type, d2)
+	SERIALIZE_POINTER_EQUALS("monitor2", monitor_type, m2, "monitor1", m1)
+	SERIALIZE_POINTER("desktop2", desktop_type, d1)
 	return json;
 }
 
 json_t* json_serialize_status_monitor_rename(monitor_t *m, const char *name_last)
 {
-	json_t *json = json_serialize_monitor_type(m);
-	SERIALIZE_IS_OBJECT(status_monitor_rename)
+	SERIALIZE_INIT_OBJECT(status_monitor_rename)
 	json_t *set;
-	SERIALIZE_STRING("nameLast", name_last)
+	SERIALIZE_POINTER("monitor", monitor_type, m)
+	SERIALIZE_STRING_NESTED("nameLast", name_last, "monitor")
 	return json;
 }
 
 json_t* json_serialize_status_monitor_swap(monitor_t *m1, monitor_t *m2)
 {
-	json_t *json = json_serialize_monitor_type(m1);
-	SERIALIZE_IS_OBJECT(status_monitor_swap)
+	SERIALIZE_INIT_OBJECT(status_monitor_swap)
 	json_t *set;
-	SERIALIZE_POINTER("swap", monitor_type, m2)
+	SERIALIZE_POINTER("monitor1", monitor_type, m2)
+	SERIALIZE_POINTER("monitor2", monitor_type, m1)
 	return json;
 }
 
@@ -709,7 +731,7 @@ json_t* json_serialize_query_window(coordinates_t loc)
 
 json_t* json_serialize_query_windows(coordinates_t loc)
 {
-	SERIALIZE_INIT_OBJECT(windows)
+	SERIALIZE_INIT_OBJECT(query_windows)
 	char id[11];
 	json_t *jmonitor, *jdesktop, *jwindow;
 	for (monitor_t *m = mon_head; m; m = m->next) {
