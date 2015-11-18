@@ -26,7 +26,7 @@ super + {o,i}
 	bspc control --record-history on
 
 super + y
-	bspc window -w last.manual
+	bspc window -w last.!automatic
 
 super + m
 	bspc window -s biggest
