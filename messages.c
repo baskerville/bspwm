@@ -1236,51 +1236,51 @@ bool parse_subscriber_mask(const char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_DESKTOP;
 	} else if (streq("monitor", s)) {
 		*mask = SBSC_MASK_MONITOR;
-	} else if (streq("window_manage", s)) {
+	} else if (streq("windowManage", s)) {
 		*mask = SBSC_MASK_WINDOW_MANAGE;
-	} else if (streq("window_unmanage", s)) {
+	} else if (streq("windowUnmanage", s)) {
 		*mask = SBSC_MASK_WINDOW_UNMANAGE;
-	} else if (streq("window_swap", s)) {
+	} else if (streq("windowSwap", s)) {
 		*mask = SBSC_MASK_WINDOW_SWAP;
-	} else if (streq("window_transfer", s)) {
+	} else if (streq("windowTransfer", s)) {
 		*mask = SBSC_MASK_WINDOW_TRANSFER;
-	} else if (streq("window_focus", s)) {
+	} else if (streq("windowFocus", s)) {
 		*mask = SBSC_MASK_WINDOW_FOCUS;
-	} else if (streq("window_activate", s)) {
+	} else if (streq("windowActivate", s)) {
 		*mask = SBSC_MASK_WINDOW_ACTIVATE;
-	} else if (streq("window_geometry", s)) {
+	} else if (streq("windowGeometry", s)) {
 		*mask = SBSC_MASK_WINDOW_GEOMETRY;
-	} else if (streq("window_state", s)) {
+	} else if (streq("windowState", s)) {
 		*mask = SBSC_MASK_WINDOW_STATE;
-	} else if (streq("window_flag", s)) {
+	} else if (streq("windowFlag", s)) {
 		*mask = SBSC_MASK_WINDOW_FLAG;
-	} else if (streq("window_layer", s)) {
+	} else if (streq("windowLayer", s)) {
 		*mask = SBSC_MASK_WINDOW_LAYER;
-	} else if (streq("desktop_add", s)) {
+	} else if (streq("desktopAdd", s)) {
 		*mask = SBSC_MASK_DESKTOP_ADD;
-	} else if (streq("desktop_rename", s)) {
+	} else if (streq("desktopRename", s)) {
 		*mask = SBSC_MASK_DESKTOP_RENAME;
-	} else if (streq("desktop_remove", s)) {
+	} else if (streq("desktopRemove", s)) {
 		*mask = SBSC_MASK_DESKTOP_REMOVE;
-	} else if (streq("desktop_swap", s)) {
+	} else if (streq("desktopSwap", s)) {
 		*mask = SBSC_MASK_DESKTOP_SWAP;
-	} else if (streq("desktop_transfer", s)) {
+	} else if (streq("desktopTransfer", s)) {
 		*mask = SBSC_MASK_DESKTOP_TRANSFER;
-	} else if (streq("desktop_focus", s)) {
+	} else if (streq("desktopFocus", s)) {
 		*mask = SBSC_MASK_DESKTOP_FOCUS;
-	} else if (streq("desktop_layout", s)) {
+	} else if (streq("desktopLayout", s)) {
 		*mask = SBSC_MASK_DESKTOP_LAYOUT;
-	} else if (streq("monitor_add", s)) {
+	} else if (streq("monitorAdd", s)) {
 		*mask = SBSC_MASK_MONITOR_ADD;
-	} else if (streq("monitor_rename", s)) {
+	} else if (streq("monitorRename", s)) {
 		*mask = SBSC_MASK_MONITOR_RENAME;
-	} else if (streq("monitor_remove", s)) {
+	} else if (streq("monitorRemove", s)) {
 		*mask = SBSC_MASK_MONITOR_REMOVE;
-	} else if (streq("monitor_swap", s)) {
+	} else if (streq("monitorSwap", s)) {
 		*mask = SBSC_MASK_MONITOR_SWAP;
-	} else if (streq("monitor_focus", s)) {
+	} else if (streq("monitorFocus", s)) {
 		*mask = SBSC_MASK_MONITOR_FOCUS;
-	} else if (streq("monitor_geometry", s)) {
+	} else if (streq("monitorGeometry", s)) {
 		*mask = SBSC_MASK_MONITOR_GEOMETRY;
 	} else {
 		return false;
