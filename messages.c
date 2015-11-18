@@ -661,7 +661,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 			if (!node_from_desc(*args, &ref, &trg))
 				return MSG_FAILURE;
 		} else {
-			trg.node = ref.node;
+			trg = ref;
 		}
 		constrained = true;
 	} else if (streq("-D", *args) || streq("--desktops", *args)) {
@@ -673,7 +673,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 			if (!desktop_from_desc(*args, &ref, &trg))
 				return MSG_FAILURE;
 		} else {
-			trg.desktop = ref.desktop;
+			trg = ref;
 		}
 		constrained = true;
 	} else if (streq("-M", *args) || streq("--monitors", *args)) {
@@ -685,7 +685,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 			if (!monitor_from_desc(*args, &ref, &trg))
 				return MSG_FAILURE;
 		} else {
-			trg.monitor = ref.monitor;
+			trg = ref;
 		}
 		constrained = true;
 	} else if (streq("-T", *args) || streq("--tree", *args)) {
@@ -694,6 +694,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 		dom = DOMAIN_HISTORY;
 	} else if (streq("-S", *args) || streq("--stack", *args)) {
 		dom = DOMAIN_STACK;
+		constrained = true;
 	} else {
 		return MSG_SYNTAX;
 	}
@@ -706,9 +707,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 				if (!node_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
 			} else {
-				trg.node = ref.node;
-				trg.desktop = ref.desktop;
-				trg.monitor = ref.monitor;
+				trg = ref;
 			}
 			constrained = true;
 		} else if (!constrained && (streq("-d", *args) || streq("--desktop", *args))) {
@@ -717,8 +716,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 				if (!desktop_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
 			} else {
-				trg.desktop = ref.desktop;
-				trg.monitor = ref.monitor;
+				trg = ref;
 			}
 			constrained = true;
 		} else if (!constrained && (streq("-m", *args) || streq("--monitor", *args))) {
@@ -727,7 +725,7 @@ int cmd_query(char **args, int num, FILE *rsp)
 				if (!monitor_from_desc(*args, &ref, &trg))
 					return MSG_FAILURE;
 			} else {
-				trg.monitor = ref.monitor;
+				trg = ref;
 			}
 			constrained = true;
 		} else {
@@ -739,31 +737,31 @@ int cmd_query(char **args, int num, FILE *rsp)
 	json_t *json;
 	switch (dom) {
 		case DOMAIN_WINDOWS:
-			json = json_serialize_windows(trg);
+			json = json_serialize_query_windows(trg);
 			break;
 		case DOMAIN_WINDOW:
-			json = json_serialize_node_type(trg.node);
+			json = json_serialize_query_window(trg);
 			break;
 		case DOMAIN_DESKTOPS:
-			json = json_serialize_desktops(trg);
+			json = json_serialize_query_desktops(trg);
 			break;
 		case DOMAIN_DESKTOP:
-			json = json_serialize_desktop_type(trg.desktop);
+			json = json_serialize_query_desktop(trg);
 			break;
 		case DOMAIN_MONITORS:
-			json = json_serialize_monitors(trg);
+			json = json_serialize_query_monitors(trg);
 			break;
 		case DOMAIN_MONITOR:
-			json = json_serialize_monitor_type(trg.monitor);
+			json = json_serialize_query_monitor(trg);
 			break;
 		case DOMAIN_TREE:
-			json = json_serialize_tree(trg);
+			json = json_serialize_query_tree(trg);
 			break;
 		case DOMAIN_HISTORY:
-			json = json_serialize_history(trg);
+			json = json_serialize_query_history(trg);
 			break;
 		case DOMAIN_STACK:
-			json = json_serialize_stack();
+			json = json_serialize_query_stack();
 			break;
 		default:
 			return MSG_FAILURE;

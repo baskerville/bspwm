@@ -61,11 +61,14 @@ json_t* json_serialize_status_desktop_swap(monitor_t *m1, desktop_t *d1, monitor
 json_t* json_serialize_status_monitor_rename(monitor_t *m, const char *name_last);
 json_t* json_serialize_status_monitor_swap(monitor_t *m1, monitor_t *m2);
 
-json_t* json_serialize_windows(coordinates_t loc);
-json_t* json_serialize_desktops(coordinates_t loc);
-json_t* json_serialize_monitors(coordinates_t loc);
-json_t* json_serialize_tree(coordinates_t loc);
-json_t* json_serialize_history(coordinates_t loc);
-json_t* json_serialize_stack();
+json_t* json_serialize_query_windows(coordinates_t loc);
+json_t* json_serialize_query_window(coordinates_t loc);
+json_t* json_serialize_query_desktops(coordinates_t loc);
+json_t* json_serialize_query_desktop(coordinates_t loc);
+json_t* json_serialize_query_monitors(coordinates_t loc);
+json_t* json_serialize_query_monitor(coordinates_t loc);
+json_t* json_serialize_query_tree(coordinates_t loc);
+json_t* json_serialize_query_history(coordinates_t loc);
+json_t* json_serialize_query_stack();
 
 json_t* json_deserialize_file(const char *file_path);
