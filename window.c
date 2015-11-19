@@ -320,6 +320,7 @@ xcb_rectangle_t get_rectangle(monitor_t *m, client_t *c)
 			return c->floating_rectangle;
 			break;
 		case STATE_FULLSCREEN:
+		default:
 			return m->rectangle;
 			break;
 	 }
