@@ -971,8 +971,24 @@ int cmd_config(char **args, int num, FILE *rsp)
 		}
 		num--, args++;
 	}
-	if (num == 2)
-		return set_setting(trg, *args, *(args + 1));
+	if (num >= 2) {
+		if (num % 2 != 0)
+			return MSG_SYNTAX;
+		int rval;
+		while (num >= 2) {
+			rval = set_setting(trg, *args, *(args + 1));
+			if (rval != MSG_SUCCESS)
+				return rval;
+			num -= 2;
+			args += 2;
+		}
+
+		for (monitor_t *m = mon_head; m != NULL; m = m->next)
+			for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+				arrange(m, d);
+
+		return MSG_SUCCESS;
+	}
 	else if (num == 1)
 		return get_setting(trg, *args, rsp);
 	else
@@ -1141,10 +1157,6 @@ int set_setting(coordinates_t loc, const char *name, char *value)
 	} else {
 		return MSG_FAILURE;
 	}
-
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
-			arrange(m, d);
 
 	return MSG_SUCCESS;
 }
