@@ -69,7 +69,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd);
 node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel);
 void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir);
-void update_vacant_state(node_t *n);
+void set_vacant_state(node_t *n, bool value);
+void propagate_vacant_state(node_t *n);
 void update_privacy_level(node_t *n, bool value);
 
 #endif

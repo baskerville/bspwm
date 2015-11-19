@@ -452,16 +452,10 @@ void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	}
 
 	n->split_mode = MODE_AUTOMATIC;
-	n->vacant = value;
-	update_vacant_state(n->parent);
+	set_vacant_state(n, value);
 
-	if (value) {
-		unrotate_brother(n);
-	} else {
-		rotate_brother(n);
-		if (d->focus == n) {
-			neutralize_obscuring_windows(m, d, n);
-		}
+	if (!value && d->focus == n) {
+		neutralize_obscuring_windows(m, d, n);
 	}
 
 	stack(n, (d->focus == n));
@@ -476,8 +470,7 @@ void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	client_t *c = n->client;
 
 	n->split_mode = MODE_AUTOMATIC;
-	n->vacant = value;
-	update_vacant_state(n->parent);
+	set_vacant_state(n, value);
 
 	if (value) {
 		ewmh_wm_state_add(c, ewmh->_NET_WM_STATE_FULLSCREEN);

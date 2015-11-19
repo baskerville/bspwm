@@ -274,7 +274,7 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				break;
 		}
 		if (f->vacant) {
-			update_vacant_state(f->parent);
+			propagate_vacant_state(f);
 		}
 		if (f->client != NULL) {
 			if (f->client->private) {
@@ -938,7 +938,7 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		b->birth_rotation = p->birth_rotation;
 		n->parent = NULL;
 		free(p);
-		update_vacant_state(b->parent);
+		propagate_vacant_state(b);
 
 		if (n == d->focus) {
 			d->focus = history_get_node(d, n);
@@ -1027,8 +1027,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 	n2->privacy_level = pl1;
 
 	if (n1->vacant != n2->vacant) {
-		update_vacant_state(n1->parent);
-		update_vacant_state(n2->parent);
+		propagate_vacant_state(n1);
+		propagate_vacant_state(n2);
 	}
 
 	if (n1->client->private != n2->client->private) {
@@ -1167,13 +1167,26 @@ void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
 		focus_node(m, d, p->second_child);
 }
 
-void update_vacant_state(node_t *n)
+void set_vacant_state(node_t *n, bool value)
 {
-	if (n == NULL)
-		return;
+	n->vacant = value;
 
-	/* n is not a leaf */
-	node_t *p = n;
+	if (value) {
+		unrotate_brother(n);
+	} else {
+		rotate_brother(n);
+	}
+
+	propagate_vacant_state(n);
+}
+
+void propagate_vacant_state(node_t *n)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	node_t *p = n->parent;
 
 	while (p != NULL) {
 		p->vacant = (p->first_child->vacant && p->second_child->vacant);

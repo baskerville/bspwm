@@ -201,7 +201,7 @@ void restore_tree(char *file_path)
 				xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
 				if (!IS_TILED(n->client)) {
 					n->vacant = true;
-					update_vacant_state(n->parent);
+					propagate_vacant_state(n);
 				}
 				if (n->client->private) {
 					update_privacy_level(n, true);
