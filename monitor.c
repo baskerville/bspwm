@@ -62,7 +62,8 @@ monitor_t *make_monitor(xcb_rectangle_t rect)
 
 void rename_monitor(monitor_t *m, const char *name)
 {
-	const char *name_last = name;
+	char name_last[SMALEN];
+	strcpy(name_last, m->name);
 
 	snprintf(m->name, sizeof(m->name), "%s", name);
 

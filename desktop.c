@@ -23,6 +23,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "history.h"
@@ -134,7 +135,8 @@ desktop_t *make_desktop(const char *name)
 
 void rename_desktop(monitor_t *m, desktop_t *d, const char *name)
 {
-	const char *name_last = d->name;
+	char name_last[SMALEN];
+	strcpy(name_last, d->name);
 
 	snprintf(d->name, sizeof(d->name), "%s", name);
 
