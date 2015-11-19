@@ -34,113 +34,6 @@
 #include "tree.h"
 #include "query.h"
 
-void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp)
-{
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
-			continue;
-		if (dom != DOMAIN_DESKTOP) {
-			if (dom == DOMAIN_MONITOR) {
-				fprintf(rsp, "%s\n", m->name);
-				continue;
-			} else {
-				fprintf(rsp, "%s %ux%u%+i%+i %i,%i,%i,%i%s\n", m->name,
-				         m->rectangle.width,m->rectangle.height, m->rectangle.x, m->rectangle.y,
-				         m->top_padding, m->right_padding, m->bottom_padding, m->left_padding,
-				         (m == mon ? " *" : ""));
-			}
-		}
-		query_desktops(m, dom, loc, (dom == DOMAIN_DESKTOP ? 0 : 1), rsp);
-	}
-}
-
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp)
-{
-	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-		if (loc.desktop != NULL && d != loc.desktop)
-			continue;
-		for (unsigned int i = 0; i < depth; i++)
-			fprintf(rsp, "\t");
-		if (dom == DOMAIN_DESKTOP) {
-			fprintf(rsp, "%s\n", d->name);
-			continue;
-		} else {
-			fprintf(rsp, "%s %u %i %i,%i,%i,%i %c%s\n", d->name, d->border_width,
-			        d->window_gap,
-			        d->top_padding, d->right_padding, d->bottom_padding, d->left_padding,
-			        (d->layout == LAYOUT_TILED ? 'T' : 'M'),
-			        (d == m->desk ? " *" : ""));
-		}
-		query_tree(d, d->root, rsp, depth + 1);
-	}
-}
-
-void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
-{
-	if (n == NULL)
-		return;
-
-	for (unsigned int i = 0; i < depth; i++)
-		fprintf(rsp, "\t");
-
-	if (is_leaf(n)) {
-		client_t *c = n->client;
-		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c%c %c%c %c%c%c%c%s\n",
-		         (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')),
-		         c->class_name, c->instance_name, c->window, c->border_width,
-		         c->floating_rectangle.width, c->floating_rectangle.height,
-		         c->floating_rectangle.x, c->floating_rectangle.y,
-		         (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))),
-		         (n->split_mode == MODE_AUTOMATIC ? '-' : 'p'),
-		         (c->state == STATE_TILED ? '-' : (c->state == STATE_FLOATING ? 'f' : (c->state == STATE_FULLSCREEN ? 'F' : 'p'))),
-		         (c->layer == LAYER_NORMAL ? '-' : (c->layer == LAYER_ABOVE ? 'a' : 'b')),
-		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'), (c->private ? 'i' : '-'),
-		         (n == d->focus ? " *" : ""));
-	} else {
-		fprintf(rsp, "%c %c %lf\n", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
-		        (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), n->split_ratio);
-	}
-
-	query_tree(d, n->first_child, rsp, depth + 1);
-	query_tree(d, n->second_child, rsp, depth + 1);
-}
-
-void query_history(coordinates_t loc, FILE *rsp)
-{
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
-				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
-			continue;
-		xcb_window_t win = XCB_NONE;
-		if (h->loc.node != NULL)
-			win = h->loc.node->client->window;
-		fprintf(rsp, "%s %s 0x%X\n", h->loc.monitor->name, h->loc.desktop->name, win);
-	}
-}
-
-void query_stack(FILE *rsp)
-{
-	for (stacking_list_t *s = stack_head; s != NULL; s = s->next)
-		fprintf(rsp, "0x%X\n", s->node->client->window);
-}
-
-void query_windows(coordinates_t loc, FILE *rsp)
-{
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
-			continue;
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop)
-				continue;
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				if (loc.node != NULL && n != loc.node)
-					continue;
-				fprintf(rsp, "0x%X\n", n->client->window);
-			}
-		}
-	}
-}
-
 client_select_t make_client_select(void)
 {
 	client_select_t sel = {
@@ -176,7 +69,7 @@ void cleanup_client_select(client_select_t *sel)
 	free(sel->layer);
 }
 
-bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
+bool node_from_desc(const char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	client_select_t sel = make_client_select();
 	char *tok;
@@ -295,7 +188,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	return (dst->node != NULL);
 }
 
-bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
+bool desktop_from_desc(const char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	desktop_select_t sel = make_desktop_select();
 	char *tok;
@@ -354,7 +247,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	return (dst->desktop != NULL);
 }
 
-bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
+bool monitor_from_desc(const char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	desktop_select_t sel = make_desktop_select();
 	char *tok;
@@ -415,7 +308,7 @@ bool locate_window(xcb_window_t win, coordinates_t *loc)
 	return false;
 }
 
-bool locate_desktop(char *name, coordinates_t *loc)
+bool locate_desktop(const char *name, coordinates_t *loc)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
@@ -427,7 +320,7 @@ bool locate_desktop(char *name, coordinates_t *loc)
 	return false;
 }
 
-bool locate_monitor(char *name, coordinates_t *loc)
+bool locate_monitor(const char *name, coordinates_t *loc)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next)
 		if (streq(m->name, name)) {

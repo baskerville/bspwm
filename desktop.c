@@ -23,6 +23,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "history.h"
@@ -33,6 +34,7 @@
 #include "desktop.h"
 #include "subscribe.h"
 #include "settings.h"
+#include "json.h"
 
 void focus_desktop(monitor_t *m, desktop_t *d)
 {
@@ -41,15 +43,15 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 	if (d == mon->desk)
 		return;
 
-	put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus %s %s\n", m->name, d->name);
-
 	show_desktop(d);
 	hide_desktop(mon->desk);
 
 	mon->desk = d;
 
 	ewmh_update_current_desktop();
-	put_status(SBSC_MASK_REPORT);
+
+	if (exists_subscriber(SBSC_MASK_DESKTOP_FOCUS))
+		put_status(SBSC_MASK_DESKTOP_FOCUS, json_serialize_status_desktop(m, d));
 }
 
 desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
@@ -72,12 +74,11 @@ desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_
 
 void change_layout(monitor_t *m, desktop_t *d, layout_t l)
 {
-	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout %s %s %s\n", m->name, d->name, l==LAYOUT_TILED?"tiled":"monocle");
 	d->layout = l;
 	arrange(m, d);
-	if (d == m->desk) {
-		put_status(SBSC_MASK_REPORT);
-	}
+
+	if (exists_subscriber(SBSC_MASK_DESKTOP_LAYOUT))
+		put_status(SBSC_MASK_DESKTOP_LAYOUT, json_serialize_status_desktop(m, d));
 }
 
 void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
@@ -85,8 +86,6 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	if (ms == md) {
 		return;
 	}
-
-	put_status(SBSC_MASK_DESKTOP_TRANSFER, "desktop_transfer %s %s %s\n", ms->name, d->name, md->name);
 
 	desktop_t *dd = ms->desk;
 	unlink_desktop(ms, d);
@@ -116,7 +115,9 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	put_status(SBSC_MASK_REPORT);
+
+	if (exists_subscriber(SBSC_MASK_DESKTOP_TRANSFER))
+		put_status(SBSC_MASK_DESKTOP_TRANSFER, json_serialize_status_desktop_transfer(ms, md, d));
 }
 
 desktop_t *make_desktop(const char *name)
@@ -126,21 +127,23 @@ desktop_t *make_desktop(const char *name)
 		snprintf(d->name, sizeof(d->name), "%s%d", DEFAULT_DESK_NAME, ++desktop_uid);
 	else
 		snprintf(d->name, sizeof(d->name), "%s", name);
-	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
+	d->prev = d->next = NULL;
 	initialize_desktop(d);
 	return d;
 }
 
 void rename_desktop(monitor_t *m, desktop_t *d, const char *name)
 {
-
-	put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", m->name, d->name, name);
+	char name_last[SMALEN];
+	strcpy(name_last, d->name);
 
 	snprintf(d->name, sizeof(d->name), "%s", name);
 
-	put_status(SBSC_MASK_REPORT);
 	ewmh_update_desktop_names();
+
+	if (exists_subscriber(SBSC_MASK_DESKTOP_RENAME))
+		put_status(SBSC_MASK_DESKTOP_RENAME, json_serialize_status_desktop_rename(m, d, name_last));
 }
 
 void initialize_desktop(desktop_t *d)
@@ -166,14 +169,14 @@ void insert_desktop(monitor_t *m, desktop_t *d)
 
 void add_desktop(monitor_t *m, desktop_t *d)
 {
-	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add %s %s\n", m->name, d->name);
-
 	insert_desktop(m, d);
 	num_desktops++;
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_wm_desktops();
-	put_status(SBSC_MASK_REPORT);
+
+	if (exists_subscriber(SBSC_MASK_DESKTOP_ADD))
+		put_status(SBSC_MASK_DESKTOP_ADD, json_serialize_status_desktop(m, d));
 }
 
 void empty_desktop(desktop_t *d)
@@ -202,7 +205,12 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
 
 void remove_desktop(monitor_t *m, desktop_t *d)
 {
-	put_status(SBSC_MASK_DESKTOP_REMOVE, "desktop_remove %s %s\n", m->name, d->name);
+	bool put_status_bool = false;
+	json_t *json;
+	if (exists_subscriber(SBSC_MASK_DESKTOP_REMOVE)) {
+		json = json_serialize_status_desktop(m, d);
+		put_status_bool = true;
+	}
 
 	unlink_desktop(m, d);
 	history_remove(d, NULL);
@@ -215,7 +223,8 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 
-	put_status(SBSC_MASK_REPORT);
+	if (put_status_bool)
+		put_status(SBSC_MASK_DESKTOP_REMOVE, json);
 }
 
 void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
@@ -235,8 +244,6 @@ void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 	if (d1 == NULL || d2 == NULL || d1 == d2) {
 		return;
 	}
-
-	put_status(SBSC_MASK_DESKTOP_SWAP, "desktop_swap %s %s %s %s\n", m1->name, d1->name, m2->name, d2->name);
 
 	bool d1_focused = (m1->desk == d1);
 	bool d2_focused = (m2->desk == d2);
@@ -305,7 +312,9 @@ void swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	put_status(SBSC_MASK_REPORT);
+
+	if (exists_subscriber(SBSC_MASK_DESKTOP_SWAP))
+		put_status(SBSC_MASK_DESKTOP_SWAP, json_serialize_status_desktop_swap(m1, d1, m2, d2));
 }
 
 void show_desktop(desktop_t *d)

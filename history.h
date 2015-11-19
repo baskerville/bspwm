@@ -30,6 +30,7 @@
 history_t *make_history(monitor_t *m, desktop_t *d, node_t *n);
 void history_add(monitor_t *m, desktop_t *d, node_t *n);
 void history_transfer_node(monitor_t *m, desktop_t *d, node_t *n);
+void history_replace_node(node_t* ns, monitor_t *md, desktop_t *dd, node_t *nd);
 void history_transfer_desktop(monitor_t *m, desktop_t *d);
 void history_swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2);
 void history_swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2);

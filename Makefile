@@ -1,7 +1,7 @@
 VERSION = 0.9
 
 CC      ?= gcc
-LIBS     = -lm -lxcb -lxcb-util -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama
+LIBS     = -lm -lxcb -lxcb-util -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama -ljansson
 CFLAGS  += -std=c99 -pedantic -Wall -Wextra -I$(PREFIX)/include
 CFLAGS  += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
 LDFLAGS += -L$(PREFIX)/lib
@@ -17,7 +17,7 @@ MD_DOCS = README.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
 XSESSIONS = $(PREFIX)/share/xsessions
 
 WM_SRC = bspwm.c helpers.c settings.c monitor.c desktop.c tree.c stack.c history.c \
-	 events.c pointer.c window.c messages.c query.c restore.c rule.c ewmh.c subscribe.c
+	 events.c pointer.c window.c messages.c query.c restore.c rule.c ewmh.c subscribe.c json.c
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_SRC = bspc.c helpers.c
 CL_OBJ = $(CL_SRC:.c=.o)

@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "window.h"
 #include "events.h"
+#include "json.h"
 
 void handle_event(xcb_generic_event_t *evt)
 {
@@ -188,9 +189,9 @@ void configure_request(xcb_generic_event_t *evt)
 
 		xcb_configure_window(dpy, e->window, mask, values);
 
-		if (is_managed && (mask & XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT)) {
-			xcb_rectangle_t r = c->floating_rectangle;
-			put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", loc.monitor->name, loc.desktop->name, c->window, r.width, r.height, r.x, r.y);
+		if (is_managed && (mask & (XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT))) {
+			if (exists_subscriber(SBSC_MASK_WINDOW_GEOMETRY))
+				put_status(SBSC_MASK_WINDOW_GEOMETRY, json_serialize_status_node(loc.monitor, loc.desktop, loc.node));
 		}
 	}
 

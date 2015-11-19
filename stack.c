@@ -96,6 +96,15 @@ void remove_stack(stacking_list_t *s)
 	free(s);
 }
 
+void stack_replace_node(node_t *ns, node_t *nd)
+{
+	for (stacking_list_t *s = stack_head; s; s = s->next) {
+		if (s->node == ns) {
+			s->node = nd;
+		}
+	}
+}
+
 void remove_stack_node(node_t *n)
 {
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {

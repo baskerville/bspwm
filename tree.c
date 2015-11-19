@@ -35,6 +35,7 @@
 #include "stack.h"
 #include "window.h"
 #include "tree.h"
+#include "json.h"
 
 void arrange(monitor_t *m, desktop_t *d)
 {
@@ -109,7 +110,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		window_draw_border(n, d->focus == n, m == mon);
 
 		if (frozen_pointer->action == ACTION_NONE) {
-			put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->client->window, r.width, r.height, r.x, r.y);
+			if (exists_subscriber(SBSC_MASK_WINDOW_GEOMETRY))
+				put_status(SBSC_MASK_WINDOW_GEOMETRY, json_serialize_status_node(m, d, n));
 		}
 
 		if (pointer_follows_focus && mon->desk->focus == n && frozen_pointer->action == ACTION_NONE) {
@@ -291,7 +293,6 @@ void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 	if (n->client->sticky) {
 		m->num_sticky++;
 	}
-	put_status(SBSC_MASK_REPORT);
 }
 
 void activate_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -307,7 +308,9 @@ void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 	}
 	d->focus = n;
-	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate %s %s 0x%X\n", m->name, d->name, n->client->window);
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_ACTIVATE))
+		put_status(SBSC_MASK_WINDOW_ACTIVATE, json_serialize_status_node(m, d, n));
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -332,7 +335,6 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (n != NULL) {
 		if (n->client->urgent) {
 			n->client->urgent = false;
-			put_status(SBSC_MASK_REPORT);
 		}
 		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
 			neutralize_obscuring_windows(m, d, n);
@@ -365,12 +367,12 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (n == NULL) {
 		history_add(m, d, NULL);
 		ewmh_update_active_window();
+		if (exists_subscriber(SBSC_MASK_WINDOW_FOCUS))
+			put_status(SBSC_MASK_WINDOW_FOCUS, json_serialize_status_node_nullable(m, d, n));
 		return;
 	} else {
 		stack(n, true);
 	}
-
-	put_status(SBSC_MASK_WINDOW_FOCUS, "window_focus %s %s 0x%X\n", m->name, d->name, n->client->window);
 
 	history_add(m, d, n);
 	set_input_focus(n);
@@ -390,6 +392,9 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	ewmh_update_active_window();
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_FOCUS))
+		put_status(SBSC_MASK_WINDOW_FOCUS, json_serialize_status_node(m, d, n));
 }
 
 void update_current(void)
@@ -400,15 +405,16 @@ void update_current(void)
 node_t *make_node(void)
 {
 	node_t *n = malloc(sizeof(node_t));
-	n->parent = n->first_child = n->second_child = NULL;
+	n->split_type = TYPE_VERTICAL;
 	n->split_ratio = split_ratio;
 	n->split_mode = MODE_AUTOMATIC;
-	n->split_type = TYPE_VERTICAL;
 	n->split_dir = DIR_RIGHT;
 	n->birth_rotation = 0;
-	n->privacy_level = 0;
-	n->client = NULL;
+	n->rectangle = (xcb_rectangle_t) {0, 0, 0, 0};
 	n->vacant = false;
+	n->privacy_level = 0;
+	n->parent = n->first_child = n->second_child = NULL;
+	n->client = NULL;
 	return n;
 }
 
@@ -416,13 +422,16 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 {
 	client_t *c = malloc(sizeof(client_t));
 	c->window = win;
-	c->state = c->last_state = STATE_TILED;
-	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
-	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
-	c->icccm_input = true;
+	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = c->icccm_input = false;
+	c->state = c->last_state = STATE_TILED;
+	c->layer = c->last_layer = LAYER_NORMAL;
+	c->floating_rectangle = c->tiled_rectangle = (xcb_rectangle_t) {0, 0, 0, 0};
+	c->min_width = c->max_width = c->min_height = c->max_height = 0;
+	c->num_states = 0;
+
 	xcb_icccm_get_wm_protocols_reply_t protocols;
 	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
 		if (has_proto(WM_TAKE_FOCUS, &protocols)) {
@@ -430,7 +439,6 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 		}
 		xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
 	}
-	c->num_states = 0;
 	xcb_ewmh_get_atoms_reply_t wm_state;
 	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
 		for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++) {
@@ -443,6 +451,7 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 	    && (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
 		c->icccm_input = hints.input;
 	}
+
 	return c;
 }
 
@@ -949,7 +958,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 	if (n->client->sticky)
 		m->num_sticky--;
-	put_status(SBSC_MASK_REPORT);
 }
 
 void remove_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -993,8 +1001,6 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 	    || (d1 != d2 && (n1->client->sticky || n2->client->sticky))) {
 		return false;
 	}
-
-	put_status(SBSC_MASK_WINDOW_SWAP, "window_swap %s %s 0x%X %s %s 0x%X\n", m1->name, d1->name, n1->client->window, m2->name, d2->name, n2->client->window);
 
 	node_t *pn1 = n1->parent;
 	node_t *pn2 = n2->parent;
@@ -1066,6 +1072,9 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		update_input_focus();
 	}
 
+	if (exists_subscriber(SBSC_MASK_WINDOW_SWAP))
+		put_status(SBSC_MASK_WINDOW_SWAP, json_serialize_status_node_swap(m1, d1, n1, m2, d2, n2));
+
 	return true;
 }
 
@@ -1074,8 +1083,6 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	if (ns == NULL || ns == nd || (sticky_still && ns->client->sticky)) {
 		return false;
 	}
-
-	put_status(SBSC_MASK_WINDOW_TRANSFER, "window_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->client->window, md->name, dd->name, nd!=NULL?nd->client->window:0);
 
 	bool focused = (ns == mon->desk->focus);
 	bool active = (ns == ds->focus);
@@ -1124,6 +1131,9 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	if (ds != dd) {
 		arrange(md, dd);
 	}
+
+	if (exists_subscriber(SBSC_MASK_WINDOW_TRANSFER))
+		put_status(SBSC_MASK_WINDOW_TRANSFER, json_serialize_status_node_transfer(ms, ds, ns, md, dd));
 
 	return true;
 }

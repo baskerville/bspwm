@@ -24,6 +24,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <jansson.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -34,169 +35,197 @@
 #include "tree.h"
 #include "settings.h"
 #include "restore.h"
+#include "json.h"
+#include "window.h"
 
-void restore_tree(char *file_path)
+void restore_client(client_t *cs, client_t *cd)
 {
-	if (file_path == NULL)
-		return;
+	cd->border_width = cs->border_width;
+	cd->locked = cs->locked;
+	cd->sticky = cs->sticky;
+	cd->urgent = cs->urgent;
+	cd->private = cs->private;
+	cd->state = cs->state;
+	cd->last_state = cs->last_state;
+	cd->layer = cs->layer;
+	cd->last_layer = cs->last_layer;
+	cd->floating_rectangle = cs->floating_rectangle;
+	cd->tiled_rectangle = cs->tiled_rectangle;
+}
 
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		warn("Restore tree: can't open '%s'.\n", file_path);
-		return;
+void restore_node(node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
+{
+	nd->split_type = ns->split_type;
+	nd->split_ratio = ns->split_ratio;
+	nd->split_mode = ns->split_mode;
+	nd->split_dir = ns->split_dir;
+	nd->birth_rotation = ns->birth_rotation;
+	nd->rectangle = ns->rectangle;
+
+	if (ns->first_child) {
+		nd->first_child = make_node();
+		nd->first_child->parent = nd;
+		restore_node(ns->first_child, md, dd, nd->first_child);
+	}
+	if (ns->second_child) {
+		nd->second_child = make_node();
+		nd->second_child->parent = nd;
+		restore_node(ns->second_child, md, dd, nd->second_child);
 	}
 
-	char line[MAXLEN];
-	char name[MAXLEN];
-	coordinates_t loc;
-	monitor_t *m = NULL;
-	desktop_t *d = NULL;
-	node_t *n = NULL;
-	unsigned int level, last_level = 0;
-
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		unsigned int len = strlen(line);
-		level = 0;
-
-		while (level < len && isspace(line[level]))
-			level++;
-
-		if (level == 0) {
-			int x, y, top, right, bottom, left;
-			unsigned int w, h;
-			char end = 0;
-			name[0] = '\0';
-			sscanf(line + level, "%s %ux%u%i%i %i,%i,%i,%i %c", name, &w, &h, &x, &y,
-			       &top, &right, &bottom, &left, &end);
-			m = find_monitor(name);
-			if (m == NULL)
-				continue;
-			m->rectangle = (xcb_rectangle_t) {x, y, w, h};
-			m->top_padding = top;
-			m->right_padding = right;
-			m->bottom_padding = bottom;
-			m->left_padding = left;
-			if (end != 0)
-				mon = m;
-		} else if (level == 1) {
-			if (m == NULL)
-				continue;
-			int wg, top, right, bottom, left;
-			unsigned int bw;
-			char layout = 0, end = 0;
-			name[0] = '\0';
-			loc.desktop = NULL;
-			sscanf(line + level, "%s %u %i %i,%i,%i,%i %c %c", name,
-			       &bw, &wg, &top, &right, &bottom, &left, &layout, &end);
-			locate_desktop(name, &loc);
-			d = loc.desktop;
-			if (d == NULL) {
-				continue;
-			}
-			d->border_width = bw;
-			d->window_gap = wg;
-			d->top_padding = top;
-			d->right_padding = right;
-			d->bottom_padding = bottom;
-			d->left_padding = left;
-			if (layout == 'M') {
-				d->layout = LAYOUT_MONOCLE;
-			} else if (layout == 'T') {
-				d->layout = LAYOUT_TILED;
-			}
-			if (end != 0) {
-				m->desk = d;
-			}
-		} else {
-			if (m == NULL || d == NULL)
-				continue;
-			node_t *birth = make_node();
-			if (level == 2) {
-				empty_desktop(d);
-				d->root = birth;
-			} else if (n != NULL) {
-				if (level > last_level) {
-					n->first_child = birth;
-				} else {
-					do {
-						n = n->parent;
-					} while (n != NULL && n->second_child != NULL);
-					if (n == NULL)
-						continue;
-					n->second_child = birth;
-				}
-				birth->parent = n;
-			}
-			n = birth;
-			char birth_rotation;
-			if (isupper(line[level])) {
-				char split_type;
-				sscanf(line + level, "%c %c %lf", &split_type, &birth_rotation, &n->split_ratio);
-				if (split_type == 'H') {
-					n->split_type = TYPE_HORIZONTAL;
-				} else if (split_type == 'V') {
-					n->split_type = TYPE_VERTICAL;
-				}
+	if (ns->client) {
+		coordinates_t loc;
+		locate_window(ns->client->window, &loc);
+		if (loc.node) {
+			unlink_node(loc.monitor, loc.desktop, loc.node);
+			nd->client = loc.node->client;
+			history_replace_node(loc.node, md, dd, nd);
+			stack_replace_node(loc.node, nd);
+			loc.node->client = NULL;
+			ewmh_set_wm_desktop(nd, dd);
+			if (dd->focus == loc.node)
+				dd->focus = nd;
+			destroy_tree(loc.node);
+			restore_client(ns->client, nd->client);
+			if (nd->client->sticky) {
+				window_show(nd->client->window);
 			} else {
-				client_t *c = make_client(XCB_NONE, d->border_width);
-				num_clients++;
-				char urgent, locked, sticky, private, split_dir, split_mode, state, layer, end = 0;
-				sscanf(line + level, "%c %s %s %X %u %hux%hu%hi%hi %c%c %c%c %c%c%c%c %c", &birth_rotation,
-				       c->class_name, c->instance_name, &c->window, &c->border_width,
-				       &c->floating_rectangle.width, &c->floating_rectangle.height,
-				       &c->floating_rectangle.x, &c->floating_rectangle.y,
-				       &split_dir, &split_mode, &state, &layer,
-				       &urgent, &locked, &sticky, &private, &end);
-				n->split_mode = (split_mode == '-' ? MODE_AUTOMATIC : MODE_MANUAL);
-				if (split_dir == 'U') {
-					n->split_dir = DIR_UP;
-				} else if (split_dir == 'R') {
-					n->split_dir = DIR_RIGHT;
-				} else if (split_dir == 'D') {
-					n->split_dir = DIR_DOWN;
-				} else if (split_dir == 'L') {
-					n->split_dir = DIR_LEFT;
+				if (dd == md->desk) {
+					window_show(nd->client->window);
+				} else {
+					window_hide(nd->client->window);
 				}
-				if (state == 'f') {
-					c->state = STATE_FLOATING;
-				} else if (state == 'F') {
-					c->state = STATE_FULLSCREEN;
-				} else if (state == 'p') {
-					c->state = STATE_PSEUDO_TILED;
-				}
-				if (layer == 'b') {
-					c->layer = LAYER_BELOW;
-				} else if (layer == 'a') {
-					c->layer = LAYER_ABOVE;
-				}
-				c->urgent = (urgent == '-' ? false : true);
-				c->locked = (locked == '-' ? false : true);
-				c->sticky = (sticky == '-' ? false : true);
-				c->private = (private == '-' ? false : true);
-				n->client = c;
-				if (end != 0) {
-					d->focus = n;
-				}
-				if (c->sticky) {
-					m->num_sticky++;
-				}
-			}
-			if (birth_rotation == 'a') {
-				n->birth_rotation = 90;
-			} else if (birth_rotation == 'c') {
-				n->birth_rotation = 270;
-			} else if (birth_rotation == 'm') {
-				n->birth_rotation = 0;
 			}
 		}
-		last_level = level;
+		free(ns->client);
 	}
 
-	fclose(snapshot);
+	free(ns);
+}
 
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+bool restore_desktop(json_t *json)
+{
+	desktop_t *ds = json_deserialize_desktop_type(json);
+	if (!ds)
+		return false;
+
+	coordinates_t loc;
+	locate_desktop(ds->name, &loc);
+	if (!loc.desktop) {
+		warn("Failed to find desktop: %s\n", ds->name);
+		free(ds);
+		return false;
+	}
+
+	desktop_t *dd = make_desktop(NULL);
+
+	dd->layout = ds->layout;
+	dd->top_padding = ds->top_padding;
+	dd->right_padding = ds->right_padding;
+	dd->bottom_padding = ds->bottom_padding;
+	dd->left_padding = ds->left_padding;
+	dd->window_gap = ds->window_gap;
+	dd->border_width = ds->border_width;
+	dd->focus = ds->focus;
+
+	if (ds->root) {
+		dd->root = make_node();
+		restore_node(ds->root, loc.monitor, dd, dd->root);
+	}
+
+	add_desktop(loc.monitor, dd);
+	merge_desktops(loc.monitor, loc.desktop, loc.monitor, dd);
+	swap_desktops(loc.monitor, loc.desktop, loc.monitor, dd);
+	if (mon->desk == loc.desktop)
+		focus_desktop(loc.monitor, dd);
+	remove_desktop(loc.monitor, loc.desktop);
+	rename_desktop(loc.monitor, dd, ds->name);
+
+	free(ds);
+
+	return true;
+}
+
+bool restore_monitor(json_t *json)
+{
+	monitor_t *ms = json_deserialize_monitor_type(json);
+	if (!ms)
+		return false;
+
+	monitor_t *md = find_monitor(ms->name);
+	if (!md) {
+		warn("Could not find monitor: %s\n", ms->name);
+		free(ms);
+		return false;
+	}
+
+	md->top_padding = ms->top_padding;
+	md->right_padding = ms->right_padding;
+	md->bottom_padding = ms->bottom_padding;
+	md->left_padding = ms->left_padding;
+
+	free(ms);
+
+	if (json_is_true(json_object_get(json, "focused")))
+		focus_monitor(md);
+
+	return true;
+}
+
+void restore_tree(const char *file_path)
+{
+	if (!file_path)
+		return;
+
+	json_t *json = json_deserialize_file(file_path);
+	if (!json_is_object(json)) {
+		warn("File is not a JSON tree");
+		return;
+	}
+
+	size_t dindex;
+	const char *mkey;
+	json_t *mvalue, *dvalue, *jdesktops;
+
+	json_object_foreach(json, mkey, mvalue) {
+		if (!restore_monitor(mvalue)) {
+			warn("Failed to restore monitor: %s\n", mkey);
+			continue;
+		}
+
+		jdesktops = json_object_get(mvalue, "desktops");
+		if (!json_is_array(jdesktops)) {
+			warn("Key not found: desktops\n");
+			continue;
+		}
+		json_array_foreach(jdesktops, dindex, dvalue) {
+			if (!restore_desktop(dvalue)) {
+				warn("Failed to restore desktop at index: %u\n", dindex);
+				continue;
+			}
+		}
+		json_array_foreach(jdesktops, dindex, dvalue) {
+			if (!restore_desktop(dvalue)) {
+				warn("Failed to restore desktop at index: %u\n", dindex);
+				continue;
+			}
+		}
+
+		const char *desk_name = json_string_value(json_object_get(mvalue, "deskName"));
+		if (desk_name) {
+			coordinates_t loc;
+			locate_desktop(desk_name, &loc);
+			if (loc.desktop)
+				focus_desktop(loc.monitor, loc.desktop);
+		}
+	}
+	json_decref(json);
+
+	unsigned int num_sticky;
+	for (monitor_t *m = mon_head; m; m = m->next) {
+		num_sticky = 0;
+		for (desktop_t *d = m->desk_head; d; d = d->next) {
+			for (node_t *n = first_extrema(d->root); n; n = next_leaf(n, d->root)) {
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 				xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
 				if (!IS_TILED(n->client)) {
@@ -206,83 +235,64 @@ void restore_tree(char *file_path)
 				if (n->client->private) {
 					update_privacy_level(n, true);
 				}
+				if (n->client->sticky) {
+					++num_sticky;
+				}
 			}
 			/* Has the side effect of restoring the node's rectangles and the client's tiled rectangles */
 			arrange(m, d);
 		}
+		m->num_sticky = num_sticky;
 	}
 
 	ewmh_update_current_desktop();
 }
 
-void restore_history(char *file_path)
+void restore_history(const char *file_path)
 {
-	if (file_path == NULL)
+	if (!file_path)
 		return;
 
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		warn("Restore history: can't open '%s'.\n", file_path);
+	json_t *json = json_deserialize_file(file_path);
+	if (!json_is_array(json)) {
+		warn("File is not a JSON history");
 		return;
 	}
 
-	char line[MAXLEN];
-	char mnm[SMALEN];
-	char dnm[SMALEN];
-	xcb_window_t win;
+	size_t index;
+	json_t *value;
+	coordinates_t *loc;
 
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		if (sscanf(line, "%s %s %X", mnm, dnm, &win) == 3) {
-			coordinates_t loc;
-			if (win != XCB_NONE && !locate_window(win, &loc)) {
-				warn("Can't locate window 0x%X.\n", win);
-				continue;
-			}
-			node_t *n = (win == XCB_NONE ? NULL : loc.node);
-			if (!locate_desktop(dnm, &loc)) {
-				warn("Can't locate desktop '%s'.\n", dnm);
-				continue;
-			}
-			desktop_t *d = loc.desktop;
-			if (!locate_monitor(mnm, &loc)) {
-				warn("Can't locate monitor '%s'.\n", mnm);
-				continue;
-			}
-			monitor_t *m = loc.monitor;
-			history_add(m, d, n);
-		} else {
-			warn("Can't parse history entry: '%s'\n", line);
-		}
+	json_array_foreach(json, index, value) {
+		loc = json_deserialize_coordinates_type(value);
+		if (!loc)
+			continue;
+		history_add(loc->monitor, loc->desktop, loc->node);
+		free(loc);
 	}
-
-	fclose(snapshot);
+	json_decref(json);
 }
 
-void restore_stack(char *file_path)
+void restore_stack(const char *file_path)
 {
-	if (file_path == NULL)
+	if (!file_path)
 		return;
 
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		warn("Restore stack: can't open '%s'.\n", file_path);
+	json_t *json = json_deserialize_file(file_path);
+	if (!json_is_array(json)) {
+		warn("File is not a JSON stack");
 		return;
 	}
 
-	char line[MAXLEN];
-	xcb_window_t win;
+	size_t index;
+	json_t *value;
+	node_t *n;
 
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		if (sscanf(line, "%X", &win) == 1) {
-			coordinates_t loc;
-			if (locate_window(win, &loc))
-				stack_insert_after(stack_tail, loc.node);
-			else
-				warn("Can't locate window 0x%X.\n", win);
-		} else {
-			warn("Can't parse stack entry: '%s'\n", line);
-		}
+	json_array_foreach(json, index, value) {
+		n = json_deserialize_node_window(value);
+		if (!n)
+			continue;
+		stack_insert_after(stack_tail, n);
 	}
-
-	fclose(snapshot);
+	json_decref(json);
 }
