@@ -404,19 +404,19 @@ query 'OPTIONS'
 Options
 ^^^^^^^
 *-W*, *--windows*::
-	List matching windows.
+	List the IDs of the matching windows.
 
 *-D*, *--desktops*::
-	List matching desktops.
+	List the names of the matching desktops.
 
 *-M*, *--monitors*::
-	List matching monitors.
+	List the names of the matching monitors.
 
 *-T*, *--tree*::
-	Print tree rooted at query.
+	Print a JSON representation of the matching item.
 
 *-H*, *--history*::
-	Print the history as it relates to the query.
+	Print the focus history as it relates to the query.
 
 *-S*, *--stack*::
 	Print the window stacking order.
