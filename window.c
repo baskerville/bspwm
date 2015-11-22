@@ -33,7 +33,7 @@
 #include "stack.h"
 #include "tree.h"
 #include "subscribe.h"
-#include "messages.h"
+#include "parse.h"
 #include "window.h"
 
 void schedule_window(xcb_window_t win)
@@ -321,7 +321,7 @@ xcb_rectangle_t get_rectangle(monitor_t *m, client_t *c)
 			break;
 		case STATE_FULLSCREEN:
 		default:
-			return m->rectangle;
+			return m != NULL ? m->rectangle : (xcb_rectangle_t) {0, 0, screen_width, screen_height};
 			break;
 	 }
 }
@@ -397,7 +397,7 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 
 	c->layer = l;
 
-	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s %s 0x%X %s\n", m->name, d->name, c->window, LAYERSTR(l));
+	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s %s 0x%X %s\n", m->name, d->name, c->window, LAYER_STR(l));
 
 	if (d->focus == n) {
 		neutralize_obscuring_windows(m, d, n);
@@ -429,7 +429,7 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s off\n", m->name, d->name, c->window, STATESTR(c->last_state));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s off\n", m->name, d->name, c->window, STATE_STR(c->last_state));
 
 	switch (c->state) {
 		case STATE_TILED:
@@ -443,7 +443,7 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s on\n", m->name, d->name, c->window, STATESTR(c->state));
+	put_status(SBSC_MASK_WINDOW_STATE, "window_state %s %s 0x%X %s on\n", m->name, d->name, c->window, STATE_STR(c->state));
 }
 
 void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -511,7 +511,7 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X locked %s\n", m->name, d->name, c->window, ONOFFSTR(value));
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X locked %s\n", m->name, d->name, c->window, ON_OFF_STR(value));
 
 	c->locked = value;
 	window_draw_border(n, d->focus == n, m == mon);
@@ -524,7 +524,7 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X sticky %s\n", m->name, d->name, c->window, ONOFFSTR(value));
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X sticky %s\n", m->name, d->name, c->window, ON_OFF_STR(value));
 
 	if (d != m->desk)
 		transfer_node(m, d, n, m, m->desk, m->desk->focus);
@@ -548,7 +548,7 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	client_t *c = n->client;
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X private %s\n", m->name, d->name, c->window, ONOFFSTR(value));
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X private %s\n", m->name, d->name, c->window, ON_OFF_STR(value));
 
 	c->private = value;
 	update_privacy_level(n, value);
@@ -562,7 +562,7 @@ void set_urgency(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->client->urgent = value;
 	window_draw_border(n, d->focus == n, m == mon);
 
-	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->client->window, ONOFFSTR(value));
+	put_status(SBSC_MASK_WINDOW_FLAG, "window_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->client->window, ON_OFF_STR(value));
 	put_status(SBSC_MASK_REPORT);
 }
 

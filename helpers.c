@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <math.h>
 #include "bspwm.h"
 
@@ -43,6 +45,58 @@ void err(char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 	exit(EXIT_FAILURE);
+}
+
+char *read_string(const char *file_path, size_t *tlen)
+{
+	if (file_path == NULL) {
+		return NULL;
+	}
+
+	int fd = open(file_path, O_RDONLY);
+
+	if (fd == -1) {
+		perror("Read file: open");
+		return NULL;
+	}
+
+	char buf[BUFSIZ], *content;
+	size_t len = sizeof(buf);
+
+	if ((content = malloc(len * sizeof(char))) == NULL) {
+		perror("Read file: malloc");
+		return NULL;
+	}
+
+	int nb;
+	*tlen = 0;
+
+	while (true) {
+		nb = read(fd, buf, sizeof(buf));
+		if (nb < 0) {
+			perror("Restore tree: read");
+			free(content);
+			return NULL;
+		} else if (nb == 0) {
+			break;
+		} else {
+			*tlen += nb;
+			if (*tlen > len) {
+				len *= 2;
+				char *rcontent = realloc(content, len * sizeof(char));
+				if (rcontent == NULL) {
+					perror("Read file: realloc");
+					free(content);
+					return NULL;
+				} else {
+					content = rcontent;
+				}
+			}
+			strncpy(content + (*tlen - nb), buf, nb);
+		}
+	}
+
+	return content;
 }
 
 bool get_color(char *col, xcb_window_t win, uint32_t *pxl)

@@ -105,13 +105,13 @@ void history_remove(desktop_t *d, node_t *n)
 				/* remove duplicate entries */
 				while (c != NULL && ((a->loc.node != NULL && a->loc.node == c->loc.node) ||
 				       (a->loc.node == NULL && a->loc.desktop == c->loc.desktop))) {
-					history_t *d = c->prev;
+					history_t *p = c->prev;
 					if (history_head == c)
 						history_head = history_tail;
 					if (history_needle == c)
 						history_needle = history_tail;
 					free(c);
-					c = d;
+					c = p;
 				}
 				a->prev = c;
 			}

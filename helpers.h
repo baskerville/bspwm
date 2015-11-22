@@ -34,13 +34,19 @@
 #define LENGTH(x)         (sizeof(x) / sizeof(*x))
 #define MAX(A, B)         ((A) > (B) ? (A) : (B))
 #define MIN(A, B)         ((A) < (B) ? (A) : (B))
-#define BOOLSTR(A)        ((A) ? "true" : "false")
-#define ONOFFSTR(A)       ((A) ? "on" : "off")
-#define LAYERSTR(A)       ((A) == LAYER_BELOW ? "below" : ((A) == LAYER_NORMAL ? "normal" : "above"))
-#define STATESTR(A)       ((A) == STATE_TILED ? "tiled" : ((A) == STATE_FLOATING ? "floating" : ((A) == STATE_FULLSCREEN ? "fullscreen" : "pseudo_tiled")))
+
 #define IS_TILED(c)       (c->state == STATE_TILED || c->state == STATE_PSEUDO_TILED)
 #define IS_FLOATING(c)    (c->state == STATE_FLOATING)
 #define IS_FULLSCREEN(c)  (c->state == STATE_FULLSCREEN)
+
+#define BOOL_STR(A)       ((A) ? "true" : "false")
+#define ON_OFF_STR(A)     ((A) ? "on" : "off")
+#define LAYOUT_STR(A)     ((A) == LAYOUT_TILED ? "tiled" : "monocle")
+#define SPLIT_TYPE_STR(A) ((A) == TYPE_HORIZONTAL ? "horizontal" : "vertical")
+#define SPLIT_MODE_STR(A) ((A) == MODE_AUTOMATIC ? "automatic" : "manual")
+#define SPLIT_DIR_STR(A)  ((A) == DIR_RIGHT ? "right" : ((A) == DIR_UP ? "up" : ((A) == DIR_LEFT ? "left" : "down")))
+#define STATE_STR(A)      ((A) == STATE_TILED ? "tiled" : ((A) == STATE_FLOATING ? "floating" : ((A) == STATE_FULLSCREEN ? "fullscreen" : "pseudo_tiled")))
+#define LAYER_STR(A)      ((A) == LAYER_BELOW ? "below" : ((A) == LAYER_NORMAL ? "normal" : "above"))
 
 #define XCB_CONFIG_WINDOW_X_Y               (XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y)
 #define XCB_CONFIG_WINDOW_WIDTH_HEIGHT      (XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT)
@@ -54,6 +60,7 @@
 
 void warn(char *fmt, ...);
 void err(char *fmt, ...);
+char *read_string(const char *file_path, size_t *tlen);
 bool get_color(char *col, xcb_window_t win, uint32_t *pxl);
 double distance(xcb_point_t a, xcb_point_t b);
 

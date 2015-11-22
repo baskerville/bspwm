@@ -122,10 +122,11 @@ void transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 desktop_t *make_desktop(const char *name)
 {
 	desktop_t *d = malloc(sizeof(desktop_t));
-	if (name == NULL)
+	if (name == NULL) {
 		snprintf(d->name, sizeof(d->name), "%s%d", DEFAULT_DESK_NAME, ++desktop_uid);
-	else
+	} else {
 		snprintf(d->name, sizeof(d->name), "%s", name);
+	}
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
 	initialize_desktop(d);
@@ -169,7 +170,6 @@ void add_desktop(monitor_t *m, desktop_t *d)
 	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add %s %s\n", m->name, d->name);
 
 	insert_desktop(m, d);
-	num_desktops++;
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_wm_desktops();
@@ -208,8 +208,6 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 	history_remove(d, NULL);
 	empty_desktop(d);
 	free(d);
-
-	num_desktops--;
 
 	ewmh_update_current_desktop();
 	ewmh_update_number_of_desktops();

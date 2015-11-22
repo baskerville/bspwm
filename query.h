@@ -34,12 +34,17 @@ typedef enum {
 	DOMAIN_STACK
 } domain_t;
 
-void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp);
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp);
-void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth);
+void query_tree(FILE *rsp);
+void query_monitor(monitor_t *m, FILE *rsp);
+void query_desktop(desktop_t *d, FILE *rsp);
+void query_node(node_t *n, FILE *rsp);
+void query_client(client_t *c, FILE *rsp);
+void query_rectangle(xcb_rectangle_t r, FILE *rsp);
+void query_wm_state(xcb_atom_t *wm_state, int num_states, FILE *rsp);
 void query_history(coordinates_t loc, FILE *rsp);
 void query_stack(FILE *rsp);
 void query_windows(coordinates_t loc, FILE *rsp);
+void query_names(domain_t dom, coordinates_t loc, FILE *rsp);
 client_select_t make_client_select(void);
 desktop_select_t make_desktop_select(void);
 void cleanup_client_select(client_select_t *sel);

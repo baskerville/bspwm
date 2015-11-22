@@ -28,10 +28,6 @@
 #include "types.h"
 #include "subscribe.h"
 
-#define OPT_CHR  '-'
-#define CAT_CHR  '.'
-#define EQL_TOK  "="
-
 int handle_message(char *msg, int msg_len, FILE *rsp);
 int process_message(char **args, int num, FILE *rsp);
 int cmd_window(char **args, int num);

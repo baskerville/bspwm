@@ -22,7 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,6 +39,7 @@
 #include "window.h"
 #include "common.h"
 #include "subscribe.h"
+#include "parse.h"
 #include "messages.h"
 
 int handle_message(char *msg, int msg_len, FILE *rsp)
@@ -684,17 +684,30 @@ int cmd_query(char **args, int num, FILE *rsp)
 		num--, args++;
 	}
 
-	if (d != 1 || t > 1)
+	if (d != 1 || t > 1) {
 		return MSG_SYNTAX;
+	}
 
-	if (dom == DOMAIN_HISTORY)
+	if (dom == DOMAIN_HISTORY) {
 		query_history(trg, rsp);
-	else if (dom == DOMAIN_STACK)
+	} else if (dom == DOMAIN_STACK) {
 		query_stack(rsp);
-	else if (dom == DOMAIN_WINDOW)
+	} else if (dom == DOMAIN_WINDOW) {
 		query_windows(trg, rsp);
-	else
-		query_monitors(trg, dom, rsp);
+	} else if (dom == DOMAIN_DESKTOP || dom == DOMAIN_MONITOR) {
+		query_names(dom, trg, rsp);
+	} else {
+		if (trg.node != NULL) {
+			query_node(trg.node, rsp);
+		} else if (trg.desktop != NULL) {
+			query_desktop(trg.desktop, rsp);
+		} else if (trg.monitor != NULL) {
+			query_monitor(trg.monitor, rsp);
+		} else {
+			query_tree(rsp);
+		}
+		fprintf(rsp, "\n");
+	}
 
 	return MSG_SUCCESS;
 }
@@ -790,24 +803,34 @@ int cmd_pointer(char **args, int num)
 
 int cmd_restore(char **args, int num)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
 	while (num > 0) {
 		if (streq("-T", *args) || streq("--tree", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			restore_tree(*args);
+			}
+			if (!restore_tree(*args)) {
+				return MSG_FAILURE;
+			}
 		} else if (streq("-H", *args) || streq("--history", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			restore_history(*args);
+			}
+			if (!restore_history(*args)) {
+				return MSG_FAILURE;
+			}
 		} else if (streq("-S", *args) || streq("--stack", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			restore_stack(*args);
+			}
+			if (!restore_stack(*args)) {
+				return MSG_FAILURE;
+			}
 		} else {
 			return MSG_SYNTAX;
 		}
@@ -912,7 +935,7 @@ int cmd_quit(char **args, int num)
 
 int set_setting(coordinates_t loc, char *name, char *value)
 {
-#define DESKWINDEFSET(k, v) \
+#define DESK_WIN_DEF_SET(k, v) \
 		if (loc.node != NULL) \
 			loc.node->client->k = v; \
 		else if (loc.desktop != NULL) \
@@ -926,9 +949,9 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		unsigned int bw;
 		if (sscanf(value, "%u", &bw) != 1)
 			return MSG_FAILURE;
-		DESKWINDEFSET(border_width, bw)
-#undef DESKWINDEFSET
-#define DESKDEFSET(k, v) \
+		DESK_WIN_DEF_SET(border_width, bw)
+#undef DESK_WIN_DEF_SET
+#define DESK_DEF_SET(k, v) \
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
 		else if (loc.monitor != NULL) \
@@ -939,9 +962,9 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		int wg;
 		if (sscanf(value, "%i", &wg) != 1)
 			return MSG_FAILURE;
-		DESKDEFSET(window_gap, wg)
-#undef DESKDEFSET
-#define MONDESKSET(k, v) \
+		DESK_DEF_SET(window_gap, wg)
+#undef DESK_DEF_SET
+#define MON_DESK_SET(k, v) \
 		if (loc.desktop != NULL) \
 			loc.desktop->k = v; \
 		else if (loc.monitor != NULL) \
@@ -953,30 +976,30 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		int tp;
 		if (sscanf(value, "%i", &tp) != 1)
 			return MSG_FAILURE;
-		MONDESKSET(top_padding, tp)
+		MON_DESK_SET(top_padding, tp)
 	} else if (streq("right_padding", name)) {
 		int rp;
 		if (sscanf(value, "%i", &rp) != 1)
 			return MSG_FAILURE;
-		MONDESKSET(right_padding, rp)
+		MON_DESK_SET(right_padding, rp)
 	} else if (streq("bottom_padding", name)) {
 		int bp;
 		if (sscanf(value, "%i", &bp) != 1)
 			return MSG_FAILURE;
-		MONDESKSET(bottom_padding, bp)
+		MON_DESK_SET(bottom_padding, bp)
 	} else if (streq("left_padding", name)) {
 		int lp;
 		if (sscanf(value, "%i", &lp) != 1)
 			return MSG_FAILURE;
-		MONDESKSET(left_padding, lp)
-#undef MONDESKSET
-#define SETSTR(s) \
+		MON_DESK_SET(left_padding, lp)
+#undef MON_DESK_SET
+#define SET_STR(s) \
 	} else if (streq(#s, name)) { \
 		if (snprintf(s, sizeof(s), "%s", value) < 0) \
 			return MSG_FAILURE;
-	SETSTR(external_rules_command)
-	SETSTR(status_prefix)
-#undef SETSTR
+	SET_STR(external_rules_command)
+	SET_STR(status_prefix)
+#undef SET_STR
 	} else if (streq("split_ratio", name)) {
 		double r;
 		if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1)
@@ -984,24 +1007,24 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		else
 			return MSG_FAILURE;
 		return MSG_SUCCESS;
-#define SETCOLOR(s) \
+#define SET_COLOR(s) \
 	} else if (streq(#s, name)) { \
 		snprintf(s, sizeof(s), "%s", value);
-	SETCOLOR(focused_border_color)
-	SETCOLOR(active_border_color)
-	SETCOLOR(normal_border_color)
-	SETCOLOR(presel_border_color)
-	SETCOLOR(focused_locked_border_color)
-	SETCOLOR(active_locked_border_color)
-	SETCOLOR(normal_locked_border_color)
-	SETCOLOR(focused_sticky_border_color)
-	SETCOLOR(active_sticky_border_color)
-	SETCOLOR(normal_sticky_border_color)
-	SETCOLOR(focused_private_border_color)
-	SETCOLOR(active_private_border_color)
-	SETCOLOR(normal_private_border_color)
-	SETCOLOR(urgent_border_color)
-#undef SETCOLOR
+	SET_COLOR(focused_border_color)
+	SET_COLOR(active_border_color)
+	SET_COLOR(normal_border_color)
+	SET_COLOR(presel_border_color)
+	SET_COLOR(focused_locked_border_color)
+	SET_COLOR(active_locked_border_color)
+	SET_COLOR(normal_locked_border_color)
+	SET_COLOR(focused_sticky_border_color)
+	SET_COLOR(active_sticky_border_color)
+	SET_COLOR(normal_sticky_border_color)
+	SET_COLOR(focused_private_border_color)
+	SET_COLOR(active_private_border_color)
+	SET_COLOR(normal_private_border_color)
+	SET_COLOR(urgent_border_color)
+#undef SET_COLOR
 	} else if (streq("initial_polarity", name)) {
 		child_polarity_t p;
 		if (parse_child_polarity(value, &p)) {
@@ -1035,32 +1058,32 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		} else {
 			return MSG_FAILURE;
 		}
-#define SETBOOL(s) \
+#define SET_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		if (!parse_bool(value, &s)) \
 			return MSG_FAILURE;
-		SETBOOL(borderless_monocle)
-		SETBOOL(gapless_monocle)
-		SETBOOL(leaf_monocle)
-		SETBOOL(pointer_follows_focus)
-		SETBOOL(pointer_follows_monitor)
-		SETBOOL(auto_alternate)
-		SETBOOL(auto_cancel)
-		SETBOOL(history_aware_focus)
-		SETBOOL(focus_by_distance)
-		SETBOOL(ignore_ewmh_focus)
-		SETBOOL(center_pseudo_tiled)
-#undef SETBOOL
-#define SETMONBOOL(s) \
+		SET_BOOL(borderless_monocle)
+		SET_BOOL(gapless_monocle)
+		SET_BOOL(leaf_monocle)
+		SET_BOOL(pointer_follows_focus)
+		SET_BOOL(pointer_follows_monitor)
+		SET_BOOL(auto_alternate)
+		SET_BOOL(auto_cancel)
+		SET_BOOL(history_aware_focus)
+		SET_BOOL(focus_by_distance)
+		SET_BOOL(ignore_ewmh_focus)
+		SET_BOOL(center_pseudo_tiled)
+#undef SET_BOOL
+#define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		if (!parse_bool(value, &s)) \
 			return MSG_FAILURE; \
 		if (s) \
 			update_monitors();
-		SETMONBOOL(remove_disabled_monitors)
-		SETMONBOOL(remove_unplugged_monitors)
-		SETMONBOOL(merge_overlapping_monitors)
-#undef SETMONBOOL
+		SET_MON_BOOL(remove_disabled_monitors)
+		SET_MON_BOOL(remove_unplugged_monitors)
+		SET_MON_BOOL(merge_overlapping_monitors)
+#undef SET_MON_BOOL
 	} else {
 		return MSG_FAILURE;
 	}
@@ -1096,7 +1119,7 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", status_prefix);
 	else if (streq("initial_polarity", name))
 		fprintf(rsp, "%s", initial_polarity == FIRST_CHILD ? "first_child" : "second_child");
-#define MONDESKGET(k) \
+#define MON_DESK_GET(k) \
 	else if (streq(#k, name)) \
 		if (loc.desktop != NULL) \
 			fprintf(rsp, "%i", loc.desktop->k); \
@@ -1104,45 +1127,45 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 			fprintf(rsp, "%i", loc.monitor->k); \
 		else \
 			return MSG_FAILURE;
-	MONDESKGET(top_padding)
-	MONDESKGET(right_padding)
-	MONDESKGET(bottom_padding)
-	MONDESKGET(left_padding)
+	MON_DESK_GET(top_padding)
+	MON_DESK_GET(right_padding)
+	MON_DESK_GET(bottom_padding)
+	MON_DESK_GET(left_padding)
 #undef DESKGET
-#define GETCOLOR(s) \
+#define GET_COLOR(s) \
 	else if (streq(#s, name)) \
 		fprintf(rsp, "%s", s);
-	GETCOLOR(focused_border_color)
-	GETCOLOR(active_border_color)
-	GETCOLOR(normal_border_color)
-	GETCOLOR(presel_border_color)
-	GETCOLOR(focused_locked_border_color)
-	GETCOLOR(active_locked_border_color)
-	GETCOLOR(normal_locked_border_color)
-	GETCOLOR(focused_sticky_border_color)
-	GETCOLOR(active_sticky_border_color)
-	GETCOLOR(normal_sticky_border_color)
-	GETCOLOR(urgent_border_color)
-#undef GETCOLOR
-#define GETBOOL(s) \
+	GET_COLOR(focused_border_color)
+	GET_COLOR(active_border_color)
+	GET_COLOR(normal_border_color)
+	GET_COLOR(presel_border_color)
+	GET_COLOR(focused_locked_border_color)
+	GET_COLOR(active_locked_border_color)
+	GET_COLOR(normal_locked_border_color)
+	GET_COLOR(focused_sticky_border_color)
+	GET_COLOR(active_sticky_border_color)
+	GET_COLOR(normal_sticky_border_color)
+	GET_COLOR(urgent_border_color)
+#undef GET_COLOR
+#define GET_BOOL(s) \
 	else if (streq(#s, name)) \
-		fprintf(rsp, "%s", BOOLSTR(s));
-	GETBOOL(borderless_monocle)
-	GETBOOL(gapless_monocle)
-	GETBOOL(leaf_monocle)
-	GETBOOL(focus_follows_pointer)
-	GETBOOL(pointer_follows_focus)
-	GETBOOL(pointer_follows_monitor)
-	GETBOOL(auto_alternate)
-	GETBOOL(auto_cancel)
-	GETBOOL(history_aware_focus)
-	GETBOOL(focus_by_distance)
-	GETBOOL(ignore_ewmh_focus)
-	GETBOOL(center_pseudo_tiled)
-	GETBOOL(remove_disabled_monitors)
-	GETBOOL(remove_unplugged_monitors)
-	GETBOOL(merge_overlapping_monitors)
-#undef GETBOOL
+		fprintf(rsp, "%s", BOOL_STR(s));
+	GET_BOOL(borderless_monocle)
+	GET_BOOL(gapless_monocle)
+	GET_BOOL(leaf_monocle)
+	GET_BOOL(focus_follows_pointer)
+	GET_BOOL(pointer_follows_focus)
+	GET_BOOL(pointer_follows_monitor)
+	GET_BOOL(auto_alternate)
+	GET_BOOL(auto_cancel)
+	GET_BOOL(history_aware_focus)
+	GET_BOOL(focus_by_distance)
+	GET_BOOL(ignore_ewmh_focus)
+	GET_BOOL(center_pseudo_tiled)
+	GET_BOOL(remove_disabled_monitors)
+	GET_BOOL(remove_unplugged_monitors)
+	GET_BOOL(merge_overlapping_monitors)
+#undef GET_BOOL
 	else
 		return MSG_FAILURE;
 	fprintf(rsp, "\n");
@@ -1208,213 +1231,5 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 	} else {
 		return false;
 	}
-	return true;
-}
-
-bool parse_bool(char *value, bool *b)
-{
-	if (streq("true", value) || streq("on", value)) {
-		*b = true;
-		return true;
-	} else if (streq("false", value) || streq("off", value)) {
-		*b = false;
-		return true;
-	}
-	return false;
-}
-
-bool parse_layout(char *s, layout_t *l)
-{
-	if (streq("monocle", s)) {
-		*l = LAYOUT_MONOCLE;
-		return true;
-	} else if (streq("tiled", s)) {
-		*l = LAYOUT_TILED;
-		return true;
-	}
-	return false;
-}
-
-bool parse_client_state(char *s, client_state_t *t)
-{
-	if (streq("tiled", s)) {
-		*t = STATE_TILED;
-		return true;
-	} else if (streq("pseudo_tiled", s)) {
-		*t = STATE_PSEUDO_TILED;
-		return true;
-	} else if (streq("floating", s)) {
-		*t = STATE_FLOATING;
-		return true;
-	} else if (streq("fullscreen", s)) {
-		*t = STATE_FULLSCREEN;
-		return true;
-	}
-	return false;
-}
-
-bool parse_stack_layer(char *s, stack_layer_t *l)
-{
-	if (streq("below", s)) {
-		*l = LAYER_BELOW;
-		return true;
-	} else if (streq("normal", s)) {
-		*l = LAYER_NORMAL;
-		return true;
-	} else if (streq("above", s)) {
-		*l = LAYER_ABOVE;
-		return true;
-	}
-	return false;
-}
-
-bool parse_direction(char *s, direction_t *d)
-{
-	if (streq("right", s)) {
-		*d = DIR_RIGHT;
-		return true;
-	} else if (streq("down", s)) {
-		*d = DIR_DOWN;
-		return true;
-	} else if (streq("left", s)) {
-		*d = DIR_LEFT;
-		return true;
-	} else if (streq("up", s)) {
-		*d = DIR_UP;
-		return true;
-	}
-	return false;
-}
-
-bool parse_cycle_direction(char *s, cycle_dir_t *d)
-{
-	if (streq("next", s)) {
-		*d = CYCLE_NEXT;
-		return true;
-	} else if (streq("prev", s)) {
-		*d = CYCLE_PREV;
-		return true;
-	}
-	return false;
-}
-
-bool parse_circulate_direction(char *s, circulate_dir_t *d)
-{
-	if (streq("forward", s)) {
-		*d = CIRCULATE_FORWARD;
-		return true;
-	} else if (streq("backward", s)) {
-		*d = CIRCULATE_BACKWARD;
-		return true;
-	}
-	return false;
-}
-
-bool parse_history_direction(char *s, history_dir_t *d)
-{
-	if (streq("older", s)) {
-		*d = HISTORY_OLDER;
-		return true;
-	} else if (streq("newer", s)) {
-		*d = HISTORY_NEWER;
-		return true;
-	}
-	return false;
-}
-
-
-bool parse_flip(char *s, flip_t *f)
-{
-	if (streq("horizontal", s)) {
-		*f = FLIP_HORIZONTAL;
-		return true;
-	} else if (streq("vertical", s)) {
-		*f = FLIP_VERTICAL;
-		return true;
-	}
-	return false;
-}
-
-bool parse_pointer_action(char *s, pointer_action_t *a)
-{
-	if (streq("move", s)) {
-		*a = ACTION_MOVE;
-		return true;
-	} else if (streq("resize_corner", s)) {
-		*a = ACTION_RESIZE_CORNER;
-		return true;
-	} else if (streq("resize_side", s)) {
-		*a = ACTION_RESIZE_SIDE;
-		return true;
-	} else if (streq("focus", s)) {
-		*a = ACTION_FOCUS;
-		return true;
-	}
-	return false;
-}
-
-bool parse_child_polarity(char *s, child_polarity_t *p)
-{
-	if (streq("first_child", s)) {
-		*p = FIRST_CHILD;
-		return true;
-	} else if (streq("second_child", s)) {
-		*p = SECOND_CHILD;
-		return true;
-	}
-	return false;
-}
-
-bool parse_degree(char *s, int *d)
-{
-	int i = atoi(s);
-	while (i < 0)
-		i += 360;
-	while (i > 359)
-		i -= 360;
-	if ((i % 90) != 0) {
-		return false;
-	} else {
-		*d = i;
-		return true;
-	}
-}
-
-bool parse_window_id(char *s, long int *i)
-{
-	char *end;
-	errno = 0;
-	long int ret = strtol(s, &end, 0);
-	if (errno != 0 || *end != '\0')
-		return false;
-	else
-		*i = ret;
-	return true;
-}
-
-bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *state)
-{
-	*key = strtok(s, EQL_TOK);
-	char *v = strtok(NULL, EQL_TOK);
-	if (v == NULL) {
-		*state = ALTER_TOGGLE;
-		return true;
-	} else {
-		if (parse_bool(v, value)) {
-			*state = ALTER_SET;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	return false;
-}
-
-bool parse_index(char *s, int *i)
-{
-	int idx;
-	if (sscanf(s, "^%i", &idx) != 1 || idx < 1)
-		return false;
-	*i = idx;
 	return true;
 }

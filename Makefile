@@ -16,8 +16,8 @@ DOCPREFIX = $(PREFIX)/share/doc/bspwm
 MD_DOCS = README.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
 XSESSIONS = $(PREFIX)/share/xsessions
 
-WM_SRC = bspwm.c helpers.c settings.c monitor.c desktop.c tree.c stack.c history.c \
-	 events.c pointer.c window.c messages.c query.c restore.c rule.c ewmh.c subscribe.c
+WM_SRC = bspwm.c helpers.c jsmn.c settings.c monitor.c desktop.c tree.c stack.c history.c \
+	 events.c pointer.c window.c messages.c parse.c query.c restore.c rule.c ewmh.c subscribe.c
 WM_OBJ = $(WM_SRC:.c=.o)
 CL_SRC = bspc.c helpers.c
 CL_OBJ = $(CL_SRC:.c=.o)

@@ -36,25 +36,40 @@
 #include "window.h"
 #include "monitor.h"
 
-monitor_t *make_monitor(xcb_rectangle_t rect)
+monitor_t *make_monitor(xcb_rectangle_t *rect)
 {
 	monitor_t *m = malloc(sizeof(monitor_t));
 	snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
 	m->prev = m->next = NULL;
 	m->desk = m->desk_head = m->desk_tail = NULL;
-	m->rectangle = rect;
 	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
 	m->wired = true;
 	m->num_sticky = 0;
-	uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
-	m->root = xcb_generate_id(dpy);
-	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, rect.x, rect.y, rect.width, rect.height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
-	xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
-	window_lower(m->root);
-	if (focus_follows_pointer) {
-		window_show(m->root);
+	if (rect != NULL) {
+		update_root(m, rect);
+	} else {
+		m->root = XCB_NONE;
+		m->rectangle = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
 	}
 	return m;
+}
+
+void update_root(monitor_t *m, xcb_rectangle_t *r)
+{
+	m->rectangle = *r;
+	if (m->root == XCB_NONE) {
+		uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
+		m->root = xcb_generate_id(dpy);
+		xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, r->x, r->y, r->width, r->height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+		xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
+		window_lower(m->root);
+		if (focus_follows_pointer) {
+			window_show(m->root);
+		}
+	} else {
+		window_move_resize(m->root, r->x, r->y, r->width, r->height);
+		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n", m->name, r->width, r->height, r->x, r->y);
+	}
 }
 
 void rename_monitor(monitor_t *m, const char *name)
@@ -130,13 +145,6 @@ void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
 	c->floating_rectangle.y = md->rectangle.y + dy_d - top_adjust;
 }
 
-void update_root(monitor_t *m)
-{
-	xcb_rectangle_t r = m->rectangle;
-	window_move_resize(m->root, r.x, r.y, r.width, r.height);
-	put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n", m->name, r.width, r.height, r.x, r.y);
-}
-
 void focus_monitor(monitor_t *m)
 {
 	if (mon == m)
@@ -169,8 +177,6 @@ void add_monitor(monitor_t *m)
 		m->prev = mon_tail;
 		mon_tail = m;
 	}
-
-	num_monitors++;
 }
 
 void remove_monitor(monitor_t *m)
@@ -214,7 +220,6 @@ void remove_monitor(monitor_t *m)
 
 	xcb_destroy_window(dpy, m->root);
 	free(m);
-	num_monitors--;
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -381,8 +386,7 @@ bool update_monitors(void)
 					xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
 					mm = get_monitor_by_id(outputs[i]);
 					if (mm != NULL) {
-						mm->rectangle = rect;
-						update_root(mm);
+						update_root(mm, &rect);
 						for (desktop_t *d = mm->desk_head; d != NULL; d = d->next) {
 							for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 								translate_client(mm, mm, n->client);
@@ -391,7 +395,7 @@ bool update_monitors(void)
 						arrange(mm, mm->desk);
 						mm->wired = true;
 					} else {
-						mm = make_monitor(rect);
+						mm = make_monitor(&rect);
 						char *name = (char *)xcb_randr_get_output_info_name(info);
 						size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info) + 1);
 						snprintf(mm->name, name_len, "%s", name);
@@ -471,5 +475,5 @@ bool update_monitors(void)
 
 	free(sres);
 	update_motion_recorder();
-	return (num_monitors > 0);
+	return (mon_head != NULL);
 }

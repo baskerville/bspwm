@@ -307,7 +307,7 @@ void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 	}
 	d->focus = n;
-	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate %s %s 0x%X\n", m->name, d->name, n->client->window);
+	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate %s %s 0x%X\n", m->name, d->name, n!=NULL?n->client->window:0);
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -423,25 +423,27 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 	c->border_width = border_width;
 	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
 	c->icccm_input = true;
-	xcb_icccm_get_wm_protocols_reply_t protocols;
-	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
-		if (has_proto(WM_TAKE_FOCUS, &protocols)) {
-			c->icccm_focus = true;
-		}
-		xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
-	}
 	c->num_states = 0;
-	xcb_ewmh_get_atoms_reply_t wm_state;
-	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
-		for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++) {
-			ewmh_wm_state_add(c, wm_state.atoms[i]);
+	if (win != XCB_NONE) {
+		xcb_icccm_get_wm_protocols_reply_t protocols;
+		if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
+			if (has_proto(WM_TAKE_FOCUS, &protocols)) {
+				c->icccm_focus = true;
+			}
+			xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
 		}
-		xcb_ewmh_get_atoms_reply_wipe(&wm_state);
-	}
-	xcb_icccm_wm_hints_t hints;
-	if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, win), &hints, NULL) == 1
-	    && (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
-		c->icccm_input = hints.input;
+		xcb_ewmh_get_atoms_reply_t wm_state;
+		if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
+			for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++) {
+				ewmh_wm_state_add(c, wm_state.atoms[i]);
+			}
+			xcb_ewmh_get_atoms_reply_wipe(&wm_state);
+		}
+		xcb_icccm_wm_hints_t hints;
+		if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, win), &hints, NULL) == 1
+		    && (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
+			c->icccm_input = hints.input;
+		}
 	}
 	return c;
 }
@@ -533,13 +535,16 @@ node_t *second_extrema(node_t *n)
 
 node_t *next_leaf(node_t *n, node_t *r)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
+	}
 	node_t *p = n;
-	while (is_second_child(p) && p != r)
+	while (is_second_child(p) && p != r) {
 		p = p->parent;
-	if (p == r)
+	}
+	if (p == r) {
 		return NULL;
+	}
 	return first_extrema(p->parent->second_child);
 }
 
@@ -947,8 +952,11 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 				d->focus = first_extrema(d->root);
 		}
 	}
-	if (n->client->sticky)
+
+	if (n->client->sticky) {
 		m->num_sticky--;
+	}
+
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -968,17 +976,20 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	num_clients--;
 	ewmh_update_client_list();
 
-	if (focused)
+	if (focused) {
 		update_current();
+	}
 }
 
 void destroy_tree(node_t *n)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return;
+	}
 	node_t *first_tree = n->first_child;
 	node_t *second_tree = n->second_child;
 	if (n->client != NULL) {
+		remove_stack_node(n);
 		free(n->client);
 		num_clients--;
 	}

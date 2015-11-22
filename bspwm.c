@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 
 void init(void)
 {
-	num_monitors = num_desktops = num_clients = 0;
+	num_clients = 0;
 	monitor_uid = desktop_uid = 0;
 	mon = mon_head = mon_tail = pri_mon = NULL;
 	history_head = history_tail = history_needle = NULL;
@@ -295,7 +295,7 @@ void setup(void)
 			for (int i = 0; i < n; i++) {
 				xcb_xinerama_screen_info_t info = xsi[i];
 				xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
-				monitor_t *m = make_monitor(rect);
+				monitor_t *m = make_monitor(&rect);
 				add_monitor(m);
 				add_desktop(m, make_desktop(NULL));
 			}
@@ -303,7 +303,7 @@ void setup(void)
 		} else {
 			warn("Xinerama is inactive.\n");
 			xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-			monitor_t *m = make_monitor(rect);
+			monitor_t *m = make_monitor(&rect);
 			add_monitor(m);
 			add_desktop(m, make_desktop(NULL));
 		}
@@ -331,16 +331,18 @@ void register_events(void)
 
 void cleanup(void)
 {
-	while (mon_head != NULL)
+	while (mon_head != NULL) {
 		remove_monitor(mon_head);
-	while (rule_head != NULL)
+	}
+	while (rule_head != NULL) {
 		remove_rule(rule_head);
-	while (stack_head != NULL)
-		remove_stack(stack_head);
-	while (subscribe_head != NULL)
+	}
+	while (subscribe_head != NULL) {
 		remove_subscriber(subscribe_head);
-	while (pending_rule_head != NULL)
+	}
+	while (pending_rule_head != NULL) {
 		remove_pending_rule(pending_rule_head);
+	}
 	empty_history();
 	free(frozen_pointer);
 }

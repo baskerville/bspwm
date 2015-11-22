@@ -157,14 +157,14 @@ typedef struct {
 	bool sticky;
 	bool urgent;
 	bool private;
-	bool icccm_focus;
-	bool icccm_input;
 	client_state_t state;
 	client_state_t last_state;
 	stack_layer_t layer;
 	stack_layer_t last_layer;
 	xcb_rectangle_t floating_rectangle;
 	xcb_rectangle_t tiled_rectangle;
+	bool icccm_focus;
+	bool icccm_input;
 	uint16_t min_width;
 	uint16_t max_width;
 	uint16_t min_height;
@@ -209,19 +209,19 @@ typedef struct monitor_t monitor_t;
 struct monitor_t {
 	char name[SMALEN];
 	xcb_randr_output_t id;
-	xcb_rectangle_t rectangle;
 	xcb_window_t root;
 	bool wired;
 	int top_padding;
 	int right_padding;
 	int bottom_padding;
 	int left_padding;
+	int num_sticky;
+	xcb_rectangle_t rectangle;
 	desktop_t *desk;
 	desktop_t *desk_head;
 	desktop_t *desk_tail;
 	monitor_t *prev;
 	monitor_t *next;
-	int num_sticky;
 };
 
 typedef struct {

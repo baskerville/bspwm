@@ -28,7 +28,7 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "window.h"
-#include "messages.h"
+#include "parse.h"
 #include "settings.h"
 #include "rule.h"
 

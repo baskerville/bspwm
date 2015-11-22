@@ -29,99 +29,176 @@
 #include "bspwm.h"
 #include "desktop.h"
 #include "history.h"
-#include "messages.h"
+#include "parse.h"
 #include "monitor.h"
 #include "tree.h"
 #include "query.h"
+#include "jsmn.h"
 
-void query_monitors(coordinates_t loc, domain_t dom, FILE *rsp)
+void query_tree(FILE *rsp)
 {
+	fprintf(rsp, "{");
+	fprintf(rsp, "\"focusedMonitorName\": \"%s\", ", mon->name);
+	fprintf(rsp, "\"numClients\": %i, ", num_clients);
+	fprintf(rsp, "\"monitors\": ");
+	fprintf(rsp, "[");
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor)
-			continue;
-		if (dom != DOMAIN_DESKTOP) {
-			if (dom == DOMAIN_MONITOR) {
-				fprintf(rsp, "%s\n", m->name);
-				continue;
-			} else {
-				fprintf(rsp, "%s %ux%u%+i%+i %i,%i,%i,%i%s\n", m->name,
-				         m->rectangle.width,m->rectangle.height, m->rectangle.x, m->rectangle.y,
-				         m->top_padding, m->right_padding, m->bottom_padding, m->left_padding,
-				         (m == mon ? " *" : ""));
-			}
+		query_monitor(m, rsp);
+		if (m->next != NULL) {
+			fprintf(rsp, ", ");
 		}
-		query_desktops(m, dom, loc, (dom == DOMAIN_DESKTOP ? 0 : 1), rsp);
 	}
+	fprintf(rsp, "]");
+	fprintf(rsp, "}");
+
 }
 
-void query_desktops(monitor_t *m, domain_t dom, coordinates_t loc, unsigned int depth, FILE *rsp)
+void query_monitor(monitor_t *m, FILE *rsp)
 {
+	fprintf(rsp, "{");
+	fprintf(rsp, "\"name\": \"%s\", ", m->name);
+	fprintf(rsp, "\"id\": %u, ", m->id);
+	fprintf(rsp, "\"wired\": %s, ", BOOL_STR(m->wired));
+	fprintf(rsp, "\"topPadding\": %i, ", m->top_padding);
+	fprintf(rsp, "\"rightPadding\": %i, ", m->right_padding);
+	fprintf(rsp, "\"bottomPadding\": %i, ", m->bottom_padding);
+	fprintf(rsp, "\"leftPadding\": %i, ", m->left_padding);
+	fprintf(rsp, "\"numSticky\": %i, ", m->num_sticky);
+	fprintf(rsp, "\"rectangle\": ");
+	query_rectangle(m->rectangle, rsp);
+	fprintf(rsp, ", ");
+	fprintf(rsp, "\"focusedDesktopName\": \"%s\", ", m->desk->name);
+	fprintf(rsp, "\"desktops\": ");
+	fprintf(rsp, "[");
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-		if (loc.desktop != NULL && d != loc.desktop)
-			continue;
-		for (unsigned int i = 0; i < depth; i++)
-			fprintf(rsp, "\t");
-		if (dom == DOMAIN_DESKTOP) {
-			fprintf(rsp, "%s\n", d->name);
-			continue;
-		} else {
-			fprintf(rsp, "%s %u %i %i,%i,%i,%i %c%s\n", d->name, d->border_width,
-			        d->window_gap,
-			        d->top_padding, d->right_padding, d->bottom_padding, d->left_padding,
-			        (d->layout == LAYOUT_TILED ? 'T' : 'M'),
-			        (d == m->desk ? " *" : ""));
+		query_desktop(d, rsp);
+		if (d->next != NULL) {
+			fprintf(rsp, ", ");
 		}
-		query_tree(d, d->root, rsp, depth + 1);
+	}
+	fprintf(rsp, "]");
+	fprintf(rsp, "}");
+}
+
+void query_desktop(desktop_t *d, FILE *rsp)
+{
+	fprintf(rsp, "{");
+	fprintf(rsp, "\"name\": \"%s\", ", d->name);
+	fprintf(rsp, "\"layout\": \"%s\", ", LAYOUT_STR(d->layout));
+	fprintf(rsp, "\"topPadding\": %i, ", d->top_padding);
+	fprintf(rsp, "\"rightPadding\": %i, ", d->right_padding);
+	fprintf(rsp, "\"bottomPadding\": %i, ", d->bottom_padding);
+	fprintf(rsp, "\"leftPadding\": %i, ", d->left_padding);
+	fprintf(rsp, "\"windowGap\": %i, ", d->window_gap);
+	fprintf(rsp, "\"borderWidth\": %u, ", d->border_width);
+	fprintf(rsp, "\"focusedWindow\": %u, ", d->focus != NULL ? d->focus->client->window : 0);
+	fprintf(rsp, "\"root\": ");
+	query_node(d->root, rsp);
+	fprintf(rsp, "}");
+}
+
+void query_node(node_t *n, FILE *rsp)
+{
+	if (n == NULL) {
+		fprintf(rsp, "null");
+	} else {
+		fprintf(rsp, "{");
+		fprintf(rsp, "\"splitType\": \"%s\", ", SPLIT_TYPE_STR(n->split_type));
+		fprintf(rsp, "\"splitRatio\": %lf, ", n->split_ratio);
+		fprintf(rsp, "\"splitMode\": \"%s\", ", SPLIT_MODE_STR(n->split_mode));
+		fprintf(rsp, "\"splitDir\": \"%s\", ", SPLIT_DIR_STR(n->split_dir));
+		fprintf(rsp, "\"birthRotation\": %i, ", n->birth_rotation);
+		fprintf(rsp, "\"privacyLevel\": %i, ", n->privacy_level);
+		fprintf(rsp, "\"vacant\": %s, ", BOOL_STR(n->vacant));
+		fprintf(rsp, "\"rectangle\": ");
+		query_rectangle(n->rectangle, rsp);
+		fprintf(rsp, ", ");
+		fprintf(rsp, "\"firstChild\": ");
+		query_node(n->first_child, rsp);
+		fprintf(rsp, ", ");
+		fprintf(rsp, "\"secondChild\": ");
+		query_node(n->second_child, rsp);
+		fprintf(rsp, ", ");
+		fprintf(rsp, "\"client\": ");
+		query_client(n->client, rsp);
+		fprintf(rsp, "}");
 	}
 }
 
-void query_tree(desktop_t *d, node_t *n, FILE *rsp, unsigned int depth)
+void query_client(client_t *c, FILE *rsp)
 {
-	if (n == NULL)
-		return;
-
-	for (unsigned int i = 0; i < depth; i++)
-		fprintf(rsp, "\t");
-
-	if (is_leaf(n)) {
-		client_t *c = n->client;
-		fprintf(rsp, "%c %s %s 0x%X %u %ux%u%+i%+i %c%c %c%c %c%c%c%c%s\n",
-		         (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')),
-		         c->class_name, c->instance_name, c->window, c->border_width,
-		         c->floating_rectangle.width, c->floating_rectangle.height,
-		         c->floating_rectangle.x, c->floating_rectangle.y,
-		         (n->split_dir == DIR_UP ? 'U' : (n->split_dir == DIR_RIGHT ? 'R' : (n->split_dir == DIR_DOWN ? 'D' : 'L'))),
-		         (n->split_mode == MODE_AUTOMATIC ? '-' : 'p'),
-		         (c->state == STATE_TILED ? '-' : (c->state == STATE_FLOATING ? 'f' : (c->state == STATE_FULLSCREEN ? 'F' : 'p'))),
-		         (c->layer == LAYER_NORMAL ? '-' : (c->layer == LAYER_ABOVE ? 'a' : 'b')),
-		         (c->urgent ? 'u' : '-'), (c->locked ? 'l' : '-'), (c->sticky ? 's' : '-'), (c->private ? 'i' : '-'),
-		         (n == d->focus ? " *" : ""));
+	if (c == NULL) {
+		fprintf(rsp, "null");
 	} else {
-		fprintf(rsp, "%c %c %lf\n", (n->split_type == TYPE_HORIZONTAL ? 'H' : 'V'),
-		        (n->birth_rotation == 90 ? 'a' : (n->birth_rotation == 270 ? 'c' : 'm')), n->split_ratio);
+		fprintf(rsp, "{");
+		fprintf(rsp, "\"window\": %u, ", c->window);
+		fprintf(rsp, "\"className\": \"%s\", ", c->class_name);
+		fprintf(rsp, "\"instanceName\": \"%s\", ", c->instance_name);
+		fprintf(rsp, "\"borderWidth\": %u, ", c->border_width);
+		fprintf(rsp, "\"state\": \"%s\", ", STATE_STR(c->state));
+		fprintf(rsp, "\"lastState\": \"%s\", ", STATE_STR(c->last_state));
+		fprintf(rsp, "\"layer\": \"%s\", ", LAYER_STR(c->layer));
+		fprintf(rsp, "\"lastLayer\": \"%s\", ", LAYER_STR(c->last_layer));
+		fprintf(rsp, "\"locked\": %s, ", BOOL_STR(c->locked));
+		fprintf(rsp, "\"sticky\": %s, ", BOOL_STR(c->sticky));
+		fprintf(rsp, "\"urgent\": %s, ", BOOL_STR(c->urgent));
+		fprintf(rsp, "\"private\": %s, ", BOOL_STR(c->private));
+		fprintf(rsp, "\"icccmFocus\": %s, ", BOOL_STR(c->icccm_focus));
+		fprintf(rsp, "\"icccmInput\": %s, ", BOOL_STR(c->icccm_input));
+		fprintf(rsp, "\"minWidth\": %u, ", c->min_width);
+		fprintf(rsp, "\"maxWidth\": %u, ", c->max_width);
+		fprintf(rsp, "\"minHeight\": %u, ", c->min_height);
+		fprintf(rsp, "\"maxHeight\": %u, ", c->max_height);
+		fprintf(rsp, "\"numStates\": %i, ", c->num_states);
+		fprintf(rsp, "\"wmState\": ");
+		query_wm_state(c->wm_state, c->num_states, rsp);
+		fprintf(rsp, ", ");
+		fprintf(rsp, "\"tiledRectangle\": ");
+		query_rectangle(c->tiled_rectangle, rsp);
+		fprintf(rsp, ", ");
+		fprintf(rsp, "\"floatingRectangle\": ");
+		query_rectangle(c->floating_rectangle, rsp);
+		fprintf(rsp, "}");
 	}
+}
 
-	query_tree(d, n->first_child, rsp, depth + 1);
-	query_tree(d, n->second_child, rsp, depth + 1);
+void query_rectangle(xcb_rectangle_t r, FILE *rsp)
+{
+		fprintf(rsp, "{\"x\": %i, \"y\": %i, \"width\": %u, \"height\": %u}", r.x, r.y, r.width, r.height);
+}
+
+void query_wm_state(xcb_atom_t *wm_state, int num_states, FILE *rsp)
+{
+	fprintf(rsp, "[");
+	for (int i = 0; i < num_states; i++) {
+		fprintf(rsp, "%u", wm_state[i]);
+		if (i < num_states - 1) {
+			fprintf(rsp, ", ");
+		}
+	}
+	fprintf(rsp, "]");
 }
 
 void query_history(coordinates_t loc, FILE *rsp)
 {
 	for (history_t *h = history_head; h != NULL; h = h->next) {
 		if ((loc.monitor != NULL && h->loc.monitor != loc.monitor)
-				|| (loc.desktop != NULL && h->loc.desktop != loc.desktop))
+		    || (loc.desktop != NULL && h->loc.desktop != loc.desktop)) {
 			continue;
+		}
 		xcb_window_t win = XCB_NONE;
-		if (h->loc.node != NULL)
+		if (h->loc.node != NULL) {
 			win = h->loc.node->client->window;
+		}
 		fprintf(rsp, "%s %s 0x%X\n", h->loc.monitor->name, h->loc.desktop->name, win);
 	}
 }
 
 void query_stack(FILE *rsp)
 {
-	for (stacking_list_t *s = stack_head; s != NULL; s = s->next)
+	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
 		fprintf(rsp, "0x%X\n", s->node->client->window);
+	}
 }
 
 void query_windows(coordinates_t loc, FILE *rsp)
@@ -136,6 +213,26 @@ void query_windows(coordinates_t loc, FILE *rsp)
 				if (loc.node != NULL && n != loc.node)
 					continue;
 				fprintf(rsp, "0x%X\n", n->client->window);
+			}
+		}
+	}
+}
+
+void query_names(domain_t dom, coordinates_t loc, FILE *rsp)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (loc.monitor != NULL && m != loc.monitor) {
+			continue;
+		}
+		if (dom == DOMAIN_MONITOR) {
+			fprintf(rsp, "%s\n", m->name);
+		}
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (loc.desktop != NULL && d != loc.desktop) {
+				continue;
+			}
+			if (dom == DOMAIN_DESKTOP) {
+				fprintf(rsp, "%s\n", d->name);
 			}
 		}
 	}
@@ -258,7 +355,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	history_dir_t hdi;
 	if (parse_direction(desc, &dir)) {
 		dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
-		if (dst->node == NULL && num_monitors > 1) {
+		if (dst->node == NULL && mon_head != mon_tail) {
 			monitor_t *m = nearest_monitor(ref->monitor, dir, make_desktop_select());
 			if (m != NULL) {
 				coordinates_t loc = {m, m->desk, m->desk->focus};
