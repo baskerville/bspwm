@@ -361,14 +361,14 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, desktop_select_t sel)
 
 bool update_monitors(void)
 {
-	xcb_randr_get_screen_resources_current_reply_t *sres = xcb_randr_get_screen_resources_current_reply(dpy, xcb_randr_get_screen_resources_current(dpy, root), NULL);
+	xcb_randr_get_screen_resources_reply_t *sres = xcb_randr_get_screen_resources_reply(dpy, xcb_randr_get_screen_resources(dpy, root), NULL);
 	if (sres == NULL)
 		return false;
 
 	monitor_t *m, *mm = NULL;
 
-	int len = xcb_randr_get_screen_resources_current_outputs_length(sres);
-	xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(sres);
+	int len = xcb_randr_get_screen_resources_outputs_length(sres);
+	xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_outputs(sres);
 
 	xcb_randr_get_output_info_cookie_t cookies[len];
 	for (int i = 0; i < len; i++)
