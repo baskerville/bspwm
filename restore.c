@@ -113,7 +113,7 @@ bool restore_tree(const char *file_path)
 			t++;
 		} else if (keyeq("numClients", t, json)) {
 			t++;
-			sscanf(json + t->start, "%i", &num_clients);
+			sscanf(json + t->start, "%u", &num_clients);
 		} else if (keyeq("monitors", t, json)) {
 			t++;
 			int s = t->size;
