@@ -30,6 +30,8 @@
 
 - [BunsenLabs](https://forums.bunsenlabs.org/viewtopic.php?id=567)
 
+- [Manjaro Linux](https://forum.manjaro.org/index.php?topic=16994.0)
+
 - [Chakra](https://chakraos.org/ccr/packages.php?ID=6537)
 
 - [Exherbo](http://git.exherbo.org/summer/packages/x11-wm/bspwm)
