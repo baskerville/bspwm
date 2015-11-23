@@ -139,7 +139,9 @@ typedef struct {
 	option_bool_t automatic;
 	option_bool_t local;
 	option_bool_t focused;
-	stack_layer_t *layer;
+	option_bool_t below;
+	option_bool_t normal;
+	option_bool_t above;
 } client_select_t;
 
 typedef struct {

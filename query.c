@@ -253,7 +253,9 @@ client_select_t make_client_select(void)
 		.automatic = OPTION_NONE,
 		.local = OPTION_NONE,
 		.focused = OPTION_NONE,
-		.layer = NULL
+		.below = OPTION_NONE,
+		.normal = OPTION_NONE,
+		.above = OPTION_NONE
 	};
 	return sel;
 }
@@ -268,11 +270,6 @@ desktop_select_t make_desktop_select(void)
 	return sel;
 }
 
-void cleanup_client_select(client_select_t *sel)
-{
-	free(sel->layer);
-}
-
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	client_select_t sel = make_client_select();
@@ -280,71 +277,32 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
 		tok[0] = '\0';
 		tok++;
+#define GET_MOD(k) \
+	} else if (streq(#k, tok)) { \
+		sel.k = OPTION_TRUE; \
+	} else if (streq("!" #k, tok)) { \
+		sel.k = OPTION_FALSE;
 		if (streq("tiled", tok)) {
 			sel.tiled = OPTION_TRUE;
 		} else if (streq("!tiled", tok)) {
 			sel.tiled = OPTION_FALSE;
-		} else if (streq("pseudo_tiled", tok)) {
-			sel.pseudo_tiled = OPTION_TRUE;
-		} else if (streq("!pseudo_tiled", tok)) {
-			sel.pseudo_tiled = OPTION_FALSE;
-		} else if (streq("floating", tok)) {
-			sel.floating = OPTION_TRUE;
-		} else if (streq("!floating", tok)) {
-			sel.floating = OPTION_FALSE;
-		} else if (streq("same_class", tok)) {
-			sel.same_class = OPTION_TRUE;
-		} else if (streq("!same_class", tok)) {
-			sel.same_class = OPTION_FALSE;
-		} else if (streq("automatic", tok)) {
-			sel.automatic = OPTION_TRUE;
-		} else if (streq("!automatic", tok)) {
-			sel.automatic = OPTION_FALSE;
-		} else if (streq("fullscreen", tok)) {
-			sel.fullscreen = OPTION_TRUE;
-		} else if (streq("!fullscreen", tok)) {
-			sel.fullscreen = OPTION_FALSE;
-		} else if (streq("urgent", tok)) {
-			sel.urgent = OPTION_TRUE;
-		} else if (streq("!urgent", tok)) {
-			sel.urgent = OPTION_FALSE;
-		} else if (streq("local", tok)) {
-			sel.local = OPTION_TRUE;
-		} else if (streq("!local", tok)) {
-			sel.local = OPTION_FALSE;
-		} else if (streq("private", tok)) {
-			sel.private = OPTION_TRUE;
-		} else if (streq("!private", tok)) {
-			sel.private = OPTION_FALSE;
-		} else if (streq("sticky", tok)) {
-			sel.sticky = OPTION_TRUE;
-		} else if (streq("!sticky", tok)) {
-			sel.sticky = OPTION_FALSE;
-		} else if (streq("locked", tok)) {
-			sel.locked = OPTION_TRUE;
-		} else if (streq("!locked", tok)) {
-			sel.locked = OPTION_FALSE;
-		} else if (streq("focused", tok)) {
-			sel.focused = OPTION_TRUE;
-		} else if (streq("!focused", tok)) {
-			sel.focused = OPTION_FALSE;
-		} else if (streq("below", tok)) {
-			if (sel.layer == NULL) {
-				sel.layer = malloc(sizeof(stack_layer_t));
-			}
-			*(sel.layer) = LAYER_BELOW;
-		} else if (streq("normal", tok)) {
-			if (sel.layer == NULL) {
-				sel.layer = malloc(sizeof(stack_layer_t));
-			}
-			*(sel.layer) = LAYER_NORMAL;
-		} else if (streq("above", tok)) {
-			if (sel.layer == NULL) {
-				sel.layer = malloc(sizeof(stack_layer_t));
-			}
-			*(sel.layer) = LAYER_ABOVE;
+		GET_MOD(pseudo_tiled)
+		GET_MOD(floating)
+		GET_MOD(fullscreen)
+		GET_MOD(locked)
+		GET_MOD(sticky)
+		GET_MOD(private)
+		GET_MOD(urgent)
+		GET_MOD(same_class)
+		GET_MOD(automatic)
+		GET_MOD(local)
+		GET_MOD(focused)
+		GET_MOD(below)
+		GET_MOD(normal)
+		GET_MOD(above)
 		}
 	}
+#undef GET_MOD
 
 	dst->monitor = ref->monitor;
 	dst->desktop = ref->desktop;
@@ -386,8 +344,6 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		if (parse_window_id(desc, &wid))
 			locate_window(wid, dst);
 	}
-
-	cleanup_client_select(&sel);
 
 	return (dst->node != NULL);
 }
@@ -629,7 +585,24 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel)
 		return false;
 	}
 
-	if (sel.layer != NULL && loc->node->client->layer != *(sel.layer)) {
+	if (sel.below != OPTION_NONE &&
+	    loc->node->client->layer != LAYER_BELOW
+	    ? sel.below == OPTION_TRUE
+	    : sel.below == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.normal != OPTION_NONE &&
+	    loc->node->client->layer != LAYER_NORMAL
+	    ? sel.normal == OPTION_TRUE
+	    : sel.normal == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.above != OPTION_NONE &&
+	    loc->node->client->layer != LAYER_ABOVE
+	    ? sel.above == OPTION_TRUE
+	    : sel.above == OPTION_FALSE) {
 		return false;
 	}
 

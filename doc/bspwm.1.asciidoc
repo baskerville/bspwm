@@ -68,7 +68,7 @@ Select a window.
 
 ----
 WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.[!]automatic][.[!](tiled|pseudo_tiled|floating|fullscreen)][.below|.normal|.above][.[!]local][.[!]same_class][.[!]focused][.[!](urgent|sticky|private|locked)]
+            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.[!]automatic][.[!](tiled|pseudo_tiled|floating|fullscreen)][.[!](below|normal|above)][.[!]local][.[!]same_class][.[!]focused][.[!](urgent|sticky|private|locked)]
 ----
 
 Primary Selectors
@@ -116,8 +116,8 @@ Modifiers
 [!](private|urgent|sticky|locked)::
 	Only consider windows that have or don't have the given flag set.
 
-below|normal|above::
-	Only consider windows of the given layer.
+[!](below|normal|above)::
+	Only consider windows in or not in the given layer.
 
 Desktop
 ~~~~~~~
