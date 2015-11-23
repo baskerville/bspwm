@@ -1,6 +1,7 @@
-- Use JSON for *query -{T,H,S}* and *restore -{T,H,S}*.
+- Internal nodes selectors/actions: labels?
+- Clean up ewmh.c.
 - Handle window size constraints specified by size hints.
 - Set more attributes in `make_client` (instead of doing it in `apply_rules`) and don't pass `XCB_NONE` as argument.
-- Internal nodes selectors/actions: labels?
 - Invisible state.
 - Use BSD `sys/{queue/tree}.h` for {list,tree} structures?
+- Handle malloc failure everywhere.
