@@ -67,8 +67,7 @@ Window
 Select a window.
 
 ----
-WINDOW_SEL := <window_id> 
-            | (DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.[!]automatic][.[!](tiled|pseudo_tiled|floating|fullscreen)][.[!](below|normal|above)][.[!]local][.[!]same_class][.[!]focused][.[!](urgent|sticky|private|locked)]
+WINDOW_SEL := (<window_id>|DIR|CYCLE_DIR|biggest|last|focused|older|newer)[.[!]automatic][.[!](tiled|pseudo_tiled|floating|fullscreen)][.[!](below|normal|above)][.[!]local][.[!]same_class][.[!]focused][.[!](urgent|sticky|private|locked)]
 ----
 
 Primary Selectors
@@ -125,9 +124,7 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := <desktop_name>
-             | [MONITOR_SEL:]^<n>
-             | (CYCLE_DIR|last|[MONITOR_SEL:]focused|older|newer)[.[!]occupied][.[!]urgent][.[!]local]
+DESKTOP_SEL := (<desktop_name>|[MONITOR_SEL:](focused|^<n>)CYCLE_DIR|last|older|newer)[.[!]occupied][.[!]urgent][.[!]local]
 ----
 
 Primary Selectors
@@ -172,9 +169,7 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := <monitor_name>
-             | ^<n>
-             | (DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied]
+MONITOR_SEL := (<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied]
 ----
 
 Primary Selectors

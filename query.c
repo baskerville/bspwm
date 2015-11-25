@@ -341,8 +341,9 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		}
 	} else {
 		long int wid;
-		if (parse_window_id(desc, &wid))
-			locate_window(wid, dst);
+		if (parse_window_id(desc, &wid) && locate_window(wid, dst)) {
+			return node_matches(dst, ref, sel);
+		}
 	}
 
 	return (dst->node != NULL);
@@ -393,15 +394,24 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		*colon = '\0';
 		if (monitor_from_desc(desc, ref, dst)) {
 			if (streq("focused", colon + 1)) {
-				dst->desktop = dst->monitor->desk;
+				coordinates_t loc = {dst->monitor, dst->monitor->desk, NULL};
+				if (desktop_matches(&loc, ref, sel)) {
+					dst->desktop = dst->monitor->desk;
+				}
 			} else if (parse_index(colon + 1, &idx)) {
-				desktop_from_index(idx, dst, dst->monitor);
+				if (desktop_from_index(idx, dst, dst->monitor)) {
+					return desktop_matches(dst, ref, sel);
+				}
 			}
 		}
 	} else if (parse_index(desc, &idx)) {
-		desktop_from_index(idx, dst, NULL);
+		if (desktop_from_index(idx, dst, NULL)) {
+			return desktop_matches(dst, ref, sel);
+		}
 	} else {
-		locate_desktop(desc, dst);
+		if (locate_desktop(desc, dst)) {
+			return desktop_matches(dst, ref, sel);
+		}
 	}
 
 	return (dst->desktop != NULL);
@@ -438,17 +448,25 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("primary", desc)) {
 		if (pri_mon != NULL) {
 			coordinates_t loc = {pri_mon, pri_mon->desk, NULL};
-			if (desktop_matches(&loc, ref, sel))
+			if (desktop_matches(&loc, ref, sel)) {
 				dst->monitor = pri_mon;
+			}
 		}
 	} else if (streq("focused", desc)) {
 		coordinates_t loc = {mon, mon->desk, NULL};
-		if (desktop_matches(&loc, ref, sel))
+		if (desktop_matches(&loc, ref, sel)) {
 			dst->monitor = mon;
+		}
 	} else if (parse_index(desc, &idx)) {
-		monitor_from_index(idx, dst);
+		if (monitor_from_index(idx, dst)) {
+			coordinates_t loc = {dst->monitor, dst->monitor->desk, NULL};
+			return desktop_matches(&loc, ref, sel);
+		}
 	} else {
-		locate_monitor(desc, dst);
+		if (locate_monitor(desc, dst)) {
+			coordinates_t loc = {dst->monitor, dst->monitor->desk, NULL};
+			return desktop_matches(&loc, ref, sel);
+		}
 	}
 
 	return (dst->monitor != NULL);
