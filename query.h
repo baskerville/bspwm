@@ -47,6 +47,7 @@ void query_windows(coordinates_t loc, FILE *rsp);
 void query_names(domain_t dom, coordinates_t loc, FILE *rsp);
 client_select_t make_client_select(void);
 desktop_select_t make_desktop_select(void);
+monitor_select_t make_monitor_select(void);
 bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
@@ -57,5 +58,6 @@ bool desktop_from_index(int i, coordinates_t *loc, monitor_t *mm);
 bool monitor_from_index(int i, coordinates_t *loc);
 bool node_matches(coordinates_t *loc, coordinates_t *ref, client_select_t sel);
 bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t sel);
+bool monitor_matches(coordinates_t *loc, __attribute__((unused)) coordinates_t *ref, monitor_select_t sel);
 
 #endif

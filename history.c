@@ -205,22 +205,27 @@ bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *
 	return false;
 }
 
-bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel)
+bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, monitor_select_t sel)
 {
-	if (history_needle == NULL || record_history)
+	if (history_needle == NULL || record_history) {
 		history_needle = history_tail;
+	}
 
 	history_t *h;
+
 	for (h = history_needle; h != NULL; h = (hdi == HISTORY_OLDER ? h->prev : h->next)) {
 		if (!h->latest ||
 		    h->loc.monitor == ref->monitor ||
-		    !desktop_matches(&h->loc, ref, sel))
+		    !monitor_matches(&h->loc, ref, sel)) {
 			continue;
-		if (!record_history)
+		}
+		if (!record_history) {
 			history_needle = h;
+		}
 		*dst = h->loc;
 		return true;
 	}
+
 	return false;
 }
 

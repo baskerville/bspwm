@@ -544,7 +544,7 @@ int cmd_monitor(char **args, int num)
 					return MSG_FAILURE;
 			}
 			if (auto_alternate && dst.monitor == mon) {
-				desktop_select_t sel = make_desktop_select();
+				monitor_select_t sel = make_monitor_select();
 				history_find_monitor(HISTORY_OLDER, &trg, &dst, sel);
 			}
 			focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);

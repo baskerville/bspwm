@@ -124,7 +124,7 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := (<desktop_name>|[MONITOR_SEL:](focused|^<n>)CYCLE_DIR|last|older|newer)[.[!]occupied][.[!]urgent][.[!]local]
+DESKTOP_SEL := (<desktop_name>|[MONITOR_SEL:](focused|^<n>)CYCLE_DIR|last|older|newer)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
 
 Primary Selectors
@@ -157,6 +157,9 @@ Modifiers
 [!]occupied::
 	Only consider occupied or free desktops.
 
+[!]focused::
+	Only consider focused or unfocused desktops.
+
 [!]urgent::
 	Only consider urgent or non urgent desktops.
 
@@ -169,7 +172,7 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := (<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied]
+MONITOR_SEL := (<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied][.[!]focused]
 ----
 
 Primary Selectors
@@ -207,6 +210,9 @@ Modifiers
 
 [!]occupied::
 	Only consider monitors where the focused desktop is occupied or free.
+
+[!]focused::
+	Only consider focused or unfocused monitors.
 
 
 Window States

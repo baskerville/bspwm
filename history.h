@@ -40,7 +40,7 @@ desktop_t *history_get_desktop(monitor_t *m, desktop_t *d);
 monitor_t *history_get_monitor(monitor_t *m);
 bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, client_select_t sel);
 bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel);
-bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel);
+bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, monitor_select_t sel);
 int history_rank(desktop_t *d, node_t *n);
 
 #endif

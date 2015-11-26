@@ -146,9 +146,15 @@ typedef struct {
 
 typedef struct {
 	option_bool_t occupied;
+	option_bool_t focused;
 	option_bool_t urgent;
 	option_bool_t local;
 } desktop_select_t;
+
+typedef struct {
+	option_bool_t occupied;
+	option_bool_t focused;
+} monitor_select_t;
 
 typedef struct {
 	xcb_window_t window;
