@@ -629,12 +629,6 @@ Global Settings
 'pointer_follows_monitor'::
 	When focusing a monitor, put the pointer at its center.
 
-'auto_alternate'::
-	Interpret consecutive identical *--focus* arguments as the *last* selector for the *monitor* and *desktop* commands.
-
-'auto_cancel'::
-	Interpret consecutive identical *--presel* arguments as *--cancel-presel* option.
-
 'ignore_ewmh_focus'::
 	Ignore EWMH focus requests coming from applications.
 

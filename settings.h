@@ -60,8 +60,6 @@
 #define FOCUS_FOLLOWS_POINTER       false
 #define POINTER_FOLLOWS_FOCUS       false
 #define POINTER_FOLLOWS_MONITOR     false
-#define AUTO_ALTERNATE              false
-#define AUTO_CANCEL                 false
 #define IGNORE_EWMH_FOCUS           false
 #define CENTER_PSEUDO_TILED         true
 #define REMOVE_DISABLED_MONITORS    false
@@ -97,8 +95,6 @@ bool leaf_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_focus;
 bool pointer_follows_monitor;
-bool auto_alternate;
-bool auto_cancel;
 bool history_aware_focus;
 bool focus_by_distance;
 bool ignore_ewmh_focus;

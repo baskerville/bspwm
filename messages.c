@@ -253,15 +253,9 @@ int cmd_window(char **args, int num)
 						if (sscanf(*args, "%lf", &rat) != 1 || rat <= 0 || rat >= 1)
 							return MSG_FAILURE;
 					}
-					if (auto_cancel && trg.node->split_mode == MODE_MANUAL &&
-					    dir == trg.node->split_dir &&
-					    rat == trg.node->split_ratio) {
-						reset_mode(&trg);
-					} else {
-						trg.node->split_mode = MODE_MANUAL;
-						trg.node->split_dir = dir;
-						trg.node->split_ratio = rat;
-					}
+					trg.node->split_mode = MODE_MANUAL;
+					trg.node->split_dir = dir;
+					trg.node->split_ratio = rat;
 					window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
 				} else {
 					return MSG_FAILURE;
@@ -386,10 +380,6 @@ int cmd_desktop(char **args, int num)
 				num--, args++;
 				if (!desktop_from_desc(*args, &trg, &dst))
 					return MSG_FAILURE;
-			}
-			if (auto_alternate && dst.desktop == mon->desk) {
-				desktop_select_t sel = make_desktop_select();
-				history_find_desktop(HISTORY_OLDER, &trg, &dst, sel);
 			}
 			focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
 		} else if (streq("-m", *args) || streq("--to-monitor", *args)) {
@@ -542,10 +532,6 @@ int cmd_monitor(char **args, int num)
 				num--, args++;
 				if (!monitor_from_desc(*args, &trg, &dst))
 					return MSG_FAILURE;
-			}
-			if (auto_alternate && dst.monitor == mon) {
-				monitor_select_t sel = make_monitor_select();
-				history_find_monitor(HISTORY_OLDER, &trg, &dst, sel);
 			}
 			focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
 		} else if (streq("-d", *args) || streq("--reset-desktops", *args)) {
@@ -1067,8 +1053,6 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		SET_BOOL(leaf_monocle)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
-		SET_BOOL(auto_alternate)
-		SET_BOOL(auto_cancel)
 		SET_BOOL(history_aware_focus)
 		SET_BOOL(focus_by_distance)
 		SET_BOOL(ignore_ewmh_focus)
@@ -1156,8 +1140,6 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(focus_follows_pointer)
 	GET_BOOL(pointer_follows_focus)
 	GET_BOOL(pointer_follows_monitor)
-	GET_BOOL(auto_alternate)
-	GET_BOOL(auto_cancel)
 	GET_BOOL(history_aware_focus)
 	GET_BOOL(focus_by_distance)
 	GET_BOOL(ignore_ewmh_focus)
