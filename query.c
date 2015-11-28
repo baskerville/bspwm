@@ -38,14 +38,14 @@
 void query_tree(FILE *rsp)
 {
 	fprintf(rsp, "{");
-	fprintf(rsp, "\"focusedMonitorName\": \"%s\", ", mon->name);
-	fprintf(rsp, "\"numClients\": %i, ", num_clients);
-	fprintf(rsp, "\"monitors\": ");
+	fprintf(rsp, "\"focusedMonitorName\":\"%s\",", mon->name);
+	fprintf(rsp, "\"numClients\":%i,", num_clients);
+	fprintf(rsp, "\"monitors\":");
 	fprintf(rsp, "[");
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		query_monitor(m, rsp);
 		if (m->next != NULL) {
-			fprintf(rsp, ", ");
+			fprintf(rsp, ",");
 		}
 	}
 	fprintf(rsp, "]");
@@ -56,24 +56,24 @@ void query_tree(FILE *rsp)
 void query_monitor(monitor_t *m, FILE *rsp)
 {
 	fprintf(rsp, "{");
-	fprintf(rsp, "\"name\": \"%s\", ", m->name);
-	fprintf(rsp, "\"id\": %u, ", m->id);
-	fprintf(rsp, "\"wired\": %s, ", BOOL_STR(m->wired));
-	fprintf(rsp, "\"topPadding\": %i, ", m->top_padding);
-	fprintf(rsp, "\"rightPadding\": %i, ", m->right_padding);
-	fprintf(rsp, "\"bottomPadding\": %i, ", m->bottom_padding);
-	fprintf(rsp, "\"leftPadding\": %i, ", m->left_padding);
-	fprintf(rsp, "\"numSticky\": %i, ", m->num_sticky);
-	fprintf(rsp, "\"rectangle\": ");
+	fprintf(rsp, "\"name\":\"%s\",", m->name);
+	fprintf(rsp, "\"id\":%u,", m->id);
+	fprintf(rsp, "\"wired\":%s,", BOOL_STR(m->wired));
+	fprintf(rsp, "\"topPadding\":%i,", m->top_padding);
+	fprintf(rsp, "\"rightPadding\":%i,", m->right_padding);
+	fprintf(rsp, "\"bottomPadding\":%i,", m->bottom_padding);
+	fprintf(rsp, "\"leftPadding\":%i,", m->left_padding);
+	fprintf(rsp, "\"numSticky\":%i,", m->num_sticky);
+	fprintf(rsp, "\"rectangle\":");
 	query_rectangle(m->rectangle, rsp);
-	fprintf(rsp, ", ");
-	fprintf(rsp, "\"focusedDesktopName\": \"%s\", ", m->desk->name);
-	fprintf(rsp, "\"desktops\": ");
+	fprintf(rsp,",");
+	fprintf(rsp, "\"focusedDesktopName\":\"%s\",", m->desk->name);
+	fprintf(rsp, "\"desktops\":");
 	fprintf(rsp, "[");
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 		query_desktop(d, rsp);
 		if (d->next != NULL) {
-			fprintf(rsp, ", ");
+			fprintf(rsp,",");
 		}
 	}
 	fprintf(rsp, "]");
@@ -83,16 +83,16 @@ void query_monitor(monitor_t *m, FILE *rsp)
 void query_desktop(desktop_t *d, FILE *rsp)
 {
 	fprintf(rsp, "{");
-	fprintf(rsp, "\"name\": \"%s\", ", d->name);
-	fprintf(rsp, "\"layout\": \"%s\", ", LAYOUT_STR(d->layout));
-	fprintf(rsp, "\"topPadding\": %i, ", d->top_padding);
-	fprintf(rsp, "\"rightPadding\": %i, ", d->right_padding);
-	fprintf(rsp, "\"bottomPadding\": %i, ", d->bottom_padding);
-	fprintf(rsp, "\"leftPadding\": %i, ", d->left_padding);
-	fprintf(rsp, "\"windowGap\": %i, ", d->window_gap);
-	fprintf(rsp, "\"borderWidth\": %u, ", d->border_width);
-	fprintf(rsp, "\"focusedWindow\": %u, ", d->focus != NULL ? d->focus->client->window : 0);
-	fprintf(rsp, "\"root\": ");
+	fprintf(rsp, "\"name\":\"%s\",", d->name);
+	fprintf(rsp, "\"layout\":\"%s\",", LAYOUT_STR(d->layout));
+	fprintf(rsp, "\"topPadding\":%i,", d->top_padding);
+	fprintf(rsp, "\"rightPadding\":%i,", d->right_padding);
+	fprintf(rsp, "\"bottomPadding\":%i,", d->bottom_padding);
+	fprintf(rsp, "\"leftPadding\":%i,", d->left_padding);
+	fprintf(rsp, "\"windowGap\":%i,", d->window_gap);
+	fprintf(rsp, "\"borderWidth\":%u,", d->border_width);
+	fprintf(rsp, "\"focusedWindow\":%u,", d->focus != NULL ? d->focus->client->window : 0);
+	fprintf(rsp, "\"root\":");
 	query_node(d->root, rsp);
 	fprintf(rsp, "}");
 }
@@ -103,23 +103,23 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "null");
 	} else {
 		fprintf(rsp, "{");
-		fprintf(rsp, "\"splitType\": \"%s\", ", SPLIT_TYPE_STR(n->split_type));
-		fprintf(rsp, "\"splitRatio\": %lf, ", n->split_ratio);
-		fprintf(rsp, "\"splitMode\": \"%s\", ", SPLIT_MODE_STR(n->split_mode));
-		fprintf(rsp, "\"splitDir\": \"%s\", ", SPLIT_DIR_STR(n->split_dir));
-		fprintf(rsp, "\"birthRotation\": %i, ", n->birth_rotation);
-		fprintf(rsp, "\"privacyLevel\": %i, ", n->privacy_level);
-		fprintf(rsp, "\"vacant\": %s, ", BOOL_STR(n->vacant));
-		fprintf(rsp, "\"rectangle\": ");
+		fprintf(rsp, "\"splitType\":\"%s\",", SPLIT_TYPE_STR(n->split_type));
+		fprintf(rsp, "\"splitRatio\":%lf,", n->split_ratio);
+		fprintf(rsp, "\"splitMode\":\"%s\",", SPLIT_MODE_STR(n->split_mode));
+		fprintf(rsp, "\"splitDir\":\"%s\",", SPLIT_DIR_STR(n->split_dir));
+		fprintf(rsp, "\"birthRotation\":%i,", n->birth_rotation);
+		fprintf(rsp, "\"privacyLevel\":%i,", n->privacy_level);
+		fprintf(rsp, "\"vacant\":%s,", BOOL_STR(n->vacant));
+		fprintf(rsp, "\"rectangle\":");
 		query_rectangle(n->rectangle, rsp);
-		fprintf(rsp, ", ");
-		fprintf(rsp, "\"firstChild\": ");
+		fprintf(rsp,",");
+		fprintf(rsp, "\"firstChild\":");
 		query_node(n->first_child, rsp);
-		fprintf(rsp, ", ");
-		fprintf(rsp, "\"secondChild\": ");
+		fprintf(rsp,",");
+		fprintf(rsp, "\"secondChild\":");
 		query_node(n->second_child, rsp);
-		fprintf(rsp, ", ");
-		fprintf(rsp, "\"client\": ");
+		fprintf(rsp,",");
+		fprintf(rsp, "\"client\":");
 		query_client(n->client, rsp);
 		fprintf(rsp, "}");
 	}
@@ -131,32 +131,32 @@ void query_client(client_t *c, FILE *rsp)
 		fprintf(rsp, "null");
 	} else {
 		fprintf(rsp, "{");
-		fprintf(rsp, "\"window\": %u, ", c->window);
-		fprintf(rsp, "\"className\": \"%s\", ", c->class_name);
-		fprintf(rsp, "\"instanceName\": \"%s\", ", c->instance_name);
-		fprintf(rsp, "\"borderWidth\": %u, ", c->border_width);
-		fprintf(rsp, "\"state\": \"%s\", ", STATE_STR(c->state));
-		fprintf(rsp, "\"lastState\": \"%s\", ", STATE_STR(c->last_state));
-		fprintf(rsp, "\"layer\": \"%s\", ", LAYER_STR(c->layer));
-		fprintf(rsp, "\"lastLayer\": \"%s\", ", LAYER_STR(c->last_layer));
-		fprintf(rsp, "\"locked\": %s, ", BOOL_STR(c->locked));
-		fprintf(rsp, "\"sticky\": %s, ", BOOL_STR(c->sticky));
-		fprintf(rsp, "\"urgent\": %s, ", BOOL_STR(c->urgent));
-		fprintf(rsp, "\"private\": %s, ", BOOL_STR(c->private));
-		fprintf(rsp, "\"icccmFocus\": %s, ", BOOL_STR(c->icccm_focus));
-		fprintf(rsp, "\"icccmInput\": %s, ", BOOL_STR(c->icccm_input));
-		fprintf(rsp, "\"minWidth\": %u, ", c->min_width);
-		fprintf(rsp, "\"maxWidth\": %u, ", c->max_width);
-		fprintf(rsp, "\"minHeight\": %u, ", c->min_height);
-		fprintf(rsp, "\"maxHeight\": %u, ", c->max_height);
-		fprintf(rsp, "\"numStates\": %i, ", c->num_states);
-		fprintf(rsp, "\"wmState\": ");
+		fprintf(rsp, "\"window\":%u,", c->window);
+		fprintf(rsp, "\"className\":\"%s\",", c->class_name);
+		fprintf(rsp, "\"instanceName\":\"%s\",", c->instance_name);
+		fprintf(rsp, "\"borderWidth\":%u,", c->border_width);
+		fprintf(rsp, "\"state\":\"%s\",", STATE_STR(c->state));
+		fprintf(rsp, "\"lastState\":\"%s\",", STATE_STR(c->last_state));
+		fprintf(rsp, "\"layer\":\"%s\",", LAYER_STR(c->layer));
+		fprintf(rsp, "\"lastLayer\":\"%s\",", LAYER_STR(c->last_layer));
+		fprintf(rsp, "\"locked\":%s,", BOOL_STR(c->locked));
+		fprintf(rsp, "\"sticky\":%s,", BOOL_STR(c->sticky));
+		fprintf(rsp, "\"urgent\":%s,", BOOL_STR(c->urgent));
+		fprintf(rsp, "\"private\":%s,", BOOL_STR(c->private));
+		fprintf(rsp, "\"icccmFocus\":%s,", BOOL_STR(c->icccm_focus));
+		fprintf(rsp, "\"icccmInput\":%s,", BOOL_STR(c->icccm_input));
+		fprintf(rsp, "\"minWidth\":%u,", c->min_width);
+		fprintf(rsp, "\"maxWidth\":%u,", c->max_width);
+		fprintf(rsp, "\"minHeight\":%u,", c->min_height);
+		fprintf(rsp, "\"maxHeight\":%u,", c->max_height);
+		fprintf(rsp, "\"numStates\":%i,", c->num_states);
+		fprintf(rsp, "\"wmState\":");
 		query_wm_state(c->wm_state, c->num_states, rsp);
-		fprintf(rsp, ", ");
-		fprintf(rsp, "\"tiledRectangle\": ");
+		fprintf(rsp,",");
+		fprintf(rsp, "\"tiledRectangle\":");
 		query_rectangle(c->tiled_rectangle, rsp);
-		fprintf(rsp, ", ");
-		fprintf(rsp, "\"floatingRectangle\": ");
+		fprintf(rsp,",");
+		fprintf(rsp, "\"floatingRectangle\":");
 		query_rectangle(c->floating_rectangle, rsp);
 		fprintf(rsp, "}");
 	}
@@ -164,7 +164,7 @@ void query_client(client_t *c, FILE *rsp)
 
 void query_rectangle(xcb_rectangle_t r, FILE *rsp)
 {
-		fprintf(rsp, "{\"x\": %i, \"y\": %i, \"width\": %u, \"height\": %u}", r.x, r.y, r.width, r.height);
+		fprintf(rsp, "{\"x\":%i,\"y\":%i,\"width\":%u,\"height\":%u}", r.x, r.y, r.width, r.height);
 }
 
 void query_wm_state(xcb_atom_t *wm_state, int num_states, FILE *rsp)
@@ -173,7 +173,7 @@ void query_wm_state(xcb_atom_t *wm_state, int num_states, FILE *rsp)
 	for (int i = 0; i < num_states; i++) {
 		fprintf(rsp, "%u", wm_state[i]);
 		if (i < num_states - 1) {
-			fprintf(rsp, ", ");
+			fprintf(rsp, ",");
 		}
 	}
 	fprintf(rsp, "]");
