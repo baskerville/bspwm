@@ -311,6 +311,8 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		GET_MOD(below)
 		GET_MOD(normal)
 		GET_MOD(above)
+		} else {
+			return false;
 		}
 	}
 
@@ -373,6 +375,8 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		GET_MOD(focused)
 		GET_MOD(urgent)
 		GET_MOD(local)
+		} else {
+			return false;
 		}
 	}
 
@@ -434,6 +438,8 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		} else if (streq("!occupied", tok)) {
 			sel.occupied = OPTION_FALSE;
 		GET_MOD(focused)
+		} else {
+			return false;
 		}
 	}
 
