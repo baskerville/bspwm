@@ -121,7 +121,6 @@ bool restore_tree(const char *file_path)
 			for (int j = 0; j < s; j++) {
 				monitor_t *m = restore_monitor(&t, json);
 				add_monitor(m);
-				t++;
 			}
 		}
 		t++;
