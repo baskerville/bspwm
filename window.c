@@ -149,14 +149,18 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	insert_node(m, d, n, f);
 
 	if (f != NULL && f->client != NULL && csq->state != NULL && *(csq->state) == STATE_FLOATING) {
-		c->layer = f->client->layer;
+		c->last_layer = c->layer = f->client->layer;
 	}
 
 	if (csq->layer != NULL) {
-		c->layer = *(csq->layer);
+		c->last_layer = c->layer = *(csq->layer);
 	}
 
-	set_state(m, d, n, csq->state != NULL ? *(csq->state) : c->state);
+	if (csq->state != NULL) {
+		set_state(m, d, n, *(csq->state));
+		c->last_state = c->state;
+	}
+
 	set_locked(m, d, n, csq->locked);
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
@@ -395,6 +399,7 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 
 	client_t *c = n->client;
 
+	c->last_layer = c->layer;
 	c->layer = l;
 
 	put_status(SBSC_MASK_WINDOW_LAYER, "window_layer %s %s 0x%X %s\n", m->name, d->name, c->window, LAYER_STR(l));
