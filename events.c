@@ -376,7 +376,9 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		if (action == XCB_EWMH_WM_STATE_ADD) {
 			set_state(m, d, n, STATE_FULLSCREEN);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
-			set_state(m, d, n, n->client->last_state);
+			if (n->client->state == STATE_FULLSCREEN) {
+				set_state(m, d, n, n->client->last_state);
+			}
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_state(m, d, n, IS_FULLSCREEN(n->client) ? n->client->last_state : STATE_FULLSCREEN);
 		}
@@ -385,7 +387,9 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		if (action == XCB_EWMH_WM_STATE_ADD) {
 			set_layer(m, d, n, LAYER_BELOW);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
-			set_layer(m, d, n, LAYER_NORMAL);
+			if (n->client->layer == LAYER_BELOW) {
+				set_layer(m, d, n, n->client->last_layer);
+			}
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_layer(m, d, n, n->client->layer == LAYER_BELOW ? n->client->last_layer : LAYER_BELOW);
 		}
@@ -393,7 +397,9 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		if (action == XCB_EWMH_WM_STATE_ADD) {
 			set_layer(m, d, n, LAYER_ABOVE);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
-			set_layer(m, d, n, n->client->last_layer);
+			if (n->client->layer == LAYER_ABOVE) {
+				set_layer(m, d, n, n->client->last_layer);
+			}
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_layer(m, d, n, n->client->layer == LAYER_ABOVE ? n->client->last_layer : LAYER_ABOVE);
 		}
