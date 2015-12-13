@@ -445,7 +445,8 @@ void restore_wm_state(xcb_atom_t *w, jsmntok_t **t, char *json)
 
 bool keyeq(char *s, jsmntok_t *key, char *json)
 {
-	return (strncmp(s, json + key->start, key->end - key->start) == 0);
+	size_t n = key->end - key->start;
+	return (strlen(s) == n && strncmp(s, json + key->start, n) == 0);
 }
 
 char *copy_string(jsmntok_t *tok, char *json)
