@@ -40,6 +40,7 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
 {
 	monitor_t *m = malloc(sizeof(monitor_t));
 	snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
+	m->root = XCB_NONE;
 	m->prev = m->next = NULL;
 	m->desk = m->desk_head = m->desk_tail = NULL;
 	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
@@ -48,7 +49,6 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
 	if (rect != NULL) {
 		update_root(m, rect);
 	} else {
-		m->root = XCB_NONE;
 		m->rectangle = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
 	}
 	return m;
