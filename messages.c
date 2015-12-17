@@ -253,9 +253,14 @@ int cmd_window(char **args, int num)
 						if (sscanf(*args, "%lf", &rat) != 1 || rat <= 0 || rat >= 1)
 							return MSG_FAILURE;
 					}
-					trg.node->split_mode = MODE_MANUAL;
-					trg.node->split_dir = dir;
-					trg.node->split_ratio = rat;
+					if (trg.node->split_mode == MODE_MANUAL && dir == trg.node->split_dir && rat == trg.node->split_ratio) {
+						reset_mode(&trg);
+					}
+					else {
+						trg.node->split_mode = MODE_MANUAL;
+						trg.node->split_dir = dir;
+						trg.node->split_ratio = rat;
+					}
 					window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
 				} else {
 					return MSG_FAILURE;
