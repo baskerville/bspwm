@@ -109,6 +109,7 @@ bool restore_tree(const char *file_path)
 
 	for (int i = 0; i < num; i++) {
 		if (keyeq("focusedMonitorName", t, json)) {
+			free(focusedMonitorName);
 			focusedMonitorName = copy_string(t+1, json);
 			t++;
 		} else if (keyeq("numClients", t, json)) {
@@ -208,6 +209,7 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 			update_root(m, &m->rectangle);
 			continue;
 		} else if (keyeq("focusedDesktopName", *t, json)) {
+			free(focusedDesktopName);
 			(*t)++;
 			focusedDesktopName = copy_string(*t, json);
 		} else if (keyeq("desktops", *t, json)) {
