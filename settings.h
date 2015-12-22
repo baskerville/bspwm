@@ -33,30 +33,20 @@
 #define EXTERNAL_RULES_COMMAND  ""
 #define STATUS_PREFIX           "W"
 
-#define FOCUSED_BORDER_COLOR          "#7E7F89"
-#define ACTIVE_BORDER_COLOR           "#545350"
-#define NORMAL_BORDER_COLOR           "#3F3E3B"
-#define PRESEL_BORDER_COLOR           "#E8E8F4"
-#define FOCUSED_LOCKED_BORDER_COLOR   "#C7B579"
-#define ACTIVE_LOCKED_BORDER_COLOR    "#545350"
-#define NORMAL_LOCKED_BORDER_COLOR    "#3F3E3B"
-#define FOCUSED_STICKY_BORDER_COLOR   "#E3A5DA"
-#define ACTIVE_STICKY_BORDER_COLOR    "#545350"
-#define NORMAL_STICKY_BORDER_COLOR    "#3F3E3B"
-#define FOCUSED_PRIVATE_BORDER_COLOR  "#42CAD9"
-#define ACTIVE_PRIVATE_BORDER_COLOR   "#5C5955"
-#define NORMAL_PRIVATE_BORDER_COLOR   "#34322E"
-#define URGENT_BORDER_COLOR           "#EFA29A"
+#define NORMAL_BORDER_COLOR           "#30302f"
+#define ACTIVE_BORDER_COLOR           "#474645"
+#define FOCUSED_BORDER_COLOR          "#817f7f"
+#define PRESEL_FEEDBACK_COLOR         "#f4d775"
 
-#define SPLIT_RATIO    0.5
-#define WINDOW_GAP     6
-#define BORDER_WIDTH   1
+#define WINDOW_GAP           6
+#define BORDER_WIDTH         1
+#define SPLIT_RATIO          0.5
 
 #define HISTORY_AWARE_FOCUS         false
 #define FOCUS_BY_DISTANCE           false
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
-#define LEAF_MONOCLE                false
+#define SINGLE_MONOCLE              false
 #define FOCUS_FOLLOWS_POINTER       false
 #define POINTER_FOLLOWS_FOCUS       false
 #define POINTER_FOLLOWS_MONITOR     false
@@ -69,29 +59,20 @@
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
 
-char focused_border_color[MAXLEN];
-char active_border_color[MAXLEN];
 char normal_border_color[MAXLEN];
-char presel_border_color[MAXLEN];
-char focused_locked_border_color[MAXLEN];
-char active_locked_border_color[MAXLEN];
-char normal_locked_border_color[MAXLEN];
-char focused_sticky_border_color[MAXLEN];
-char active_sticky_border_color[MAXLEN];
-char normal_sticky_border_color[MAXLEN];
-char focused_private_border_color[MAXLEN];
-char active_private_border_color[MAXLEN];
-char normal_private_border_color[MAXLEN];
-char urgent_border_color[MAXLEN];
+char active_border_color[MAXLEN];
+char focused_border_color[MAXLEN];
+char presel_feedback_color[MAXLEN];
 
-double split_ratio;
 int window_gap;
 unsigned int border_width;
+double split_ratio;
+
 child_polarity_t initial_polarity;
 
 bool borderless_monocle;
 bool gapless_monocle;
-bool leaf_monocle;
+bool single_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_focus;
 bool pointer_follows_monitor;

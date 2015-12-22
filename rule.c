@@ -23,6 +23,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
 #include "bspwm.h"
@@ -35,7 +38,7 @@
 rule_t *make_rule(void)
 {
 	rule_t *r = malloc(sizeof(rule_t));
-	r->cause[0] = r->effect[0] = '\0';
+	r->class_name[0] = r->instance_name[0] = r->effect[0] = '\0';
 	r->next = r->prev = NULL;
 	r->one_shot = false;
 	return r;
@@ -72,21 +75,26 @@ void remove_rule(rule_t *r)
 void remove_rule_by_cause(char *cause)
 {
 	rule_t *r = rule_head;
+	char *class_name = strtok(cause, COL_TOK);
+	char *instance_name = strtok(NULL, COL_TOK);
 	while (r != NULL) {
 		rule_t *next = r->next;
-		if (streq(r->cause, cause))
+		if ((streq(class_name, MATCH_ANY) || streq(r->class_name, class_name)) &&
+		    (instance_name == NULL || streq(instance_name, MATCH_ANY) || streq(r->instance_name, instance_name))) {
 			remove_rule(r);
+		}
 		r = next;
 	}
 }
 
 bool remove_rule_by_index(int idx)
 {
-	for (rule_t *r = rule_head; r != NULL; r = r->next, idx--)
+	for (rule_t *r = rule_head; r != NULL; r = r->next, idx--) {
 		if (idx == 0) {
 			remove_rule(r);
 			return true;
 		}
+	}
 	return false;
 }
 
@@ -111,8 +119,9 @@ pending_rule_t *make_pending_rule(int fd, xcb_window_t win, rule_consequence_t *
 
 void add_pending_rule(pending_rule_t *pr)
 {
-	if (pr == NULL)
+	if (pr == NULL) {
 		return;
+	}
 	if (pending_rule_head == NULL) {
 		pending_rule_head = pending_rule_tail = pr;
 	} else {
@@ -124,18 +133,23 @@ void add_pending_rule(pending_rule_t *pr)
 
 void remove_pending_rule(pending_rule_t *pr)
 {
-	if (pr == NULL)
+	if (pr == NULL) {
 		return;
+	}
 	pending_rule_t *a = pr->prev;
 	pending_rule_t *b = pr->next;
-	if (a != NULL)
+	if (a != NULL) {
 		a->next = b;
-	if (b != NULL)
+	}
+	if (b != NULL) {
 		b->prev = a;
-	if (pr == pending_rule_head)
+	}
+	if (pr == pending_rule_head) {
 		pending_rule_head = b;
-	if (pr == pending_rule_tail)
+	}
+	if (pr == pending_rule_tail) {
 		pending_rule_tail = a;
+	}
 	close(pr->fd);
 	free(pr->csq);
 	free(pr);
@@ -231,9 +245,8 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 	rule_t *rule = rule_head;
 	while (rule != NULL) {
 		rule_t *next = rule->next;
-		if (streq(rule->cause, MATCH_ANY) ||
-		    streq(rule->cause, csq->class_name) ||
-		    streq(rule->cause, csq->instance_name)) {
+		if ((streq(rule->class_name, MATCH_ANY) || streq(rule->class_name, csq->class_name)) &&
+		    (streq(rule->instance_name, MATCH_ANY) || streq(rule->instance_name, csq->instance_name))) {
 			char effect[MAXLEN];
 			snprintf(effect, sizeof(effect), "%s", rule->effect);
 			char *key = strtok(effect, CSQ_BLK);
@@ -282,8 +295,9 @@ bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
 
 void parse_rule_consequence(int fd, rule_consequence_t *csq)
 {
-	if (fd == -1)
+	if (fd == -1) {
 		return;
+	}
 	char data[BUFSIZ];
 	int nb;
 	while ((nb = read(fd, data, sizeof(data))) > 0) {
@@ -306,7 +320,7 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		snprintf(csq->monitor_desc, sizeof(csq->monitor_desc), "%s", value);
 	} else if (streq("desktop", key)) {
 		snprintf(csq->desktop_desc, sizeof(csq->desktop_desc), "%s", value);
-	} else if (streq("window", key)) {
+	} else if (streq("node", key)) {
 		snprintf(csq->node_desc, sizeof(csq->node_desc), "%s", value);
 	} else if (streq("split_dir", key)) {
 		snprintf(csq->split_dir, sizeof(csq->split_dir), "%s", value);
@@ -348,11 +362,9 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 	}
 }
 
-void list_rules(char *pattern, FILE *rsp)
+void list_rules(FILE *rsp)
 {
 	for (rule_t *r = rule_head; r != NULL; r = r->next) {
-		if (pattern != NULL && !streq(pattern, r->cause))
-			continue;
-		fprintf(rsp, "%s => %s\n", r->cause, r->effect);
+		fprintf(rsp, "%s:%s => %s\n", r->class_name, r->instance_name, r->effect);
 	}
 }

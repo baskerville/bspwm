@@ -22,6 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <float.h>
 #include <limits.h>
 #include "bspwm.h"
@@ -38,11 +41,13 @@
 
 void arrange(monitor_t *m, desktop_t *d)
 {
-	if (d->root == NULL)
+	if (d->root == NULL) {
 		return;
+	}
 
 	layout_t set_layout = d->layout;
-	if (leaf_monocle && tiled_count(d) == 1) {
+
+	if (single_monocle && tiled_count(d->root) == 1) {
 		d->layout = LAYOUT_MONOCLE;
 	}
 
@@ -52,6 +57,7 @@ void arrange(monitor_t *m, desktop_t *d)
 	rect.y += m->top_padding + d->top_padding + wg;
 	rect.width -= m->left_padding + d->left_padding + d->right_padding + m->right_padding + wg;
 	rect.height -= m->top_padding + d->top_padding + d->bottom_padding + m->bottom_padding + wg;
+
 	apply_layout(m, d, d->root, rect, rect);
 
 	d->layout = set_layout;
@@ -59,10 +65,22 @@ void arrange(monitor_t *m, desktop_t *d)
 
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return;
+	}
 
 	n->rectangle = rect;
+
+	if (pointer_follows_focus && mon->desk->focus == n && frozen_pointer->action == ACTION_NONE) {
+		xcb_rectangle_t r = rect;
+		r.width -= d->window_gap;
+		r.height -= d->window_gap;
+		center_pointer(r);
+	}
+
+	if (n->presel != NULL) {
+		draw_presel_feedback(m, d, n);
+	}
 
 	if (is_leaf(n)) {
 
@@ -104,18 +122,12 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 			r = m->rectangle;
 		}
 
-		window_move_resize(n->client->window, r.x, r.y, r.width, r.height);
-		window_border_width(n->client->window, bw);
-		window_draw_border(n, d->focus == n, m == mon);
+		window_move_resize(n->id, r.x, r.y, r.width, r.height);
+		window_border_width(n->id, bw);
 
 		if (frozen_pointer->action == ACTION_NONE) {
-			put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->client->window, r.width, r.height, r.x, r.y);
+			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->id, r.width, r.height, r.x, r.y);
 		}
-
-		if (pointer_follows_focus && mon->desk->focus == n && frozen_pointer->action == ACTION_NONE) {
-			center_pointer(r);
-		}
-
 	} else {
 		xcb_rectangle_t first_rect;
 		xcb_rectangle_t second_rect;
@@ -140,245 +152,335 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 	}
 }
 
-void insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
+presel_t *make_presel(void)
 {
-	if (d == NULL || n == NULL)
-		return;
+	presel_t *p = malloc(sizeof(presel_t));
+	p->split_dir = DIR_EAST;
+	p->split_ratio = split_ratio;
+	p->feedback = XCB_NONE;
+	return p;
+}
 
-	/* n: new leaf node */
-	/* c: new container node */
+void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir)
+{
+	if (n->presel == NULL) {
+		n->presel = make_presel();
+	}
+
+	n->presel->split_dir = dir;
+
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel %s %s 0x%X dir %s\n", m->name, d->name, n->id, SPLIT_DIR_STR(dir));
+}
+
+void presel_ratio(monitor_t *m, desktop_t *d, node_t *n, double ratio)
+{
+	if (n->presel == NULL) {
+		n->presel = make_presel();
+	}
+
+	n->presel->split_ratio = ratio;
+
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel %s %s 0x%X ratio %lf\n", m->name, d->name, n->id, ratio);
+}
+
+void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
+{
+	if (n->presel == NULL) {
+		return;
+	}
+
+	if (n->presel->feedback != XCB_NONE) {
+		xcb_destroy_window(dpy, n->presel->feedback);
+	}
+
+	free(n->presel);
+	n->presel = NULL;
+
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel %s %s 0x%X cancel\n", m->name, d->name, n->id);
+}
+
+node_t *find_public(desktop_t *d)
+{
+	unsigned int b_manual_area = 0;
+	unsigned int b_automatic_area = 0;
+	node_t *b_manual = NULL;
+	node_t *b_automatic = NULL;
+	for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+		if (n->vacant) {
+			continue;
+		}
+		unsigned int n_area = node_area(NULL, d, n);
+		if (n_area > b_manual_area && (n->presel != NULL || !n->private)) {
+			b_manual = n;
+			b_manual_area = n_area;
+		}
+		if (n_area > b_automatic_area &&
+		    n->presel == NULL && !n->private && private_count(n->parent) == 0) {
+			b_automatic = n;
+			b_automatic_area = n_area;
+		}
+	}
+	if (b_automatic != NULL) {
+		return b_automatic;
+	} else {
+		return b_manual;
+	}
+}
+
+node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
+{
+	if (d == NULL || n == NULL) {
+		return NULL;
+	}
+
+	/* n: inserted node */
+	/* c: new internal node */
 	/* f: focus or insertion anchor */
 	/* p: parent of focus */
 	/* g: grand parent of focus */
 
-	if (f == NULL)
+	if (f == NULL) {
 		f = d->root;
+	}
 
 	if (f == NULL) {
 		d->root = n;
 	} else {
-		node_t *c = make_node();
+		node_t *c = make_node(XCB_NONE);
 		node_t *p = f->parent;
-		if ((f->client->private ||
-		     (p != NULL && p->privacy_level > 0)) &&
-		    f->split_mode == MODE_AUTOMATIC) {
-			node_t *closest = NULL;
-			node_t *public = NULL;
-			closest_public(d, f, &closest, &public);
-			if (public != NULL) {
-				f = public;
+		if (f->presel == NULL && (f->private || private_count(f->parent) > 0)) {
+			node_t *k = find_public(d);
+			if (k != NULL) {
+				f = k;
 				p = f->parent;
-			} else {
-				if (closest != NULL) {
-					f = closest;
-					p = f->parent;
-				}
-				f->split_mode = MODE_MANUAL;
-				xcb_rectangle_t rect = f->client->tiled_rectangle;
-				f->split_dir = (rect.width >= rect.height ? DIR_LEFT : DIR_UP);
-				if (f->client->private) {
-					get_opposite(f->split_dir, &f->split_dir);
-					update_privacy_level(f, false);
-				}
+			}
+			if (f->presel == NULL && (f->private || private_count(f->parent) > 0)) {
+				xcb_rectangle_t rect = get_rectangle(m, d, f);
+				presel_dir(m, d, f, (rect.width >= rect.height ? DIR_EAST : DIR_SOUTH));
 			}
 		}
-		if (p != NULL && f->split_mode == MODE_AUTOMATIC &&
-		    (p->first_child->vacant || p->second_child->vacant)) {
+		if (f->presel == NULL && p != NULL && p->vacant) {
 			f = p;
 			p = f->parent;
 		}
 		n->parent = c;
 		c->birth_rotation = f->birth_rotation;
-		switch (f->split_mode) {
-			case MODE_AUTOMATIC:
-				if (p == NULL) {
-					if (initial_polarity == FIRST_CHILD) {
-						c->first_child = n;
-						c->second_child = f;
-					} else {
-						c->first_child = f;
-						c->second_child = n;
-					}
-					if (m->rectangle.width > m->rectangle.height)
-						c->split_type = TYPE_VERTICAL;
-					else
-						c->split_type = TYPE_HORIZONTAL;
-					f->parent = c;
-					d->root = c;
+		if (f->presel == NULL) {
+			if (p == NULL) {
+				if (initial_polarity == FIRST_CHILD) {
+					c->first_child = n;
+					c->second_child = f;
 				} else {
-					node_t *g = p->parent;
-					c->parent = g;
-					if (g != NULL) {
-						if (is_first_child(p))
-							g->first_child = c;
-						else
-							g->second_child = c;
-					} else {
-						d->root = c;
-					}
-					c->split_type = p->split_type;
-					c->split_ratio = p->split_ratio;
-					p->parent = c;
-					int rot;
-					if (is_first_child(f)) {
-						c->first_child = n;
-						c->second_child = p;
-						rot = 90;
-					} else {
-						c->first_child = p;
-						c->second_child = n;
-						rot = 270;
-					}
-					if (IS_TILED(n->client)) {
-						rotate_tree(p, rot);
-					}
-					n->birth_rotation = rot;
+					c->first_child = f;
+					c->second_child = n;
 				}
-				break;
-			case MODE_MANUAL:
-				if (p != NULL) {
-					if (is_first_child(f))
-						p->first_child = c;
-					else
-						p->second_child = c;
+				if (m->rectangle.width > m->rectangle.height) {
+					c->split_type = TYPE_VERTICAL;
+				} else {
+					c->split_type = TYPE_HORIZONTAL;
 				}
-				c->split_ratio = f->split_ratio;
-				c->parent = p;
 				f->parent = c;
-				f->birth_rotation = 0;
-				switch (f->split_dir) {
-					case DIR_LEFT:
-						c->split_type = TYPE_VERTICAL;
-						c->first_child = n;
-						c->second_child = f;
-						break;
-					case DIR_RIGHT:
-						c->split_type = TYPE_VERTICAL;
-						c->first_child = f;
-						c->second_child = n;
-						break;
-					case DIR_UP:
-						c->split_type = TYPE_HORIZONTAL;
-						c->first_child = n;
-						c->second_child = f;
-						break;
-					case DIR_DOWN:
-						c->split_type = TYPE_HORIZONTAL;
-						c->first_child = f;
-						c->second_child = n;
-						break;
-				}
-				if (d->root == f)
+				d->root = c;
+			} else {
+				node_t *g = p->parent;
+				c->parent = g;
+				if (g != NULL) {
+					if (is_first_child(p)) {
+						g->first_child = c;
+					} else {
+						g->second_child = c;
+					}
+				} else {
 					d->root = c;
-				f->split_mode = MODE_AUTOMATIC;
-				break;
+				}
+				c->split_type = p->split_type;
+				c->split_ratio = p->split_ratio;
+				p->parent = c;
+				int rot;
+				if (is_first_child(f)) {
+					c->first_child = n;
+					c->second_child = p;
+					rot = 90;
+				} else {
+					c->first_child = p;
+					c->second_child = n;
+					rot = 270;
+				}
+				n->birth_rotation = rot;
+				if (!n->vacant) {
+					rotate_tree(p, rot);
+				}
+			}
+		} else {
+			if (p != NULL) {
+				if (is_first_child(f)) {
+					p->first_child = c;
+				} else {
+					p->second_child = c;
+				}
+			}
+			c->split_ratio = f->presel->split_ratio;
+			c->parent = p;
+			f->parent = c;
+			f->birth_rotation = 0;
+			switch (f->presel->split_dir) {
+				case DIR_WEST:
+					c->split_type = TYPE_VERTICAL;
+					c->first_child = n;
+					c->second_child = f;
+					break;
+				case DIR_EAST:
+					c->split_type = TYPE_VERTICAL;
+					c->first_child = f;
+					c->second_child = n;
+					break;
+				case DIR_NORTH:
+					c->split_type = TYPE_HORIZONTAL;
+					c->first_child = n;
+					c->second_child = f;
+					break;
+				case DIR_SOUTH:
+					c->split_type = TYPE_HORIZONTAL;
+					c->first_child = f;
+					c->second_child = n;
+					break;
+			}
+			if (d->root == f) {
+				d->root = c;
+			}
+			cancel_presel(m, d, f);
 		}
 		if (f->vacant) {
-			propagate_vacant_state(f);
-		}
-		if (f->client != NULL) {
-			if (f->client->private) {
-				update_privacy_level(f, true);
-			}
+			propagate_vacant_state(m, d, f);
 		}
 	}
-	if (n->client->private) {
-		update_privacy_level(n, true);
-	}
+
 	if (d->focus == NULL) {
 		d->focus = n;
 	}
-	if (n->client->sticky) {
-		m->num_sticky++;
-	}
-	put_status(SBSC_MASK_REPORT);
+
+	return f;
 }
 
 void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n != NULL) {
-		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
-			neutralize_obscuring_windows(m, d, n);
-		}
-		stack(n, true);
-		if (d->focus != n) {
-			window_draw_border(d->focus, false, m == mon);
-			window_draw_border(n, true, m == mon);
+	if (n == NULL && d->root != NULL) {
+		n = history_last_node(d, NULL);
+		if (n == NULL) {
+			n = first_extrema(d->root);
 		}
 	}
+
+	if (n != NULL) {
+		if (d->focus != NULL && n != d->focus) {
+			neutralize_occluding_windows(m, d, n);
+		}
+		stack(d, n, true);
+		if (d->focus != n) {
+			for (node_t *f = first_extrema(d->focus); f != NULL; f = next_leaf(f, d->focus)) {
+				if (!is_descendant(f, n)) {
+					window_draw_border(f->id, get_border_color(false, (m == mon)));
+				}
+			}
+		}
+		draw_border(n, true, (m == mon));
+	}
+
 	d->focus = n;
-	put_status(SBSC_MASK_WINDOW_ACTIVATE, "window_activate %s %s 0x%X\n", m->name, d->name, n!=NULL?n->client->window:0);
+
+	put_status(SBSC_MASK_NODE_ACTIVATE, "node_activate %s %s 0x%X\n", m->name, d->name, n!=NULL?n->id:0);
+	put_status(SBSC_MASK_REPORT);
+}
+
+void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n)
+{
+	if (n == NULL) {
+		return;
+	} else if (n->sticky) {
+		transfer_node(m, ds, n, m, dd, dd->focus);
+	} else {
+		/* we need references to the children because n might be freed after
+		 * the first recursive call */
+		node_t *first_child = n->first_child;
+		node_t *second_child = n->second_child;
+		transfer_sticky_nodes(m, ds, dd, first_child);
+		transfer_sticky_nodes(m, ds, dd, second_child);
+	}
 }
 
 void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (mon->desk != d || n == NULL)
-		clear_input_focus();
-
-	if (m->num_sticky > 0 && d != m->desk) {
-		node_t *a = first_extrema(m->desk->root);
-		sticky_still = false;
-		while (a != NULL) {
-			node_t *b = next_leaf(a, m->desk->root);
-			if (a->client->sticky)
-				transfer_node(m, m->desk, a, m, d, d->focus);
-			a = b;
+	if (n == NULL && d->root != NULL) {
+		n = history_last_node(d, NULL);
+		if (n == NULL) {
+			n = first_extrema(d->root);
 		}
-		sticky_still = true;
-		if (n == NULL && d->focus != NULL)
-			n = d->focus;
 	}
 
-	if (n != NULL) {
-		if (n->client->urgent) {
-			n->client->urgent = false;
-			put_status(SBSC_MASK_REPORT);
+	if (mon->desk != d || n == NULL || n->client == NULL) {
+		clear_input_focus();
+	}
+
+	if (m->sticky_count > 0 && d != m->desk) {
+		sticky_still = false;
+		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
+		sticky_still = true;
+		if (n == NULL && d->focus != NULL) {
+			n = d->focus;
 		}
-		if (d->focus != NULL && n != d->focus && stack_cmp(n->client, d->focus->client) < 0) {
-			neutralize_obscuring_windows(m, d, n);
-		}
+	}
+
+	if (d->focus != NULL && n != d->focus) {
+		neutralize_occluding_windows(m, d, n);
+	}
+
+	if (n != NULL && n->client != NULL && n->client->urgent) {
+		set_urgent(m, d, n, false);
 	}
 
 	if (mon != m) {
-		for (desktop_t *cd = mon->desk_head; cd != NULL; cd = cd->next) {
-			window_draw_border(cd->focus, true, false);
+		for (desktop_t *e = mon->desk_head; e != NULL; e = e->next) {
+			draw_border(e->focus, true, false);
 		}
-		for (desktop_t *cd = m->desk_head; cd != NULL; cd = cd->next) {
-			if (cd != d) {
-				window_draw_border(cd->focus, true, true);
+		for (desktop_t *e = m->desk_head; e != NULL; e = e->next) {
+			if (e == d) {
+				continue;
 			}
-		}
-		if (d->focus == n) {
-			window_draw_border(n, true, true);
+			draw_border(e->focus, true, true);
 		}
 	}
 
 	if (d->focus != n) {
-		window_draw_border(d->focus, false, true);
-		window_draw_border(n, true, true);
+		for (node_t *f = first_extrema(d->focus); f != NULL; f = next_leaf(f, d->focus)) {
+			if (!is_descendant(f, n)) {
+				window_draw_border(f->id, get_border_color(false, true));
+			}
+		}
 	}
+
+	draw_border(n, true, true);
 
 	focus_desktop(m, d);
 
 	d->focus = n;
+	ewmh_update_active_window();
+	history_add(m, d, n);
+
+	put_status(SBSC_MASK_REPORT);
 
 	if (n == NULL) {
-		history_add(m, d, NULL);
-		ewmh_update_active_window();
 		return;
-	} else {
-		stack(n, true);
 	}
 
-	put_status(SBSC_MASK_WINDOW_FOCUS, "window_focus %s %s 0x%X\n", m->name, d->name, n->client->window);
+	put_status(SBSC_MASK_NODE_FOCUS, "node_focus %s %s 0x%X\n", m->name, d->name, n->id);
 
-	history_add(m, d, n);
+	stack(d, n, true);
 	set_input_focus(n);
 
 	if (focus_follows_pointer) {
 		xcb_window_t win = XCB_NONE;
 		query_pointer(&win, NULL);
-		if (win != n->client->window) {
+		if (win != n->id) {
 			enable_motion_recorder();
 		} else {
 			disable_motion_recorder();
@@ -386,45 +488,83 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (pointer_follows_focus) {
-		center_pointer(get_rectangle(m, n->client));
+		center_pointer(get_rectangle(m, d, n));
 	}
-
-	ewmh_update_active_window();
 }
 
-void update_current(void)
+void update_focused(void)
 {
 	focus_node(mon, mon->desk, mon->desk->focus);
 }
 
-node_t *make_node(void)
+void hide_node(node_t *n)
 {
+	if (n == NULL) {
+		return;
+	} else {
+		if (n->presel != NULL) {
+			window_hide(n->presel->feedback);
+		}
+		if (n->client != NULL) {
+			window_hide(n->id);
+		}
+		hide_node(n->first_child);
+		hide_node(n->second_child);
+	}
+}
+
+void show_node(node_t *n)
+{
+	if (n == NULL) {
+		return;
+	} else {
+		if (n->client != NULL) {
+			window_show(n->id);
+		}
+		if (n->presel != NULL) {
+			window_show(n->presel->feedback);
+		}
+		show_node(n->first_child);
+		show_node(n->second_child);
+	}
+}
+
+node_t *make_node(uint32_t id)
+{
+	if (id == XCB_NONE) {
+		id = xcb_generate_id(dpy);
+	}
 	node_t *n = malloc(sizeof(node_t));
+	n->id = id;
 	n->parent = n->first_child = n->second_child = NULL;
+	n->vacant = n->sticky = n->private = n->locked = false;
 	n->split_ratio = split_ratio;
-	n->split_mode = MODE_AUTOMATIC;
 	n->split_type = TYPE_VERTICAL;
-	n->split_dir = DIR_RIGHT;
 	n->birth_rotation = 0;
-	n->privacy_level = 0;
+	n->presel = NULL;
 	n->client = NULL;
-	n->vacant = false;
 	return n;
 }
 
-client_t *make_client(xcb_window_t win, unsigned int border_width)
+client_t *make_client(void)
 {
 	client_t *c = malloc(sizeof(client_t));
-	c->window = win;
 	c->state = c->last_state = STATE_TILED;
 	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
-	c->locked = c->sticky = c->urgent = c->private = c->icccm_focus = false;
+	c->urgent = c->icccm_focus = false;
 	c->icccm_input = true;
-	c->num_states = 0;
+	c->wm_states_count = 0;
+	return c;
+}
+
+void initialize_client(node_t *n)
+{
+	xcb_window_t win = n->id;
 	if (win != XCB_NONE) {
+		client_t *c = n->client;
 		xcb_icccm_get_wm_protocols_reply_t protocols;
 		if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
 			if (has_proto(WM_TAKE_FOCUS, &protocols)) {
@@ -434,8 +574,8 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 		}
 		xcb_ewmh_get_atoms_reply_t wm_state;
 		if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
-			for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_STATE; i++) {
-				ewmh_wm_state_add(c, wm_state.atoms[i]);
+			for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_WM_STATES; i++) {
+				ewmh_wm_state_add(n, wm_state.atoms[i]);
 			}
 			xcb_ewmh_get_atoms_reply_wipe(&wm_state);
 		}
@@ -445,7 +585,6 @@ client_t *make_client(xcb_window_t win, unsigned int border_width)
 			c->icccm_input = hints.input;
 		}
 	}
-	return c;
 }
 
 bool is_leaf(node_t *n)
@@ -463,74 +602,49 @@ bool is_second_child(node_t *n)
 	return (n != NULL && n->parent != NULL && n->parent->second_child == n);
 }
 
-void reset_mode(coordinates_t *loc)
+unsigned int clients_count_in(node_t *n)
 {
-	if (loc->node != NULL) {
-		loc->node->split_mode = MODE_AUTOMATIC;
-		window_draw_border(loc->node, loc->desktop->focus == loc->node, mon == loc->monitor);
-	} else if (loc->desktop != NULL) {
-		for (node_t *a = first_extrema(loc->desktop->root); a != NULL; a = next_leaf(a, loc->desktop->root)) {
-			a->split_mode = MODE_AUTOMATIC;
-			window_draw_border(a, loc->desktop->focus == a, mon == loc->monitor);
-		}
+	if (n == NULL) {
+		return 0;
+	} else {
+		return (n->client != NULL ? 1 : 0) +
+		        clients_count_in(n->first_child) +
+		        clients_count_in(n->second_child);
 	}
 }
 
 node_t *brother_tree(node_t *n)
 {
-	if (n == NULL || n->parent == NULL)
+	if (n == NULL || n->parent == NULL) {
 		return NULL;
-	if (is_first_child(n))
+	}
+	if (is_first_child(n)) {
 		return n->parent->second_child;
-	else
+	} else {
 		return n->parent->first_child;
-}
-
-void closest_public(desktop_t *d, node_t *n, node_t **closest, node_t **public)
-{
-	if (n == NULL)
-		return;
-	node_t *prev = prev_leaf(n, d->root);
-	node_t *next = next_leaf(n, d->root);
-	while (prev != NULL || next != NULL) {
-#define TESTLOOP(n) \
-		if (n != NULL) { \
-			if (IS_TILED(n->client)) { \
-				if (n->privacy_level == 0) { \
-					if (n->parent == NULL || n->parent->privacy_level == 0) { \
-						*public = n; \
-						return; \
-					} else if (*closest == NULL) { \
-						*closest = n; \
-					} \
-				} \
-			} \
-			n = n##_leaf(n, d->root); \
-		}
-		TESTLOOP(prev)
-		TESTLOOP(next)
-#undef TESTLOOP
 	}
 }
 
 node_t *first_extrema(node_t *n)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
-	else if (n->first_child == NULL)
+	} else if (n->first_child == NULL) {
 		return n;
-	else
+	} else {
 		return first_extrema(n->first_child);
+	}
 }
 
 node_t *second_extrema(node_t *n)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
-	else if (n->second_child == NULL)
+	} else if (n->second_child == NULL) {
 		return n;
-	else
+	} else {
 		return second_extrema(n->second_child);
+	}
 }
 
 node_t *next_leaf(node_t *n, node_t *r)
@@ -550,48 +664,53 @@ node_t *next_leaf(node_t *n, node_t *r)
 
 node_t *prev_leaf(node_t *n, node_t *r)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
+	}
 	node_t *p = n;
-	while (is_first_child(p) && p != r)
+	while (is_first_child(p) && p != r) {
 		p = p->parent;
-	if (p == r)
+	}
+	if (p == r) {
 		return NULL;
+	}
 	return second_extrema(p->parent->first_child);
 }
 
 node_t *next_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 {
 	node_t *next = next_leaf(n, r);
-	if (next == NULL || IS_TILED(next->client))
+	if (next == NULL || IS_TILED(next->client)) {
 		return next;
-	else
+	} else {
 		return next_tiled_leaf(d, next, r);
+	}
 }
 
 node_t *prev_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
 {
 	node_t *prev = prev_leaf(n, r);
-	if (prev == NULL || IS_TILED(prev->client))
+	if (prev == NULL || IS_TILED(prev->client)) {
 		return prev;
-	else
+	} else {
 		return prev_tiled_leaf(d, prev, r);
+	}
 }
 
 /* Returns true if *b* is adjacent to *a* in the direction *dir* */
 bool is_adjacent(node_t *a, node_t *b, direction_t dir)
 {
 	switch (dir) {
-		case DIR_RIGHT:
+		case DIR_EAST:
 			return (a->rectangle.x + a->rectangle.width) == b->rectangle.x;
 			break;
-		case DIR_DOWN:
+		case DIR_SOUTH:
 			return (a->rectangle.y + a->rectangle.height) == b->rectangle.y;
 			break;
-		case DIR_LEFT:
+		case DIR_WEST:
 			return (b->rectangle.x + b->rectangle.width) == a->rectangle.x;
 			break;
-		case DIR_UP:
+		case DIR_NORTH:
 			return (b->rectangle.y + b->rectangle.height) == a->rectangle.y;
 			break;
 	}
@@ -602,16 +721,17 @@ node_t *find_fence(node_t *n, direction_t dir)
 {
 	node_t *p;
 
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
+	}
 
 	p = n->parent;
 
 	while (p != NULL) {
-		if ((dir == DIR_UP && p->split_type == TYPE_HORIZONTAL && p->rectangle.y < n->rectangle.y) ||
-		    (dir == DIR_LEFT && p->split_type == TYPE_VERTICAL && p->rectangle.x < n->rectangle.x) ||
-		    (dir == DIR_DOWN && p->split_type == TYPE_HORIZONTAL && (p->rectangle.y + p->rectangle.height) > (n->rectangle.y + n->rectangle.height)) ||
-		    (dir == DIR_RIGHT && p->split_type == TYPE_VERTICAL && (p->rectangle.x + p->rectangle.width) > (n->rectangle.x + n->rectangle.width)))
+		if ((dir == DIR_NORTH && p->split_type == TYPE_HORIZONTAL && p->rectangle.y < n->rectangle.y) ||
+		    (dir == DIR_WEST && p->split_type == TYPE_VERTICAL && p->rectangle.x < n->rectangle.x) ||
+		    (dir == DIR_SOUTH && p->split_type == TYPE_HORIZONTAL && (p->rectangle.y + p->rectangle.height) > (n->rectangle.y + n->rectangle.height)) ||
+		    (dir == DIR_EAST && p->split_type == TYPE_VERTICAL && (p->rectangle.x + p->rectangle.width) > (n->rectangle.x + n->rectangle.width)))
 			return p;
 		p = p->parent;
 	}
@@ -619,15 +739,17 @@ node_t *find_fence(node_t *n, direction_t dir)
 	return NULL;
 }
 
-node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
 {
-	if (n == NULL || IS_FULLSCREEN(n->client) ||
-	    (d->layout == LAYOUT_MONOCLE && IS_TILED(n->client)))
+	if (n == NULL || (n->client != NULL && IS_FULLSCREEN(n->client)) ||
+	    (d->layout == LAYOUT_MONOCLE && (n->client != NULL && IS_TILED(n->client)))) {
 		return NULL;
+	}
 
 	node_t *nearest = NULL;
-	if (history_aware_focus)
+	if (history_aware_focus) {
 		nearest = nearest_from_history(m, d, n, dir, sel);
+	}
     if (nearest == NULL) {
         if (focus_by_distance) {
             nearest = nearest_from_distance(m, d, n, dir, sel);
@@ -638,7 +760,60 @@ node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir,
     return nearest;
 }
 
-node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+/* returns *true* if *a* is a child of *b* */
+bool is_child(node_t *a, node_t *b)
+{
+	if (a == NULL || b == NULL) {
+		return false;
+	}
+	return (a->parent != NULL && a->parent == b);
+}
+
+/* returns *true* if *a* is a descendant of *b* */
+bool is_descendant(node_t *a, node_t *b)
+{
+	if (a == NULL || b == NULL) {
+		return false;
+	}
+	while (a != b && a != NULL) {
+		a = a->parent;
+	}
+	return a == b;
+}
+
+bool find_by_id(uint32_t id, coordinates_t *loc)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			node_t *n = find_by_id_in(d->root, id);
+			if (n != NULL) {
+				loc->monitor = m;
+				loc->desktop = d;
+				loc->node = n;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+node_t *find_by_id_in(node_t *r, uint32_t id)
+{
+	if (r == NULL) {
+		return NULL;
+	} else if (r->id == id) {
+		return r;
+	} else {
+		node_t *f = find_by_id_in(r->first_child, id);
+		if (f != NULL) {
+			return f;
+		} else {
+			return find_by_id_in(r->second_child, id);
+		}
+	}
+}
+
+node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
 {
     if (n == NULL) {
         return NULL;
@@ -646,14 +821,15 @@ node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir
 
     node_t *fence = find_fence(n, dir);
 
-    if (fence == NULL)
+    if (fence == NULL) {
         return NULL;
+    }
 
     node_t *nearest = NULL;
 
-    if (dir == DIR_UP || dir == DIR_LEFT) {
+    if (dir == DIR_NORTH || dir == DIR_WEST) {
         nearest = second_extrema(fence->first_child);
-    } else if (dir == DIR_DOWN || dir == DIR_RIGHT) {
+    } else if (dir == DIR_SOUTH || dir == DIR_EAST) {
         nearest = first_extrema(fence->second_child);
     }
 
@@ -667,30 +843,34 @@ node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir
 	}
 }
 
-node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
 {
-	if (n == NULL || !IS_TILED(n->client)) {
+	if (n == NULL || (n->client != NULL && !IS_TILED(n->client))) {
 		return NULL;
 	}
 
 	node_t *target = find_fence(n, dir);
-	if (target == NULL)
+	if (target == NULL) {
 		return NULL;
-	if (dir == DIR_UP || dir == DIR_LEFT)
+	}
+	if (dir == DIR_NORTH || dir == DIR_WEST) {
 		target = target->first_child;
-	else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+	} else if (dir == DIR_SOUTH || dir == DIR_EAST) {
 		target = target->second_child;
+	}
 
 	node_t *nearest = NULL;
 	int min_rank = INT_MAX;
 	coordinates_t ref = {m, d, n};
 
 	for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-		if (a->vacant || !is_adjacent(n, a, dir) || a == n)
+		if (a->vacant || !is_adjacent(n, a, dir) || a == n) {
 			continue;
+		}
 		coordinates_t loc = {m, d, a};
-		if (!node_matches(&loc, &ref, sel))
+		if (!node_matches(&loc, &ref, sel)) {
 			continue;
+		}
 
 		int rank = history_rank(d, a);
 		if (rank >= 0 && rank < min_rank) {
@@ -702,21 +882,24 @@ node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t 
 	return nearest;
 }
 
-node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, client_select_t sel)
+node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
+	}
 
 	node_t *target = NULL;
 
-	if (IS_TILED(n->client)) {
+	if (n->client != NULL && IS_TILED(n->client)) {
 		target = find_fence(n, dir);
-		if (target == NULL)
+		if (target == NULL) {
 			return NULL;
-		if (dir == DIR_UP || dir == DIR_LEFT)
+		}
+		if (dir == DIR_NORTH || dir == DIR_WEST) {
 			target = target->first_child;
-		else if (dir == DIR_DOWN || dir == DIR_RIGHT)
+		} else if (dir == DIR_SOUTH || dir == DIR_EAST) {
 			target = target->second_child;
+		}
 	} else {
 		target = d->root;
 	}
@@ -725,7 +908,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 	direction_t dir2;
 	xcb_point_t pt;
 	xcb_point_t pt2;
-	get_side_handle(n->client, dir, &pt);
+	get_side_handle(m, d, n, dir, &pt);
 	get_opposite(dir, &dir2);
 	double ds = DBL_MAX;
 	coordinates_t ref = {m, d, n};
@@ -735,10 +918,11 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 		if (a == n ||
 		    !node_matches(&loc, &ref, sel) ||
 		    IS_TILED(a->client) != IS_TILED(n->client) ||
-		    (IS_TILED(a->client) && !is_adjacent(n, a, dir)))
+		    (IS_TILED(a->client) && !is_adjacent(n, a, dir))) {
 			continue;
+		}
 
-		get_side_handle(a->client, dir2, &pt2);
+		get_side_handle(m, d, a, dir2, &pt2);
 		double ds2 = distance(pt, pt2);
 		if (ds2 < ds) {
 			ds = ds2;
@@ -752,33 +936,37 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 void get_opposite(direction_t src, direction_t *dst)
 {
 	switch (src) {
-		case DIR_RIGHT:
-			*dst = DIR_LEFT;
+		case DIR_EAST:
+			*dst = DIR_WEST;
 			break;
-		case DIR_DOWN:
-			*dst = DIR_UP;
+		case DIR_SOUTH:
+			*dst = DIR_NORTH;
 			break;
-		case DIR_LEFT:
-			*dst = DIR_RIGHT;
+		case DIR_WEST:
+			*dst = DIR_EAST;
 			break;
-		case DIR_UP:
-			*dst = DIR_DOWN;
+		case DIR_NORTH:
+			*dst = DIR_SOUTH;
 			break;
 	}
 }
 
-int tiled_area(node_t *n)
+unsigned int node_area(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n == NULL)
-		return -1;
-	xcb_rectangle_t rect = n->client->tiled_rectangle;
+	if (n == NULL) {
+		return 0;
+	}
+	xcb_rectangle_t rect = get_rectangle(m, d, n);
 	return rect.width * rect.height;
 }
 
-int tiled_count(desktop_t *d)
+int tiled_count(node_t *n)
 {
+	if (n == NULL) {
+		return 0;
+	}
 	int cnt = 0;
-	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
 		if (IS_TILED(f->client)) {
 			cnt++;
 		}
@@ -786,36 +974,36 @@ int tiled_count(desktop_t *d)
 	return cnt;
 }
 
-node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, client_select_t sel)
+node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, node_select_t sel)
 {
-	if (d == NULL)
+	if (d == NULL) {
 		return NULL;
+	}
 
-	node_t *r = NULL;
-	int r_area = tiled_area(r);
+	node_t *b = NULL;
+	unsigned int b_area = 0;
 	coordinates_t ref = {m, d, n};
 
 	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
 		coordinates_t loc = {m, d, f};
-		if (IS_FLOATING(f->client) || !node_matches(&loc, &ref, sel))
+		if (f->vacant || !node_matches(&loc, &ref, sel)) {
 			continue;
-		int f_area = tiled_area(f);
-		if (r == NULL) {
-			r = f;
-			r_area = f_area;
-		} else if (f_area > r_area) {
-			r = f;
-			r_area = f_area;
+		}
+		unsigned int f_area = node_area(m, d, f);
+		if (f_area > b_area) {
+			b = f;
+			b_area = f_area;
 		}
 	}
 
-	return r;
+	return b;
 }
 
 void rotate_tree(node_t *n, int deg)
 {
-	if (n == NULL || is_leaf(n) || deg == 0)
+	if (n == NULL || is_leaf(n) || deg == 0) {
 		return;
+	}
 
 	node_t *tmp;
 
@@ -829,10 +1017,11 @@ void rotate_tree(node_t *n, int deg)
 	}
 
 	if (deg != 180) {
-		if (n->split_type == TYPE_HORIZONTAL)
+		if (n->split_type == TYPE_HORIZONTAL) {
 			n->split_type = TYPE_VERTICAL;
-		else if (n->split_type == TYPE_VERTICAL)
+		} else if (n->split_type == TYPE_VERTICAL) {
 			n->split_type = TYPE_HORIZONTAL;
+		}
 	}
 
 	rotate_tree(n->first_child, deg);
@@ -846,8 +1035,9 @@ void rotate_brother(node_t *n)
 
 void unrotate_tree(node_t *n, int rot)
 {
-	if (rot == 0)
+	if (rot == 0) {
 		return;
+	}
 	rotate_tree(n, 360 - rot);
 }
 
@@ -858,8 +1048,9 @@ void unrotate_brother(node_t *n)
 
 void flip_tree(node_t *n, flip_t flp)
 {
-	if (n == NULL || is_leaf(n))
+	if (n == NULL || is_leaf(n)) {
 		return;
+	}
 
 	node_t *tmp;
 
@@ -896,16 +1087,18 @@ int balance_tree(node_t *n)
 		int b1 = balance_tree(n->first_child);
 		int b2 = balance_tree(n->second_child);
 		int b = b1 + b2;
-		if (b1 > 0 && b2 > 0)
+		if (b1 > 0 && b2 > 0) {
 			n->split_ratio = (double) b1 / b;
+		}
 		return b;
 	}
 }
 
 void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (d == NULL || n == NULL)
+	if (d == NULL || n == NULL) {
 		return;
+	}
 
 	node_t *p = n->parent;
 
@@ -913,99 +1106,106 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		d->root = NULL;
 		d->focus = NULL;
 	} else {
-		if (n->client->private)
-			update_privacy_level(n, false);
+		if (d->focus == p || is_descendant(d->focus, n)) {
+			d->focus = NULL;
+		}
 
-		node_t *b;
+		node_t *b = brother_tree(n);
 		node_t *g = p->parent;
 
-		if (is_first_child(n)) {
-			b = p->second_child;
-			if (!n->vacant)
-				unrotate_tree(b, n->birth_rotation);
-		} else {
-			b = p->first_child;
-			if (!n->vacant)
-				unrotate_tree(b, n->birth_rotation);
+		if (!n->vacant) {
+			unrotate_tree(b, n->birth_rotation);
 		}
 
 		b->parent = g;
 
 		if (g != NULL) {
-			if (is_first_child(p))
+			if (is_first_child(p)) {
 				g->first_child = b;
-			else
+			} else {
 				g->second_child = b;
+			}
 		} else {
 			d->root = b;
 		}
 
 		b->birth_rotation = p->birth_rotation;
 		n->parent = NULL;
-		free(p);
-		propagate_vacant_state(b);
 
-		if (n == d->focus) {
-			d->focus = history_get_node(d, n);
-			// fallback to the first extrema (`n` is not reachable)
-			if (d->focus == NULL)
-				d->focus = first_extrema(d->root);
+		history_remove(d, p, false);
+		cancel_presel(m, d, p);
+		if (p->sticky) {
+			m->sticky_count--;
 		}
-	}
+		free(p);
 
-	if (n->client->sticky) {
-		m->num_sticky--;
+		propagate_vacant_state(m, d, b);
 	}
-
-	put_status(SBSC_MASK_REPORT);
 }
 
 void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return;
+	}
 
-	bool focused = (n == mon->desk->focus);
+	node_t *last_focus = d->focus;
 
 	unlink_node(m, d, n);
-	history_remove(d, n);
+	history_remove(d, n, true);
 	remove_stack_node(n);
+	cancel_presel(m, d, n);
+	if (m->sticky_count > 0) {
+		m->sticky_count -= sticky_count(n);
+	}
+	clients_count -= clients_count_in(n);
 	free(n->client);
 	free(n);
 
-	num_clients--;
-	ewmh_update_client_list();
+	ewmh_update_client_list(false);
 
-	if (focused) {
-		update_current();
+	if (d->focus != last_focus) {
+		if (d == mon->desk) {
+			focus_node(m, d, d->focus);
+		} else {
+			activate_node(m, d, d->focus);
+		}
 	}
 }
 
-void destroy_tree(node_t *n)
+void destroy_tree(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
 		return;
 	}
-	node_t *first_tree = n->first_child;
-	node_t *second_tree = n->second_child;
+	node_t *first_child = n->first_child;
+	node_t *second_child = n->second_child;
 	if (n->client != NULL) {
 		remove_stack_node(n);
-		free(n->client);
-		num_clients--;
+		clients_count--;
 	}
+	if (n->sticky) {
+		m->sticky_count--;
+	}
+	cancel_presel(m, d, n);
+	free(n->client);
 	free(n);
-	destroy_tree(first_tree);
-	destroy_tree(second_tree);
+	if (first_child != NULL && second_child != NULL) {
+		first_child->parent = second_child->parent = NULL;
+		destroy_tree(m, d, first_child);
+		destroy_tree(m, d, second_child);
+	}
 }
 
 bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
 {
-	if (n1 == NULL || n2 == NULL || n1 == n2
-	    || (d1 != d2 && (n1->client->sticky || n2->client->sticky))) {
+	if (n1 == NULL || n2 == NULL || n1 == n2 || is_descendant(n1, n2) || is_descendant(n2, n1) ||
+	    (d1 != d2 && ((m1->sticky_count > 0 && sticky_count(n1) > 0) ||
+	                  (m2->sticky_count > 0 && sticky_count(n2) > 0)))) {
 		return false;
 	}
 
-	put_status(SBSC_MASK_WINDOW_SWAP, "window_swap %s %s 0x%X %s %s 0x%X\n", m1->name, d1->name, n1->client->window, m2->name, d2->name, n2->client->window);
+	put_status(SBSC_MASK_NODE_SWAP, "node_swap %s %s 0x%X %s %s 0x%X\n", m1->name, d1->name, n1->id, m2->name, d2->name, n2->id);
 
 	node_t *pn1 = n1->parent;
 	node_t *pn2 = n2->parent;
@@ -1013,68 +1213,97 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 	bool n2_first_child = is_first_child(n2);
 	int br1 = n1->birth_rotation;
 	int br2 = n2->birth_rotation;
-	int pl1 = n1->privacy_level;
-	int pl2 = n2->privacy_level;
+	bool n1_held_focus = is_descendant(d1->focus, n1);
+	bool n2_held_focus = is_descendant(d2->focus, n2);
+	node_t *last_d1_focus = d1->focus;
+	node_t *last_d2_focus = d2->focus;
 
 	if (pn1 != NULL) {
-		if (n1_first_child)
+		if (n1_first_child) {
 			pn1->first_child = n2;
-		else
+		} else {
 			pn1->second_child = n2;
+		}
 	}
 
 	if (pn2 != NULL) {
-		if (n2_first_child)
+		if (n2_first_child) {
 			pn2->first_child = n1;
-		else
+		} else {
 			pn2->second_child = n1;
+		}
 	}
 
 	n1->parent = pn2;
 	n2->parent = pn1;
 	n1->birth_rotation = br2;
 	n2->birth_rotation = br1;
-	n1->privacy_level = pl2;
-	n2->privacy_level = pl1;
 
 	if (n1->vacant != n2->vacant) {
-		propagate_vacant_state(n1);
-		propagate_vacant_state(n2);
-	}
-
-	if (n1->client->private != n2->client->private) {
-		n1->client->private = !n1->client->private;
-		n2->client->private = !n2->client->private;
+		propagate_vacant_state(m2, d2, n1);
+		propagate_vacant_state(m1, d1, n2);
 	}
 
 	if (d1 != d2) {
-		if (d1->root == n1)
+		if (d1->root == n1) {
 			d1->root = n2;
-		if (d1->focus == n1)
-			d1->focus = n2;
-		if (d2->root == n2)
+		}
+
+		if (d2->root == n2) {
 			d2->root = n1;
-		if (d2->focus == n2)
-			d2->focus = n1;
+		}
+
+		if (n1_held_focus) {
+			d1->focus = n2_held_focus ? last_d2_focus : n2;
+		}
+
+		if (n2_held_focus) {
+			d2->focus = n1_held_focus ? last_d1_focus : n1;
+		}
 
 		if (m1 != m2) {
-			translate_client(m2, m1, n2->client);
-			translate_client(m1, m2, n1->client);
+			adapt_geometry(&m2->rectangle, &m1->rectangle, n2);
+			adapt_geometry(&m1->rectangle, &m2->rectangle, n1);
 		}
 
 		ewmh_set_wm_desktop(n1, d2);
 		ewmh_set_wm_desktop(n2, d1);
+
 		history_swap_nodes(m1, d1, n1, m2, d2, n2);
 
 		if (m1->desk != d1 && m2->desk == d2) {
-			window_show(n1->client->window);
-			window_hide(n2->client->window);
+			show_node(n1);
+			hide_node(n2);
 		} else if (m1->desk == d1 && m2->desk != d2) {
-			window_hide(n1->client->window);
-			window_show(n2->client->window);
+			hide_node(n1);
+			show_node(n2);
 		}
 
-		update_input_focus();
+		if (n1_held_focus) {
+			if (d1 == mon->desk) {
+				focus_node(m1, d1, d1->focus);
+			} else {
+				activate_node(m1, d1, d1->focus);
+			}
+		} else {
+			draw_border(n2, is_descendant(n2, d1->focus), (m1 == mon));
+		}
+
+		if (n2_held_focus) {
+			if (d2 == mon->desk) {
+				focus_node(m2, d2, d2->focus);
+			} else {
+				activate_node(m2, d2, d2->focus);
+			}
+		} else {
+			draw_border(n1, is_descendant(n1, d2->focus), (m2 == mon));
+		}
+	}
+
+	arrange(m1, d1);
+
+	if (d1 != d2) {
+		arrange(m2, d2);
 	}
 
 	return true;
@@ -1082,16 +1311,23 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
 {
-	if (ns == NULL || ns == nd || (sticky_still && ns->client->sticky)) {
+	if (ns == NULL || ns == nd || is_child(ns, nd) || is_descendant(nd, ns)) {
 		return false;
 	}
 
-	put_status(SBSC_MASK_WINDOW_TRANSFER, "window_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->client->window, md->name, dd->name, nd!=NULL?nd->client->window:0);
+	unsigned int sc = 0;
 
-	bool focused = (ns == mon->desk->focus);
-	bool active = (ns == ds->focus);
+	if (sticky_still && ms->sticky_count > 0 && ds != dd && (sc = sticky_count(ns)) > 0) {
+		return false;
+	}
 
-	if (focused) {
+	put_status(SBSC_MASK_NODE_TRANSFER, "node_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->id, md->name, dd->name, nd!=NULL?nd->id:0);
+
+	bool held_focus = is_descendant(ds->focus, ns);
+	/* avoid ending up with a dangling pointer (because of unlink_node) */
+	node_t *last_ds_focus = is_child(ns, ds->focus) ? NULL : ds->focus;
+
+	if (held_focus && ds == mon->desk) {
 		clear_input_focus();
 	}
 
@@ -1099,34 +1335,49 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	insert_node(md, dd, ns, nd);
 
 	if (md != ms) {
-		translate_client(ms, md, ns->client);
+		adapt_geometry(&ms->rectangle, &md->rectangle, ns);
 	}
 
 	if (ds != dd) {
 		ewmh_set_wm_desktop(ns, dd);
-		if (!ns->client->sticky) {
+		if (sc == 0) {
 			if (ds == ms->desk && dd != md->desk) {
-				window_hide(ns->client->window);
+				hide_node(ns);
 			} else if (ds != ms->desk && dd == md->desk) {
-				window_show(ns->client->window);
+				show_node(ns);
 			}
 		}
 	}
 
 	history_transfer_node(md, dd, ns);
-	stack(ns, false);
+	stack(dd, ns, false);
 
 	if (ds == dd) {
-		if (focused) {
-			focus_node(md, dd, ns);
-		} else if (active) {
-			activate_node(md, dd, ns);
+		if (held_focus) {
+			if (ds == mon->desk) {
+				focus_node(ms, ds, last_ds_focus);
+			} else {
+				activate_node(ms, ds, last_ds_focus);
+			}
+		} else {
+			draw_border(ns, is_descendant(ns, ds->focus), (ms == mon));
 		}
 	} else {
-		if (focused) {
-			update_current();
-		} else if (ns == mon->desk->focus) {
-			update_input_focus();
+		if (held_focus) {
+			if (ds == mon->desk) {
+				focus_node(ms, ds, ds->focus);
+			} else {
+				activate_node(ms, ds, ds->focus);
+			}
+		}
+		if (dd->focus == ns) {
+			if (dd == mon->desk) {
+				focus_node(md, dd, held_focus ? last_ds_focus : dd->focus);
+			} else {
+				activate_node(md, dd, held_focus ? last_ds_focus : dd->focus);
+			}
+		} else {
+			draw_border(ns, is_descendant(ns, dd->focus), (md == mon));
 		}
 	}
 
@@ -1139,46 +1390,55 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	return true;
 }
 
-node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, client_select_t sel)
+node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, node_select_t sel)
 {
-	if (n == NULL)
+	if (n == NULL) {
 		return NULL;
+	}
 
 	node_t *f = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
-	if (f == NULL)
+	if (f == NULL) {
 		f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
+	}
 
 	coordinates_t ref = {m, d, n};
 	while (f != n) {
 		coordinates_t loc = {m, d, f};
-		if (node_matches(&loc, &ref, sel))
+		if (node_matches(&loc, &ref, sel)) {
 			return f;
+		}
 		f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
-		if (f == NULL)
+		if (f == NULL) {
 			f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
+		}
 	}
 	return NULL;
 }
 
-void circulate_leaves(monitor_t *m, desktop_t *d, circulate_dir_t dir)
+void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir)
 {
-	if (d == NULL || d->root == NULL || d->focus == NULL || is_leaf(d->root))
+	if (d == NULL || d->root == NULL || d->focus == NULL || is_leaf(n)) {
 		return;
+	}
 	node_t *p = d->focus->parent;
 	bool focus_first_child = is_first_child(d->focus);
-	if (dir == CIRCULATE_FORWARD)
-		for (node_t *s = second_extrema(d->root), *f = prev_tiled_leaf(d, s, d->root); f != NULL; s = prev_tiled_leaf(d, f, d->root), f = prev_tiled_leaf(d, s, d->root))
+	if (dir == CIRCULATE_FORWARD) {
+		for (node_t *s = second_extrema(n), *f = prev_tiled_leaf(d, s, n); f != NULL; s = prev_tiled_leaf(d, f, n), f = prev_tiled_leaf(d, s, n)) {
 			swap_nodes(m, d, f, m, d, s);
-	else
-		for (node_t *f = first_extrema(d->root), *s = next_tiled_leaf(d, f, d->root); s != NULL; f = next_tiled_leaf(d, s, d->root), s = next_tiled_leaf(d, f, d->root))
+		}
+	} else {
+		for (node_t *f = first_extrema(n), *s = next_tiled_leaf(d, f, n); s != NULL; f = next_tiled_leaf(d, s, n), s = next_tiled_leaf(d, f, n)) {
 			swap_nodes(m, d, f, m, d, s);
-	if (focus_first_child)
+		}
+	}
+	if (focus_first_child) {
 		focus_node(m, d, p->first_child);
-	else
+	} else {
 		focus_node(m, d, p->second_child);
+	}
 }
 
-void set_vacant_state(node_t *n, bool value)
+void set_vacant_state(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
 	n->vacant = value;
 
@@ -1188,10 +1448,14 @@ void set_vacant_state(node_t *n, bool value)
 		rotate_brother(n);
 	}
 
-	propagate_vacant_state(n);
+	if (value) {
+		cancel_presel(m, d, n);
+	}
+
+	propagate_vacant_state(m, d, n);
 }
 
-void propagate_vacant_state(node_t *n)
+void propagate_vacant_state(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
 		return;
@@ -1201,13 +1465,272 @@ void propagate_vacant_state(node_t *n)
 
 	while (p != NULL) {
 		p->vacant = (p->first_child->vacant && p->second_child->vacant);
+		if (p->vacant) {
+			cancel_presel(m, d, p);
+		}
 		p = p->parent;
 	}
 }
 
-void update_privacy_level(node_t *n, bool value)
+void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 {
-	int v = (value ? 1 : -1);
-	for (node_t *p = n; p != NULL; p = p->parent)
-		p->privacy_level += v;
+	if (n == NULL || n->client->layer == l) {
+		return;
+	}
+
+	n->client->last_layer = n->client->layer;
+	n->client->layer = l;
+
+	put_status(SBSC_MASK_NODE_LAYER, "node_layer %s %s 0x%X %s\n", m->name, d->name, n->id, LAYER_STR(l));
+
+	if (d->focus == n) {
+		neutralize_occluding_windows(m, d, n);
+	}
+
+	stack(d, n, (d->focus == n));
 }
+
+void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
+{
+	if (n == NULL || n->client->state == s) {
+		return;
+	}
+
+	client_t *c = n->client;
+
+	c->last_state = c->state;
+	c->state = s;
+
+	switch (c->last_state) {
+		case STATE_TILED:
+		case STATE_PSEUDO_TILED:
+			break;
+		case STATE_FLOATING:
+			set_floating(m, d, n, false);
+			break;
+		case STATE_FULLSCREEN:
+			set_fullscreen(m, d, n, false);
+			break;
+	}
+
+	put_status(SBSC_MASK_NODE_STATE, "node_state %s %s 0x%X %s off\n", m->name, d->name, n->id, STATE_STR(c->last_state));
+
+	switch (c->state) {
+		case STATE_TILED:
+		case STATE_PSEUDO_TILED:
+			break;
+		case STATE_FLOATING:
+			set_floating(m, d, n, true);
+			break;
+		case STATE_FULLSCREEN:
+			set_fullscreen(m, d, n, true);
+			break;
+	}
+
+	put_status(SBSC_MASK_NODE_STATE, "node_state %s %s 0x%X %s on\n", m->name, d->name, n->id, STATE_STR(c->state));
+
+	if (n == m->desk->focus) {
+		put_status(SBSC_MASK_REPORT);
+	}
+}
+
+void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	cancel_presel(m, d, n);
+	set_vacant_state(m, d, n, value);
+
+	if (!value && d->focus == n) {
+		neutralize_occluding_windows(m, d, n);
+	}
+
+	stack(d, n, (d->focus == n));
+}
+
+void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	client_t *c = n->client;
+
+	cancel_presel(m, d, n);
+	set_vacant_state(m, d, n, value);
+
+	if (value) {
+		ewmh_wm_state_add(n, ewmh->_NET_WM_STATE_FULLSCREEN);
+		c->last_layer = c->layer;
+		c->layer = LAYER_ABOVE;
+	} else {
+		ewmh_wm_state_remove(n, ewmh->_NET_WM_STATE_FULLSCREEN);
+		c->layer = c->last_layer;
+		if (d->focus == n) {
+			neutralize_occluding_windows(m, d, n);
+		}
+	}
+
+	stack(d, n, (d->focus == n));
+}
+
+void neutralize_occluding_windows(monitor_t *m, desktop_t *d, node_t *n)
+{
+	bool dirty = false;
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		for (node_t *a = first_extrema(d->root); a != NULL; a = next_leaf(a, d->root)) {
+			if (a != f && IS_FULLSCREEN(a->client) && stack_cmp(f->client, a->client) < 0) {
+				set_state(m, d, a, a->client->last_state);
+				dirty = true;
+			}
+		}
+	}
+	if (dirty) {
+		arrange(m, d);
+	}
+}
+
+void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL || n->locked == value) {
+		return;
+	}
+
+	n->locked = value;
+
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X locked %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+
+	if (n == m->desk->focus) {
+		put_status(SBSC_MASK_REPORT);
+	}
+}
+
+void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL || n->sticky == value) {
+		return;
+	}
+
+	if (d != m->desk) {
+		transfer_node(m, d, n, m, m->desk, m->desk->focus);
+	}
+
+	n->sticky = value;
+
+	if (value) {
+		ewmh_wm_state_add(n, ewmh->_NET_WM_STATE_STICKY);
+		m->sticky_count++;
+	} else {
+		ewmh_wm_state_remove(n, ewmh->_NET_WM_STATE_STICKY);
+		m->sticky_count--;
+	}
+
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X sticky %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+
+	if (n == m->desk->focus) {
+		put_status(SBSC_MASK_REPORT);
+	}
+
+}
+
+void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL || n->private == value) {
+		return;
+	}
+
+	n->private = value;
+
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X private %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+
+	if (n == m->desk->focus) {
+		put_status(SBSC_MASK_REPORT);
+	}
+}
+
+void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (value && mon->desk->focus == n) {
+		return;
+	}
+
+	n->client->urgent = value;
+
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+	put_status(SBSC_MASK_REPORT);
+}
+
+/* Returns true if a contains b */
+bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
+{
+	return (a.x <= b.x && (a.x + a.width) >= (b.x + b.width) &&
+	        a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
+}
+
+xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n)
+{
+	client_t *c = n->client;
+	if (c != NULL) {
+		switch (c->state) {
+			case STATE_TILED:
+			case STATE_PSEUDO_TILED:
+				return c->tiled_rectangle;
+				break;
+			case STATE_FLOATING:
+				return c->floating_rectangle;
+				break;
+			case STATE_FULLSCREEN:
+			default:
+				return m != NULL ? m->rectangle : (xcb_rectangle_t) {0, 0, screen_width, screen_height};
+				break;
+		 }
+	} else {
+		int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+		xcb_rectangle_t rect = n->rectangle;
+		rect.width -= wg;
+		rect.height -= wg;
+		return rect;
+	}
+}
+
+void get_side_handle(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt)
+{
+	xcb_rectangle_t rect = get_rectangle(m, d, n);
+
+	switch (dir) {
+		case DIR_EAST:
+			pt->x = rect.x + rect.width;
+			pt->y = rect.y + (rect.height / 2);
+			break;
+		case DIR_SOUTH:
+			pt->x = rect.x + (rect.width / 2);
+			pt->y = rect.y + rect.height;
+			break;
+		case DIR_WEST:
+			pt->x = rect.x;
+			pt->y = rect.y + (rect.height / 2);
+			break;
+		case DIR_NORTH:
+			pt->x = rect.x + (rect.width / 2);
+			pt->y = rect.y;
+			break;
+	}
+}
+
+#define DEF_FLAG_COUNT(flag) \
+	unsigned int flag##_count(node_t *n) \
+	{ \
+		if (n == NULL) { \
+			return 0; \
+		} else { \
+			return ((n->flag ? 1 : 0) + \
+			        flag##_count(n->first_child) + \
+			        flag##_count(n->second_child)); \
+		} \
+	}
+	DEF_FLAG_COUNT(sticky)
+	DEF_FLAG_COUNT(private)
+	DEF_FLAG_COUNT(locked)
+#undef DEF_FLAG_COUNT

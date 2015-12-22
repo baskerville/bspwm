@@ -1,6 +1,6 @@
 #! /bin/sh
 
-if [ -e "$BSPWM_TREE" ] ; then
-	bspc restore -T "$BSPWM_TREE" -H "$BSPWM_HISTORY" -S "$BSPWM_STACK"
-	rm "$BSPWM_TREE" "$BSPWM_HISTORY" "$BSPWM_STACK"
+if [ -e "$BSPWM_STATE" ] ; then
+	bspc wm -l "$BSPWM_STATE"
+	rm "$BSPWM_STATE"
 fi

@@ -22,10 +22,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -36,10 +36,8 @@
 #include "tree.h"
 #include "settings.h"
 #include "restore.h"
-#include "helpers.h"
-#include "common.h"
+#include "window.h"
 #include "parse.h"
-#include "jsmn.h"
 
 bool restore_tree(const char *file_path)
 {
@@ -99,6 +97,8 @@ bool restore_tree(const char *file_path)
 		return false;
 	}
 
+	mon = NULL;
+
 	while (mon_head != NULL) {
 		remove_monitor(mon_head);
 	}
@@ -112,9 +112,9 @@ bool restore_tree(const char *file_path)
 			free(focusedMonitorName);
 			focusedMonitorName = copy_string(t+1, json);
 			t++;
-		} else if (keyeq("numClients", t, json)) {
+		} else if (keyeq("clientsCount", t, json)) {
 			t++;
-			sscanf(json + t->start, "%u", &num_clients);
+			sscanf(json + t->start, "%u", &clients_count);
 		} else if (keyeq("monitors", t, json)) {
 			t++;
 			int s = t->size;
@@ -123,6 +123,15 @@ bool restore_tree(const char *file_path)
 				monitor_t *m = restore_monitor(&t, json);
 				add_monitor(m);
 			}
+			continue;
+		} else if (keyeq("focusHistory", t, json)) {
+			t++;
+			restore_history(&t, json);
+			continue;
+		} else if (keyeq("stackingList", t, json)) {
+			t++;
+			restore_stack(&t, json);
+			continue;
 		}
 		t++;
 	}
@@ -138,14 +147,18 @@ bool restore_tree(const char *file_path)
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			refresh_presel_feebacks_in(d->root, d, m);
+			restack_presel_feedback(d);
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
-				xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+				xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
 			}
 		}
 	}
 
-	ewmh_update_client_list();
+	ewmh_update_client_list(false);
+	ewmh_update_client_list(true);
+	ewmh_update_active_window();
 	ewmh_update_number_of_desktops();
 	ewmh_update_current_desktop();
 	ewmh_update_desktop_names();
@@ -156,34 +169,34 @@ bool restore_tree(const char *file_path)
 	return true;
 }
 
-#define RESTORE_INT(o, k, p) \
+#define RESTORE_INT(k, p) \
 	} else if (keyeq(#k, *t, json)) { \
 		(*t)++; \
-		sscanf(json + (*t)->start, "%i", &o->p);
+		sscanf(json + (*t)->start, "%i", p);
 
-#define RESTORE_UINT(o, k, p) \
+#define RESTORE_UINT(k, p) \
 	} else if (keyeq(#k, *t, json)) { \
 		(*t)++; \
-		sscanf(json + (*t)->start, "%u", &o->p);
+		sscanf(json + (*t)->start, "%u", p);
 
-#define RESTORE_USINT(o, k, p) \
+#define RESTORE_USINT(k, p) \
 	} else if (keyeq(#k, *t, json)) { \
 		(*t)++; \
-		sscanf(json + (*t)->start, "%hu", &o->p);
+		sscanf(json + (*t)->start, "%hu", p);
 
-#define RESTORE_DOUBLE(o, k, p) \
+#define RESTORE_DOUBLE(k, p) \
 	} else if (keyeq(#k, *t, json)) { \
 		(*t)++; \
-		sscanf(json + (*t)->start, "%lf", &o->p);
+		sscanf(json + (*t)->start, "%lf", p);
 
-#define RESTORE_ANY(o, k, p, f) \
+#define RESTORE_ANY(k, p, f) \
 	} else if (keyeq(#k, *t, json)) { \
 		(*t)++; \
 		char *val = copy_string(*t, json); \
-		f(val, &o->p); \
+		f(val, p); \
 		free(val);
 
-#define RESTORE_BOOL(o, k, p)  RESTORE_ANY(o, k, p, parse_bool)
+#define RESTORE_BOOL(k, p)  RESTORE_ANY(k, p, parse_bool)
 
 monitor_t *restore_monitor(jsmntok_t **t, char *json)
 {
@@ -196,13 +209,13 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 		if (keyeq("name", *t, json)) {
 			(*t)++;
 			snprintf(m->name, (*t)->end - (*t)->start + 1, "%s", json + (*t)->start);
-		RESTORE_UINT(m, id, id)
-		RESTORE_BOOL(m, wired, wired)
-		RESTORE_INT(m, topPadding, top_padding)
-		RESTORE_INT(m, rightPadding, right_padding)
-		RESTORE_INT(m, bottomPadding, bottom_padding)
-		RESTORE_INT(m, leftPadding, left_padding)
-		RESTORE_INT(m, numSticky, num_sticky)
+		RESTORE_UINT(id, &m->id)
+		RESTORE_BOOL(wired, &m->wired)
+		RESTORE_INT(topPadding, &m->top_padding)
+		RESTORE_INT(rightPadding, &m->right_padding)
+		RESTORE_INT(bottomPadding, &m->bottom_padding)
+		RESTORE_INT(leftPadding, &m->left_padding)
+		RESTORE_UINT(stickyCount, &m->sticky_count)
 		} else if (keyeq("rectangle", *t, json)) {
 			(*t)++;
 			restore_rectangle(&m->rectangle, t, json);
@@ -247,7 +260,7 @@ desktop_t *restore_desktop(jsmntok_t **t, char *json)
 	int s = (*t)->size;
 	(*t)++;
 	desktop_t *d = make_desktop(NULL);
-	xcb_window_t focusedWindow = XCB_NONE;
+	xcb_window_t focusedNodeId = XCB_NONE;
 
 	for (int i = 0; i < s; i++) {
 		if (keyeq("name", *t, json)) {
@@ -261,15 +274,15 @@ desktop_t *restore_desktop(jsmntok_t **t, char *json)
 				d->layout = lyt;
 			}
 			free(val);
-		RESTORE_INT(d, topPadding, top_padding)
-		RESTORE_INT(d, rightPadding, right_padding)
-		RESTORE_INT(d, bottomPadding, bottom_padding)
-		RESTORE_INT(d, leftPadding, left_padding)
-		RESTORE_INT(d, windowGap, window_gap)
-		RESTORE_UINT(d, borderWidth, border_width)
-		} else if (keyeq("focusedWindow", *t, json)) {
+		RESTORE_INT(topPadding, &d->top_padding)
+		RESTORE_INT(rightPadding, &d->right_padding)
+		RESTORE_INT(bottomPadding, &d->bottom_padding)
+		RESTORE_INT(leftPadding, &d->left_padding)
+		RESTORE_INT(windowGap, &d->window_gap)
+		RESTORE_UINT(borderWidth, &d->border_width)
+		} else if (keyeq("focusedNodeId", *t, json)) {
 			(*t)++;
-			sscanf(json + (*t)->start, "%u", &focusedWindow);
+			sscanf(json + (*t)->start, "%u", &focusedNodeId);
 		} else if (keyeq("root", *t, json)) {
 			(*t)++;
 			d->root = restore_node(t, json);
@@ -281,13 +294,8 @@ desktop_t *restore_desktop(jsmntok_t **t, char *json)
 		(*t)++;
 	}
 
-	if (focusedWindow != XCB_NONE) {
-		for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-			if (f->client->window == focusedWindow) {
-				d->focus = f;
-				break;
-			}
-		}
+	if (focusedNodeId != XCB_NONE) {
+		d->focus = find_by_id_in(d->root, focusedNodeId);
 	}
 
 	return d;
@@ -301,20 +309,24 @@ node_t *restore_node(jsmntok_t **t, char *json)
 	} else {
 		int s = (*t)->size;
 		(*t)++;
-		node_t *n = make_node();
+		/* hack to prevent a new ID from being generated */
+		node_t *n = make_node(UINT32_MAX);
 
 		for (int i = 0; i < s; i++) {
-			if (keyeq("splitType", *t, json)) {
+			if (keyeq("id", *t, json)) {
 				(*t)++;
-				char *val = copy_string(*t, json);
-				parse_split_type(val, &n->split_type);
-				free(val);
-			RESTORE_DOUBLE(n, splitRatio, split_ratio)
-			RESTORE_ANY(n, splitMode, split_mode, parse_split_mode)
-			RESTORE_ANY(n, splitDir, split_dir, parse_direction)
-			RESTORE_INT(n, birthRotation, birth_rotation)
-			RESTORE_INT(n, privacyLevel, privacy_level)
-			RESTORE_ANY(n, vacant, vacant, parse_bool)
+				sscanf(json + (*t)->start, "%u", &n->id);
+			RESTORE_ANY(splitType, &n->split_type, parse_split_type)
+			RESTORE_DOUBLE(splitRatio, &n->split_ratio)
+			RESTORE_INT(birthRotation, &n->birth_rotation)
+			RESTORE_ANY(vacant, &n->vacant, parse_bool)
+			RESTORE_ANY(sticky, &n->sticky, parse_bool)
+			RESTORE_ANY(private, &n->private, parse_bool)
+			RESTORE_ANY(locked, &n->locked, parse_bool)
+			} else if (keyeq("presel", *t, json)) {
+				(*t)++;
+				n->presel = restore_presel(t, json);
+				continue;
 			} else if (keyeq("rectangle", *t, json)) {
 				(*t)++;
 				restore_rectangle(&n->rectangle, t, json);
@@ -339,6 +351,9 @@ node_t *restore_node(jsmntok_t **t, char *json)
 				(*t)++;
 				n->client = restore_client(t, json);
 				continue;
+			} else {
+				warn("Restore node: unknown key: '%.*s'.\n", (*t)->end - (*t)->start, json + (*t)->start);
+				(*t)++;
 			}
 			(*t)++;
 		}
@@ -346,6 +361,31 @@ node_t *restore_node(jsmntok_t **t, char *json)
 		return n;
 	}
 }
+
+presel_t *restore_presel(jsmntok_t **t, char *json)
+{
+	if ((*t)->type == JSMN_PRIMITIVE) {
+		(*t)++;
+		return NULL;
+	} else {
+		int s = (*t)->size;
+		(*t)++;
+		presel_t *p = make_presel();
+
+		for (int i = 0; i < s; i++) {
+			if (keyeq("splitRatio", *t, json)) {
+				(*t)++;
+				sscanf(json + (*t)->start, "%lf", &p->split_ratio);
+			RESTORE_ANY(splitDir, &p->split_dir, parse_direction)
+			}
+
+			(*t)++;
+		}
+
+		return p;
+	}
+}
+
 
 client_t *restore_client(jsmntok_t **t, char *json)
 {
@@ -355,34 +395,28 @@ client_t *restore_client(jsmntok_t **t, char *json)
 	} else {
 		int s = (*t)->size;
 		(*t)++;
-		client_t *c = make_client(XCB_NONE, 0);
+		client_t *c = make_client();
 
 		for (int i = 0; i < s; i++) {
-			if (keyeq("window", *t, json)) {
-				(*t)++;
-				sscanf(json + (*t)->start, "%u", &c->window);
-			} else if (keyeq("className", *t, json)) {
+			if (keyeq("className", *t, json)) {
 				(*t)++;
 				snprintf(c->class_name, (*t)->end - (*t)->start + 1, "%s", json + (*t)->start);
 			} else if (keyeq("instanceName", *t, json)) {
 				(*t)++;
 				snprintf(c->instance_name, (*t)->end - (*t)->start + 1, "%s", json + (*t)->start);
-			RESTORE_ANY(c, state, state, parse_client_state)
-			RESTORE_ANY(c, lastState, last_state, parse_client_state)
-			RESTORE_ANY(c, layer, layer, parse_stack_layer)
-			RESTORE_ANY(c, lastLayer, last_layer, parse_stack_layer)
-			RESTORE_UINT(c, borderWidth, border_width)
-			RESTORE_BOOL(c, locked, locked)
-			RESTORE_BOOL(c, sticky, sticky)
-			RESTORE_BOOL(c, urgent, urgent)
-			RESTORE_BOOL(c, private, private)
-			RESTORE_BOOL(c, icccmFocus, icccm_focus)
-			RESTORE_BOOL(c, icccmInput, icccm_input)
-			RESTORE_USINT(c, minWidth, min_width)
-			RESTORE_USINT(c, maxWidth, max_width)
-			RESTORE_USINT(c, minHeight, min_height)
-			RESTORE_USINT(c, maxHeight, max_height)
-			RESTORE_INT(c, numStates, num_states)
+			RESTORE_ANY(state, &c->state, parse_client_state)
+			RESTORE_ANY(lastState, &c->last_state, parse_client_state)
+			RESTORE_ANY(layer, &c->layer, parse_stack_layer)
+			RESTORE_ANY(lastLayer, &c->last_layer, parse_stack_layer)
+			RESTORE_UINT(borderWidth, &c->border_width)
+			RESTORE_BOOL(urgent, &c->urgent)
+			RESTORE_BOOL(icccmFocus, &c->icccm_focus)
+			RESTORE_BOOL(icccmInput, &c->icccm_input)
+			RESTORE_USINT(minWidth, &c->min_width)
+			RESTORE_USINT(maxWidth, &c->max_width)
+			RESTORE_USINT(minHeight, &c->min_height)
+			RESTORE_USINT(maxHeight, &c->max_height)
+			RESTORE_INT(wmStatesCount, &c->wm_states_count)
 			} else if (keyeq("wmState", *t, json)) {
 				(*t)++;
 				restore_wm_state(c->wm_state, t, json);
@@ -395,6 +429,9 @@ client_t *restore_client(jsmntok_t **t, char *json)
 				(*t)++;
 				restore_rectangle(&c->floating_rectangle, t, json);
 				continue;
+			} else {
+				warn("Restore client: unknown key: '%.*s'.\n", (*t)->end - (*t)->start, json + (*t)->start);
+				(*t)++;
 			}
 
 			(*t)++;
@@ -422,6 +459,62 @@ void restore_rectangle(xcb_rectangle_t *r, jsmntok_t **t, char *json)
 		} else if (keyeq("height", *t, json)) {
 			(*t)++;
 			sscanf(json + (*t)->start, "%hu", &r->height);
+		}
+		(*t)++;
+	}
+}
+
+void restore_history(jsmntok_t **t, char *json)
+{
+	int s = (*t)->size;
+	(*t)++;
+
+	for (int i = 0; i < s; i++) {
+		coordinates_t loc = {NULL, NULL, NULL};
+		restore_coordinates(&loc, t, json);
+		if (loc.monitor != NULL && loc.desktop != NULL) {
+			history_add(loc.monitor, loc.desktop, loc.node);
+		}
+	}
+}
+
+void restore_coordinates(coordinates_t *loc, jsmntok_t **t, char *json)
+{
+	int s = (*t)->size;
+	(*t)++;
+
+	for (int i = 0; i < s; i++) {
+		if (keyeq("monitorName", *t, json)) {
+			(*t)++;
+			char *name = copy_string(*t, json);
+			loc->monitor = find_monitor(name);
+			free(name);
+		} else if (keyeq("desktopName", *t, json)) {
+			(*t)++;
+			char *name = copy_string(*t, json);
+			loc->desktop = find_desktop_in(name, loc->monitor);
+			free(name);
+		} else if (keyeq("nodeId", *t, json)) {
+			(*t)++;
+			uint32_t id;
+			sscanf(json + (*t)->start, "%u", &id);
+			loc->node = find_by_id_in(loc->desktop!=NULL?loc->desktop->root:NULL, id);
+		}
+		(*t)++;
+	}
+}
+
+void restore_stack(jsmntok_t **t, char *json)
+{
+	int s = (*t)->size;
+	(*t)++;
+
+	for (int i = 0; i < s; i++) {
+		uint32_t id;
+		sscanf(json + (*t)->start, "%u", &id);
+		coordinates_t loc;
+		if (locate_window(id, &loc)) {
+			stack_insert_after(stack_tail, loc.node);
 		}
 		(*t)++;
 	}
@@ -462,87 +555,4 @@ char *copy_string(jsmntok_t *tok, char *json)
 	strncpy(res, json+tok->start, len-1);
 	res[len-1] = '\0';
 	return res;
-}
-
-bool restore_history(const char *file_path)
-{
-	if (file_path == NULL) {
-		return false;
-	}
-
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		perror("Restore history: fopen");
-		return false;
-	}
-
-	char line[MAXLEN];
-	char mnm[SMALEN];
-	char dnm[SMALEN];
-	xcb_window_t win;
-
-	empty_history();
-
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		if (sscanf(line, "%s %s %X", mnm, dnm, &win) == 3) {
-			coordinates_t loc;
-			if (win != XCB_NONE && !locate_window(win, &loc)) {
-				warn("Can't locate window 0x%X.\n", win);
-				continue;
-			}
-			node_t *n = (win == XCB_NONE ? NULL : loc.node);
-			if (!locate_desktop(dnm, &loc)) {
-				warn("Can't locate desktop '%s'.\n", dnm);
-				continue;
-			}
-			desktop_t *d = loc.desktop;
-			if (!locate_monitor(mnm, &loc)) {
-				warn("Can't locate monitor '%s'.\n", mnm);
-				continue;
-			}
-			monitor_t *m = loc.monitor;
-			history_add(m, d, n);
-		} else {
-			warn("Can't parse history entry: '%s'\n", line);
-		}
-	}
-
-	fclose(snapshot);
-	return true;
-}
-
-bool restore_stack(const char *file_path)
-{
-	if (file_path == NULL) {
-		return false;
-	}
-
-	FILE *snapshot = fopen(file_path, "r");
-	if (snapshot == NULL) {
-		perror("Restore stack: fopen");
-		return false;
-	}
-
-	char line[MAXLEN];
-	xcb_window_t win;
-
-	while (stack_head != NULL) {
-		remove_stack(stack_head);
-	}
-
-	while (fgets(line, sizeof(line), snapshot) != NULL) {
-		if (sscanf(line, "%X", &win) == 1) {
-			coordinates_t loc;
-			if (locate_window(win, &loc)) {
-				stack_insert_after(stack_tail, loc.node);
-			} else {
-				warn("Can't locate window 0x%X.\n", win);
-			}
-		} else {
-			warn("Can't parse stack entry: '%s'\n", line);
-		}
-	}
-
-	fclose(snapshot);
-	return true;
 }

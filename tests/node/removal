@@ -1,0 +1,19 @@
+#! /bin/sh
+
+. ./prelude
+
+bspc monitor -a "test-removal"
+bspc desktop -f "test-removal"
+
+window add 3
+
+next_focus=$(bspc query -N -n);
+
+bspc node -f @/2/1
+bspc node @/2 -k
+
+[ "$(bspc query -N -n)" = "$next_focus" ] || fail "Invalid focus after removal."
+
+window remove
+
+bspc monitor -r "test-removal"

@@ -1,6 +1,4 @@
+# refresh or quit bspwm
 super + alt + {_,shift + }Escape
-	{bspc query -T > "$BSPWM_TREE"; \
-		bspc query -H > "$BSPWM_HISTORY"; \
-		bspc query -S > "$BSPWM_STACK"; \
-		bspc quit,\
+	{bspc wm -d > "$BSPWM_STATE" && bspc quit, \
 	 bspc quit 1}

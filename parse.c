@@ -1,7 +1,8 @@
-#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "helpers.h"
+#include <stdbool.h>
+#include <errno.h>
 #include "parse.h"
 
 bool parse_bool(char *value, bool *b)
@@ -87,17 +88,17 @@ bool parse_stack_layer(char *s, stack_layer_t *l)
 
 bool parse_direction(char *s, direction_t *d)
 {
-	if (streq("right", s)) {
-		*d = DIR_RIGHT;
+	if (streq("north", s)) {
+		*d = DIR_NORTH;
 		return true;
-	} else if (streq("down", s)) {
-		*d = DIR_DOWN;
+	} else if (streq("west", s)) {
+		*d = DIR_WEST;
 		return true;
-	} else if (streq("left", s)) {
-		*d = DIR_LEFT;
+	} else if (streq("south", s)) {
+		*d = DIR_SOUTH;
 		return true;
-	} else if (streq("up", s)) {
-		*d = DIR_UP;
+	} else if (streq("east", s)) {
+		*d = DIR_EAST;
 		return true;
 	}
 	return false;
@@ -197,15 +198,16 @@ bool parse_degree(char *s, int *d)
 	}
 }
 
-bool parse_window_id(char *s, long int *i)
+bool parse_id(char *s, uint32_t *i)
 {
 	char *end;
 	errno = 0;
-	long int ret = strtol(s, &end, 0);
-	if (errno != 0 || *end != '\0')
+	uint32_t ret = strtol(s, &end, 0);
+	if (errno != 0 || *end != '\0') {
 		return false;
-	else
+	} else {
 		*i = ret;
+	}
 	return true;
 }
 
@@ -230,8 +232,171 @@ bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *sta
 bool parse_index(char *s, int *i)
 {
 	int idx;
-	if (sscanf(s, "^%i", &idx) != 1 || idx < 1)
+	if (sscanf(s, "^%i", &idx) != 1 || idx < 1) {
 		return false;
+	}
 	*i = idx;
 	return true;
 }
+
+bool parse_rectangle(char *s, xcb_rectangle_t *r)
+{
+	uint16_t w, h;
+	int16_t x, y;
+	if (sscanf(s, "%hux%hu+%hi+%hi", &w, &h, &x, &y) != 4) {
+		return false;
+	}
+	r->width = w;
+	r->height = h;
+	r->x = x;
+	r->y = y;
+	return true;
+}
+
+bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
+{
+	if (streq("all", s)) {
+		*mask = SBSC_MASK_ALL;
+	} else if (streq("node", s)) {
+		*mask = SBSC_MASK_NODE;
+	} else if (streq("desktop", s)) {
+		*mask = SBSC_MASK_DESKTOP;
+	} else if (streq("monitor", s)) {
+		*mask = SBSC_MASK_MONITOR;
+	} else if (streq("node_manage", s)) {
+		*mask = SBSC_MASK_NODE_MANAGE;
+	} else if (streq("node_unmanage", s)) {
+		*mask = SBSC_MASK_NODE_UNMANAGE;
+	} else if (streq("node_swap", s)) {
+		*mask = SBSC_MASK_NODE_SWAP;
+	} else if (streq("node_transfer", s)) {
+		*mask = SBSC_MASK_NODE_TRANSFER;
+	} else if (streq("node_focus", s)) {
+		*mask = SBSC_MASK_NODE_FOCUS;
+	} else if (streq("node_presel", s)) {
+		*mask = SBSC_MASK_NODE_PRESEL;
+	} else if (streq("node_stack", s)) {
+		*mask = SBSC_MASK_NODE_STACK;
+	} else if (streq("node_activate", s)) {
+		*mask = SBSC_MASK_NODE_ACTIVATE;
+	} else if (streq("node_geometry", s)) {
+		*mask = SBSC_MASK_NODE_GEOMETRY;
+	} else if (streq("node_state", s)) {
+		*mask = SBSC_MASK_NODE_STATE;
+	} else if (streq("node_flag", s)) {
+		*mask = SBSC_MASK_NODE_FLAG;
+	} else if (streq("node_layer", s)) {
+		*mask = SBSC_MASK_NODE_LAYER;
+	} else if (streq("desktop_add", s)) {
+		*mask = SBSC_MASK_DESKTOP_ADD;
+	} else if (streq("desktop_rename", s)) {
+		*mask = SBSC_MASK_DESKTOP_RENAME;
+	} else if (streq("desktop_remove", s)) {
+		*mask = SBSC_MASK_DESKTOP_REMOVE;
+	} else if (streq("desktop_swap", s)) {
+		*mask = SBSC_MASK_DESKTOP_SWAP;
+	} else if (streq("desktop_transfer", s)) {
+		*mask = SBSC_MASK_DESKTOP_TRANSFER;
+	} else if (streq("desktop_focus", s)) {
+		*mask = SBSC_MASK_DESKTOP_FOCUS;
+	} else if (streq("desktop_activate", s)) {
+		*mask = SBSC_MASK_DESKTOP_ACTIVATE;
+	} else if (streq("desktop_layout", s)) {
+		*mask = SBSC_MASK_DESKTOP_LAYOUT;
+	} else if (streq("monitor_add", s)) {
+		*mask = SBSC_MASK_MONITOR_ADD;
+	} else if (streq("monitor_rename", s)) {
+		*mask = SBSC_MASK_MONITOR_RENAME;
+	} else if (streq("monitor_remove", s)) {
+		*mask = SBSC_MASK_MONITOR_REMOVE;
+	} else if (streq("monitor_focus", s)) {
+		*mask = SBSC_MASK_MONITOR_FOCUS;
+	} else if (streq("monitor_geometry", s)) {
+		*mask = SBSC_MASK_MONITOR_GEOMETRY;
+	} else if (streq("report", s)) {
+		*mask = SBSC_MASK_REPORT;
+	} else {
+		return false;
+	}
+	return true;
+}
+
+
+#define GET_MOD(k) \
+	} else if (streq(#k, tok)) { \
+		sel->k = OPTION_TRUE; \
+	} else if (streq("!" #k, tok)) { \
+		sel->k = OPTION_FALSE;
+
+bool parse_monitor_modifiers(char *desc, monitor_select_t *sel)
+{
+	char *tok;
+	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
+		tok[0] = '\0';
+		tok++;
+		if (streq("occupied", tok)) {
+			sel->occupied = OPTION_TRUE;
+		} else if (streq("!occupied", tok)) {
+			sel->occupied = OPTION_FALSE;
+		GET_MOD(focused)
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool parse_desktop_modifiers(char *desc, desktop_select_t *sel)
+{
+	char *tok;
+	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
+		tok[0] = '\0';
+		tok++;
+		if (streq("occupied", tok)) {
+			sel->occupied = OPTION_TRUE;
+		} else if (streq("!occupied", tok)) {
+			sel->occupied = OPTION_FALSE;
+		GET_MOD(focused)
+		GET_MOD(urgent)
+		GET_MOD(local)
+		} else {
+			return false;
+		}
+	}
+	return true;
+
+}
+
+bool parse_node_modifiers(char *desc, node_select_t *sel)
+{
+	char *tok;
+	while ((tok = strrchr(desc, CAT_CHR)) != NULL) {
+		tok[0] = '\0';
+		tok++;
+		if (streq("tiled", tok)) {
+			sel->tiled = OPTION_TRUE;
+		} else if (streq("!tiled", tok)) {
+			sel->tiled = OPTION_FALSE;
+		GET_MOD(automatic)
+		GET_MOD(focused)
+		GET_MOD(local)
+		GET_MOD(leaf)
+		GET_MOD(pseudo_tiled)
+		GET_MOD(floating)
+		GET_MOD(fullscreen)
+		GET_MOD(locked)
+		GET_MOD(sticky)
+		GET_MOD(private)
+		GET_MOD(urgent)
+		GET_MOD(same_class)
+		GET_MOD(below)
+		GET_MOD(normal)
+		GET_MOD(above)
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+#undef GET_MOD

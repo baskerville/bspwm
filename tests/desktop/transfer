@@ -1,0 +1,26 @@
+#! /bin/sh
+
+. ./prelude
+
+bspc wm -a "TEST-TRANSFER-A" 1024x512+0+0
+bspc wm -a "TEST-TRANSFER-B" 1024x512+0+512
+
+bspc monitor "TEST-TRANSFER-A" -a source
+bspc monitor -f "TEST-TRANSFER-A"
+
+window add 3
+
+root_rectangle_y=$(bspc query -T -n @/ | jshon -e rectangle -e y)
+
+bspc desktop "TEST-TRANSFER-A:focused" -m "TEST-TRANSFER-B"
+
+[ "$(bspc query -D -m "TEST-TRANSFER-A" | wc -l)" -eq 1 ] || fail "Invalid number of desktop in source after transfer."
+
+bspc desktop "TEST-TRANSFER-B:^2" -f
+
+[ "$(bspc query -T -n @/ | jshon -e rectangle -e y)" -ne "$root_rectangle_y" ] || fail "Wrong tiled rectangle for root in destination."
+
+window remove 3
+
+bspc wm -r "TEST-TRANSFER-A"
+bspc wm -r "TEST-TRANSFER-B"

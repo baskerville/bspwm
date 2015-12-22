@@ -1,0 +1,43 @@
+#! /bin/sh
+
+fail() {
+	echo "$@" 1>&2
+	exit 1
+}
+
+clients_count() {
+	bspc wm -d | jshon -e clientsCount
+}
+
+window() {
+    local cmd=$1
+    local iter=${2:-1}
+    local delta=${3:-1}
+	local interval=${4:-0.05}
+	local max_tries=${5:-40}
+    while [ $iter -gt 0 ] ; do
+		local cur=$(clients_count)
+		local trg
+		local tries=0
+		case "$cmd" in
+			add)
+				trg=$((cur + delta))
+				./test_window &
+				;;
+			remove)
+				trg=$((cur - delta))
+				bspc node -c
+				;;
+			*)
+				fail "window: unknown command: ${cmd}."
+				;;
+		esac
+		while [ $cur -ne $trg ] ; do
+			cur=$(clients_count)
+			sleep $interval
+			tries=$((tries + 1))
+			[ $tries -ge $max_tries ] && break
+		done
+		iter=$((iter - 1))
+	done
+}

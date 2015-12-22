@@ -31,7 +31,7 @@
 #include "helpers.h"
 
 #define MISSING_VALUE        "N/A"
-#define MAX_STATE            4
+#define MAX_WM_STATES        4
 
 typedef enum {
 	TYPE_HORIZONTAL,
@@ -83,10 +83,10 @@ typedef enum {
 } history_dir_t;
 
 typedef enum {
-	DIR_RIGHT,
-	DIR_DOWN,
-	DIR_LEFT,
-	DIR_UP
+	DIR_NORTH,
+	DIR_WEST,
+	DIR_SOUTH,
+	DIR_EAST
 } direction_t;
 
 typedef enum {
@@ -127,6 +127,10 @@ typedef enum {
 } child_polarity_t;
 
 typedef struct {
+	option_bool_t automatic;
+	option_bool_t focused;
+	option_bool_t local;
+	option_bool_t leaf;
 	option_bool_t tiled;
 	option_bool_t pseudo_tiled;
 	option_bool_t floating;
@@ -136,13 +140,10 @@ typedef struct {
 	option_bool_t private;
 	option_bool_t urgent;
 	option_bool_t same_class;
-	option_bool_t automatic;
-	option_bool_t local;
-	option_bool_t focused;
 	option_bool_t below;
 	option_bool_t normal;
 	option_bool_t above;
-} client_select_t;
+} node_select_t;
 
 typedef struct {
 	option_bool_t occupied;
@@ -157,14 +158,10 @@ typedef struct {
 } monitor_select_t;
 
 typedef struct {
-	xcb_window_t window;
 	char class_name[3 * SMALEN / 2];
 	char instance_name[3 * SMALEN / 2];
 	unsigned int border_width;
-	bool locked;				/* protects window from being closed */
-	bool sticky;
 	bool urgent;
-	bool private;
 	client_state_t state;
 	client_state_t last_state;
 	stack_layer_t layer;
@@ -177,24 +174,33 @@ typedef struct {
 	uint16_t max_width;
 	uint16_t min_height;
 	uint16_t max_height;
-	xcb_atom_t wm_state[MAX_STATE];
-	int num_states;
+	xcb_atom_t wm_state[MAX_WM_STATES];
+	int wm_states_count;
 } client_t;
+
+typedef struct presel_t presel_t;
+struct presel_t {
+	double split_ratio;
+	direction_t split_dir;
+	xcb_window_t feedback;
+};
 
 typedef struct node_t node_t;
 struct node_t {
+	uint32_t id;
 	split_type_t split_type;
 	double split_ratio;
-	split_mode_t split_mode;
-	direction_t split_dir;
 	int birth_rotation;
+	presel_t *presel;
 	xcb_rectangle_t rectangle;
-	bool vacant;				/* vacant nodes only hold floating clients */
-	int privacy_level;
+	bool vacant;
+	bool sticky;
+	bool private;
+	bool locked;
 	node_t *first_child;
 	node_t *second_child;
 	node_t *parent;
-	client_t *client;			/* NULL except for leaves */
+	client_t *client;
 };
 
 typedef struct desktop_t desktop_t;
@@ -223,7 +229,7 @@ struct monitor_t {
 	int right_padding;
 	int bottom_padding;
 	int left_padding;
-	int num_sticky;
+	unsigned int sticky_count;
 	xcb_rectangle_t rectangle;
 	desktop_t *desk;
 	desktop_t *desk_head;
@@ -264,7 +270,8 @@ struct subscriber_list_t {
 
 typedef struct rule_t rule_t;
 struct rule_t {
-	char cause[MAXLEN];
+	char class_name[MAXLEN];
+	char instance_name[MAXLEN];
 	char effect[MAXLEN];
 	bool one_shot;
 	rule_t *prev;
@@ -278,9 +285,9 @@ typedef struct {
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
 	char split_dir[SMALEN];
+	double split_ratio;
 	stack_layer_t *layer;
 	client_state_t *state;
-	double split_ratio;
 	uint16_t min_width;
 	uint16_t max_width;
 	uint16_t min_height;

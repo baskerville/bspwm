@@ -1,0 +1,3 @@
+- Install *jshon*.
+- Run `make` once.
+- Run `./run`.

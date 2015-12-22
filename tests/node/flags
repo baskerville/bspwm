@@ -1,0 +1,27 @@
+#! /bin/sh
+
+. ./prelude
+
+bspc monitor -a "test-sticky-a"
+bspc monitor -a "test-sticky-b"
+
+bspc desktop -f "test-sticky-a"
+
+window add 3
+bspc node -g sticky
+
+sticky_node_id=$(bspc query -N -n)
+
+bspc rule -a Test:test -o desktop="test-sticky-b"
+
+window add
+
+bspc desktop -f "test-sticky-b"
+
+bspc query -N -d | grep "$sticky_node_id" > /dev/null || fail "Sticky node is missing in destination."
+
+window remove 2
+bspc desktop -f "test-sticky-a"
+window remove 2
+
+bspc monitor -r "test-sticky-a" "test-sticky-b"

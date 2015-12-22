@@ -22,14 +22,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
-#ifdef __OpenBSD__
+#include <sys/stat.h>
 #include <sys/types.h>
-#endif
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <ctype.h>
 #include "helpers.h"
 #include "common.h"
 
@@ -39,14 +38,16 @@ int main(int argc, char *argv[])
 	struct sockaddr_un sock_address;
 	char msg[BUFSIZ], rsp[BUFSIZ];
 
-	if (argc < 2)
+	if (argc < 2) {
 		err("No arguments given.\n");
+	}
 
 	sock_address.sun_family = AF_UNIX;
 	char *sp;
 
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		err("Failed to create the socket.\n");
+	}
 
 	sp = getenv(SOCKET_ENV_VAR);
 	if (sp != NULL) {
@@ -54,13 +55,15 @@ int main(int argc, char *argv[])
 	} else {
 		char *host = NULL;
 		int dn = 0, sn = 0;
-		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0)
+		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0) {
 			snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, host, dn, sn);
+		}
 		free(host);
 	}
 
-	if (connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
+	if (connect(fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1) {
 		err("Failed to connect to the socket.\n");
+	}
 
 	argc--, argv++;
 	int msg_len = 0;
@@ -70,8 +73,9 @@ int main(int argc, char *argv[])
 		msg_len += n;
 	}
 
-	if (send(fd, msg, msg_len, 0) == -1)
+	if (send(fd, msg, msg_len, 0) == -1) {
 		err("Failed to send the data.\n");
+	}
 
 	int ret = 0, nb;
 	while ((nb = recv(fd, rsp, sizeof(rsp)-1, 0)) > 0) {

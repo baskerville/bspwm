@@ -22,10 +22,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdarg.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <math.h>
 #include "bspwm.h"
 
@@ -99,38 +104,31 @@ char *read_string(const char *file_path, size_t *tlen)
 	return content;
 }
 
-bool get_color(char *col, xcb_window_t win, uint32_t *pxl)
-{
-	xcb_colormap_t map = screen->default_colormap;
-	xcb_get_window_attributes_reply_t *reply = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, win), NULL);
-	if (reply != NULL)
-		map = reply->colormap;
-	free(reply);
 
-	if (col[0] == '#') {
-		unsigned int red, green, blue;
-		if (sscanf(col + 1, "%02x%02x%02x", &red, &green, &blue) == 3) {
-			/* 2**16 - 1 == 0xffff and 0x101 * 0xij == 0xijij */
-			red *= 0x101;
-			green *= 0x101;
-			blue *= 0x101;
-			xcb_alloc_color_reply_t *reply = xcb_alloc_color_reply(dpy, xcb_alloc_color(dpy, map, red, green, blue), NULL);
-			if (reply != NULL) {
-				*pxl = reply->pixel;
-				free(reply);
-				return true;
-			}
-		}
+/* Adapted from i3wm */
+uint32_t get_color_pixel(const char *color)
+{
+	unsigned int red, green, blue;
+	if (sscanf(color + 1, "%02x%02x%02x", &red, &green, &blue) == 3) {
+		/* We set the first 8 bits high to have 100% opacity in case of a 32 bit
+		 * color depth visual. */
+		return (0xFF << 24) | (red << 16 | green << 8 | blue);
 	} else {
-		xcb_alloc_named_color_reply_t *reply = xcb_alloc_named_color_reply(dpy, xcb_alloc_named_color(dpy, map, strlen(col), col), NULL);
-		if (reply != NULL) {
-			*pxl = reply->pixel;
-			free(reply);
-			return true;
+		return screen->black_pixel;
+	}
+}
+
+bool is_hex_color(const char *color)
+{
+	if (color[0] != '#' || strlen(color) != 7) {
+		return false;
+	}
+	for (int i = 1; i < 7; i++) {
+		if (!isxdigit(color[i])) {
+			return false;
 		}
 	}
-	*pxl = 0;
-	return false;
+	return true;
 }
 
 double distance(xcb_point_t a, xcb_point_t b)

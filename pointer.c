@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdbool.h>
 #include "bspwm.h"
 #include "query.h"
 #include "settings.h"
@@ -30,7 +31,6 @@
 #include "monitor.h"
 #include "subscribe.h"
 #include "window.h"
-#include "pointer.h"
 
 void grab_pointer(pointer_action_t pac)
 {
@@ -41,15 +41,15 @@ void grab_pointer(pointer_action_t pac)
 
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
-		client_t *c = NULL;
+		client_t *c = loc.node->client;
+
 		frozen_pointer->position = pos;
 		frozen_pointer->action = pac;
-		c = loc.node->client;
 		frozen_pointer->monitor = loc.monitor;
 		frozen_pointer->desktop = loc.desktop;
 		frozen_pointer->node = loc.node;
 		frozen_pointer->client = c;
-		frozen_pointer->window = c->window;
+		frozen_pointer->window = loc.node->id;
 		frozen_pointer->horizontal_fence = NULL;
 		frozen_pointer->vertical_fence = NULL;
 
@@ -61,7 +61,7 @@ void grab_pointer(pointer_action_t pac)
 					focus_node(loc.monitor, loc.desktop, loc.node);
 					pointer_follows_monitor = backup;
 				} else if (focus_follows_pointer) {
-					stack(loc.node, true);
+					stack(loc.desktop, loc.node, true);
 				}
 				frozen_pointer->action = ACTION_NONE;
 				break;
@@ -87,71 +87,77 @@ void grab_pointer(pointer_action_t pac)
 					float diag_a = ratio * y;
 					float diag_b = W - diag_a;
 					if (x < diag_a) {
-						if (x < diag_b)
+						if (x < diag_b) {
 							frozen_pointer->side = SIDE_LEFT;
-						else
+						} else {
 							frozen_pointer->side = SIDE_BOTTOM;
+						}
 					} else {
-						if (x < diag_b)
+						if (x < diag_b) {
 							frozen_pointer->side = SIDE_TOP;
-						else
+						} else {
 							frozen_pointer->side = SIDE_RIGHT;
+						}
 					}
 				} else if (pac == ACTION_RESIZE_CORNER) {
 					int16_t mid_x = frozen_pointer->rectangle.x + (frozen_pointer->rectangle.width / 2);
 					int16_t mid_y = frozen_pointer->rectangle.y + (frozen_pointer->rectangle.height / 2);
 					if (pos.x > mid_x) {
-						if (pos.y > mid_y)
+						if (pos.y > mid_y) {
 							frozen_pointer->corner = CORNER_BOTTOM_RIGHT;
-						else
+						} else {
 							frozen_pointer->corner = CORNER_TOP_RIGHT;
+						}
 					} else {
-						if (pos.y > mid_y)
+						if (pos.y > mid_y) {
 							frozen_pointer->corner = CORNER_BOTTOM_LEFT;
-						else
+						} else {
 							frozen_pointer->corner = CORNER_TOP_LEFT;
+						}
 					}
 				}
 				if (frozen_pointer->is_tiled) {
 					if (pac == ACTION_RESIZE_SIDE) {
 						switch (frozen_pointer->side) {
 							case SIDE_TOP:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_UP);
+								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_NORTH);
 								break;
 							case SIDE_RIGHT:
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_RIGHT);
+								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_EAST);
 								break;
 							case SIDE_BOTTOM:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_DOWN);
+								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_SOUTH);
 								break;
 							case SIDE_LEFT:
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_LEFT);
+								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_WEST);
 								break;
 						}
 					} else if (pac == ACTION_RESIZE_CORNER) {
 						switch (frozen_pointer->corner) {
 							case CORNER_TOP_LEFT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_UP);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_LEFT);
+								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_NORTH);
+								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_WEST);
 								break;
 							case CORNER_TOP_RIGHT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_UP);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_RIGHT);
+								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_NORTH);
+								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_EAST);
 								break;
 							case CORNER_BOTTOM_RIGHT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_DOWN);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_RIGHT);
+								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_SOUTH);
+								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_EAST);
 								break;
 							case CORNER_BOTTOM_LEFT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_DOWN);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_LEFT);
+								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_SOUTH);
+								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_WEST);
 								break;
 						}
 					}
-					if (frozen_pointer->horizontal_fence != NULL)
+					if (frozen_pointer->horizontal_fence != NULL) {
 						frozen_pointer->horizontal_ratio = frozen_pointer->horizontal_fence->split_ratio;
-					if (frozen_pointer->vertical_fence != NULL)
+					}
+					if (frozen_pointer->vertical_fence != NULL) {
 						frozen_pointer->vertical_ratio = frozen_pointer->vertical_fence->split_ratio;
+					}
 				}
 				break;
 			case ACTION_NONE:
@@ -160,8 +166,9 @@ void grab_pointer(pointer_action_t pac)
 	} else {
 		if (pac == ACTION_FOCUS) {
 			monitor_t *m = monitor_from_point(pos);
-			if (m != NULL && m != mon)
+			if (m != NULL && m != mon) {
 				focus_node(m, m->desk, m->desk->focus);
+			}
 		}
 		frozen_pointer->action = ACTION_NONE;
 	}
@@ -169,8 +176,9 @@ void grab_pointer(pointer_action_t pac)
 
 void track_pointer(int root_x, int root_y)
 {
-	if (frozen_pointer->action == ACTION_NONE)
+	if (frozen_pointer->action == ACTION_NONE) {
 		return;
+	}
 
 	int delta_x, delta_y, x = 0, y = 0, w = 1, h = 1;
 
@@ -192,13 +200,13 @@ void track_pointer(int root_x, int root_y)
 			if (frozen_pointer->is_tiled) {
 				xcb_window_t pwin = XCB_NONE;
 				query_pointer(&pwin, NULL);
-				if (pwin == win)
+				if (pwin == win) {
 					return;
+				}
 				coordinates_t loc;
 				bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
 				if (is_managed && !IS_FLOATING(loc.node->client) && loc.monitor == m) {
 					swap_nodes(m, d, n, m, d, loc.node);
-					arrange(m, d);
 				} else {
 					if (is_managed && loc.monitor == m) {
 						return;
@@ -214,8 +222,9 @@ void track_pointer(int root_x, int root_y)
 					}
 					bool focused = (n == mon->desk->focus);
 					transfer_node(m, d, n, loc.monitor, loc.desktop, loc.desktop->focus);
-					if (focused)
+					if (focused) {
 						focus_node(loc.monitor, loc.desktop, n);
+					}
 					frozen_pointer->monitor = loc.monitor;
 					frozen_pointer->desktop = loc.desktop;
 				}
@@ -227,12 +236,14 @@ void track_pointer(int root_x, int root_y)
 				c->floating_rectangle.y = y;
 				xcb_point_t pt = (xcb_point_t) {root_x, root_y};
 				monitor_t *pmon = monitor_from_point(pt);
-				if (pmon == NULL || pmon == m)
+				if (pmon == NULL || pmon == m) {
 					return;
+				}
 				bool focused = (n == mon->desk->focus);
 				transfer_node(m, d, n, pmon, pmon->desk, pmon->desk->focus);
-				if (focused)
+				if (focused) {
 					focus_node(pmon, pmon->desk, n);
+				}
 				frozen_pointer->monitor = pmon;
 				frozen_pointer->desktop = pmon->desk;
 			}
@@ -342,8 +353,8 @@ void track_pointer(int root_x, int root_y)
 void ungrab_pointer(void)
 {
 	if (frozen_pointer->action != ACTION_NONE) {
-		xcb_rectangle_t r = get_rectangle(frozen_pointer->monitor, frozen_pointer->client);
-		put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->name, frozen_pointer->desktop->name, frozen_pointer->window, r.width, r.height, r.x, r.y);
+		xcb_rectangle_t r = get_rectangle(frozen_pointer->monitor, frozen_pointer->desktop, frozen_pointer->node);
+		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->name, frozen_pointer->desktop->name, frozen_pointer->window, r.width, r.height, r.x, r.y);
 	}
 	frozen_pointer->action = ACTION_NONE;
 }

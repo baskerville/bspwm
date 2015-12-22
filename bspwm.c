@@ -24,28 +24,25 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/select.h>
-#ifdef __OpenBSD__
+#include <sys/stat.h>
 #include <sys/types.h>
-#endif
+#include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <xcb/xinerama.h>
 #include "types.h"
 #include "desktop.h"
 #include "monitor.h"
 #include "settings.h"
 #include "messages.h"
-#include "subscribe.h"
 #include "events.h"
 #include "common.h"
 #include "window.h"
 #include "history.h"
-#include "stack.h"
 #include "ewmh.h"
 #include "rule.h"
 #include "bspwm.h"
@@ -83,8 +80,9 @@ int main(int argc, char *argv[])
 	} else {
 		char *host = NULL;
 		int dn = 0, sn = 0;
-		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0)
+		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0) {
 			snprintf(socket_path, sizeof(socket_path), SOCKET_PATH_TPL, host, dn, sn);
+		}
 		free(host);
 	}
 
@@ -93,28 +91,33 @@ int main(int argc, char *argv[])
 
 	sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
-	if (sock_fd == -1)
+	if (sock_fd == -1) {
 		err("Couldn't create the socket.\n");
+	}
 
 	unlink(socket_path);
-	if (bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1)
+	if (bind(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1) {
 		err("Couldn't bind a name to the socket.\n");
+	}
 
-	if (listen(sock_fd, SOMAXCONN) == -1)
+	if (listen(sock_fd, SOMAXCONN) == -1) {
 		err("Couldn't listen to the socket.\n");
+	}
 
 	if (config_path[0] == '\0') {
 		char *config_home = getenv(CONFIG_HOME_ENV);
-		if (config_home != NULL)
+		if (config_home != NULL) {
 			snprintf(config_path, sizeof(config_path), "%s/%s/%s", config_home, WM_NAME, CONFIG_NAME);
-		else
+		} else {
 			snprintf(config_path, sizeof(config_path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, CONFIG_NAME);
+		}
 	}
 
 	dpy = xcb_connect(NULL, &default_screen);
 
-	if (!check_connection(dpy))
+	if (!check_connection(dpy)) {
 		exit(EXIT_FAILURE);
+	}
 
 	load_settings();
 	setup();
@@ -137,10 +140,12 @@ int main(int argc, char *argv[])
 		FD_SET(sock_fd, &descriptors);
 		FD_SET(dpy_fd, &descriptors);
 		max_fd = MAX(sock_fd, dpy_fd);
+
 		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
 			FD_SET(pr->fd, &descriptors);
-			if (pr->fd > max_fd)
+			if (pr->fd > max_fd) {
 				max_fd = pr->fd;
+			}
 		}
 
 		if (select(max_fd + 1, &descriptors, NULL, NULL, NULL) > 0) {
@@ -163,8 +168,9 @@ int main(int argc, char *argv[])
 					if (rsp != NULL) {
 						int ret = handle_message(msg, n, rsp);
 						if (ret != MSG_SUBSCRIBE) {
-							if (ret != MSG_SUCCESS)
+							if (ret != MSG_SUCCESS) {
 								fprintf(rsp, "%c", ret);
+							}
 							fflush(rsp);
 							fclose(rsp);
 						}
@@ -181,10 +187,12 @@ int main(int argc, char *argv[])
 					free(event);
 				}
 			}
+
 		}
 
-		if (!check_connection(dpy))
+		if (!check_connection(dpy)) {
 			running = false;
+		}
 	}
 
 	cleanup();
@@ -201,7 +209,7 @@ int main(int argc, char *argv[])
 
 void init(void)
 {
-	num_clients = 0;
+	clients_count = 0;
 	monitor_uid = desktop_uid = 0;
 	mon = mon_head = mon_tail = pri_mon = NULL;
 	history_head = history_tail = history_needle = NULL;
@@ -210,7 +218,7 @@ void init(void)
 	subscribe_head = subscribe_tail = NULL;
 	pending_rule_head = pending_rule_tail = NULL;
 	last_motion_time = last_motion_x = last_motion_y = 0;
-	visible = auto_raise = sticky_still = record_history = true;
+	auto_raise = sticky_still = record_history = true;
 	randr_base = 0;
 	exit_status = 0;
 }
@@ -220,14 +228,16 @@ void setup(void)
 	init();
 	ewmh_init();
 	screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
-	if (screen == NULL)
+
+	if (screen == NULL) {
 		err("Can't acquire the default screen.\n");
+	}
+
 	root = screen->root;
 	register_events();
 
 	screen_width = screen->width_in_pixels;
 	screen_height = screen->height_in_pixels;
-	root_depth = screen->root_depth;
 
 	meta_window = xcb_generate_id(dpy);
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, meta_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_NONE, NULL);
@@ -280,6 +290,7 @@ void setup(void)
 		randr = false;
 		warn("Couldn't retrieve monitors via RandR.\n");
 		bool xinerama_is_active = false;
+
 		if (xcb_get_extension_data(dpy, &xcb_xinerama_id)->present) {
 			xcb_xinerama_is_active_reply_t *xia = xcb_xinerama_is_active_reply(dpy, xcb_xinerama_is_active(dpy), NULL);
 			if (xia != NULL) {
@@ -314,8 +325,9 @@ void setup(void)
 	ewmh_update_current_desktop();
 	frozen_pointer = make_pointer_state();
 	xcb_get_input_focus_reply_t *ifo = xcb_get_input_focus_reply(dpy, xcb_get_input_focus(dpy), NULL);
-	if (ifo != NULL && (ifo->focus == XCB_INPUT_FOCUS_POINTER_ROOT || ifo->focus == XCB_NONE))
+	if (ifo != NULL && (ifo->focus == XCB_INPUT_FOCUS_POINTER_ROOT || ifo->focus == XCB_NONE)) {
 		clear_input_focus();
+	}
 	free(ifo);
 }
 
@@ -331,6 +343,8 @@ void register_events(void)
 
 void cleanup(void)
 {
+	mon = NULL;
+
 	while (mon_head != NULL) {
 		remove_monitor(mon_head);
 	}
@@ -343,6 +357,7 @@ void cleanup(void)
 	while (pending_rule_head != NULL) {
 		remove_pending_rule(pending_rule_head);
 	}
+
 	empty_history();
 	free(frozen_pointer);
 }

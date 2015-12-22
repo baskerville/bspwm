@@ -23,6 +23,7 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "monitor.h"
@@ -68,8 +69,9 @@ void handle_event(xcb_generic_event_t *evt)
 			process_error(evt);
 			break;
 		default:
-			if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
+			if (randr && resp_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
 				update_monitors();
+			}
 			break;
 	}
 }
@@ -91,14 +93,18 @@ void configure_request(xcb_generic_event_t *evt)
 	int w = 0, h = 0;
 
 	if (is_managed && !IS_FLOATING(c)) {
-		if (e->value_mask & XCB_CONFIG_WINDOW_X)
+		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
 			c->floating_rectangle.x = e->x;
-		if (e->value_mask & XCB_CONFIG_WINDOW_Y)
+		}
+		if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
 			c->floating_rectangle.y = e->y;
-		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH)
+		}
+		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
 			w = e->width;
-		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
+		}
+		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
 			h = e->height;
+		}
 
 		if (w != 0) {
 			restrain_floating_width(c, &w);
@@ -111,14 +117,13 @@ void configure_request(xcb_generic_event_t *evt)
 		}
 
 		xcb_configure_notify_event_t evt;
-		xcb_window_t win = c->window;
 		unsigned int bw = c->border_width;
 
-		xcb_rectangle_t rect = get_rectangle(loc.monitor, c);
+		xcb_rectangle_t rect = get_rectangle(loc.monitor, loc.desktop, loc.node);
 
 		evt.response_type = XCB_CONFIGURE_NOTIFY;
-		evt.event = win;
-		evt.window = win;
+		evt.event = e->window;
+		evt.window = e->window;
 		evt.above_sibling = XCB_NONE;
 		evt.x = rect.x;
 		evt.y = rect.y;
@@ -127,7 +132,7 @@ void configure_request(xcb_generic_event_t *evt)
 		evt.border_width = bw;
 		evt.override_redirect = false;
 
-		xcb_send_event(dpy, false, win, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
+		xcb_send_event(dpy, false, e->window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
 
 		if (c->state == STATE_PSEUDO_TILED) {
 			arrange(loc.monitor, loc.desktop);
@@ -140,15 +145,17 @@ void configure_request(xcb_generic_event_t *evt)
 		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
 			mask |= XCB_CONFIG_WINDOW_X;
 			values[i++] = e->x;
-			if (is_managed)
+			if (is_managed) {
 				c->floating_rectangle.x = e->x;
+			}
 		}
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
 			mask |= XCB_CONFIG_WINDOW_Y;
 			values[i++] = e->y;
-			if (is_managed)
+			if (is_managed) {
 				c->floating_rectangle.y = e->y;
+			}
 		}
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
@@ -176,26 +183,27 @@ void configure_request(xcb_generic_event_t *evt)
 			values[i++] = e->border_width;
 		}
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
+		if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
 			mask |= XCB_CONFIG_WINDOW_SIBLING;
 			values[i++] = e->sibling;
 		}
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
+		if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
 			mask |= XCB_CONFIG_WINDOW_STACK_MODE;
 			values[i++] = e->stack_mode;
 		}
 
 		xcb_configure_window(dpy, e->window, mask, values);
 
-		if (is_managed && (mask & XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT)) {
+		if (is_managed && mask & XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT) {
 			xcb_rectangle_t r = c->floating_rectangle;
-			put_status(SBSC_MASK_WINDOW_GEOMETRY, "window_geometry %s %s 0x%X %ux%u+%i+%i\n", loc.monitor->name, loc.desktop->name, c->window, r.width, r.height, r.x, r.y);
+			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", loc.monitor->name, loc.desktop->name, e->window, r.width, r.height, r.x, r.y);
 		}
 	}
 
 	if (is_managed) {
-		translate_client(monitor_from_client(c), loc.monitor, c);
+		monitor_t *m = monitor_from_client(c);
+		adapt_geometry(&m->rectangle, &loc.monitor->rectangle, loc.node);
 	}
 }
 
@@ -222,14 +230,15 @@ void property_notify(xcb_generic_event_t *evt)
 	}
 
 	coordinates_t loc;
-	if (!locate_window(e->window, &loc))
+	if (!locate_window(e->window, &loc)) {
 			return;
+	}
 
 	if (e->atom == XCB_ATOM_WM_HINTS) {
 		xcb_icccm_wm_hints_t hints;
 		if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, e->window), &hints, NULL) == 1 &&
 		    (hints.flags & XCB_ICCCM_WM_HINT_X_URGENCY))
-			set_urgency(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
+			set_urgent(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
 	} else if (e->atom == XCB_ATOM_WM_NORMAL_HINTS) {
 		client_t *c = loc.node->client;
 		xcb_size_hints_t size_hints;
@@ -255,27 +264,31 @@ void client_message(xcb_generic_event_t *evt)
 
 	if (e->type == ewmh->_NET_CURRENT_DESKTOP) {
 		coordinates_t loc;
-		if (ewmh_locate_desktop(e->data.data32[0], &loc))
+		if (ewmh_locate_desktop(e->data.data32[0], &loc)) {
 			focus_node(loc.monitor, loc.desktop, loc.desktop->focus);
+		}
 		return;
 	}
 
 	coordinates_t loc;
-	if (!locate_window(e->window, &loc))
+	if (!locate_window(e->window, &loc)) {
 		return;
+	}
 
 	if (e->type == ewmh->_NET_WM_STATE) {
 		handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[1], e->data.data32[0]);
 		handle_state(loc.monitor, loc.desktop, loc.node, e->data.data32[2], e->data.data32[0]);
 	} else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
 		if ((ignore_ewmh_focus && e->data.data32[0] == XCB_EWMH_CLIENT_SOURCE_TYPE_NORMAL) ||
-		    loc.node == mon->desk->focus)
+		    loc.node == mon->desk->focus) {
 			return;
+		}
 		focus_node(loc.monitor, loc.desktop, loc.node);
 	} else if (e->type == ewmh->_NET_WM_DESKTOP) {
 		coordinates_t dloc;
-		if (ewmh_locate_desktop(e->data.data32[0], &dloc))
+		if (ewmh_locate_desktop(e->data.data32[0], &dloc)) {
 			transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus);
+		}
 	} else if (e->type == ewmh->_NET_CLOSE_WINDOW) {
 		window_close(loc.node);
 	}
@@ -291,7 +304,7 @@ void focus_in(xcb_generic_event_t *evt)
 		return;
 	}
 
-	if (mon->desk->focus != NULL && e->event == mon->desk->focus->client->window) {
+	if (mon->desk->focus != NULL && e->event == mon->desk->focus->id) {
 		return;
 	}
 
@@ -309,7 +322,7 @@ void enter_notify(xcb_generic_event_t *evt)
 
 	if (e->mode != XCB_NOTIFY_MODE_NORMAL ||
 	    (mon->desk->focus != NULL &&
-	     mon->desk->focus->client->window == win)) {
+	     mon->desk->focus->id == win)) {
 		return;
 	}
 
@@ -409,15 +422,15 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
 			set_sticky(m, d, n, false);
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
-			set_sticky(m, d, n, !n->client->sticky);
+			set_sticky(m, d, n, !n->sticky);
 		}
 	} else if (state == ewmh->_NET_WM_STATE_DEMANDS_ATTENTION) {
 		if (action == XCB_EWMH_WM_STATE_ADD) {
-			set_urgency(m, d, n, true);
+			set_urgent(m, d, n, true);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
-			set_urgency(m, d, n, false);
+			set_urgent(m, d, n, false);
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
-			set_urgency(m, d, n, !n->client->urgent);
+			set_urgent(m, d, n, !n->client->urgent);
 		}
 	}
 }

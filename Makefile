@@ -1,46 +1,37 @@
-VERSION = 0.9
+VERSION = $(shell git describe || cat VERSION)
 
-CC      ?= gcc
-LIBS     = -lm -lxcb -lxcb-util -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama
-CFLAGS  += -std=c99 -pedantic -Wall -Wextra -I$(PREFIX)/include
-CFLAGS  += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
-LDFLAGS += -L$(PREFIX)/lib
+CPPFLAGS += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
+CFLAGS   += -std=c99 -pedantic -Wall -Wextra
+LDLIBS    = -lm -lxcb -lxcb-util -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama
 
-PREFIX   ?= /usr/local
-BINPREFIX = $(PREFIX)/bin
-MANPREFIX = $(PREFIX)/share/man
-BASHCPL = $(PREFIX)/share/bash-completion/completions
-ZSHCPL = $(PREFIX)/share/zsh/site-functions
-DOCPREFIX = $(PREFIX)/share/doc/bspwm
+PREFIX    ?= /usr/local
+BINPREFIX ?= $(PREFIX)/bin
+MANPREFIX ?= $(PREFIX)/share/man
+DOCPREFIX ?= $(PREFIX)/share/doc/bspwm
+BASHCPL   ?= $(PREFIX)/share/bash-completion/completions
+ZSHCPL    ?= $(PREFIX)/share/zsh/site-functions
 
 MD_DOCS = README.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
-XSESSIONS = $(PREFIX)/share/xsessions
+XSESSIONS ?= $(PREFIX)/share/xsessions
 
 WM_SRC = bspwm.c helpers.c jsmn.c settings.c monitor.c desktop.c tree.c stack.c history.c \
 	 events.c pointer.c window.c messages.c parse.c query.c restore.c rule.c ewmh.c subscribe.c
 WM_OBJ = $(WM_SRC:.c=.o)
-CL_SRC = bspc.c helpers.c
-CL_OBJ = $(CL_SRC:.c=.o)
+CLI_SRC = bspc.c helpers.c
+CLI_OBJ = $(CLI_SRC:.c=.o)
 
-all: CFLAGS += -Os
-all: LDFLAGS += -s
 all: bspwm bspc
 
-debug: CFLAGS += -O0 -g -DDEBUG
+debug: CFLAGS += -O0 -g
 debug: bspwm bspc
 
 include Sourcedeps
 
-$(WM_OBJ) $(CL_OBJ): Makefile
-
-.c.o:
-	$(CC) $(CFLAGS) $(OPTFLAGS) -c -o $@ $<
+$(WM_OBJ) $(CLI_OBJ): Makefile
 
 bspwm: $(WM_OBJ)
-	$(CC) -o $@ $(WM_OBJ) $(LDFLAGS) $(LIBS)
 
-bspc: $(CL_OBJ)
-	$(CC) -o $@ $(CL_OBJ) $(LDFLAGS) $(LIBS)
+bspc: $(CLI_OBJ)
 
 install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
@@ -73,6 +64,6 @@ doc:
 	a2x -v -d manpage -f manpage -a revnumber=$(VERSION) doc/bspwm.1.asciidoc
 
 clean:
-	rm -f $(WM_OBJ) $(CL_OBJ) bspwm bspc
+	rm -f $(WM_OBJ) $(CLI_OBJ) bspwm bspc
 
-.PHONY: all debug install uninstall doc deps clean
+.PHONY: all debug install uninstall doc clean

@@ -22,8 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include "bspwm.h"
@@ -42,18 +43,23 @@ subscriber_list_t *make_subscriber_list(FILE *stream, int field)
 
 void remove_subscriber(subscriber_list_t *sb)
 {
-	if (sb == NULL)
+	if (sb == NULL) {
 		return;
+	}
 	subscriber_list_t *a = sb->prev;
 	subscriber_list_t *b = sb->next;
-	if (a != NULL)
+	if (a != NULL) {
 		a->next = b;
-	if (b != NULL)
+	}
+	if (b != NULL) {
 		b->prev = a;
-	if (sb == subscribe_head)
+	}
+	if (sb == subscribe_head) {
 		subscribe_head = b;
-	if (sb == subscribe_tail)
+	}
+	if (sb == subscribe_tail) {
 		subscribe_tail = a;
+	}
 	fclose(sb->stream);
 	free(sb);
 }
@@ -78,17 +84,44 @@ int print_report(FILE *stream)
 	fprintf(stream, "%s", status_prefix);
 	bool urgent = false;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		fprintf(stream, "%c%s:", (mon == m ? 'M' : 'm'), m->name);
+		fprintf(stream, "%c%s", (mon == m ? 'M' : 'm'), m->name);
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-			for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root))
+			for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root)) {
 				urgent |= n->client->urgent;
+			}
 			char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
-			if (m->desk == d)
+			if (m->desk == d) {
 				c = toupper(c);
-			fprintf(stream, "%c%s:", c, d->name);
+			}
+			fprintf(stream, ":%c%s", c, d->name);
 		}
-		if (m->desk != NULL)
-			fprintf(stream, "L%c%s", (m->desk->layout == LAYOUT_TILED ? 'T' : 'M'), (m != mon_tail ? ":" : ""));
+		if (m->desk != NULL) {
+			fprintf(stream, ":L%c", LAYOUT_CHR(m->desk->layout));
+			if (m->desk->focus != NULL) {
+				node_t *n = m->desk->focus;
+				if (n->client != NULL) {
+					fprintf(stream, ":T%c", STATE_CHR(n->client->state));
+				} else {
+					fprintf(stream, ":T@");
+				}
+				int i = 0;
+				char flags[4];
+				if (n->sticky) {
+					flags[i++] = 'S';
+				}
+				if (n->private) {
+					flags[i++] = 'P';
+				}
+				if (n->locked) {
+					flags[i++] = 'L';
+				}
+				flags[i] = '\0';
+				fprintf(stream, ":G%s", flags);
+			}
+		}
+		if (m != mon_tail) {
+			fprintf(stream, "%s", ":");
+		}
 	}
 	fprintf(stream, "%s", "\n");
 	return fflush(stream);

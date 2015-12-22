@@ -31,12 +31,14 @@ bool restore_tree(const char *file_path);
 monitor_t *restore_monitor(jsmntok_t **t, char *json);
 desktop_t *restore_desktop(jsmntok_t **t, char *json);
 node_t *restore_node(jsmntok_t **t, char *json);
+presel_t *restore_presel(jsmntok_t **t, char *json);
 client_t *restore_client(jsmntok_t **t, char *json);
 void restore_rectangle(xcb_rectangle_t *r, jsmntok_t **t, char *json);
+void restore_history(jsmntok_t **t, char *json);
+void restore_coordinates(coordinates_t *loc, jsmntok_t **t, char *json);
+void restore_stack(jsmntok_t **t, char *json);
 void restore_wm_state(xcb_atom_t *w, jsmntok_t **t, char *json);
 bool keyeq(char *s, jsmntok_t *key, char *json);
 char *copy_string(jsmntok_t *tok, char *json);
-bool restore_history(const char *file_path);
-bool restore_stack(const char *file_path);
 
 #endif

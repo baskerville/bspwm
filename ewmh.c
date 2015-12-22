@@ -22,6 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdlib.h>
+#include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
 #include "bspwm.h"
@@ -32,27 +34,28 @@
 void ewmh_init(void)
 {
 	ewmh = malloc(sizeof(xcb_ewmh_connection_t));
-	if (xcb_ewmh_init_atoms_replies(ewmh, xcb_ewmh_init_atoms(dpy, ewmh), NULL) == 0)
+	if (xcb_ewmh_init_atoms_replies(ewmh, xcb_ewmh_init_atoms(dpy, ewmh), NULL) == 0) {
 		err("Can't initialize EWMH atoms.\n");
+	}
 }
 
 void ewmh_update_active_window(void)
 {
-	xcb_window_t win = (mon->desk->focus == NULL ? XCB_NONE : mon->desk->focus->client->window);
+	xcb_window_t win = ((mon->desk->focus == NULL || mon->desk->focus->client == NULL) ? XCB_NONE : mon->desk->focus->id);
 	xcb_ewmh_set_active_window(ewmh, default_screen, win);
 }
 
 void ewmh_update_number_of_desktops(void)
 {
-	uint32_t num_desktops = 0;
+	uint32_t desktops_count = 0;
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			num_desktops++;
+			desktops_count++;
 		}
 	}
 
-	xcb_ewmh_set_number_of_desktops(ewmh, default_screen, num_desktops);
+	xcb_ewmh_set_number_of_desktops(ewmh, default_screen, desktops_count);
 }
 
 uint32_t ewmh_get_desktop_index(desktop_t *d)
@@ -70,19 +73,24 @@ uint32_t ewmh_get_desktop_index(desktop_t *d)
 
 bool ewmh_locate_desktop(uint32_t i, coordinates_t *loc)
 {
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, i--)
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, i--) {
 			if (i == 0) {
 				loc->monitor = m;
 				loc->desktop = d;
 				loc->node = NULL;
 				return true;
 			}
+		}
+	}
 	return false;
 }
 
 void ewmh_update_current_desktop(void)
 {
+	if (mon == NULL) {
+		return;
+	}
 	uint32_t i = ewmh_get_desktop_index(mon->desk);
 	xcb_ewmh_set_current_desktop(ewmh, default_screen, i);
 }
@@ -90,7 +98,9 @@ void ewmh_update_current_desktop(void)
 void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
 {
 	uint32_t i = ewmh_get_desktop_index(d);
-	xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		xcb_ewmh_set_wm_desktop(ewmh, f->id, i);
+	}
 }
 
 void ewmh_update_wm_desktops(void)
@@ -99,7 +109,7 @@ void ewmh_update_wm_desktops(void)
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			uint32_t i = ewmh_get_desktop_index(d);
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				xcb_ewmh_set_wm_desktop(ewmh, n->client->window, i);
+				xcb_ewmh_set_wm_desktop(ewmh, n->id, i);
 			}
 		}
 	}
@@ -133,56 +143,70 @@ void ewmh_update_desktop_names(void)
 	xcb_ewmh_set_desktop_names(ewmh, default_screen, names_len, names);
 }
 
-void ewmh_update_client_list(void)
+void ewmh_update_client_list(bool stacking)
 {
-	if (num_clients == 0) {
+	if (clients_count == 0) {
 		xcb_ewmh_set_client_list(ewmh, default_screen, 0, NULL);
 		xcb_ewmh_set_client_list_stacking(ewmh, default_screen, 0, NULL);
 		return;
 	}
 
-	xcb_window_t wins[num_clients];
+	xcb_window_t wins[clients_count];
 	unsigned int i = 0;
 
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-				wins[i++] = n->client->window;
+	if (stacking) {
+		for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
+			wins[i++] = s->node->id;
+		}
+		xcb_ewmh_set_client_list_stacking(ewmh, default_screen, clients_count, wins);
+	} else {
+		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+			for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+				for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+					wins[i++] = n->id;
+				}
 			}
 		}
+		xcb_ewmh_set_client_list(ewmh, default_screen, clients_count, wins);
 	}
-
-	xcb_ewmh_set_client_list(ewmh, default_screen, num_clients, wins);
-	xcb_ewmh_set_client_list_stacking(ewmh, default_screen, num_clients, wins);
 }
 
-bool ewmh_wm_state_add(client_t *c, xcb_atom_t state)
+bool ewmh_wm_state_add(node_t *n, xcb_atom_t state)
 {
-	if (c->num_states >= MAX_STATE) {
+	client_t *c = n->client;
+
+	if (c == NULL || c->wm_states_count >= MAX_WM_STATES) {
 		return false;
 	}
-	for (int i = 0; i < c->num_states; i++) {
+
+	for (int i = 0; i < c->wm_states_count; i++) {
 		if (c->wm_state[i] == state) {
 			return false;
 		}
 	}
-	c->wm_state[c->num_states] = state;
-	c->num_states++;
-	xcb_ewmh_set_wm_state(ewmh, c->window, c->num_states, c->wm_state);
+
+	c->wm_state[c->wm_states_count] = state;
+	c->wm_states_count++;
+	xcb_ewmh_set_wm_state(ewmh, n->id, c->wm_states_count, c->wm_state);
 	return true;
 }
 
-bool ewmh_wm_state_remove(client_t *c, xcb_atom_t state)
+bool ewmh_wm_state_remove(node_t *n, xcb_atom_t state)
 {
-	for (int i = 0; i < c->num_states; i++)
-		if (c->wm_state[i] == state)
-		{
-			for (int j = i; j < (c->num_states - 1); j++)
+	client_t *c = n->client;
+	if (c == NULL) {
+		return false;
+	}
+	for (int i = 0; i < c->wm_states_count; i++) {
+		if (c->wm_state[i] == state) {
+			for (int j = i; j < (c->wm_states_count - 1); j++) {
 				c->wm_state[j] = c->wm_state[j + 1];
-			c->num_states--;
-			xcb_ewmh_set_wm_state(ewmh, c->window, c->num_states, c->wm_state);
+			}
+			c->wm_states_count--;
+			xcb_ewmh_set_wm_state(ewmh, n->id, c->wm_states_count, c->wm_state);
 			return true;
 		}
+	}
 	return false;
 }
 

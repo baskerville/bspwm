@@ -1,0 +1,25 @@
+#! /bin/sh
+
+. ./prelude
+
+bspc monitor -a "test-swap-a" "test-swap-b"
+bspc desktop -f "test-swap-a"
+
+window add 5
+next_focus_b=$(bspc query -N -n @/2/2/1)
+bspc desktop -f "test-swap-b"
+window add 3
+
+bspc node -f @test-swap-a:/2/2/1
+bspc node -a @test-swap-b:/1
+
+bspc node @/2 -s @test-swap-b:/1
+
+[ "$(bspc query -N -n @test-swap-b:)" = "$next_focus_b" ] || fail "Invalid focus after swap."
+
+window remove 2
+bspc desktop -f "test-swap-b"
+window remove 1 2
+window remove 4
+
+bspc monitor -r "test-swap-a" "test-swap-b"

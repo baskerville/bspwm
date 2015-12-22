@@ -31,16 +31,16 @@
 #define CLIENT_EVENT_MASK   (XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_FOCUS_CHANGE)
 #define META_WINDOW_IC      "wm\0Bspwm"
 #define ROOT_WINDOW_IC      "root\0Bspwm"
+#define PRESEL_FEEDBACK_IC  "presel_feedback\0Bspwm"
 #define MOTION_RECORDER_IC  "motion_recorder\0Bspwm"
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
-uint32_t num_clients;
+uint32_t clients_count;
 unsigned int monitor_uid;
 unsigned int desktop_uid;
 xcb_screen_t *screen;
 xcb_window_t root;
-uint8_t root_depth;
 char config_path[MAXLEN];
 
 monitor_t *mon;
@@ -66,7 +66,6 @@ xcb_atom_t WM_TAKE_FOCUS;
 xcb_atom_t WM_DELETE_WINDOW;
 int exit_status;
 
-bool visible;
 bool auto_raise;
 bool sticky_still;
 bool record_history;

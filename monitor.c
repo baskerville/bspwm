@@ -25,6 +25,8 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -40,12 +42,13 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
 {
 	monitor_t *m = malloc(sizeof(monitor_t));
 	snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
+	m->id = XCB_NONE;
 	m->root = XCB_NONE;
 	m->prev = m->next = NULL;
 	m->desk = m->desk_head = m->desk_tail = NULL;
 	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
 	m->wired = true;
-	m->num_sticky = 0;
+	m->sticky_count = 0;
 	if (rect != NULL) {
 		update_root(m, rect);
 	} else {
@@ -83,74 +86,83 @@ void rename_monitor(monitor_t *m, const char *name)
 
 monitor_t *find_monitor(char *name)
 {
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		if (streq(m->name, name))
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (streq(m->name, name)) {
 			return m;
+		}
+	}
 	return NULL;
 }
 
 monitor_t *get_monitor_by_id(xcb_randr_output_t id)
 {
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		if (m->id == id)
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (m->id == id) {
 			return m;
+		}
+	}
 	return NULL;
 }
 
 void embrace_client(monitor_t *m, client_t *c)
 {
-	if ((c->floating_rectangle.x + c->floating_rectangle.width) <= m->rectangle.x)
+	if ((c->floating_rectangle.x + c->floating_rectangle.width) <= m->rectangle.x) {
 		c->floating_rectangle.x = m->rectangle.x;
-	else if (c->floating_rectangle.x >= (m->rectangle.x + m->rectangle.width))
+	} else if (c->floating_rectangle.x >= (m->rectangle.x + m->rectangle.width)) {
 		c->floating_rectangle.x = (m->rectangle.x + m->rectangle.width) - c->floating_rectangle.width;
-	if ((c->floating_rectangle.y + c->floating_rectangle.height) <= m->rectangle.y)
+	}
+	if ((c->floating_rectangle.y + c->floating_rectangle.height) <= m->rectangle.y) {
 		c->floating_rectangle.y = m->rectangle.y;
-	else if (c->floating_rectangle.y >= (m->rectangle.y + m->rectangle.height))
+	} else if (c->floating_rectangle.y >= (m->rectangle.y + m->rectangle.height)) {
 		c->floating_rectangle.y = (m->rectangle.y + m->rectangle.height) - c->floating_rectangle.height;
+	}
 }
 
-void translate_client(monitor_t *ms, monitor_t *md, client_t *c)
+void adapt_geometry(xcb_rectangle_t *rs, xcb_rectangle_t *rd, node_t *n)
 {
-	if (frozen_pointer->action != ACTION_NONE || ms == md)
+	if (frozen_pointer->action != ACTION_NONE) {
 		return;
+	}
 
-	/* Clip the rectangle to fit into the monitor.	Without this, the fitting
-	 * algorithm doesn't work as expected. This also conserves the
-	 * out-of-bounds regions */
-	int left_adjust = MAX((ms->rectangle.x - c->floating_rectangle.x), 0);
-	int top_adjust = MAX((ms->rectangle.y - c->floating_rectangle.y), 0);
-	int right_adjust = MAX((c->floating_rectangle.x + c->floating_rectangle.width) - (ms->rectangle.x + ms->rectangle.width), 0);
-	int bottom_adjust = MAX((c->floating_rectangle.y + c->floating_rectangle.height) - (ms->rectangle.y + ms->rectangle.height), 0);
-	c->floating_rectangle.x += left_adjust;
-	c->floating_rectangle.y += top_adjust;
-	c->floating_rectangle.width -= (left_adjust + right_adjust);
-	c->floating_rectangle.height -= (top_adjust + bottom_adjust);
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		client_t *c = f->client;
+		/* Clip the rectangle to fit into the monitor.	Without this, the fitting
+		 * algorithm doesn't work as expected. This also conserves the
+		 * out-of-bounds regions */
+		int left_adjust = MAX((rs->x - c->floating_rectangle.x), 0);
+		int top_adjust = MAX((rs->y - c->floating_rectangle.y), 0);
+		int right_adjust = MAX((c->floating_rectangle.x + c->floating_rectangle.width) - (rs->x + rs->width), 0);
+		int bottom_adjust = MAX((c->floating_rectangle.y + c->floating_rectangle.height) - (rs->y + rs->height), 0);
+		c->floating_rectangle.x += left_adjust;
+		c->floating_rectangle.y += top_adjust;
+		c->floating_rectangle.width -= (left_adjust + right_adjust);
+		c->floating_rectangle.height -= (top_adjust + bottom_adjust);
 
-	int dx_s = c->floating_rectangle.x - ms->rectangle.x;
-	int dy_s = c->floating_rectangle.y - ms->rectangle.y;
+		int dx_s = c->floating_rectangle.x - rs->x;
+		int dy_s = c->floating_rectangle.y - rs->y;
 
-	int nume_x = dx_s * (md->rectangle.width - c->floating_rectangle.width);
-	int nume_y = dy_s * (md->rectangle.height - c->floating_rectangle.height);
+		int nume_x = dx_s * (rd->width - c->floating_rectangle.width);
+		int nume_y = dy_s * (rd->height - c->floating_rectangle.height);
 
-	int deno_x = ms->rectangle.width - c->floating_rectangle.width;
-	int deno_y = ms->rectangle.height - c->floating_rectangle.height;
+		int deno_x = rs->width - c->floating_rectangle.width;
+		int deno_y = rs->height - c->floating_rectangle.height;
 
-	int dx_d = (deno_x == 0 ? 0 : nume_x / deno_x);
-	int dy_d = (deno_y == 0 ? 0 : nume_y / deno_y);
+		int dx_d = (deno_x == 0 ? 0 : nume_x / deno_x);
+		int dy_d = (deno_y == 0 ? 0 : nume_y / deno_y);
 
-	/* Translate and undo clipping */
-	c->floating_rectangle.width += left_adjust + right_adjust;
-	c->floating_rectangle.height += top_adjust + bottom_adjust;
-	c->floating_rectangle.x = md->rectangle.x + dx_d - left_adjust;
-	c->floating_rectangle.y = md->rectangle.y + dy_d - top_adjust;
+		/* Translate and undo clipping */
+		c->floating_rectangle.width += left_adjust + right_adjust;
+		c->floating_rectangle.height += top_adjust + bottom_adjust;
+		c->floating_rectangle.x = rd->x + dx_d - left_adjust;
+		c->floating_rectangle.y = rd->y + dy_d - top_adjust;
+	}
 }
 
 void focus_monitor(monitor_t *m)
 {
-	if (mon == m)
+	if (mon == m) {
 		return;
-
-	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
+	}
 
 	mon = m;
 
@@ -158,15 +170,12 @@ void focus_monitor(monitor_t *m)
 		center_pointer(m->rectangle);
 	}
 
-	ewmh_update_current_desktop();
-	put_status(SBSC_MASK_REPORT);
+	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
 }
 
 void add_monitor(monitor_t *m)
 {
 	xcb_rectangle_t r = m->rectangle;
-
-	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s 0x%X %ux%u+%i+%i\n", m->name, m->id, r.width, r.height, r.x, r.y);
 
 	if (mon == NULL) {
 		mon = m;
@@ -177,19 +186,21 @@ void add_monitor(monitor_t *m)
 		m->prev = mon_tail;
 		mon_tail = m;
 	}
+
+	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s 0x%X %ux%u+%i+%i\n", m->name, m->id, r.width, r.height, r.x, r.y);
+
+	put_status(SBSC_MASK_REPORT);
 }
 
 void remove_monitor(monitor_t *m)
 {
-	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
-
 	while (m->desk_head != NULL) {
 		remove_desktop(m, m->desk_head);
 	}
 
 	monitor_t *prev = m->prev;
 	monitor_t *next = m->next;
-	monitor_t *last_mon = history_get_monitor(m);
+	monitor_t *last_mon = history_last_monitor(m);
 
 	if (prev != NULL) {
 		prev->next = next;
@@ -214,12 +225,15 @@ void remove_monitor(monitor_t *m)
 	if (mon == m) {
 		mon = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
 		if (mon != NULL && mon->desk != NULL) {
-			update_current();
+			update_focused();
 		}
 	}
 
+	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
+
 	xcb_destroy_window(dpy, m->root);
 	free(m);
+
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -232,39 +246,47 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
 	desktop_t *d = ms->desk_head;
 	while (d != NULL) {
 		desktop_t *next = d->next;
-		if (d->root != NULL || strstr(d->name, DEFAULT_DESK_NAME) == NULL)
+		if (d->root != NULL || strstr(d->name, DEFAULT_DESK_NAME) == NULL) {
 			transfer_desktop(ms, md, d);
+		}
 		d = next;
 	}
 }
 
 void swap_monitors(monitor_t *m1, monitor_t *m2)
 {
-	if (m1 == NULL || m2 == NULL || m1 == m2)
+	if (m1 == NULL || m2 == NULL || m1 == m2) {
 		return;
+	}
 
-	if (mon_head == m1)
+	if (mon_head == m1) {
 		mon_head = m2;
-	else if (mon_head == m2)
+	} else if (mon_head == m2) {
 		mon_head = m1;
-	if (mon_tail == m1)
+	}
+	if (mon_tail == m1) {
 		mon_tail = m2;
-	else if (mon_tail == m2)
+	} else if (mon_tail == m2) {
 		mon_tail = m1;
+	}
 
 	monitor_t *p1 = m1->prev;
 	monitor_t *n1 = m1->next;
 	monitor_t *p2 = m2->prev;
 	monitor_t *n2 = m2->next;
 
-	if (p1 != NULL && p1 != m2)
+	if (p1 != NULL && p1 != m2) {
 		p1->next = m2;
-	if (n1 != NULL && n1 != m2)
+	}
+	if (n1 != NULL && n1 != m2) {
 		n1->prev = m2;
-	if (p2 != NULL && p2 != m1)
+	}
+	if (p2 != NULL && p2 != m1) {
 		p2->next = m1;
-	if (n2 != NULL && n2 != m1)
+	}
+	if (n2 != NULL && n2 != m1) {
 		n2->prev = m1;
+	}
 
 	m1->prev = p2 == m1 ? m2 : p2;
 	m1->next = n2 == m1 ? m2 : n2;
@@ -274,6 +296,7 @@ void swap_monitors(monitor_t *m1, monitor_t *m2)
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
+
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -350,10 +373,10 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel)
 			continue;
 		}
 		xcb_rectangle_t r = f->rectangle;
-		if ((dir == DIR_LEFT && r.x < rect.x) ||
-		    (dir == DIR_RIGHT && r.x >= (rect.x + rect.width)) ||
-		    (dir == DIR_UP && r.y < rect.y) ||
-		    (dir == DIR_DOWN && r.y >= (rect.y + rect.height))) {
+		if ((dir == DIR_WEST && r.x < rect.x) ||
+		    (dir == DIR_EAST && r.x >= (rect.x + rect.width)) ||
+		    (dir == DIR_NORTH && r.y < rect.y) ||
+		    (dir == DIR_SOUTH && r.y >= (rect.y + rect.height))) {
 			int d = abs((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
 			        abs((r.y + r.height / 2) - (rect.y + rect.height / 2));
 			if (d < dmin) {
@@ -368,8 +391,9 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel)
 bool update_monitors(void)
 {
 	xcb_randr_get_screen_resources_reply_t *sres = xcb_randr_get_screen_resources_reply(dpy, xcb_randr_get_screen_resources(dpy, root), NULL);
-	if (sres == NULL)
+	if (sres == NULL) {
 		return false;
+	}
 
 	monitor_t *m, *mm = NULL;
 
@@ -377,11 +401,13 @@ bool update_monitors(void)
 	xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_outputs(sres);
 
 	xcb_randr_get_output_info_cookie_t cookies[len];
-	for (int i = 0; i < len; i++)
+	for (int i = 0; i < len; i++) {
 		cookies[i] = xcb_randr_get_output_info(dpy, outputs[i], XCB_CURRENT_TIME);
+	}
 
-	for (m = mon_head; m != NULL; m = m->next)
+	for (m = mon_head; m != NULL; m = m->next) {
 		m->wired = false;
+	}
 
 	for (int i = 0; i < len; i++) {
 		xcb_randr_get_output_info_reply_t *info = xcb_randr_get_output_info_reply(dpy, cookies[i], NULL);
@@ -392,10 +418,11 @@ bool update_monitors(void)
 					xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
 					mm = get_monitor_by_id(outputs[i]);
 					if (mm != NULL) {
+						xcb_rectangle_t last_rect = mm->rectangle;
 						update_root(mm, &rect);
 						for (desktop_t *d = mm->desk_head; d != NULL; d = d->next) {
 							for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-								translate_client(mm, mm, n->client);
+								adapt_geometry(&last_rect, &rect, n);
 							}
 						}
 						arrange(mm, mm->desk);
@@ -412,8 +439,9 @@ bool update_monitors(void)
 				free(cir);
 			} else if (!remove_disabled_monitors && info->connection != XCB_RANDR_CONNECTION_DISCONNECTED) {
 				m = get_monitor_by_id(outputs[i]);
-				if (m != NULL)
+				if (m != NULL) {
 					m->wired = true;
+				}
 			}
 		}
 		free(info);
@@ -424,12 +452,14 @@ bool update_monitors(void)
 	if (gpo != NULL) {
 		pri_mon = get_monitor_by_id(gpo->output);
 		if (!running && pri_mon != NULL) {
-			if (mon != pri_mon)
+			if (mon != pri_mon) {
 				mon = pri_mon;
+			}
 			add_desktop(pri_mon, make_desktop(NULL));
 			ewmh_update_current_desktop();
 		}
 	}
+
 	free(gpo);
 
 	/* handle overlapping monitors */
@@ -472,12 +502,15 @@ bool update_monitors(void)
 	}
 
 	/* add one desktop to each new monitor */
-	for (m = mon_head; m != NULL; m = m->next)
-		if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon))
+	for (m = mon_head; m != NULL; m = m->next) {
+		if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon)) {
 			add_desktop(m, make_desktop(NULL));
+		}
+	}
 
-	if (!running && pri_mon != NULL && mon_head != pri_mon)
+	if (!running && pri_mon != NULL && mon_head != pri_mon) {
 		swap_monitors(mon_head, pri_mon);
+	}
 
 	free(sres);
 	update_motion_recorder();

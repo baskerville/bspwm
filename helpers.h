@@ -42,10 +42,12 @@
 #define BOOL_STR(A)       ((A) ? "true" : "false")
 #define ON_OFF_STR(A)     ((A) ? "on" : "off")
 #define LAYOUT_STR(A)     ((A) == LAYOUT_TILED ? "tiled" : "monocle")
+#define LAYOUT_CHR(A)     ((A) == LAYOUT_TILED ? 'T' : 'M')
 #define SPLIT_TYPE_STR(A) ((A) == TYPE_HORIZONTAL ? "horizontal" : "vertical")
 #define SPLIT_MODE_STR(A) ((A) == MODE_AUTOMATIC ? "automatic" : "manual")
-#define SPLIT_DIR_STR(A)  ((A) == DIR_RIGHT ? "right" : ((A) == DIR_UP ? "up" : ((A) == DIR_LEFT ? "left" : "down")))
+#define SPLIT_DIR_STR(A)  ((A) == DIR_NORTH ? "north" : ((A) == DIR_WEST ? "west" : ((A) == DIR_SOUTH ? "south" : "east")))
 #define STATE_STR(A)      ((A) == STATE_TILED ? "tiled" : ((A) == STATE_FLOATING ? "floating" : ((A) == STATE_FULLSCREEN ? "fullscreen" : "pseudo_tiled")))
+#define STATE_CHR(A)      ((A) == STATE_TILED ? 'T' : ((A) == STATE_FLOATING ? 'F' : ((A) == STATE_FULLSCREEN ? '=' : 'P')))
 #define LAYER_STR(A)      ((A) == LAYER_BELOW ? "below" : ((A) == LAYER_NORMAL ? "normal" : "above"))
 
 #define XCB_CONFIG_WINDOW_X_Y               (XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y)
@@ -61,7 +63,8 @@
 void warn(char *fmt, ...);
 void err(char *fmt, ...);
 char *read_string(const char *file_path, size_t *tlen);
-bool get_color(char *col, xcb_window_t win, uint32_t *pxl);
+uint32_t get_color_pixel(const char *color);
+bool is_hex_color(const char *color);
 double distance(xcb_point_t a, xcb_point_t b);
 
 #endif

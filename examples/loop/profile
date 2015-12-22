@@ -1,3 +1,1 @@
-export BSPWM_TREE=/tmp/bspwm-tree.json
-export BSPWM_HISTORY=/tmp/bspwm-history.txt
-export BSPWM_STACK=/tmp/bspwm-stack.txt
+export BSPWM_STATE=/tmp/bspwm-state.json

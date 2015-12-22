@@ -30,33 +30,17 @@
 
 int handle_message(char *msg, int msg_len, FILE *rsp);
 int process_message(char **args, int num, FILE *rsp);
-int cmd_window(char **args, int num);
+int cmd_node(char **args, int num);
 int cmd_desktop(char **args, int num);
 int cmd_monitor(char **args, int num);
 int cmd_query(char **args, int num, FILE *rsp);
 int cmd_rule(char **args, int num, FILE *rsp);
 int cmd_pointer(char **args, int num);
-int cmd_restore(char **args, int num);
-int cmd_control(char **args, int num, FILE *rsp);
+int cmd_wm(char **args, int num, FILE *rsp);
 int cmd_config(char **args, int num, FILE *rsp);
+int cmd_subscribe(char **args, int num, FILE *rsp);
 int cmd_quit(char **args, int num);
 int set_setting(coordinates_t loc, char *name, char *value);
 int get_setting(coordinates_t loc, char *name, FILE* rsp);
-bool parse_subscriber_mask(char *s, subscriber_mask_t *mask);
-bool parse_bool(char *value, bool *b);
-bool parse_layout(char *s, layout_t *l);
-bool parse_client_state(char *s, client_state_t *t);
-bool parse_stack_layer(char *s, stack_layer_t *l);
-bool parse_direction(char *s, direction_t *d);
-bool parse_cycle_direction(char *s, cycle_dir_t *d);
-bool parse_circulate_direction(char *s, circulate_dir_t *d);
-bool parse_history_direction(char *s, history_dir_t *d);
-bool parse_flip(char *s, flip_t *f);
-bool parse_pointer_action(char *s, pointer_action_t *a);
-bool parse_child_polarity(char *s, child_polarity_t *p);
-bool parse_degree(char *s, int *d);
-bool parse_window_id(char *s, long int *i);
-bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *state);
-bool parse_index(char *s, int *i);
 
 #endif

@@ -1,0 +1,39 @@
+#! /bin/sh
+
+focus_follows_pointer=$(bspc config focus_follows_pointer)
+initial_polarity=$(bspc config initial_polarity)
+bspc config initial_polarity first_child
+bspc config focus_follows_pointer false
+
+cleanup () {
+	bspc config initial_polarity "$initial_polarity"
+	bspc config focus_follows_pointer "$focus_follows_pointer"
+}
+
+abort() {
+	cleanup
+	echo "One test failed." 1>&2
+	exit 1
+}
+
+echo "Node"
+echo "-> Insertion"
+./node/insertion || abort
+echo "-> Removal"
+./node/removal || abort
+echo "-> Transfer"
+./node/transfer || abort
+echo "-> Swap"
+./node/swap || abort
+echo "-> Flags"
+./node/flags || abort
+
+echo "Desktop"
+echo "-> Transfer"
+./desktop/transfer || abort
+echo "-> Swap"
+./desktop/swap || abort
+
+cleanup
+
+echo "All tests passed."

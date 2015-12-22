@@ -97,7 +97,7 @@ The automatic mode generates window spirals that rotate clockwise (resp. anti-cl
 
 ### Manual Mode
 
-The user can specify a region in the insertion point where the next new window should appear by sending a *window --presel DIR* message to *bspwm*.
+The user can specify a region in the insertion point where the next new window should appear by sending a *node -p|--presel-dir DIR* message to *bspwm*.
 
 The *DIR* argument allows to specify how the insertion point should be split (horizontally or vertically) and if the new window should be the first or the second child of the new internal node (the insertion point will become its *brother*).
 
@@ -130,13 +130,13 @@ For example, let's consider the following scenario:
 
 In state *X*, the insertion point is *1*.
 
-We send the following message to *bspwm*: *window --presel up*.
+We send the following message to *bspwm*: *node -p north*.
 
 Then add a new window: *4*, this leads to state *Y*: the new internal node, *c* becomes *a*'s first child.
 
-Finally we send another message: *window --presel left* and add window *5*.
+Finally we send another message: *node -p west* and add window *5*.
 
-The ratio of the preselection (that ends up being the ratio of the split of the new internal node) can be change with the *window --ratio* message.
+The ratio of the preselection (that ends up being the ratio of the split of the new internal node) can be changed with the *node -o|--presel-ratio* message.
 
 ## Supported protocols and standards
 

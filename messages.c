@@ -25,10 +25,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
 #include "bspwm.h"
 #include "desktop.h"
-#include "ewmh.h"
-#include "history.h"
 #include "monitor.h"
 #include "pointer.h"
 #include "query.h"
@@ -38,7 +38,6 @@
 #include "tree.h"
 #include "window.h"
 #include "common.h"
-#include "subscribe.h"
 #include "parse.h"
 #include "messages.h"
 
@@ -47,8 +46,9 @@ int handle_message(char *msg, int msg_len, FILE *rsp)
 	int cap = INIT_CAP;
 	int num = 0;
 	char **args = malloc(cap * sizeof(char *));
-	if (args == NULL)
+	if (args == NULL) {
 		return MSG_FAILURE;
+	}
 
 	for (int i = 0, j = 0; i < msg_len; i++) {
 		if (msg[i] == 0) {
@@ -80,18 +80,18 @@ int handle_message(char *msg, int msg_len, FILE *rsp)
 
 int process_message(char **args, int num, FILE *rsp)
 {
-	if (streq("window", *args)) {
-		return cmd_window(++args, --num);
+	if (streq("node", *args)) {
+		return cmd_node(++args, --num);
 	} else if (streq("desktop", *args)) {
 		return cmd_desktop(++args, --num);
 	} else if (streq("monitor", *args)) {
 		return cmd_monitor(++args, --num);
 	} else if (streq("query", *args)) {
 		return cmd_query(++args, --num, rsp);
-	} else if (streq("restore", *args)) {
-		return cmd_restore(++args, --num);
-	} else if (streq("control", *args)) {
-		return cmd_control(++args, --num, rsp);
+	} else if (streq("subscribe", *args)) {
+		return cmd_subscribe(++args, --num, rsp);
+	} else if (streq("wm", *args)) {
+		return cmd_wm(++args, --num, rsp);
 	} else if (streq("rule", *args)) {
 		return cmd_rule(++args, --num, rsp);
 	} else if (streq("pointer", *args)) {
@@ -105,23 +105,26 @@ int process_message(char **args, int num, FILE *rsp)
 	return MSG_UNKNOWN;
 }
 
-int cmd_window(char **args, int num)
+int cmd_node(char **args, int num)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
 
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = ref;
 
 	if ((*args)[0] != OPT_CHR) {
-		if (node_from_desc(*args, &ref, &trg))
+		if (node_from_desc(*args, &ref, &trg)) {
 			num--, args++;
-		else
+		} else {
 			return MSG_FAILURE;
+		}
 	}
 
-	if (trg.node == NULL)
+	if (trg.node == NULL) {
 		return MSG_FAILURE;
+	}
 
 	bool dirty = false;
 
@@ -130,16 +133,18 @@ int cmd_window(char **args, int num)
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!node_from_desc(*args, &trg, &dst))
+				if (!node_from_desc(*args, &trg, &dst)) {
 					return MSG_FAILURE;
+				}
 			}
 			focus_node(dst.monitor, dst.desktop, dst.node);
 		} else if (streq("-a", *args) || streq("--activate", *args)) {
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!node_from_desc(*args, &trg, &dst))
+				if (!node_from_desc(*args, &trg, &dst)) {
 					return MSG_FAILURE;
+				}
 			}
 			if (dst.desktop == mon->desk) {
 				return MSG_FAILURE;
@@ -152,58 +157,92 @@ int cmd_window(char **args, int num)
 				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.desktop;
+				} else {
+					return MSG_FAILURE;
 				}
 			} else {
 				return MSG_FAILURE;
 			}
 		} else if (streq("-m", *args) || streq("--to-monitor", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			coordinates_t dst;
 			if (monitor_from_desc(*args, &trg, &dst)) {
 				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.monitor->desk;
+				} else {
+					return MSG_FAILURE;
 				}
 			} else {
 				return MSG_FAILURE;
 			}
-		} else if (streq("-w", *args) || streq("--to-window", *args)) {
+		} else if (streq("-n", *args) || streq("--to-node", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			coordinates_t dst;
 			if (node_from_desc(*args, &trg, &dst)) {
 				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.desktop;
+				} else {
+					return MSG_FAILURE;
 				}
 			} else {
 				return MSG_FAILURE;
 			}
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			coordinates_t dst;
 			if (node_from_desc(*args, &trg, &dst)) {
 				if (swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
-					if (trg.desktop != dst.desktop)
-						arrange(trg.monitor, trg.desktop);
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.desktop;
-					dirty = true;
+				} else {
+					return MSG_FAILURE;
 				}
+			} else {
+				return MSG_FAILURE;
+			}
+		} else if (streq("-l", *args) || streq("--layer", *args)) {
+			num--, args++;
+			if (num < 1) {
+				return MSG_SYNTAX;
+			}
+			if (trg.node->client == NULL) {
+				return MSG_FAILURE;
+			}
+			stack_layer_t lyr;
+			if (parse_stack_layer(*args, &lyr)) {
+				set_layer(trg.monitor, trg.desktop, trg.node, lyr);
 			} else {
 				return MSG_FAILURE;
 			}
 		} else if (streq("-t", *args) || streq("--state", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			client_state_t cst;
+			bool alternate = false;
+			if ((*args)[0] == '~') {
+				alternate = true;
+				(*args)++;
+			}
 			if (parse_client_state(*args, &cst)) {
+				if (trg.node->client == NULL) {
+					return MSG_FAILURE;
+				}
+				if (alternate && trg.node->client->state == cst) {
+					cst = trg.node->client->last_state;
+				}
 				set_state(trg.monitor, trg.desktop, trg.node, cst);
 				dirty = true;
 			} else {
@@ -211,8 +250,9 @@ int cmd_window(char **args, int num)
 			}
 		} else if (streq("-g", *args) || streq("--flag", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			char *key = strtok(*args, EQL_TOK);
 			char *val = strtok(NULL, EQL_TOK);
 			alter_state_t a;
@@ -227,120 +267,138 @@ int cmd_window(char **args, int num)
 				}
 			}
 			if (streq("locked", key)) {
-				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->locked));
+				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->locked));
 			} else if (streq("sticky", key)) {
-				set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->sticky));
+				set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->sticky));
 			} else if (streq("private", key)) {
-				set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->client->private));
+				set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->private));
 			} else {
 				return MSG_FAILURE;
 			}
-		} else if (streq("-p", *args) || streq("--presel", *args)) {
+		} else if (streq("-p", *args) || streq("--presel-dir", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			if (IS_FLOATING(trg.node->client) ||
-			    trg.desktop->layout != LAYOUT_TILED)
+			}
+			if (trg.node->vacant) {
 				return MSG_FAILURE;
+			}
 			if (streq("cancel", *args)) {
-				reset_mode(&trg);
+				cancel_presel(trg.monitor, trg.desktop, trg.node);
 			} else {
+				bool alternate = false;
+				if ((*args)[0] == '~') {
+					alternate = true;
+					(*args)++;
+				}
 				direction_t dir;
 				if (parse_direction(*args, &dir)) {
-					double rat = trg.node->split_ratio;
-					if (num > 1 && *(args + 1)[0] != OPT_CHR) {
-						num--, args++;
-						if (sscanf(*args, "%lf", &rat) != 1 || rat <= 0 || rat >= 1)
-							return MSG_FAILURE;
+					if (alternate && trg.node->presel != NULL && trg.node->presel->split_dir == dir) {
+						cancel_presel(trg.monitor, trg.desktop, trg.node);
+					} else {
+						presel_dir(trg.monitor, trg.desktop, trg.node, dir);
+						draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
 					}
-					trg.node->split_mode = MODE_MANUAL;
-					trg.node->split_dir = dir;
-					trg.node->split_ratio = rat;
-					window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
 				} else {
 					return MSG_FAILURE;
 				}
 			}
-		} else if (streq("-e", *args) || streq("--edge", *args)) {
+		} else if (streq("-o", *args) || streq("--presel-ratio", *args)) {
 			num--, args++;
-			if (num < 2)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			if (IS_FLOATING(trg.node->client))
+			}
+			if (trg.node->vacant) {
 				return MSG_FAILURE;
-			direction_t dir;
-			if (!parse_direction(*args, &dir))
+			}
+			double rat;
+			if (sscanf(*args, "%lf", &rat) != 1 || rat <= 0 || rat >= 1) {
 				return MSG_FAILURE;
-			node_t *n = find_fence(trg.node, dir);
-			if (n == NULL)
-				return MSG_FAILURE;
+			} else {
+				presel_ratio(trg.monitor, trg.desktop, trg.node, rat);
+				draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
+			}
+		} else if (streq("-r", *args) || streq("--ratio", *args)) {
 			num--, args++;
+			if (num < 1) {
+				return MSG_SYNTAX;
+			}
 			if ((*args)[0] == '+' || (*args)[0] == '-') {
 				int pix;
 				if (sscanf(*args, "%i", &pix) == 1) {
-					int max = (n->split_type == TYPE_HORIZONTAL ? n->rectangle.height : n->rectangle.width);
-					double rat = ((max * n->split_ratio) + pix) / max;
-					if (rat > 0 && rat < 1)
-						n->split_ratio = rat;
-					else
+					int max = (trg.node->split_type == TYPE_HORIZONTAL ? trg.node->rectangle.height : trg.node->rectangle.width);
+					double rat = ((max * trg.node->split_ratio) + pix) / max;
+					if (rat > 0 && rat < 1) {
+						trg.node->split_ratio = rat;
+					} else {
 						return MSG_FAILURE;
+					}
 				} else {
 					return MSG_FAILURE;
 				}
 			} else {
 				double rat;
-				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1)
-					n->split_ratio = rat;
-				else
+				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
+					trg.node->split_ratio = rat;
+				} else {
 					return MSG_FAILURE;
+				}
 			}
 			dirty = true;
-		} else if (streq("-r", *args) || streq("--ratio", *args)) {
-			num--, args++;
-			if (num < 1)
-				return MSG_SYNTAX;
-			double rat;
-			if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
-				trg.node->split_ratio = rat;
-				window_draw_border(trg.node, trg.desktop->focus == trg.node, mon == trg.monitor);
-			} else {
-				return MSG_FAILURE;
-			}
-		} else if (streq("-l", *args) || streq("--layer", *args)) {
+		} else if (streq("-F", *args) || streq("--flip", *args)) {
 			num--, args++;
 			if (num < 1) {
 				return MSG_SYNTAX;
 			}
-			stack_layer_t lyr;
-			if (parse_stack_layer(*args, &lyr)) {
-				set_layer(trg.monitor, trg.desktop, trg.node, lyr);
+			flip_t flp;
+			if (parse_flip(*args, &flp)) {
+				flip_tree(trg.node, flp);
+				dirty = true;
 			} else {
 				return MSG_FAILURE;
 			}
 		} else if (streq("-R", *args) || streq("--rotate", *args)) {
 			num--, args++;
-			if (num < 2)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			direction_t dir;
-			if (!parse_direction(*args, &dir))
-				return MSG_FAILURE;
-			node_t *n = find_fence(trg.node, dir);
-			if (n == NULL)
-				return MSG_FAILURE;
-			num--, args++;
+			}
 			int deg;
 			if (parse_degree(*args, &deg)) {
-				rotate_tree(n, deg);
+				rotate_tree(trg.node, deg);
+				dirty = true;
+			} else {
+				return MSG_FAILURE;
+			}
+		} else if (streq("-E", *args) || streq("--equalize", *args)) {
+			equalize_tree(trg.node);
+			dirty = true;
+		} else if (streq("-B", *args) || streq("--balance", *args)) {
+			balance_tree(trg.node);
+			dirty = true;
+		} else if (streq("-C", *args) || streq("--circulate", *args)) {
+			num--, args++;
+			if (num < 1) {
+				return MSG_SYNTAX;
+			}
+			circulate_dir_t cir;
+			if (parse_circulate_direction(*args, &cir)) {
+				circulate_leaves(trg.monitor, trg.desktop, trg.node, cir);
 				dirty = true;
 			} else {
 				return MSG_FAILURE;
 			}
 		} else if (streq("-c", *args) || streq("--close", *args)) {
-			if (num > 1)
+			if (num > 1) {
 				return MSG_SYNTAX;
+			}
+			if (locked_count(trg.node) > 0) {
+				return MSG_FAILURE;
+			}
 			window_close(trg.node);
 		} else if (streq("-k", *args) || streq("--kill", *args)) {
-			if (num > 1)
+			if (num > 1) {
 				return MSG_SYNTAX;
+			}
 			window_kill(trg.monitor, trg.desktop, trg.node);
 			dirty = true;
 		} else {
@@ -350,25 +408,28 @@ int cmd_window(char **args, int num)
 		num--, args++;
 	}
 
-	if (dirty)
+	if (dirty) {
 		arrange(trg.monitor, trg.desktop);
+	}
 
 	return MSG_SUCCESS;
 }
 
 int cmd_desktop(char **args, int num)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
 
 	coordinates_t ref = {mon, mon->desk, NULL};
 	coordinates_t trg = ref;
 
 	if ((*args)[0] != OPT_CHR) {
-		if (desktop_from_desc(*args, &ref, &trg))
+		if (desktop_from_desc(*args, &ref, &trg)) {
 			num--, args++;
-		else
+		} else {
 			return MSG_FAILURE;
+		}
 	}
 
 	bool dirty = false;
@@ -378,37 +439,58 @@ int cmd_desktop(char **args, int num)
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!desktop_from_desc(*args, &trg, &dst))
+				if (!desktop_from_desc(*args, &trg, &dst)) {
 					return MSG_FAILURE;
+				}
 			}
 			focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
+		} else if (streq("-a", *args) || streq("--activate", *args)) {
+			coordinates_t dst = trg;
+			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+				num--, args++;
+				if (!desktop_from_desc(*args, &trg, &dst)) {
+					return MSG_FAILURE;
+				}
+			}
+			activate_desktop(dst.monitor, dst.desktop);
 		} else if (streq("-m", *args) || streq("--to-monitor", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			if (trg.monitor->desk_head == trg.monitor->desk_tail)
+			}
+			if (trg.monitor->desk_head == trg.monitor->desk_tail) {
 				return MSG_FAILURE;
+			}
 			coordinates_t dst;
 			if (monitor_from_desc(*args, &trg, &dst)) {
-				transfer_desktop(trg.monitor, dst.monitor, trg.desktop);
-				trg.monitor = dst.monitor;
-				update_current();
+				if (transfer_desktop(trg.monitor, dst.monitor, trg.desktop)) {
+					trg.monitor = dst.monitor;
+				} else {
+					return MSG_FAILURE;
+				}
 			} else {
 				return MSG_FAILURE;
 			}
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			coordinates_t dst;
-			if (desktop_from_desc(*args, &trg, &dst))
-				swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop);
-			else
+			if (desktop_from_desc(*args, &trg, &dst)) {
+				if (swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop)) {
+					trg.monitor = dst.monitor;
+				} else {
+					return MSG_FAILURE;
+				}
+			} else {
 				return MSG_FAILURE;
+			}
 		} else if (streq("-b", *args) || streq("--bubble", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
 				desktop_t *d = trg.desktop;
@@ -434,69 +516,29 @@ int cmd_desktop(char **args, int num)
 			}
 		} else if (streq("-l", *args) || streq("--layout", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			layout_t lyt;
 			cycle_dir_t cyc;
-			if (parse_cycle_direction(*args, &cyc))
+			if (parse_cycle_direction(*args, &cyc)) {
 				change_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
-			else if (parse_layout(*args, &lyt))
+			} else if (parse_layout(*args, &lyt)) {
 				change_layout(trg.monitor, trg.desktop, lyt);
-			else
+			} else {
 				return MSG_FAILURE;
+			}
 		} else if (streq("-n", *args) || streq("--rename", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			rename_desktop(trg.monitor, trg.desktop, *args);
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			if (trg.desktop->root == NULL &&
 			    trg.monitor->desk_head != trg.monitor->desk_tail) {
 				remove_desktop(trg.monitor, trg.desktop);
-				show_desktop(trg.monitor->desk);
-				update_current();
 				return MSG_SUCCESS;
-			} else {
-				return MSG_FAILURE;
-			}
-		} else if (streq("-c", *args) || streq("--cancel-presel", *args)) {
-			reset_mode(&trg);
-		} else if (streq("-F", *args) || streq("--flip", *args)) {
-			num--, args++;
-			if (num < 1)
-				return MSG_SYNTAX;
-			flip_t flp;
-			if (parse_flip(*args, &flp)) {
-				flip_tree(trg.desktop->root, flp);
-				dirty = true;
-			} else {
-				return MSG_FAILURE;
-			}
-		} else if (streq("-R", *args) || streq("--rotate", *args)) {
-			num--, args++;
-			if (num < 1)
-				return MSG_SYNTAX;
-			int deg;
-			if (parse_degree(*args, &deg)) {
-				rotate_tree(trg.desktop->root, deg);
-				dirty = true;
-			} else {
-				return MSG_FAILURE;
-			}
-		} else if (streq("-E", *args) || streq("--equalize", *args)) {
-			equalize_tree(trg.desktop->root);
-			dirty = true;
-		} else if (streq("-B", *args) || streq("--balance", *args)) {
-			balance_tree(trg.desktop->root);
-			dirty = true;
-		} else if (streq("-C", *args) || streq("--circulate", *args)) {
-			num--, args++;
-			if (num < 1)
-				return MSG_SYNTAX;
-			circulate_dir_t cir;
-			if (parse_circulate_direction(*args, &cir)) {
-				circulate_leaves(trg.monitor, trg.desktop, cir);
-				dirty = true;
 			} else {
 				return MSG_FAILURE;
 			}
@@ -504,25 +546,28 @@ int cmd_desktop(char **args, int num)
 		num--, args++;
 	}
 
-	if (dirty)
+	if (dirty) {
 		arrange(trg.monitor, trg.desktop);
+	}
 
 	return MSG_SUCCESS;
 }
 
 int cmd_monitor(char **args, int num)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
 
 	coordinates_t ref = {mon, NULL, NULL};
 	coordinates_t trg = ref;
 
 	if ((*args)[0] != OPT_CHR) {
-		if (monitor_from_desc(*args, &ref, &trg))
+		if (monitor_from_desc(*args, &ref, &trg)) {
 			num--, args++;
-		else
+		} else {
 			return MSG_FAILURE;
+		}
 	}
 
 	while (num > 0) {
@@ -530,14 +575,16 @@ int cmd_monitor(char **args, int num)
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!monitor_from_desc(*args, &trg, &dst))
+				if (!monitor_from_desc(*args, &trg, &dst)) {
 					return MSG_FAILURE;
+				}
 			}
 			focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
 		} else if (streq("-d", *args) || streq("--reset-desktops", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			desktop_t *d = trg.monitor->desk_head;
 			while (num > 0 && d != NULL) {
 				rename_desktop(trg.monitor, d, *args);
@@ -553,24 +600,27 @@ int cmd_monitor(char **args, int num)
 			}
 			while (d != NULL) {
 				desktop_t *next = d->next;
-				if (d == mon->desk)
+				if (d == mon->desk) {
 					focus_node(trg.monitor, d->prev, d->prev->focus);
+				}
 				merge_desktops(trg.monitor, d, mon, mon->desk);
 				remove_desktop(trg.monitor, d);
 				d = next;
 			}
 		} else if (streq("-a", *args) || streq("--add-desktops", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			while (num > 0) {
 				add_desktop(trg.monitor, make_desktop(*args));
 				num--, args++;
 			}
 		} else if (streq("-r", *args) || streq("--remove-desktops", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			while (num > 0) {
 				coordinates_t dst;
 				if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail && dst.desktop->root == NULL) {
@@ -581,16 +631,18 @@ int cmd_monitor(char **args, int num)
 			}
 		} else if (streq("-o", *args) || streq("--order-desktops", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			desktop_t *d = trg.monitor->desk_head;
 			while (d != NULL && num > 0) {
 				desktop_t *next = d->next;
 				coordinates_t dst;
 				if (locate_desktop(*args, &dst) && dst.monitor == trg.monitor) {
 					swap_desktops(trg.monitor, d, dst.monitor, dst.desktop);
-					if (next == dst.desktop)
+					if (next == dst.desktop) {
 						next = d;
+					}
 				}
 				d = next;
 				num--, args++;
@@ -603,13 +655,15 @@ int cmd_monitor(char **args, int num)
 			rename_monitor(trg.monitor, *args);
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			coordinates_t dst;
-			if (monitor_from_desc(*args, &trg, &dst))
+			if (monitor_from_desc(*args, &trg, &dst)) {
 				swap_monitors(trg.monitor, dst.monitor);
-			else
+			} else {
 				return MSG_FAILURE;
+			}
 		} else {
 			return MSG_SYNTAX;
 		}
@@ -623,8 +677,11 @@ int cmd_query(char **args, int num, FILE *rsp)
 {
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = {NULL, NULL, NULL};
+	monitor_select_t *monitor_sel = NULL;
+	desktop_select_t *desktop_sel = NULL;
+	node_select_t *node_sel = NULL;
 	domain_t dom = DOMAIN_TREE;
-	int d = 0, t = 0;
+	int d = 0, t = 0, ret = MSG_SUCCESS;
 
 	while (num > 0) {
 		if (streq("-T", *args) || streq("--tree", *args)) {
@@ -633,55 +690,81 @@ int cmd_query(char **args, int num, FILE *rsp)
 			dom = DOMAIN_MONITOR, d++;
 		} else if (streq("-D", *args) || streq("--desktops", *args)) {
 			dom = DOMAIN_DESKTOP, d++;
-		} else if (streq("-W", *args) || streq("--windows", *args)) {
-			dom = DOMAIN_WINDOW, d++;
-		} else if (streq("-H", *args) || streq("--history", *args)) {
-			dom = DOMAIN_HISTORY, d++;
-		} else if (streq("-S", *args) || streq("--stack", *args)) {
-			dom = DOMAIN_STACK, d++;
+		} else if (streq("-N", *args) || streq("--nodes", *args)) {
+			dom = DOMAIN_NODE, d++;
 		} else if (streq("-m", *args) || streq("--monitor", *args)) {
-			trg.monitor = ref.monitor;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!monitor_from_desc(*args, &ref, &trg))
-					return MSG_FAILURE;
+				if ((*args)[0] == '.') {
+					monitor_sel = malloc(sizeof(monitor_select_t));
+					*monitor_sel = make_monitor_select();
+					if (!parse_monitor_modifiers(*args, monitor_sel)) {
+						ret = MSG_FAILURE;
+						goto end;
+					}
+				} else if (!monitor_from_desc(*args, &ref, &trg)) {
+					ret = MSG_FAILURE;
+					goto end;
+				}
+			} else {
+				trg.monitor = ref.monitor;
 			}
 			t++;
 		} else if (streq("-d", *args) || streq("--desktop", *args)) {
-			trg.monitor = ref.monitor;
-			trg.desktop = ref.desktop;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!desktop_from_desc(*args, &ref, &trg))
-					return MSG_FAILURE;
+				if ((*args)[0] == '.') {
+					desktop_sel = malloc(sizeof(desktop_select_t));
+					*desktop_sel = make_desktop_select();
+					if (!parse_desktop_modifiers(*args, desktop_sel)) {
+						ret = MSG_FAILURE;
+						goto end;
+					}
+				} else if (!desktop_from_desc(*args, &ref, &trg)) {
+					ret = MSG_FAILURE;
+					goto end;
+				}
+			} else {
+				trg.monitor = ref.monitor;
+				trg.desktop = ref.desktop;
 			}
 			t++;
-		} else if (streq("-w", *args) || streq("--window", *args)) {
-			trg = ref;
+		} else if (streq("-n", *args) || streq("--node", *args)) {
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
-				if (!node_from_desc(*args, &ref, &trg))
-					return MSG_FAILURE;
+				if ((*args)[0] == '.') {
+					node_sel = malloc(sizeof(node_select_t));
+					*node_sel = make_node_select();
+					if (!parse_node_modifiers(*args, node_sel)) {
+						ret = MSG_FAILURE;
+						goto end;
+					}
+				} else if (!node_from_desc(*args, &ref, &trg)) {
+					ret = MSG_FAILURE;
+					goto end;
+				}
+			} else {
+				trg = ref;
 			}
 			t++;
 		} else {
-			return MSG_SYNTAX;
+			ret = MSG_SYNTAX;
+			goto end;
 		}
 		num--, args++;
 	}
 
 	if (d != 1 || t > 1) {
-		return MSG_SYNTAX;
+		ret = MSG_SYNTAX;
+		goto end;
 	}
 
-	if (dom == DOMAIN_HISTORY) {
-		query_history(trg, rsp);
-	} else if (dom == DOMAIN_STACK) {
-		query_stack(rsp);
-	} else if (dom == DOMAIN_WINDOW) {
-		query_windows(trg, rsp);
-	} else if (dom == DOMAIN_DESKTOP || dom == DOMAIN_MONITOR) {
-		query_names(dom, trg, rsp);
+	if (dom == DOMAIN_NODE) {
+		query_node_ids(trg, node_sel, rsp);
+	} else if (dom == DOMAIN_DESKTOP) {
+		query_desktop_names(trg, desktop_sel, rsp);
+	} else if (dom == DOMAIN_MONITOR) {
+		query_monitor_names(trg, monitor_sel, rsp);
 	} else {
 		if (trg.node != NULL) {
 			query_node(trg.node, rsp);
@@ -690,35 +773,50 @@ int cmd_query(char **args, int num, FILE *rsp)
 		} else if (trg.monitor != NULL) {
 			query_monitor(trg.monitor, rsp);
 		} else {
-			query_tree(rsp);
+			ret = MSG_SYNTAX;
+			goto end;
 		}
 		fprintf(rsp, "\n");
 	}
 
-	return MSG_SUCCESS;
+end:
+	free(monitor_sel);
+	free(desktop_sel);
+	free(node_sel);
+
+	return ret;
 }
 
 int cmd_rule(char **args, int num, FILE *rsp)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
+
 	while (num > 0) {
 		if (streq("-a", *args) || streq("--add", *args)) {
 			num--, args++;
-			if (num < 2)
+			if (num < 2) {
 				return MSG_SYNTAX;
+			}
 			rule_t *rule = make_rule();
-			snprintf(rule->cause, sizeof(rule->cause), "%s", *args);
+			char *class_name = strtok(*args, COL_TOK);
+			char *instance_name = strtok(NULL, COL_TOK);
+			snprintf(rule->class_name, sizeof(rule->class_name), "%s", class_name);
+			snprintf(rule->instance_name, sizeof(rule->instance_name), "%s", instance_name==NULL?MATCH_ANY:instance_name);
 			num--, args++;
 			size_t i = 0;
 			while (num > 0) {
 				if (streq("-o", *args) || streq("--one-shot", *args)) {
 					rule->one_shot = true;
 				} else {
-					for (size_t j = 0; i < sizeof(rule->effect) && j < strlen(*args); i++, j++)
+					for (size_t j = 0; i < sizeof(rule->effect) && j < strlen(*args); i++, j++) {
 						rule->effect[i] = (*args)[j];
-					if (num > 1 && i < sizeof(rule->effect))
+					}
+					if (num > 1 && i < sizeof(rule->effect)) {
 						rule->effect[i++] = ' ';
+					}
+
 				}
 				num--, args++;
 			}
@@ -726,23 +824,25 @@ int cmd_rule(char **args, int num, FILE *rsp)
 			add_rule(rule);
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			int idx;
 			while (num > 0) {
-				if (parse_index(*args, &idx))
+				if (parse_index(*args, &idx)) {
 					remove_rule_by_index(idx - 1);
-				else if (streq("tail", *args))
+				} else if (streq("tail", *args)) {
 					remove_rule(rule_tail);
-				else if (streq("head", *args))
+				} else if (streq("head", *args)) {
 					remove_rule(rule_head);
-				else
+				} else {
 					remove_rule_by_cause(*args);
+				}
 				num--, args++;
 			}
 		} else if (streq("-l", *args) || streq("--list", *args)) {
 			num--, args++;
-			list_rules(num > 0 ? *args : NULL, rsp);
+			list_rules(rsp);
 		} else {
 			return MSG_SYNTAX;
 		}
@@ -754,28 +854,33 @@ int cmd_rule(char **args, int num, FILE *rsp)
 
 int cmd_pointer(char **args, int num)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
 	while (num > 0) {
 		if (streq("-t", *args) || streq("--track", *args)) {
 			num--, args++;
-			if (num < 2)
+			if (num < 2) {
 				return MSG_SYNTAX;
+			}
 			int x, y;
-			if (sscanf(*args, "%i", &x) == 1 && sscanf(*(args + 1), "%i", &y) == 1)
+			if (sscanf(*args, "%i", &x) == 1 && sscanf(*(args + 1), "%i", &y) == 1) {
 				track_pointer(x, y);
-			else
+			} else {
 				return MSG_FAILURE;
+			}
 			num--, args++;
 		} else if (streq("-g", *args) || streq("--grab", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
 			pointer_action_t pac;
-			if (parse_pointer_action(*args, &pac))
+			if (parse_pointer_action(*args, &pac)) {
 				grab_pointer(pac);
-			else
+			} else {
 				return MSG_FAILURE;
+			}
 		} else if (streq("-u", *args) || streq("--ungrab", *args)) {
 			ungrab_pointer();
 		} else {
@@ -787,13 +892,16 @@ int cmd_pointer(char **args, int num)
 	return MSG_SUCCESS;
 }
 
-int cmd_restore(char **args, int num)
+int cmd_wm(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
 		return MSG_SYNTAX;
 	}
 	while (num > 0) {
-		if (streq("-T", *args) || streq("--tree", *args)) {
+		if (streq("-d", *args) || streq("--dump-state", *args)) {
+			query_tree(rsp);
+			fprintf(rsp, "\n");
+		} else if (streq("-l", *args) || streq("--load-state", *args)) {
 			num--, args++;
 			if (num < 1) {
 				return MSG_SYNTAX;
@@ -801,69 +909,51 @@ int cmd_restore(char **args, int num)
 			if (!restore_tree(*args)) {
 				return MSG_FAILURE;
 			}
-		} else if (streq("-H", *args) || streq("--history", *args)) {
+		} else if (streq("-a", *args) || streq("--add-monitor", *args)) {
 			num--, args++;
-			if (num < 1) {
+			if (num < 2) {
 				return MSG_SYNTAX;
 			}
-			if (!restore_history(*args)) {
-				return MSG_FAILURE;
-			}
-		} else if (streq("-S", *args) || streq("--stack", *args)) {
+			char *name = *args;
 			num--, args++;
-			if (num < 1) {
-				return MSG_SYNTAX;
-			}
-			if (!restore_stack(*args)) {
-				return MSG_FAILURE;
-			}
-		} else {
-			return MSG_SYNTAX;
-		}
-		num--, args++;
-	}
-
-	return MSG_SUCCESS;
-}
-
-int cmd_control(char **args, int num, FILE *rsp)
-{
-	if (num < 1)
-		return MSG_SYNTAX;
-	while (num > 0) {
-		if (streq("--adopt-orphans", *args)) {
-			adopt_orphans();
-		} else if (streq("--toggle-visibility", *args)) {
-			toggle_visibility();
-		} else if (streq("--subscribe", *args)) {
-			num--, args++;
-			int field = 0;
-			if (num < 1) {
-				field = SBSC_MASK_REPORT;
+			xcb_rectangle_t r;
+			if (parse_rectangle(*args, &r)) {
+				monitor_t *m = make_monitor(&r);
+				snprintf(m->name, sizeof(m->name), "%s", name);
+				add_monitor(m);
+				add_desktop(m, make_desktop(NULL));
 			} else {
-				subscriber_mask_t mask;
-				while (num > 0) {
-					if (parse_subscriber_mask(*args, &mask)) {
-						field |= mask;
-					} else {
-						return MSG_SYNTAX;
-					}
-					num--, args++;
-				}
+				return MSG_SYNTAX;
 			}
-			add_subscriber(rsp, field);
-			return MSG_SUBSCRIBE;
-		} else if (streq("--get-status", *args)) {
-			print_report(rsp);
-		} else if (streq("--record-history", *args)) {
+		} else if (streq("-r", *args) || streq("--remove-monitor", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
+			}
+			if (mon_head == mon_tail) {
+				return MSG_FAILURE;
+			}
+			monitor_t *m = find_monitor(*args);
+			if (m != NULL) {
+				remove_monitor(m);
+			} else {
+				return MSG_FAILURE;
+			}
+		} else if (streq("-o", *args) || streq("--adopt-orphans", *args)) {
+			adopt_orphans();
+		} else if (streq("-g", *args) || streq("--get-status", *args)) {
+			print_report(rsp);
+		} else if (streq("-h", *args) || streq("--record-history", *args)) {
+			num--, args++;
+			if (num < 1) {
+				return MSG_SYNTAX;
+			}
 			bool b;
-			if (parse_bool(*args, &b))
+			if (parse_bool(*args, &b)) {
 				record_history = b;
-			else
+			} else {
 				return MSG_SYNTAX;
+			}
 		} else {
 			return MSG_SYNTAX;
 		}
@@ -875,52 +965,85 @@ int cmd_control(char **args, int num, FILE *rsp)
 
 int cmd_config(char **args, int num, FILE *rsp)
 {
-	if (num < 1)
+	if (num < 1) {
 		return MSG_SYNTAX;
+	}
+
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
 	coordinates_t trg = {NULL, NULL, NULL};
+
 	if ((*args)[0] == OPT_CHR) {
 		if (streq("-m", *args) || streq("--monitor", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			if (!monitor_from_desc(*args, &ref, &trg))
+			}
+			if (!monitor_from_desc(*args, &ref, &trg)) {
 				return MSG_FAILURE;
+			}
 		} else if (streq("-d", *args) || streq("--desktop", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			if (!desktop_from_desc(*args, &ref, &trg))
+			}
+			if (!desktop_from_desc(*args, &ref, &trg)) {
 				return MSG_FAILURE;
-		} else if (streq("-w", *args) || streq("--window", *args)) {
+			}
+		} else if (streq("-n", *args) || streq("--node", *args)) {
 			num--, args++;
-			if (num < 1)
+			if (num < 1) {
 				return MSG_SYNTAX;
-			if (!node_from_desc(*args, &ref, &trg))
+			}
+			if (!node_from_desc(*args, &ref, &trg)) {
 				return MSG_FAILURE;
+			}
 		} else {
 			return MSG_SYNTAX;
 		}
 		num--, args++;
 	}
-	if (num == 2)
+	if (num == 2) {
 		return set_setting(trg, *args, *(args + 1));
-	else if (num == 1)
+	} else if (num == 1) {
 		return get_setting(trg, *args, rsp);
-	else
+	} else {
 		return MSG_SYNTAX;
+	}
+}
+
+int cmd_subscribe(char **args, int num, FILE *rsp)
+{
+	int field = 0;
+	if (num < 1) {
+		field = SBSC_MASK_REPORT;
+	} else {
+		subscriber_mask_t mask;
+		while (num > 0) {
+			if (parse_subscriber_mask(*args, &mask)) {
+				field |= mask;
+			} else {
+				return MSG_SYNTAX;
+			}
+			num--, args++;
+		}
+	}
+
+	add_subscriber(rsp, field);
+	return MSG_SUBSCRIBE;
 }
 
 int cmd_quit(char **args, int num)
 {
-	if (num > 0 && sscanf(*args, "%i", &exit_status) != 1)
-		return MSG_FAILURE;
+	if (num > 0 && sscanf(*args, "%i", &exit_status) != 1) {
+		return MSG_SYNTAX;
+	}
 	running = false;
 	return MSG_SUCCESS;
 }
 
 int set_setting(coordinates_t loc, char *name, char *value)
 {
+	bool colors_changed = false;
 #define DESK_WIN_DEF_SET(k, v) \
 		if (loc.node != NULL) \
 			loc.node->client->k = v; \
@@ -960,23 +1083,27 @@ int set_setting(coordinates_t loc, char *name, char *value)
 				m->k = v;
 	} else if (streq("top_padding", name)) {
 		int tp;
-		if (sscanf(value, "%i", &tp) != 1)
+		if (sscanf(value, "%i", &tp) != 1) {
 			return MSG_FAILURE;
+		}
 		MON_DESK_SET(top_padding, tp)
 	} else if (streq("right_padding", name)) {
 		int rp;
-		if (sscanf(value, "%i", &rp) != 1)
+		if (sscanf(value, "%i", &rp) != 1) {
 			return MSG_FAILURE;
+		}
 		MON_DESK_SET(right_padding, rp)
 	} else if (streq("bottom_padding", name)) {
 		int bp;
-		if (sscanf(value, "%i", &bp) != 1)
+		if (sscanf(value, "%i", &bp) != 1) {
 			return MSG_FAILURE;
+		}
 		MON_DESK_SET(bottom_padding, bp)
 	} else if (streq("left_padding", name)) {
 		int lp;
-		if (sscanf(value, "%i", &lp) != 1)
+		if (sscanf(value, "%i", &lp) != 1) {
 			return MSG_FAILURE;
+		}
 		MON_DESK_SET(left_padding, lp)
 #undef MON_DESK_SET
 #define SET_STR(s) \
@@ -988,28 +1115,24 @@ int set_setting(coordinates_t loc, char *name, char *value)
 #undef SET_STR
 	} else if (streq("split_ratio", name)) {
 		double r;
-		if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1)
+		if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1) {
 			split_ratio = r;
-		else
+		} else {
 			return MSG_FAILURE;
+		}
 		return MSG_SUCCESS;
 #define SET_COLOR(s) \
 	} else if (streq(#s, name)) { \
-		snprintf(s, sizeof(s), "%s", value);
-	SET_COLOR(focused_border_color)
-	SET_COLOR(active_border_color)
+		if (!is_hex_color(value)) { \
+			return MSG_FAILURE; \
+		} else { \
+			snprintf(s, sizeof(s), "%s", value); \
+		colors_changed = true; \
+		}
 	SET_COLOR(normal_border_color)
-	SET_COLOR(presel_border_color)
-	SET_COLOR(focused_locked_border_color)
-	SET_COLOR(active_locked_border_color)
-	SET_COLOR(normal_locked_border_color)
-	SET_COLOR(focused_sticky_border_color)
-	SET_COLOR(active_sticky_border_color)
-	SET_COLOR(normal_sticky_border_color)
-	SET_COLOR(focused_private_border_color)
-	SET_COLOR(active_private_border_color)
-	SET_COLOR(normal_private_border_color)
-	SET_COLOR(urgent_border_color)
+	SET_COLOR(active_border_color)
+	SET_COLOR(focused_border_color)
+	SET_COLOR(presel_feedback_color)
 #undef SET_COLOR
 	} else if (streq("initial_polarity", name)) {
 		child_polarity_t p;
@@ -1020,13 +1143,16 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		}
 	} else if (streq("focus_follows_pointer", name)) {
 		bool b;
-		if (parse_bool(value, &b) && b != focus_follows_pointer) {
+		if (parse_bool(value, &b)) {
+			if (b == focus_follows_pointer) {
+				return MSG_SUCCESS;
+			}
 			focus_follows_pointer = b;
 			uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-						xcb_change_window_attributes(dpy, n->client->window, XCB_CW_EVENT_MASK, values);
+						xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
 					}
 				}
 			}
@@ -1050,7 +1176,7 @@ int set_setting(coordinates_t loc, char *name, char *value)
 			return MSG_FAILURE;
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
-		SET_BOOL(leaf_monocle)
+		SET_BOOL(single_monocle)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
 		SET_BOOL(history_aware_focus)
@@ -1072,9 +1198,14 @@ int set_setting(coordinates_t loc, char *name, char *value)
 		return MSG_FAILURE;
 	}
 
-	for (monitor_t *m = mon_head; m != NULL; m = m->next)
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next)
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			arrange(m, d);
+			if (colors_changed) {
+				update_colors_in(d->root, d, m);
+			}
+		}
+	}
 
 	return MSG_SUCCESS;
 }
@@ -1119,24 +1250,17 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 #define GET_COLOR(s) \
 	else if (streq(#s, name)) \
 		fprintf(rsp, "%s", s);
-	GET_COLOR(focused_border_color)
-	GET_COLOR(active_border_color)
 	GET_COLOR(normal_border_color)
-	GET_COLOR(presel_border_color)
-	GET_COLOR(focused_locked_border_color)
-	GET_COLOR(active_locked_border_color)
-	GET_COLOR(normal_locked_border_color)
-	GET_COLOR(focused_sticky_border_color)
-	GET_COLOR(active_sticky_border_color)
-	GET_COLOR(normal_sticky_border_color)
-	GET_COLOR(urgent_border_color)
+	GET_COLOR(active_border_color)
+	GET_COLOR(focused_border_color)
+	GET_COLOR(presel_feedback_color)
 #undef GET_COLOR
 #define GET_BOOL(s) \
 	else if (streq(#s, name)) \
 		fprintf(rsp, "%s", BOOL_STR(s));
 	GET_BOOL(borderless_monocle)
 	GET_BOOL(gapless_monocle)
-	GET_BOOL(leaf_monocle)
+	GET_BOOL(single_monocle)
 	GET_BOOL(focus_follows_pointer)
 	GET_BOOL(pointer_follows_focus)
 	GET_BOOL(pointer_follows_monitor)
@@ -1152,66 +1276,4 @@ int get_setting(coordinates_t loc, char *name, FILE* rsp)
 		return MSG_FAILURE;
 	fprintf(rsp, "\n");
 	return MSG_SUCCESS;
-}
-
-bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
-{
-	if (streq("all", s)) {
-		*mask = SBSC_MASK_ALL;
-	} else if (streq("window", s)) {
-		*mask = SBSC_MASK_WINDOW;
-	} else if (streq("desktop", s)) {
-		*mask = SBSC_MASK_DESKTOP;
-	} else if (streq("monitor", s)) {
-		*mask = SBSC_MASK_MONITOR;
-	} else if (streq("window_manage", s)) {
-		*mask = SBSC_MASK_WINDOW_MANAGE;
-	} else if (streq("window_unmanage", s)) {
-		*mask = SBSC_MASK_WINDOW_UNMANAGE;
-	} else if (streq("window_swap", s)) {
-		*mask = SBSC_MASK_WINDOW_SWAP;
-	} else if (streq("window_transfer", s)) {
-		*mask = SBSC_MASK_WINDOW_TRANSFER;
-	} else if (streq("window_focus", s)) {
-		*mask = SBSC_MASK_WINDOW_FOCUS;
-	} else if (streq("window_activate", s)) {
-		*mask = SBSC_MASK_WINDOW_ACTIVATE;
-	} else if (streq("window_geometry", s)) {
-		*mask = SBSC_MASK_WINDOW_GEOMETRY;
-	} else if (streq("window_state", s)) {
-		*mask = SBSC_MASK_WINDOW_STATE;
-	} else if (streq("window_flag", s)) {
-		*mask = SBSC_MASK_WINDOW_FLAG;
-	} else if (streq("window_layer", s)) {
-		*mask = SBSC_MASK_WINDOW_LAYER;
-	} else if (streq("desktop_add", s)) {
-		*mask = SBSC_MASK_DESKTOP_ADD;
-	} else if (streq("desktop_rename", s)) {
-		*mask = SBSC_MASK_DESKTOP_RENAME;
-	} else if (streq("desktop_remove", s)) {
-		*mask = SBSC_MASK_DESKTOP_REMOVE;
-	} else if (streq("desktop_swap", s)) {
-		*mask = SBSC_MASK_DESKTOP_SWAP;
-	} else if (streq("desktop_transfer", s)) {
-		*mask = SBSC_MASK_DESKTOP_TRANSFER;
-	} else if (streq("desktop_focus", s)) {
-		*mask = SBSC_MASK_DESKTOP_FOCUS;
-	} else if (streq("desktop_layout", s)) {
-		*mask = SBSC_MASK_DESKTOP_LAYOUT;
-	} else if (streq("monitor_add", s)) {
-		*mask = SBSC_MASK_MONITOR_ADD;
-	} else if (streq("monitor_rename", s)) {
-		*mask = SBSC_MASK_MONITOR_RENAME;
-	} else if (streq("monitor_remove", s)) {
-		*mask = SBSC_MASK_MONITOR_REMOVE;
-	} else if (streq("monitor_focus", s)) {
-		*mask = SBSC_MASK_MONITOR_FOCUS;
-	} else if (streq("monitor_geometry", s)) {
-		*mask = SBSC_MASK_MONITOR_GEOMETRY;
-	} else if (streq("report", s)) {
-		*mask = SBSC_MASK_REPORT;
-	} else {
-		return false;
-	}
-	return true;
 }
