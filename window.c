@@ -260,11 +260,15 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		initialize_presel_feedback(n);
 	}
 
+	int gap = gapless_monocle && (d->layout == LAYOUT_MONOCLE || (single_monocle && tiled_count(d->root) == 1))
+		? 0
+		: d->window_gap;
+
 	presel_t *p = n->presel;
 	xcb_rectangle_t rect = n->rectangle;
 	rect.x = rect.y = 0;
-	rect.width -= d->window_gap;
-	rect.height -= d->window_gap;
+	rect.width -= gap;
+	rect.height -= gap;
 	xcb_rectangle_t presel_rect = rect;
 
 	switch (p->split_dir) {
