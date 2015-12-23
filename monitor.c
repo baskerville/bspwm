@@ -324,9 +324,7 @@ monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, monitor_select_t sel)
 
 bool is_inside_monitor(monitor_t *m, xcb_point_t pt)
 {
-	xcb_rectangle_t r = m->rectangle;
-	return (r.x <= pt.x && pt.x < (r.x + r.width)
-			&& r.y <= pt.y && pt.y < (r.y + r.height));
+	return is_inside(pt, m->rectangle);
 }
 
 monitor_t *monitor_from_point(xcb_point_t pt)

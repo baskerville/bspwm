@@ -226,6 +226,19 @@ void unmanage_window(xcb_window_t win)
 	}
 }
 
+bool is_presel_window(xcb_window_t win)
+{
+	xcb_icccm_get_wm_class_reply_t reply;
+	bool ret = false;
+	if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
+		if (streq(BSPWM_CLASS_NAME, reply.class_name) && streq(PRESEL_FEEDBACK_I, reply.instance_name)) {
+			ret = true;
+		}
+		xcb_icccm_get_wm_class_reply_wipe(&reply);
+	}
+	return ret;
+}
+
 void initialize_presel_feedback(node_t *n)
 {
 	if (n == NULL || n->presel == NULL || n->presel->feedback != XCB_NONE) {
@@ -483,6 +496,16 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 	if (qpr != NULL) {
 		if (win != NULL) {
 			*win = qpr->child;
+			xcb_point_t pt = {qpr->root_x, qpr->root_y};
+			for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
+				xcb_rectangle_t rect = get_rectangle(NULL, NULL, s->node);
+				if (is_inside(pt, rect)) {
+					if (s->node->id == qpr->child || is_presel_window(qpr->child)) {
+						*win = s->node->id;
+					}
+					break;
+				}
+			}
 		}
 		if (pt != NULL) {
 			*pt = (xcb_point_t) {qpr->root_x, qpr->root_y};

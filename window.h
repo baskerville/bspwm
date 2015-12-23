@@ -50,6 +50,7 @@ void update_floating_rectangle(node_t *n);
 void restrain_floating_width(client_t *c, int *width);
 void restrain_floating_height(client_t *c, int *height);
 void restrain_floating_size(client_t *c, int *width, int *height);
+bool is_presel_window(xcb_window_t win);
 void query_pointer(xcb_window_t *win, xcb_point_t *pt);
 void window_border_width(xcb_window_t win, uint32_t bw);
 void window_move(xcb_window_t win, int16_t x, int16_t y);

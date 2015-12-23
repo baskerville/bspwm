@@ -1687,7 +1687,7 @@ xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n)
 				break;
 		 }
 	} else {
-		int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+		int wg = (d == NULL ? 0 : (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap));
 		xcb_rectangle_t rect = n->rectangle;
 		rect.width -= wg;
 		rect.height -= wg;

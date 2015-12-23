@@ -29,10 +29,12 @@
 
 #define ROOT_EVENT_MASK     (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY)
 #define CLIENT_EVENT_MASK   (XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_FOCUS_CHANGE)
-#define META_WINDOW_IC      "wm\0Bspwm"
-#define ROOT_WINDOW_IC      "root\0Bspwm"
-#define PRESEL_FEEDBACK_IC  "presel_feedback\0Bspwm"
-#define MOTION_RECORDER_IC  "motion_recorder\0Bspwm"
+#define BSPWM_CLASS_NAME    "Bspwm"
+#define META_WINDOW_IC      "wm\0" BSPWM_CLASS_NAME
+#define ROOT_WINDOW_IC      "root\0" BSPWM_CLASS_NAME
+#define PRESEL_FEEDBACK_I   "presel_feedback"
+#define PRESEL_FEEDBACK_IC  PRESEL_FEEDBACK_I "\0" BSPWM_CLASS_NAME
+#define MOTION_RECORDER_IC  "motion_recorder\0" BSPWM_CLASS_NAME
 
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
