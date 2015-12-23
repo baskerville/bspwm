@@ -17,7 +17,7 @@ clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 
 . panel_colors
 
-cat "$PANEL_FIFO" | panel_bar | lemonbar -n "$PANEL_WM_NAME" -g x$PANEL_HEIGHT -f "$PANEL_FONT" -F "$COLOR_DEFAULT_FG" -B "$COLOR_DEFAULT_BG" &
+cat "$PANEL_FIFO" | panel_bar | lemonbar -a 32 -n "$PANEL_WM_NAME" -g x$PANEL_HEIGHT -f "$PANEL_FONT" -F "$COLOR_DEFAULT_FG" -B "$COLOR_DEFAULT_BG" | sh &
 
 wid=$(xdo id -a "$PANEL_WM_NAME")
 tries_left=20

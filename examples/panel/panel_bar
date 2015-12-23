@@ -39,7 +39,7 @@ while read -r line ; do
 								BG=$COLOR_FOCUSED_MONITOR_BG
 								;;
 						esac
-						wm="${wm}%{F${FG}}%{B${BG}} ${name} %{B-}%{F-}"
+						wm="${wm}%{F${FG}}%{B${BG}}%{A:bspc monitor -f ${name}:} ${name} %{A}%{B-}%{F-}"
 						;;
 					[fFoOuU]*)
 						case $item in
@@ -74,7 +74,7 @@ while read -r line ; do
 								BG=$COLOR_FOCUSED_URGENT_BG
 								;;
 						esac
-						wm="${wm}%{F${FG}}%{B${BG}} ${name} %{B-}%{F-}"
+						wm="${wm}%{F${FG}}%{B${BG}}%{A:bspc desktop -f ${name}:} ${name} %{A}%{B-}%{F-}"
 						;;
 					[LTG]*)
 						# layout, state and flags
