@@ -233,8 +233,10 @@ void initialize_presel_feedback(node_t *n)
 	}
 
 	xcb_window_t win = xcb_generate_id(dpy);
+	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_SAVE_UNDER;
+	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, win, root, 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
-			          XCB_COPY_FROM_PARENT, XCB_CW_BACK_PIXEL, (uint32_t []) {get_color_pixel(presel_feedback_color)});
+			          XCB_COPY_FROM_PARENT, mask, values);
 
 	xcb_icccm_set_wm_class(dpy, win, sizeof(PRESEL_FEEDBACK_IC), PRESEL_FEEDBACK_IC);
 	stacking_list_t *s = stack_tail;
