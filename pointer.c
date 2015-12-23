@@ -166,7 +166,7 @@ void grab_pointer(pointer_action_t pac)
 	} else {
 		if (pac == ACTION_FOCUS) {
 			monitor_t *m = monitor_from_point(pos);
-			if (m != NULL && m != mon) {
+			if (m != NULL && m != mon && (win == XCB_NONE || win == m->root)) {
 				focus_node(m, m->desk, m->desk->focus);
 			}
 		}
