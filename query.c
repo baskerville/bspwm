@@ -329,7 +329,9 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	node_select_t sel = make_node_select();
 
-	if (!parse_node_modifiers(desc, &sel)) {
+	char *colon = strrchr(desc, ':');
+
+	if (!parse_node_modifiers(colon != NULL ? colon : desc, &sel)) {
 		return false;
 	}
 
@@ -370,8 +372,7 @@ bool node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		}
 	} else if (*desc == '@') {
 		desc++;
-		char *colon;
-		if ((colon = strrchr(desc, ':')) != NULL) {
+		if (colon != NULL) {
 			*colon = '\0';
 			if (desktop_from_desc(desc, ref, dst)) {
 				desc = colon + 1;
@@ -417,7 +418,9 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
 	desktop_select_t sel = make_desktop_select();
 
-	if (!parse_desktop_modifiers(desc, &sel)) {
+	char *colon = strrchr(desc, ':');
+
+	if (!parse_desktop_modifiers(colon != NULL ? colon : desc, &sel)) {
 		return false;
 	}
 
@@ -425,7 +428,6 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 	cycle_dir_t cyc;
 	history_dir_t hdi;
-	char *colon;
 	int idx;
 	if (parse_cycle_direction(desc, &cyc)) {
 		dst->monitor = ref->monitor;
@@ -440,7 +442,7 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			dst->monitor = mon;
 			dst->desktop = mon->desk;
 		}
-	} else if ((colon = strchr(desc, ':')) != NULL) {
+	} else if (colon != NULL) {
 		*colon = '\0';
 		if (monitor_from_desc(desc, ref, dst)) {
 			if (streq("focused", colon + 1)) {
