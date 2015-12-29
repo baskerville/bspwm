@@ -1,12 +1,8 @@
-- Add `--activate` command for desktops and monitors.
-- Provide a class and instance name flag for rules
-- Write tests.
-- Make panel example respond to pointer events.
-- Implement all the MUSTs in the EWMH specification.
 - Add zoom feature (view point distinct from root).
 - Add receptacles (leaves with NULL client pointer).
 - Handle window size constraints specified by size hints.
 - Add support for showing/hiding nodes.
+- Implement all the MUSTs in the EWMH specification.
 - Set more attributes in `make_client` (instead of doing it in `apply_rules`) and don't pass `XCB_NONE` as argument.
 - Use BSD `sys/{queue/tree}.h` for {list,tree} structures?
 - Handle malloc failure everywhere.
