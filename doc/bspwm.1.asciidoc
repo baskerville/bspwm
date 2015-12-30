@@ -420,6 +420,9 @@ Commands
 *-d*, *--reset-desktops* <name>...::
 	Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops. Incidentally reset the settings of the existing desktops.
 
+*-g*, *--rectangle* WxH+X+Y::
+	Set the rectangle of the selected monitor.
+
 *-n*, *--rename* <new_name>::
 	Rename the selected monitor.
 

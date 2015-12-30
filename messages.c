@@ -647,6 +647,17 @@ int cmd_monitor(char **args, int num)
 				d = next;
 				num--, args++;
 			}
+		} else if (streq("-g", *args) || streq("--rectangle", *args)) {
+			num--, args++;
+			if (num < 1) {
+				return MSG_SYNTAX;
+			}
+			xcb_rectangle_t r;
+			if (parse_rectangle(*args, &r)) {
+				update_root(trg.monitor, &r);
+			} else {
+				return MSG_SYNTAX;
+			}
 		} else if (streq("-n", *args) || streq("--rename", *args)) {
 			num--, args++;
 			if (num < 1) {

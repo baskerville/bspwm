@@ -57,21 +57,31 @@ monitor_t *make_monitor(xcb_rectangle_t *rect)
 	return m;
 }
 
-void update_root(monitor_t *m, xcb_rectangle_t *r)
+void update_root(monitor_t *m, xcb_rectangle_t *rect)
 {
-	m->rectangle = *r;
+	xcb_rectangle_t last_rect = m->rectangle;
+	m->rectangle = *rect;
 	if (m->root == XCB_NONE) {
 		uint32_t values[] = {XCB_EVENT_MASK_ENTER_WINDOW};
 		m->root = xcb_generate_id(dpy);
-		xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root, r->x, r->y, r->width, r->height, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+		xcb_create_window(dpy, XCB_COPY_FROM_PARENT, m->root, root,
+		                  rect->x, rect->y, rect->width, rect->height, 0,
+		                  XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
 		xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
 		window_lower(m->root);
 		if (focus_follows_pointer) {
 			window_show(m->root);
 		}
 	} else {
-		window_move_resize(m->root, r->x, r->y, r->width, r->height);
-		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n", m->name, r->width, r->height, r->x, r->y);
+		window_move_resize(m->root, rect->x, rect->y, rect->width, rect->height);
+		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n",
+		           m->name, rect->width, rect->height, rect->x, rect->y);
+	}
+	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+		for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+			adapt_geometry(&last_rect, rect, n);
+		}
+		arrange(m, d);
 	}
 }
 
@@ -416,14 +426,7 @@ bool update_monitors(void)
 					xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
 					mm = get_monitor_by_id(outputs[i]);
 					if (mm != NULL) {
-						xcb_rectangle_t last_rect = mm->rectangle;
 						update_root(mm, &rect);
-						for (desktop_t *d = mm->desk_head; d != NULL; d = d->next) {
-							for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-								adapt_geometry(&last_rect, &rect, n);
-							}
-						}
-						arrange(mm, mm->desk);
 						mm->wired = true;
 					} else {
 						mm = make_monitor(&rect);
