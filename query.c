@@ -36,6 +36,9 @@ void query_tree(FILE *rsp)
 {
 	fprintf(rsp, "{");
 	fprintf(rsp, "\"focusedMonitorName\":\"%s\",", mon->name);
+	if (pri_mon != NULL) {
+		fprintf(rsp, "\"primaryMonitorName\":\"%s\",", pri_mon->name);
+	}
 	fprintf(rsp, "\"clientsCount\":%i,", clients_count);
 	fprintf(rsp, "\"monitors\":");
 	fprintf(rsp, "[");

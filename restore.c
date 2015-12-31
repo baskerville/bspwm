@@ -112,12 +112,16 @@ bool restore_tree(const char *file_path)
 	}
 
 	jsmntok_t *t = tokens + 1;
-	char *focusedMonitorName = NULL;
+	char *focusedMonitorName = NULL, *primaryMonitorName = NULL;
 
 	for (int i = 0; i < num; i++) {
 		if (keyeq("focusedMonitorName", t, json)) {
 			free(focusedMonitorName);
 			focusedMonitorName = copy_string(t+1, json);
+			t++;
+		} else if (keyeq("primaryMonitorName", t, json)) {
+			free(primaryMonitorName);
+			primaryMonitorName = copy_string(t+1, json);
 			t++;
 		} else if (keyeq("clientsCount", t, json)) {
 			t++;
@@ -150,7 +154,15 @@ bool restore_tree(const char *file_path)
 		}
 	}
 
+	if (primaryMonitorName != NULL) {
+		coordinates_t loc;
+		if (locate_monitor(primaryMonitorName, &loc)) {
+			pri_mon = loc.monitor;
+		}
+	}
+
 	free(focusedMonitorName);
+	free(primaryMonitorName);
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
