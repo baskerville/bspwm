@@ -158,6 +158,7 @@ void query_client(client_t *c, FILE *rsp)
 		fprintf(rsp, "\"layer\":\"%s\",", LAYER_STR(c->layer));
 		fprintf(rsp, "\"lastLayer\":\"%s\",", LAYER_STR(c->last_layer));
 		fprintf(rsp, "\"urgent\":%s,", BOOL_STR(c->urgent));
+		fprintf(rsp, "\"visible\":%s,", BOOL_STR(c->visible));
 		fprintf(rsp, "\"icccmFocus\":%s,", BOOL_STR(c->icccm_focus));
 		fprintf(rsp, "\"icccmInput\":%s,", BOOL_STR(c->icccm_input));
 		fprintf(rsp, "\"minWidth\":%u,", c->min_width);

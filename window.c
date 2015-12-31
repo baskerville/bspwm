@@ -190,9 +190,9 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
 
 	if (d == m->desk) {
-		window_show(n->id);
+		show_node(n);
 	} else {
-		window_hide(n->id);
+		hide_node(n);
 	}
 
 	/* the same function is already called in `focus_node` but has no effects on unmapped windows */
@@ -498,6 +498,9 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 			*win = qpr->child;
 			xcb_point_t pt = {qpr->root_x, qpr->root_y};
 			for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
+				if (!s->node->client->visible) {
+					continue;
+				}
 				xcb_rectangle_t rect = get_rectangle(NULL, NULL, s->node);
 				if (is_inside(pt, rect)) {
 					if (s->node->id == qpr->child || is_presel_window(qpr->child)) {

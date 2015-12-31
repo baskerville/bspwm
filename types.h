@@ -162,6 +162,7 @@ typedef struct {
 	char instance_name[3 * SMALEN / 2];
 	unsigned int border_width;
 	bool urgent;
+	bool visible;
 	client_state_t state;
 	client_state_t last_state;
 	stack_layer_t layer;

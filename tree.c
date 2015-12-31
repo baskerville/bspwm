@@ -507,6 +507,7 @@ void hide_node(node_t *n)
 		}
 		if (n->client != NULL) {
 			window_hide(n->id);
+			n->client->visible = false;
 		}
 		hide_node(n->first_child);
 		hide_node(n->second_child);
@@ -520,6 +521,7 @@ void show_node(node_t *n)
 	} else {
 		if (n->client != NULL) {
 			window_show(n->id);
+			n->client->visible = true;
 		}
 		if (n->presel != NULL) {
 			window_show(n->presel->feedback);
@@ -554,7 +556,7 @@ client_t *make_client(void)
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
-	c->urgent = c->icccm_focus = false;
+	c->urgent = c->visible = c->icccm_focus = false;
 	c->icccm_input = true;
 	c->wm_states_count = 0;
 	return c;
