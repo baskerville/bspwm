@@ -97,13 +97,20 @@ bool restore_tree(const char *file_path)
 		return false;
 	}
 
-	mon = NULL;
+	int num = tokens[0].size;
 
+	if (num < 1) {
+		free(tokens);
+		free(json);
+
+		return false;
+	}
+
+	mon = NULL;
 	while (mon_head != NULL) {
 		remove_monitor(mon_head);
 	}
 
-	int num = tokens[0].size;
 	jsmntok_t *t = tokens + 1;
 	char *focusedMonitorName = NULL;
 
