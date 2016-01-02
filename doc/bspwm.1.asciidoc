@@ -322,8 +322,8 @@ Commands
 *-s*, *--swap* 'NODE_SEL'::
 	Swap the selected node with the given node.
 
-*-p*, *--presel-dir* [~]'DIR'|cancel::
-	Preselect the splitting area of the selected node (or cancel the preselection).
+*-p*, *--presel-dir* \[~]'DIR'|cancel::
+	Preselect the splitting area of the selected node (or cancel the preselection). If *~* is prepended to 'DIR' and the current preselection direction matches 'DIR', then the argument is interpreted as *cancel*.
 
 *-o*, *--presel-ratio* 'RATIO'::
 	Set the splitting ratio of the preselection area.
@@ -347,7 +347,7 @@ Commands
 	Circulate the windows of the tree rooted at the selected node.
 
 *-t*, *--state* [~](tiled|pseudo_tiled|floating|fullscreen)::
-	Set the state of the selected window.
+	Set the state of the selected window. If *~* is present and the current state matches the given state, then the argument is interpreted as the last state.
 
 *-g*, *--flag* locked|sticky|private[=on|off]::
 	Set or toggle the given flag for the selected node.

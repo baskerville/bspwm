@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 12/30/2015
+.\"      Date: 01/02/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9-114-g1fe2b41
+.\"    Source: Bspwm 0.9-118-gdcc13f7
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "12/30/2015" "Bspwm 0\&.9\-114\-g1fe2b41" "Bspwm Manual"
+.TH "BSPWM" "1" "01/02/2016" "Bspwm 0\&.9\-118\-gdcc13f7" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -519,9 +519,15 @@ Transplant the selected node to the given node\&.
 Swap the selected node with the given node\&.
 .RE
 .PP
-\fB\-p\fR, \fB\-\-presel\-dir\fR \fIDIR\fR|cancel
+\fB\-p\fR, \fB\-\-presel\-dir\fR [~]\fIDIR\fR|cancel
 .RS 4
-Preselect the splitting area of the selected node (or cancel the preselection)\&.
+Preselect the splitting area of the selected node (or cancel the preselection)\&. If
+\fB~\fR
+is prepended to
+\fIDIR\fR
+and the current preselection direction matches
+\fIDIR\fR, then the argument is interpreted as
+\fBcancel\fR\&.
 .RE
 .PP
 \fB\-o\fR, \fB\-\-presel\-ratio\fR \fIRATIO\fR
@@ -563,7 +569,9 @@ Circulate the windows of the tree rooted at the selected node\&.
 .PP
 \fB\-t\fR, \fB\-\-state\fR [~](tiled|pseudo_tiled|floating|fullscreen)
 .RS 4
-Set the state of the selected window\&.
+Set the state of the selected window\&. If
+\fB~\fR
+is present and the current state matches the given state, then the argument is interpreted as the last state\&.
 .RE
 .PP
 \fB\-g\fR, \fB\-\-flag\fR locked|sticky|private[=on|off]
