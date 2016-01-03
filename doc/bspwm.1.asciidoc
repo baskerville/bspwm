@@ -544,7 +544,7 @@ Subscribe
 
 General Syntax
 ^^^^^^^^^^^^^^
-subscribe (all|report|monitor|desktop|window|...)*::
+subscribe (all|report|monitor|desktop|node|...)*::
 	Continuously print status information. See the *EVENTS* section for the detailed description of each event.
 
 Quit
