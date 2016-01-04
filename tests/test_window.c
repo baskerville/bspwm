@@ -46,9 +46,9 @@ xcb_gc_t get_font_gc(xcb_connection_t *dpy, xcb_window_t win, const char *font_n
 
 void render_text(xcb_connection_t *dpy, xcb_window_t win, int16_t x, int16_t y)
 {
-	char id[8];
+	char id[10];
 	xcb_void_cookie_t ck;
-	snprintf(id, sizeof(id), "%07x", win);
+	snprintf(id, sizeof(id), "0x%X", win);
 	xcb_gcontext_t gc = get_font_gc(dpy, win, "-*-fixed-medium-*-*-*-18-*-*-*-*-*-*-*");
 	/* Don't work with the _checked ! */
 	ck = xcb_image_text_8_checked(dpy, strlen(id), win, gc, x, y, id);

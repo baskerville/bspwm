@@ -248,7 +248,7 @@ void query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t loc,
 		coordinates_t trg = {m, d, n};
 		if ((loc.node == NULL || n == loc.node) &&
 		    (sel == NULL || node_matches(&trg, &ref, *sel))) {
-			fprintf(rsp, "0x%07X\n", n->id);
+			fprintf(rsp, "0x%X\n", n->id);
 		}
 		query_node_ids_in(n->first_child, d, m, loc, sel, rsp);
 		query_node_ids_in(n->second_child, d, m, loc, sel, rsp);
