@@ -892,7 +892,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 
 	node_t *target = NULL;
 
-	if (n->client != NULL && IS_TILED(n->client)) {
+	if (n->client == NULL || IS_TILED(n->client)) {
 		target = find_fence(n, dir);
 		if (target == NULL) {
 			return NULL;
@@ -919,7 +919,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 		coordinates_t loc = {m, d, a};
 		if (a == n ||
 		    !node_matches(&loc, &ref, sel) ||
-		    IS_TILED(a->client) != IS_TILED(n->client) ||
+		    (n->client != NULL && (IS_TILED(a->client) != IS_TILED(n->client))) ||
 		    (IS_TILED(a->client) && !is_adjacent(n, a, dir))) {
 			continue;
 		}
