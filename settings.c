@@ -58,6 +58,7 @@ void load_settings(void)
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
 	single_monocle = SINGLE_MONOCLE;
+	monocle_ignores_padding = MONOCLE_IGNORES_PADDING;
 	focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
 	pointer_follows_focus = POINTER_FOLLOWS_FOCUS;
 	pointer_follows_monitor = POINTER_FOLLOWS_MONITOR;
