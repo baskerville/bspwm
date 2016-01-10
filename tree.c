@@ -45,22 +45,31 @@ void arrange(monitor_t *m, desktop_t *d)
 		return;
 	}
 
-	layout_t set_layout = d->layout;
+	layout_t last_layout = d->layout;
 
 	if (single_monocle && tiled_count(d->root) == 1) {
 		d->layout = LAYOUT_MONOCLE;
 	}
 
 	xcb_rectangle_t rect = m->rectangle;
-	int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
-	rect.x += m->left_padding + d->left_padding + wg;
-	rect.y += m->top_padding + d->top_padding + wg;
-	rect.width -= m->left_padding + d->left_padding + d->right_padding + m->right_padding + wg;
-	rect.height -= m->top_padding + d->top_padding + d->bottom_padding + m->bottom_padding + wg;
+
+	if (!paddingless_monocle || d->layout != LAYOUT_MONOCLE) {
+		rect.x += m->left_padding + d->left_padding;
+		rect.y += m->top_padding + d->top_padding;
+		rect.width -= m->left_padding + d->left_padding + d->right_padding + m->right_padding;
+		rect.height -= m->top_padding + d->top_padding + d->bottom_padding + m->bottom_padding;
+	}
+
+	if (!gapless_monocle || d->layout != LAYOUT_MONOCLE) {
+		rect.x += d->window_gap;
+		rect.y += d->window_gap;
+		rect.width -= d->window_gap;
+		rect.height -= d->window_gap;
+	}
 
 	apply_layout(m, d, d->root, rect, rect);
 
-	d->layout = set_layout;
+	d->layout = last_layout;
 }
 
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)

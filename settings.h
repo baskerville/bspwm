@@ -46,6 +46,7 @@
 #define FOCUS_BY_DISTANCE           false
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
+#define PADDINGLESS_MONOCLE         false
 #define SINGLE_MONOCLE              false
 #define FOCUS_FOLLOWS_POINTER       false
 #define POINTER_FOLLOWS_FOCUS       false
@@ -72,6 +73,7 @@ child_polarity_t initial_polarity;
 
 bool borderless_monocle;
 bool gapless_monocle;
+bool paddingless_monocle;
 bool single_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_focus;
