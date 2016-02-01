@@ -681,6 +681,9 @@ Events
 'monitor_remove <monitor_name>'::
 	A monitor is removed.
 
+'monitor_swap <src_monitor_name> <dst_monitor_name>'::
+	A monitor is swapped.
+
 'monitor_focus <monitor_name>'::
 	A monitor is focused.
 

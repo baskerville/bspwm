@@ -671,7 +671,9 @@ int cmd_monitor(char **args, int num)
 			}
 			coordinates_t dst;
 			if (monitor_from_desc(*args, &trg, &dst)) {
-				swap_monitors(trg.monitor, dst.monitor);
+				if (!swap_monitors(trg.monitor, dst.monitor)) {
+					return MSG_FAILURE;
+				}
 			} else {
 				return MSG_FAILURE;
 			}

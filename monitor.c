@@ -263,11 +263,13 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
 	}
 }
 
-void swap_monitors(monitor_t *m1, monitor_t *m2)
+bool swap_monitors(monitor_t *m1, monitor_t *m2)
 {
 	if (m1 == NULL || m2 == NULL || m1 == m2) {
-		return;
+		return false;
 	}
+
+	put_status(SBSC_MASK_MONITOR_SWAP, "monitor_swap %s %s\n", m1->name, m2->name);
 
 	if (mon_head == m1) {
 		mon_head = m2;
@@ -308,6 +310,7 @@ void swap_monitors(monitor_t *m1, monitor_t *m2)
 	ewmh_update_current_desktop();
 
 	put_status(SBSC_MASK_REPORT);
+	return true;
 }
 
 monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, monitor_select_t sel)

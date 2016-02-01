@@ -309,6 +309,8 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_MONITOR_RENAME;
 	} else if (streq("monitor_remove", s)) {
 		*mask = SBSC_MASK_MONITOR_REMOVE;
+	} else if (streq("monitor_swap", s)) {
+		*mask = SBSC_MASK_MONITOR_SWAP;
 	} else if (streq("monitor_focus", s)) {
 		*mask = SBSC_MASK_MONITOR_FOCUS;
 	} else if (streq("monitor_geometry", s)) {
