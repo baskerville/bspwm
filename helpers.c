@@ -131,6 +131,11 @@ bool is_hex_color(const char *color)
 	return true;
 }
 
+bool rect_eq(xcb_rectangle_t a, xcb_rectangle_t b)
+{
+	return (a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height);
+}
+
 bool is_inside(xcb_point_t p, xcb_rectangle_t r)
 {
 	return (p.x >= r.x && p.x < (r.x + r.width) &&

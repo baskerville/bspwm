@@ -102,6 +102,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		}
 
 		xcb_rectangle_t r;
+		xcb_rectangle_t cr = get_rectangle(m, d, n);
 		client_state_t s = n->client->state;
 		if (s == STATE_TILED || s == STATE_PSEUDO_TILED) {
 			int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
@@ -131,12 +132,15 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 			r = m->rectangle;
 		}
 
-		window_move_resize(n->id, r.x, r.y, r.width, r.height);
+		if (!rect_eq(r, cr)) {
+			window_move_resize(n->id, r.x, r.y, r.width, r.height);
+			if (frozen_pointer->action == ACTION_NONE) {
+				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->id, r.width, r.height, r.x, r.y);
+			}
+		}
+
 		window_border_width(n->id, bw);
 
-		if (frozen_pointer->action == ACTION_NONE) {
-			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->id, r.width, r.height, r.x, r.y);
-		}
 	} else {
 		xcb_rectangle_t first_rect;
 		xcb_rectangle_t second_rect;
