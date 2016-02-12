@@ -119,7 +119,7 @@ void configure_request(xcb_generic_event_t *evt)
 		xcb_configure_notify_event_t evt;
 		unsigned int bw = c->border_width;
 
-		xcb_rectangle_t rect = get_rectangle(loc.monitor, loc.desktop, loc.node);
+		xcb_rectangle_t rect = get_rectangle(loc.desktop, loc.node);
 
 		evt.response_type = XCB_CONFIGURE_NOTIFY;
 		evt.event = e->window;

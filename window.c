@@ -501,7 +501,7 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 				if (!s->node->client->visible) {
 					continue;
 				}
-				xcb_rectangle_t rect = get_rectangle(NULL, NULL, s->node);
+				xcb_rectangle_t rect = get_rectangle(NULL, s->node);
 				if (is_inside(pt, rect)) {
 					if (s->node->id == qpr->child || is_presel_window(qpr->child)) {
 						*win = s->node->id;

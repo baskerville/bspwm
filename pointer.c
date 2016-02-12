@@ -353,7 +353,7 @@ void track_pointer(int root_x, int root_y)
 void ungrab_pointer(void)
 {
 	if (frozen_pointer->action != ACTION_NONE) {
-		xcb_rectangle_t r = get_rectangle(frozen_pointer->monitor, frozen_pointer->desktop, frozen_pointer->node);
+		xcb_rectangle_t r = get_rectangle(frozen_pointer->desktop, frozen_pointer->node);
 		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->name, frozen_pointer->desktop->name, frozen_pointer->window, r.width, r.height, r.x, r.y);
 	}
 	frozen_pointer->action = ACTION_NONE;

@@ -64,7 +64,7 @@ node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel);
 node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel);
 void get_opposite(direction_t src, direction_t *dst);
-unsigned int node_area(monitor_t *m, desktop_t *d, node_t *n);
+unsigned int node_area(desktop_t *d, node_t *n);
 int tiled_count(node_t *n);
 node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, node_select_t sel);
 void rotate_tree(node_t *n, int deg);
@@ -93,8 +93,8 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value);
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
-xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n);
-void get_side_handle(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt);
+xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n);
+void get_side_handle(desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt);
 
 unsigned int sticky_count(node_t *n);
 unsigned int private_count(node_t *n);

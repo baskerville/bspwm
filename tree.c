@@ -102,7 +102,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		}
 
 		xcb_rectangle_t r;
-		xcb_rectangle_t cr = get_rectangle(m, d, n);
+		xcb_rectangle_t cr = get_rectangle(d, n);
 		client_state_t s = n->client->state;
 		if (s == STATE_TILED || s == STATE_PSEUDO_TILED) {
 			int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
@@ -222,7 +222,7 @@ node_t *find_public(desktop_t *d)
 		if (n->vacant) {
 			continue;
 		}
-		unsigned int n_area = node_area(NULL, d, n);
+		unsigned int n_area = node_area(d, n);
 		if (n_area > b_manual_area && (n->presel != NULL || !n->private)) {
 			b_manual = n;
 			b_manual_area = n_area;
@@ -268,7 +268,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				p = f->parent;
 			}
 			if (f->presel == NULL && (f->private || private_count(f->parent) > 0)) {
-				xcb_rectangle_t rect = get_rectangle(m, d, f);
+				xcb_rectangle_t rect = get_rectangle(d, f);
 				presel_dir(m, d, f, (rect.width >= rect.height ? DIR_EAST : DIR_SOUTH));
 			}
 		}
@@ -501,7 +501,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (pointer_follows_focus) {
-		center_pointer(get_rectangle(m, d, n));
+		center_pointer(get_rectangle(d, n));
 	}
 }
 
@@ -923,7 +923,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 	direction_t dir2;
 	xcb_point_t pt;
 	xcb_point_t pt2;
-	get_side_handle(m, d, n, dir, &pt);
+	get_side_handle(d, n, dir, &pt);
 	get_opposite(dir, &dir2);
 	double ds = DBL_MAX;
 	coordinates_t ref = {m, d, n};
@@ -937,7 +937,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 			continue;
 		}
 
-		get_side_handle(m, d, a, dir2, &pt2);
+		get_side_handle(d, a, dir2, &pt2);
 		double ds2 = distance(pt, pt2);
 		if (ds2 < ds) {
 			ds = ds2;
@@ -966,12 +966,12 @@ void get_opposite(direction_t src, direction_t *dst)
 	}
 }
 
-unsigned int node_area(monitor_t *m, desktop_t *d, node_t *n)
+unsigned int node_area(desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
 		return 0;
 	}
-	xcb_rectangle_t rect = get_rectangle(m, d, n);
+	xcb_rectangle_t rect = get_rectangle(d, n);
 	return rect.width * rect.height;
 }
 
@@ -1004,7 +1004,7 @@ node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, node_select_t sel)
 		if (f->vacant || !node_matches(&loc, &ref, sel)) {
 			continue;
 		}
-		unsigned int f_area = node_area(m, d, f);
+		unsigned int f_area = node_area(d, f);
 		if (f_area > b_area) {
 			b = f;
 			b_area = f_area;
@@ -1684,23 +1684,17 @@ bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
 	        a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
 }
 
-xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n)
+xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n)
 {
 	client_t *c = n->client;
 	if (c != NULL) {
-		switch (c->state) {
-			case STATE_TILED:
-			case STATE_PSEUDO_TILED:
-				return c->tiled_rectangle;
-				break;
-			case STATE_FLOATING:
-				return c->floating_rectangle;
-				break;
-			case STATE_FULLSCREEN:
-			default:
-				return m != NULL ? m->rectangle : (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-				break;
-		 }
+		xcb_get_geometry_reply_t *g = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, n->id), NULL);
+		if (g != NULL) {
+			free(g);
+			return (xcb_rectangle_t) {g->x, g->y, g->width, g->height};
+		} else {
+			return (xcb_rectangle_t) {0, 0, screen_width, screen_height};
+		}
 	} else {
 		int wg = (d == NULL ? 0 : (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap));
 		xcb_rectangle_t rect = n->rectangle;
@@ -1710,9 +1704,9 @@ xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
-void get_side_handle(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt)
+void get_side_handle(desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt)
 {
-	xcb_rectangle_t rect = get_rectangle(m, d, n);
+	xcb_rectangle_t rect = get_rectangle(d, n);
 
 	switch (dir) {
 		case DIR_EAST:
