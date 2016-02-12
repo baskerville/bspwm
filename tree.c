@@ -1690,8 +1690,9 @@ xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n)
 	if (c != NULL) {
 		xcb_get_geometry_reply_t *g = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, n->id), NULL);
 		if (g != NULL) {
+			xcb_rectangle_t rect = (xcb_rectangle_t) {g->x, g->y, g->width, g->height};
 			free(g);
-			return (xcb_rectangle_t) {g->x, g->y, g->width, g->height};
+			return rect;
 		} else {
 			return (xcb_rectangle_t) {0, 0, screen_width, screen_height};
 		}
