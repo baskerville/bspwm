@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 02/01/2016
+.\"      Date: 02/22/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9-126-gb1d9653
+.\"    Source: Bspwm 0.9-130-g21f92ab
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "02/01/2016" "Bspwm 0\&.9\-126\-gb1d9653" "Bspwm Manual"
+.TH "BSPWM" "1" "02/22/2016" "Bspwm 0\&.9\-130\-g21f92ab" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -100,7 +100,7 @@ FLAG := urgent|sticky|private|locked
 
 LAYER := below|normal|above
 
-PATH := @[DESK_SEL:][[/]JUMP](/JUMP)*
+PATH := @[DESKTOP_SEL:][[/]JUMP](/JUMP)*
 
 JUMP := first|1|second|2|brother|parent|DIR
 .fi
@@ -170,7 +170,7 @@ Selects the node newer than the focused node in the history\&.
 \fBPath Jumps\fR
 .RS 4
 .sp
-The initial node is the focused node (or the root if the path starts with \fI/\fR) of the focused desktop (or the selected desktop if the path has a \fIDESK_SEL\fR prefix)\&.
+The initial node is the focused node (or the root if the path starts with \fI/\fR) of the focused desktop (or the selected desktop if the path has a \fIDESKTOP_SEL\fR prefix)\&.
 .PP
 1|first
 .RS 4
