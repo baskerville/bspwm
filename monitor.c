@@ -183,6 +183,25 @@ void focus_monitor(monitor_t *m)
 	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
 }
 
+int monitor_cmp(monitor_t *m1, monitor_t *m2)
+{
+	xcb_rectangle_t r1 = m1->rectangle;
+	xcb_rectangle_t r2 = m2->rectangle;
+	if (r1.y >= (r2.y + r2.height)) {
+		return 1;
+	} else if (r2.y >= (r1.y + r1.height)) {
+		return -1;
+	} else {
+		if (r1.x >= (r2.x + r2.width)) {
+			return 1;
+		} else if (r2.x >= (r1.x + r1.width)) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
+}
+
 void add_monitor(monitor_t *m)
 {
 	xcb_rectangle_t r = m->rectangle;
@@ -192,9 +211,25 @@ void add_monitor(monitor_t *m)
 		mon_head = m;
 		mon_tail = m;
 	} else {
-		mon_tail->next = m;
-		m->prev = mon_tail;
-		mon_tail = m;
+		monitor_t *a = mon_head;
+		while (a != NULL && monitor_cmp(m, a) > 0) {
+			a = a->next;
+		}
+		if (a != NULL) {
+			monitor_t *b = a->prev;
+			if (b != NULL) {
+				b->next = m;
+			} else {
+				mon_head = m;
+			}
+			m->prev = b;
+			m->next = a;
+			a->prev = m;
+		} else {
+			mon_tail->next = m;
+			m->prev = mon_tail;
+			mon_tail = m;
+		}
 	}
 
 	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s 0x%X %ux%u+%i+%i\n", m->name, m->id, r.width, r.height, r.x, r.y);
