@@ -547,10 +547,6 @@ bool update_monitors(void)
 		}
 	}
 
-	if (!running && pri_mon != NULL && mon_head != pri_mon) {
-		swap_monitors(mon_head, pri_mon);
-	}
-
 	free(sres);
 	update_motion_recorder();
 	return (mon_head != NULL);
