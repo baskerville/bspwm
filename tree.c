@@ -1178,6 +1178,7 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	free(n);
 
 	ewmh_update_client_list(false);
+	ewmh_update_client_list(true);
 
 	if (d->focus != last_focus) {
 		if (d == mon->desk) {
