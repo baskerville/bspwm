@@ -468,19 +468,10 @@ bool update_monitors(void)
 		free(info);
 	}
 
-	/* initially focus the primary monitor and add the first desktop to it */
 	xcb_randr_get_output_primary_reply_t *gpo = xcb_randr_get_output_primary_reply(dpy, xcb_randr_get_output_primary(dpy, root), NULL);
 	if (gpo != NULL) {
 		pri_mon = get_monitor_by_id(gpo->output);
-		if (!running && pri_mon != NULL) {
-			if (mon != pri_mon) {
-				mon = pri_mon;
-			}
-			add_desktop(pri_mon, make_desktop(NULL));
-			ewmh_update_current_desktop();
-		}
 	}
-
 	free(gpo);
 
 	/* handle overlapping monitors */
@@ -524,12 +515,21 @@ bool update_monitors(void)
 
 	/* add one desktop to each new monitor */
 	for (m = mon_head; m != NULL; m = m->next) {
-		if (m->desk == NULL && (running || pri_mon == NULL || m != pri_mon)) {
+		if (m->desk == NULL) {
 			add_desktop(m, make_desktop(NULL));
 		}
 	}
 
+	if (!running && mon != NULL) {
+		if (pri_mon != NULL) {
+			mon = pri_mon;
+		}
+		center_pointer(mon->rectangle);
+		ewmh_update_current_desktop();
+	}
+
 	free(sres);
 	update_motion_recorder();
-	return (mon_head != NULL);
+
+	return (mon != NULL);
 }
