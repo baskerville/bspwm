@@ -921,7 +921,7 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 	}
 
 	node_t *nearest = NULL;
-	direction_t dir2;
+	direction_t dir2 = DIR_NORTH;
 	xcb_point_t pt;
 	xcb_point_t pt2;
 	get_side_handle(d, n, dir, &pt);
