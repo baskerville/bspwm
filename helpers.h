@@ -65,8 +65,5 @@ void err(char *fmt, ...);
 char *read_string(const char *file_path, size_t *tlen);
 uint32_t get_color_pixel(const char *color);
 bool is_hex_color(const char *color);
-bool rect_eq(xcb_rectangle_t a, xcb_rectangle_t b);
-bool is_inside(xcb_point_t p, xcb_rectangle_t r);
-double distance(xcb_point_t a, xcb_point_t b);
 
 #endif

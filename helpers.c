@@ -31,7 +31,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
-#include <math.h>
 #include "bspwm.h"
 
 void warn(char *fmt, ...)
@@ -129,20 +128,4 @@ bool is_hex_color(const char *color)
 		}
 	}
 	return true;
-}
-
-bool rect_eq(xcb_rectangle_t a, xcb_rectangle_t b)
-{
-	return (a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height);
-}
-
-bool is_inside(xcb_point_t p, xcb_rectangle_t r)
-{
-	return (p.x >= r.x && p.x < (r.x + r.width) &&
-	        p.y >= r.y && p.y < (r.y + r.height));
-}
-
-double distance(xcb_point_t a, xcb_point_t b)
-{
-	return hypot(a.x - b.x, a.y - b.y);
 }

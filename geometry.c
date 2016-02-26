@@ -22,28 +22,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BSPWM_MONITOR_H
-#define BSPWM_MONITOR_H
+#include <math.h>
+#include "geometry.h"
 
-#define DEFAULT_MON_NAME     "MONITOR"
+double distance(xcb_point_t a, xcb_point_t b)
+{
+	return hypot(a.x - b.x, a.y - b.y);
+}
 
-monitor_t *make_monitor(xcb_rectangle_t *rect);
-void update_root(monitor_t *m, xcb_rectangle_t *rect);
-void rename_monitor(monitor_t *m, const char *name);
-monitor_t *find_monitor(char *name);
-monitor_t *get_monitor_by_id(xcb_randr_output_t id);
-void embrace_client(monitor_t *m, client_t *c);
-void adapt_geometry(xcb_rectangle_t *rs, xcb_rectangle_t *rd, node_t *n);
-void focus_monitor(monitor_t *m);
-void add_monitor(monitor_t *m);
-void remove_monitor(monitor_t *m);
-void merge_monitors(monitor_t *ms, monitor_t *md);
-bool swap_monitors(monitor_t *m1, monitor_t *m2);
-monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, monitor_select_t sel);
-bool is_inside_monitor(monitor_t *m, xcb_point_t pt);
-monitor_t *monitor_from_point(xcb_point_t pt);
-monitor_t *monitor_from_client(client_t *c);
-monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel);
-bool update_monitors(void);
+bool is_inside(xcb_point_t p, xcb_rectangle_t r)
+{
+	return (p.x >= r.x && p.x < (r.x + r.width) &&
+	        p.y >= r.y && p.y < (r.y + r.height));
+}
 
-#endif
+unsigned int area(xcb_rectangle_t r)
+{
+	return r.width * r.height;
+}
+
+bool rect_eq(xcb_rectangle_t a, xcb_rectangle_t b)
+{
+	return (a.x == b.x && a.y == b.y &&
+	        a.width == b.width && a.height == b.height);
+}
+
+int rect_cmp(xcb_rectangle_t r1, xcb_rectangle_t r2)
+{
+	if (r1.y >= (r2.y + r2.height)) {
+		return 1;
+	} else if (r2.y >= (r1.y + r1.height)) {
+		return -1;
+	} else {
+		if (r1.x >= (r2.x + r2.width)) {
+			return 1;
+		} else if (r2.x >= (r1.x + r1.width)) {
+			return -1;
+		} else {
+			return area(r1) - area(r2);
+		}
+	}
+}

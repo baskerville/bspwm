@@ -33,6 +33,7 @@
 #include "history.h"
 #include "query.h"
 #include "settings.h"
+#include "geometry.h"
 #include "tree.h"
 #include "subscribe.h"
 #include "window.h"
@@ -183,25 +184,6 @@ void focus_monitor(monitor_t *m)
 	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
 }
 
-int monitor_cmp(monitor_t *m1, monitor_t *m2)
-{
-	xcb_rectangle_t r1 = m1->rectangle;
-	xcb_rectangle_t r2 = m2->rectangle;
-	if (r1.y >= (r2.y + r2.height)) {
-		return 1;
-	} else if (r2.y >= (r1.y + r1.height)) {
-		return -1;
-	} else {
-		if (r1.x >= (r2.x + r2.width)) {
-			return 1;
-		} else if (r2.x >= (r1.x + r1.width)) {
-			return -1;
-		} else {
-			return 0;
-		}
-	}
-}
-
 void add_monitor(monitor_t *m)
 {
 	xcb_rectangle_t r = m->rectangle;
@@ -212,7 +194,7 @@ void add_monitor(monitor_t *m)
 		mon_tail = m;
 	} else {
 		monitor_t *a = mon_head;
-		while (a != NULL && monitor_cmp(m, a) > 0) {
+		while (a != NULL && rect_cmp(m->rectangle, a->rectangle) > 0) {
 			a = a->next;
 		}
 		if (a != NULL) {

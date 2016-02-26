@@ -32,6 +32,7 @@
 #include "query.h"
 #include "rule.h"
 #include "settings.h"
+#include "geometry.h"
 #include "stack.h"
 #include "tree.h"
 #include "parse.h"

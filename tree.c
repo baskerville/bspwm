@@ -33,6 +33,7 @@
 #include "history.h"
 #include "monitor.h"
 #include "query.h"
+#include "geometry.h"
 #include "subscribe.h"
 #include "settings.h"
 #include "stack.h"
@@ -971,8 +972,7 @@ unsigned int node_area(desktop_t *d, node_t *n)
 	if (n == NULL) {
 		return 0;
 	}
-	xcb_rectangle_t rect = get_rectangle(d, n);
-	return rect.width * rect.height;
+	return area(get_rectangle(d, n));
 }
 
 int tiled_count(node_t *n)
