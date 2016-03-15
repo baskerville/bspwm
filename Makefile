@@ -11,7 +11,7 @@ DOCPREFIX ?= $(PREFIX)/share/doc/bspwm
 BASHCPL   ?= $(PREFIX)/share/bash-completion/completions
 ZSHCPL    ?= $(PREFIX)/share/zsh/site-functions
 
-MD_DOCS = README.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
+MD_DOCS = README.md doc/CHANGELOG.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
 XSESSIONS ?= $(PREFIX)/share/xsessions
 
 WM_SRC = bspwm.c helpers.c geometry.c jsmn.c settings.c monitor.c desktop.c tree.c stack.c history.c \
