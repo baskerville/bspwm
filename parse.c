@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include "bspwm.h"
 #include "parse.h"
 
 bool parse_bool(char *value, bool *b)
@@ -198,16 +199,15 @@ bool parse_degree(char *s, int *d)
 	}
 }
 
-bool parse_id(char *s, uint32_t *i)
+bool parse_id(char *s, uint32_t *id)
 {
 	char *end;
 	errno = 0;
-	uint32_t ret = strtol(s, &end, 0);
-	if (errno != 0 || *end != '\0') {
+	uint32_t v = strtol(s, &end, 0);
+	if (errno != 0 || *end != '\0' || v < resource_id_base) {
 		return false;
-	} else {
-		*i = ret;
 	}
+	*id = v;
 	return true;
 }
 
@@ -229,14 +229,9 @@ bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *sta
 	return false;
 }
 
-bool parse_index(char *s, int *i)
+bool parse_index(char *s, uint16_t *idx)
 {
-	int idx;
-	if (sscanf(s, "^%i", &idx) != 1 || idx < 1) {
-		return false;
-	}
-	*i = idx;
-	return true;
+	return (sscanf(s, "^%hu", idx) == 1);
 }
 
 bool parse_rectangle(char *s, xcb_rectangle_t *r)

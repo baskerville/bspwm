@@ -43,4 +43,4 @@ done
 
 window remove 7
 
-bspc monitor -r "test-insertion"
+bspc desktop "test-insertion" -r

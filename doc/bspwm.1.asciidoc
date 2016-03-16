@@ -160,11 +160,14 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := (<desktop_name>|[MONITOR_SEL:](focused|^<n>)CYCLE_DIR|last|older|newer)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
+DESKTOP_SEL := (<desktop_id>|<desktop_name>|[MONITOR_SEL:](focused|^<n>)|CYCLE_DIR|last|older|newer)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
 
 Descriptors
 ^^^^^^^^^^^
+
+<desktop_id>::
+	Selects the desktop with the given ID.
 
 <desktop_name>::
 	Selects the desktop with the given name.
@@ -208,11 +211,14 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := (<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied][.[!]focused]
+MONITOR_SEL := (<monitor_id>|<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied][.[!]focused]
 ----
 
 Descriptors
 ^^^^^^^^^^^
+
+<monitor_id>::
+	Selects the monitor with the given ID.
 
 <monitor_name>::
 	Selects the monitor with the given name.
@@ -411,9 +417,6 @@ Commands
 *-a*, *--add-desktops* <name>...::
 	Create desktops with the given names in the selected monitor.
 
-*-r*, *--remove-desktops* <name>...::
-	Remove desktops with the given names.
-
 *-o*, *--reorder-desktops* <name>...::
 	Reorder the desktops of the selected monitor to match the given order.
 
@@ -428,6 +431,9 @@ Commands
 
 *-s*, *--swap* 'MONITOR_SEL'::
 	Swap the selected monitor with the given monitor.
+
+*-r*, *--remove*::
+	Remove the selected monitor.
 
 Query
 ~~~~~
@@ -444,10 +450,10 @@ Commands
 	List the IDs of the matching nodes.
 
 *-D*, *--desktops*::
-	List the names of the matching desktops.
+	List the IDs of the matching desktops.
 
 *-M*, *--monitors*::
-	List the names of the matching monitors.
+	List the IDs of the matching monitors.
 
 *-T*, *--tree*::
 	Print a JSON representation of the matching item.
@@ -477,9 +483,6 @@ Commands
 
 *-a*, *--add-monitor* <name> WxH+X+Y::
 	Add a monitor for the given name and rectangle.
-
-*-r*, *--remove-monitor* <name>::
-	Remove the monitor with the given name.
 
 *-o*, *--adopt-orphans*::
 	Manage all the unmanaged windows remaining from a previous session.
@@ -672,82 +675,82 @@ Events
 'report'::
 	See the next section for the description of the format.
 
-'monitor_add <monitor_name> <monitor_id> <monitor_geometry>'::
+'monitor_add <monitor_id> <monitor_name> <monitor_geometry>'::
 	A monitor is added.
 
-'monitor_rename <old_name> <new_name>'::
+'monitor_rename <monitor_id> <old_name> <new_name>'::
 	A monitor is renamed.
 
-'monitor_remove <monitor_name>'::
+'monitor_remove <monitor_id>'::
 	A monitor is removed.
 
-'monitor_swap <src_monitor_name> <dst_monitor_name>'::
+'monitor_swap <src_monitor_id> <dst_monitor_id>'::
 	A monitor is swapped.
 
-'monitor_focus <monitor_name>'::
+'monitor_focus <monitor_id>'::
 	A monitor is focused.
 
-'monitor_geometry <monitor_name> <monitor_geometry>'::
+'monitor_geometry <monitor_id> <monitor_geometry>'::
 	The geometry of a monitor changed.
 
-'desktop_add <monitor_name> <desktop_name>'::
+'desktop_add <monitor_id> <desktop_id> <desktop_name>'::
 	A desktop is added.
 
-'desktop_rename <monitor_name> <old_name> <new_name>'::
+'desktop_rename <monitor_id> <desktop_id> <old_name> <new_name>'::
 	A desktop is renamed.
 
-'desktop_remove <monitor_name> <desktop_name>'::
+'desktop_remove <monitor_id> <desktop_id>'::
 	A desktop is removed.
 
-'desktop_swap <src_monitor_name> <src_desktop_name> <dst_monitor_name> <dst_desktop_name>'::
+'desktop_swap <src_monitor_id> <src_desktop_id> <dst_monitor_id> <dst_desktop_id>'::
 	A desktop is swapped.
 
-'desktop_transfer <src_monitor_name> <src_desktop_name> <dst_monitor_name>'::
+'desktop_transfer <src_monitor_id> <src_desktop_id> <dst_monitor_id>'::
 	A desktop is transferred.
 
-'desktop_focus <monitor_name> <desktop_name>'::
+'desktop_focus <monitor_id> <desktop_id>'::
 	A desktop is focused.
 
-'desktop_activate <monitor_name> <desktop_name>'::
+'desktop_activate <monitor_id> <desktop_id>'::
 	A desktop is activated.
 
-'desktop_layout <monitor_name> <desktop_name> tiled|monocle'::
+'desktop_layout <monitor_id> <desktop_id> tiled|monocle'::
 	The layout of a desktop changed.
 
-'node_manage <monitor_name> <desktop_name> <node_id> <ip_id>'::
+'node_manage <monitor_id> <desktop_id> <node_id> <ip_id>'::
 	A window is managed.
 
-'node_unmanage <monitor_name> <desktop_name> <node_id>'::
+'node_unmanage <monitor_id> <desktop_id> <node_id>'::
 	A window is unmanaged.
 
-'node_swap <src_monitor_name> <src_desktop_name> <src_node_id> <dst_monitor_name> <dst_desktop_name> <dst_node_id>'::
+'node_swap <src_monitor_id> <src_desktop_id> <src_node_id> <dst_monitor_id> <dst_desktop_id> <dst_node_id>'::
 	A node is swapped.
 
-'node_transfer <src_monitor_name> <src_desktop_name> <src_node_id> <dst_monitor_name> <dst_desktop_name> <dst_node_id>'::
+'node_transfer <src_monitor_id> <src_desktop_id> <src_node_id> <dst_monitor_id> <dst_desktop_id> <dst_node_id>'::
 	A node is transferred.
 
-'node_focus <monitor_name> <desktop_name> <node_id>'::
+'node_focus <monitor_id> <desktop_id> <node_id>'::
 	A node is focused.
 
-'node_activate <monitor_name> <desktop_name> <node_id>'::
+'node_activate <monitor_id> <desktop_id> <node_id>'::
 	A node is activated.
 
-'node_presel <monitor_name> <desktop_name> <node_id> (dir DIR|ratio RATIO|cancel)'::
+'node_presel <monitor_id> <desktop_id> <node_id> (dir DIR|ratio RATIO|cancel)'::
 	A node is preselected.
 
 'node_stack <node_id_1> below|above <node_id_2>'::
 	A node is stacked below or above another node.
 
-'node_geometry <monitor_name> <desktop_name> <node_id> <node_geometry>'::
+'node_geometry <monitor_id> <desktop_id> <node_id> <node_geometry>'::
 	The geometry of a window changed.
 
-'node_state <monitor_name> <desktop_name> <node_id> tiled|pseudo_tiled|floating|fullscreen on|off'::
+'node_state <monitor_id> <desktop_id> <node_id> tiled|pseudo_tiled|floating|fullscreen on|off'::
 	The state of a window changed.
 
-'node_flag <monitor_name> <desktop_name> <node_id> sticky|private|locked|urgent on|off'::
+'node_flag <monitor_id> <desktop_id> <node_id> sticky|private|locked|urgent on|off'::
 	One of the flags of a node changed.
 
-'node_layer <monitor_name> <desktop_name> <node_id> below|normal|above'::
+'node_layer <monitor_id> <desktop_id> <node_id> below|normal|above'::
 	The layer of a window changed.
 
 Please note that *bspwm* initializes monitors before it reads messages on its socket, therefore the initial monitor events can't be received.

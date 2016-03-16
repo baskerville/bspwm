@@ -22,5 +22,5 @@ bspc desktop "TEST-TRANSFER-B:^2" -f
 
 window remove 3
 
-bspc wm -r "TEST-TRANSFER-A"
-bspc wm -r "TEST-TRANSFER-B"
+bspc monitor "TEST-TRANSFER-A" -r
+bspc monitor "TEST-TRANSFER-B" -r

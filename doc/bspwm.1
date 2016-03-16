@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/15/2016
+.\"      Date: 03/16/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1
+.\"    Source: Bspwm 0.9.1-2-g212442e
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/15/2016" "Bspwm 0\&.9\&.1" "Bspwm Manual"
+.TH "BSPWM" "1" "03/16/2016" "Bspwm 0\&.9\&.1\-2\-g212442e" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -254,7 +254,7 @@ Select a desktop\&.
 .RS 4
 .\}
 .nf
-DESKTOP_SEL := (<desktop_name>|[MONITOR_SEL:](focused|^<n>)CYCLE_DIR|last|older|newer)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
+DESKTOP_SEL := (<desktop_id>|<desktop_name>|[MONITOR_SEL:](focused|^<n>)|CYCLE_DIR|last|older|newer)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
 .fi
 .if n \{\
 .RE
@@ -267,6 +267,11 @@ DESKTOP_SEL := (<desktop_name>|[MONITOR_SEL:](focused|^<n>)CYCLE_DIR|last|older|
 .ps +1
 \fBDescriptors\fR
 .RS 4
+.PP
+<desktop_id>
+.RS 4
+Selects the desktop with the given ID\&.
+.RE
 .PP
 <desktop_name>
 .RS 4
@@ -340,7 +345,7 @@ Select a monitor\&.
 .RS 4
 .\}
 .nf
-MONITOR_SEL := (<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[\&.[!]occupied][\&.[!]focused]
+MONITOR_SEL := (<monitor_id>|<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[\&.[!]occupied][\&.[!]focused]
 .fi
 .if n \{\
 .RE
@@ -353,6 +358,11 @@ MONITOR_SEL := (<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|new
 .ps +1
 \fBDescriptors\fR
 .RS 4
+.PP
+<monitor_id>
+.RS 4
+Selects the monitor with the given ID\&.
+.RE
 .PP
 <monitor_name>
 .RS 4
@@ -686,11 +696,6 @@ Focus the selected or given monitor\&.
 Create desktops with the given names in the selected monitor\&.
 .RE
 .PP
-\fB\-r\fR, \fB\-\-remove\-desktops\fR <name>\&...
-.RS 4
-Remove desktops with the given names\&.
-.RE
-.PP
 \fB\-o\fR, \fB\-\-reorder\-desktops\fR <name>\&...
 .RS 4
 Reorder the desktops of the selected monitor to match the given order\&.
@@ -714,6 +719,11 @@ Rename the selected monitor\&.
 \fB\-s\fR, \fB\-\-swap\fR \fIMONITOR_SEL\fR
 .RS 4
 Swap the selected monitor with the given monitor\&.
+.RE
+.PP
+\fB\-r\fR, \fB\-\-remove\fR
+.RS 4
+Remove the selected monitor\&.
 .RE
 .RE
 .SS "Query"
@@ -744,12 +754,12 @@ List the IDs of the matching nodes\&.
 .PP
 \fB\-D\fR, \fB\-\-desktops\fR
 .RS 4
-List the names of the matching desktops\&.
+List the IDs of the matching desktops\&.
 .RE
 .PP
 \fB\-M\fR, \fB\-\-monitors\fR
 .RS 4
-List the names of the matching monitors\&.
+List the IDs of the matching monitors\&.
 .RE
 .PP
 \fB\-T\fR, \fB\-\-tree\fR
@@ -809,11 +819,6 @@ Load a world state from the given file\&.
 \fB\-a\fR, \fB\-\-add\-monitor\fR <name> WxH+X+Y
 .RS 4
 Add a monitor for the given name and rectangle\&.
-.RE
-.PP
-\fB\-r\fR, \fB\-\-remove\-monitor\fR <name>
-.RS 4
-Remove the monitor with the given name\&.
 .RE
 .PP
 \fB\-o\fR, \fB\-\-adopt\-orphans\fR
@@ -1126,107 +1131,107 @@ Size of the gap that separates windows\&.
 See the next section for the description of the format\&.
 .RE
 .PP
-\fImonitor_add <monitor_name> <monitor_id> <monitor_geometry>\fR
+\fImonitor_add <monitor_id> <monitor_name> <monitor_geometry>\fR
 .RS 4
 A monitor is added\&.
 .RE
 .PP
-\fImonitor_rename <old_name> <new_name>\fR
+\fImonitor_rename <monitor_id> <old_name> <new_name>\fR
 .RS 4
 A monitor is renamed\&.
 .RE
 .PP
-\fImonitor_remove <monitor_name>\fR
+\fImonitor_remove <monitor_id>\fR
 .RS 4
 A monitor is removed\&.
 .RE
 .PP
-\fImonitor_swap <src_monitor_name> <dst_monitor_name>\fR
+\fImonitor_swap <src_monitor_id> <dst_monitor_id>\fR
 .RS 4
 A monitor is swapped\&.
 .RE
 .PP
-\fImonitor_focus <monitor_name>\fR
+\fImonitor_focus <monitor_id>\fR
 .RS 4
 A monitor is focused\&.
 .RE
 .PP
-\fImonitor_geometry <monitor_name> <monitor_geometry>\fR
+\fImonitor_geometry <monitor_id> <monitor_geometry>\fR
 .RS 4
 The geometry of a monitor changed\&.
 .RE
 .PP
-\fIdesktop_add <monitor_name> <desktop_name>\fR
+\fIdesktop_add <monitor_id> <desktop_id> <desktop_name>\fR
 .RS 4
 A desktop is added\&.
 .RE
 .PP
-\fIdesktop_rename <monitor_name> <old_name> <new_name>\fR
+\fIdesktop_rename <monitor_id> <desktop_id> <old_name> <new_name>\fR
 .RS 4
 A desktop is renamed\&.
 .RE
 .PP
-\fIdesktop_remove <monitor_name> <desktop_name>\fR
+\fIdesktop_remove <monitor_id> <desktop_id>\fR
 .RS 4
 A desktop is removed\&.
 .RE
 .PP
-\fIdesktop_swap <src_monitor_name> <src_desktop_name> <dst_monitor_name> <dst_desktop_name>\fR
+\fIdesktop_swap <src_monitor_id> <src_desktop_id> <dst_monitor_id> <dst_desktop_id>\fR
 .RS 4
 A desktop is swapped\&.
 .RE
 .PP
-\fIdesktop_transfer <src_monitor_name> <src_desktop_name> <dst_monitor_name>\fR
+\fIdesktop_transfer <src_monitor_id> <src_desktop_id> <dst_monitor_id>\fR
 .RS 4
 A desktop is transferred\&.
 .RE
 .PP
-\fIdesktop_focus <monitor_name> <desktop_name>\fR
+\fIdesktop_focus <monitor_id> <desktop_id>\fR
 .RS 4
 A desktop is focused\&.
 .RE
 .PP
-\fIdesktop_activate <monitor_name> <desktop_name>\fR
+\fIdesktop_activate <monitor_id> <desktop_id>\fR
 .RS 4
 A desktop is activated\&.
 .RE
 .PP
-\fIdesktop_layout <monitor_name> <desktop_name> tiled|monocle\fR
+\fIdesktop_layout <monitor_id> <desktop_id> tiled|monocle\fR
 .RS 4
 The layout of a desktop changed\&.
 .RE
 .PP
-\fInode_manage <monitor_name> <desktop_name> <node_id> <ip_id>\fR
+\fInode_manage <monitor_id> <desktop_id> <node_id> <ip_id>\fR
 .RS 4
 A window is managed\&.
 .RE
 .PP
-\fInode_unmanage <monitor_name> <desktop_name> <node_id>\fR
+\fInode_unmanage <monitor_id> <desktop_id> <node_id>\fR
 .RS 4
 A window is unmanaged\&.
 .RE
 .PP
-\fInode_swap <src_monitor_name> <src_desktop_name> <src_node_id> <dst_monitor_name> <dst_desktop_name> <dst_node_id>\fR
+\fInode_swap <src_monitor_id> <src_desktop_id> <src_node_id> <dst_monitor_id> <dst_desktop_id> <dst_node_id>\fR
 .RS 4
 A node is swapped\&.
 .RE
 .PP
-\fInode_transfer <src_monitor_name> <src_desktop_name> <src_node_id> <dst_monitor_name> <dst_desktop_name> <dst_node_id>\fR
+\fInode_transfer <src_monitor_id> <src_desktop_id> <src_node_id> <dst_monitor_id> <dst_desktop_id> <dst_node_id>\fR
 .RS 4
 A node is transferred\&.
 .RE
 .PP
-\fInode_focus <monitor_name> <desktop_name> <node_id>\fR
+\fInode_focus <monitor_id> <desktop_id> <node_id>\fR
 .RS 4
 A node is focused\&.
 .RE
 .PP
-\fInode_activate <monitor_name> <desktop_name> <node_id>\fR
+\fInode_activate <monitor_id> <desktop_id> <node_id>\fR
 .RS 4
 A node is activated\&.
 .RE
 .PP
-\fInode_presel <monitor_name> <desktop_name> <node_id> (dir DIR|ratio RATIO|cancel)\fR
+\fInode_presel <monitor_id> <desktop_id> <node_id> (dir DIR|ratio RATIO|cancel)\fR
 .RS 4
 A node is preselected\&.
 .RE
@@ -1236,22 +1241,22 @@ A node is preselected\&.
 A node is stacked below or above another node\&.
 .RE
 .PP
-\fInode_geometry <monitor_name> <desktop_name> <node_id> <node_geometry>\fR
+\fInode_geometry <monitor_id> <desktop_id> <node_id> <node_geometry>\fR
 .RS 4
 The geometry of a window changed\&.
 .RE
 .PP
-\fInode_state <monitor_name> <desktop_name> <node_id> tiled|pseudo_tiled|floating|fullscreen on|off\fR
+\fInode_state <monitor_id> <desktop_id> <node_id> tiled|pseudo_tiled|floating|fullscreen on|off\fR
 .RS 4
 The state of a window changed\&.
 .RE
 .PP
-\fInode_flag <monitor_name> <desktop_name> <node_id> sticky|private|locked|urgent on|off\fR
+\fInode_flag <monitor_id> <desktop_id> <node_id> sticky|private|locked|urgent on|off\fR
 .RS 4
 One of the flags of a node changed\&.
 .RE
 .PP
-\fInode_layer <monitor_name> <desktop_name> <node_id> below|normal|above\fR
+\fInode_layer <monitor_id> <desktop_id> <node_id> below|normal|above\fR
 .RS 4
 The layer of a window changed\&.
 .RE

@@ -207,6 +207,7 @@ struct node_t {
 typedef struct desktop_t desktop_t;
 struct desktop_t {
 	char name[SMALEN];
+	uint32_t id;
 	layout_t layout;
 	node_t *root;
 	node_t *focus;
@@ -223,7 +224,8 @@ struct desktop_t {
 typedef struct monitor_t monitor_t;
 struct monitor_t {
 	char name[SMALEN];
-	xcb_randr_output_t id;
+	uint32_t id;
+	xcb_randr_output_t randr_id;
 	xcb_window_t root;
 	bool wired;
 	int top_padding;

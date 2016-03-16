@@ -354,7 +354,7 @@ void ungrab_pointer(void)
 {
 	if (frozen_pointer->action != ACTION_NONE) {
 		xcb_rectangle_t r = get_rectangle(frozen_pointer->desktop, frozen_pointer->node);
-		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->name, frozen_pointer->desktop->name, frozen_pointer->window, r.width, r.height, r.x, r.y);
+		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%X 0x%X 0x%X %ux%u+%i+%i\n", frozen_pointer->monitor->id, frozen_pointer->desktop->id, frozen_pointer->window, r.width, r.height, r.x, r.y);
 	}
 	frozen_pointer->action = ACTION_NONE;
 }

@@ -23,5 +23,5 @@ window remove 3
 bspc monitor -f "TEST-SWAP-A"
 window remove 2
 
-bspc wm -r "TEST-SWAP-A"
-bspc wm -r "TEST-SWAP-B"
+bspc monitor "TEST-SWAP-A" -r
+bspc monitor "TEST-SWAP-B" -r

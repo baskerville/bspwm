@@ -21,4 +21,5 @@ bspc desktop -f "test-transfer-b"
 window remove 1 2
 window remove 2
 
-bspc monitor -r "test-transfer-a" "test-transfer-b"
+bspc desktop "test-transfer-a" -r
+bspc desktop "test-transfer-b" -r

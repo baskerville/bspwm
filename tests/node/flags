@@ -24,4 +24,5 @@ window remove 2
 bspc desktop -f "test-sticky-a"
 window remove 2
 
-bspc monitor -r "test-sticky-a" "test-sticky-b"
+bspc desktop "test-sticky-a" -r
+bspc desktop "test-sticky-b" -r

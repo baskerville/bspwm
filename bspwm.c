@@ -210,7 +210,6 @@ int main(int argc, char *argv[])
 void init(void)
 {
 	clients_count = 0;
-	monitor_uid = desktop_uid = 0;
 	mon = mon_head = mon_tail = pri_mon = NULL;
 	history_head = history_tail = history_needle = NULL;
 	rule_head = rule_tail = NULL;
@@ -227,7 +226,9 @@ void setup(void)
 {
 	init();
 	ewmh_init();
-	screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
+	const xcb_setup_t *current_setup = xcb_get_setup(dpy);
+	resource_id_base = current_setup->resource_id_base;
+	screen = xcb_setup_roots_iterator(current_setup).data;
 
 	if (screen == NULL) {
 		err("Can't acquire the default screen.\n");
@@ -306,17 +307,17 @@ void setup(void)
 			for (int i = 0; i < n; i++) {
 				xcb_xinerama_screen_info_t info = xsi[i];
 				xcb_rectangle_t rect = (xcb_rectangle_t) {info.x_org, info.y_org, info.width, info.height};
-				monitor_t *m = make_monitor(&rect);
+				monitor_t *m = make_monitor(&rect, XCB_NONE);
 				add_monitor(m);
-				add_desktop(m, make_desktop(NULL));
+				add_desktop(m, make_desktop(NULL, XCB_NONE));
 			}
 			free(xsq);
 		} else {
 			warn("Xinerama is inactive.\n");
 			xcb_rectangle_t rect = (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-			monitor_t *m = make_monitor(&rect);
+			monitor_t *m = make_monitor(&rect, XCB_NONE);
 			add_monitor(m);
-			add_desktop(m, make_desktop(NULL));
+			add_desktop(m, make_desktop(NULL, XCB_NONE));
 		}
 	}
 

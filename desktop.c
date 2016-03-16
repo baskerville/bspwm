@@ -48,7 +48,7 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 	m->desk = d;
 	ewmh_update_current_desktop();
 
-	put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus %s %s\n", m->name, d->name);
+	put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus 0x%X 0x%X\n", m->id, d->id);
 }
 
 void activate_desktop(monitor_t *m, desktop_t *d)
@@ -62,7 +62,7 @@ void activate_desktop(monitor_t *m, desktop_t *d)
 
 	m->desk = d;
 
-	put_status(SBSC_MASK_DESKTOP_ACTIVATE, "desktop_activate %s %s\n", m->name, d->name);
+	put_status(SBSC_MASK_DESKTOP_ACTIVATE, "desktop_activate 0x%X 0x%X\n", m->id, d->id);
 	put_status(SBSC_MASK_REPORT);
 }
 
@@ -92,7 +92,7 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l)
 	d->layout = l;
 	arrange(m, d);
 
-	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout %s %s %s\n", m->name, d->name, l==LAYOUT_TILED?"tiled":"monocle");
+	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%X 0x%X %s\n", m->id, d->id, LAYOUT_STR(l));
 
 	if (d == m->desk) {
 		put_status(SBSC_MASK_REPORT);
@@ -145,19 +145,18 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
 
-	put_status(SBSC_MASK_DESKTOP_TRANSFER, "desktop_transfer %s %s %s\n", ms->name, d->name, md->name);
+	put_status(SBSC_MASK_DESKTOP_TRANSFER, "desktop_transfer 0x%X 0x%X 0x%X\n", ms->id, d->id, md->id);
 	put_status(SBSC_MASK_REPORT);
 
 	return true;
 }
 
-desktop_t *make_desktop(const char *name)
+desktop_t *make_desktop(const char *name, uint32_t id)
 {
 	desktop_t *d = malloc(sizeof(desktop_t));
-	if (name == NULL) {
-		snprintf(d->name, sizeof(d->name), "%s%d", DEFAULT_DESK_NAME, ++desktop_uid);
-	} else {
-		snprintf(d->name, sizeof(d->name), "%s", name);
+	snprintf(d->name, sizeof(d->name), "%s", name == NULL ? DEFAULT_DESK_NAME : name);
+	if (id == XCB_NONE) {
+		d->id = xcb_generate_id(dpy);
 	}
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
@@ -168,7 +167,7 @@ desktop_t *make_desktop(const char *name)
 void rename_desktop(monitor_t *m, desktop_t *d, const char *name)
 {
 
-	put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename %s %s %s\n", m->name, d->name, name);
+	put_status(SBSC_MASK_DESKTOP_RENAME, "desktop_rename 0x%X 0x%X %s %s\n", m->id, d->id, d->name, name);
 
 	snprintf(d->name, sizeof(d->name), "%s", name);
 
@@ -199,7 +198,7 @@ void insert_desktop(monitor_t *m, desktop_t *d)
 
 void add_desktop(monitor_t *m, desktop_t *d)
 {
-	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add %s %s\n", m->name, d->name);
+	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add 0x%X %s 0x%X\n", d->id, d->name, m->id);
 
 	insert_desktop(m, d);
 	ewmh_update_number_of_desktops();
@@ -262,7 +261,7 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
 
 void remove_desktop(monitor_t *m, desktop_t *d)
 {
-	put_status(SBSC_MASK_DESKTOP_REMOVE, "desktop_remove %s %s\n", m->name, d->name);
+	put_status(SBSC_MASK_DESKTOP_REMOVE, "desktop_remove 0x%X 0x%X\n", m->id, d->id);
 
 	bool was_focused = (mon != NULL && d == mon->desk);
 	bool was_active = (d == m->desk);
@@ -307,7 +306,7 @@ bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 		return false;
 	}
 
-	put_status(SBSC_MASK_DESKTOP_SWAP, "desktop_swap %s %s %s %s\n", m1->name, d1->name, m2->name, d2->name);
+	put_status(SBSC_MASK_DESKTOP_SWAP, "desktop_swap 0x%X 0x%X 0x%X 0x%X\n", m1->id, d1->id, m2->id, d2->id);
 
 	bool d1_focused = (m1->desk == d1);
 	bool d2_focused = (m2->desk == d2);

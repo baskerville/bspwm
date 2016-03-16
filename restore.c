@@ -133,7 +133,7 @@ bool restore_tree(const char *file_path)
 			for (int j = 0; j < s; j++) {
 				monitor_t *m = restore_monitor(&t, json);
 				if (m->desk == NULL) {
-					add_desktop(m, make_desktop(NULL));
+					add_desktop(m, make_desktop(NULL, XCB_NONE));
 				}
 				add_monitor(m);
 			}
@@ -224,7 +224,7 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 {
 	int num = (*t)->size;
 	(*t)++;
-	monitor_t *m = make_monitor(NULL);
+	monitor_t *m = make_monitor(NULL, UINT32_MAX);
 	char *focusedDesktopName = NULL;
 
 	for (int i = 0; i < num; i++) {
@@ -232,6 +232,7 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 			(*t)++;
 			snprintf(m->name, (*t)->end - (*t)->start + 1, "%s", json + (*t)->start);
 		RESTORE_UINT(id, &m->id)
+		RESTORE_UINT(randrId, &m->randr_id)
 		RESTORE_BOOL(wired, &m->wired)
 		RESTORE_INT(topPadding, &m->top_padding)
 		RESTORE_INT(rightPadding, &m->right_padding)
@@ -281,21 +282,15 @@ desktop_t *restore_desktop(jsmntok_t **t, char *json)
 {
 	int s = (*t)->size;
 	(*t)++;
-	desktop_t *d = make_desktop(NULL);
+	desktop_t *d = make_desktop(NULL, UINT32_MAX);
 	xcb_window_t focusedNodeId = XCB_NONE;
 
 	for (int i = 0; i < s; i++) {
 		if (keyeq("name", *t, json)) {
 			(*t)++;
 			snprintf(d->name, (*t)->end - (*t)->start + 1, "%s", json + (*t)->start);
-		} else if (keyeq("layout", *t, json)) {
-			(*t)++;
-			char *val = copy_string(*t, json);
-			layout_t lyt;
-			if (parse_layout(val, &lyt)) {
-				d->layout = lyt;
-			}
-			free(val);
+		RESTORE_UINT(id, &d->id)
+		RESTORE_ANY(layout, &d->layout, parse_layout)
 		RESTORE_INT(topPadding, &d->top_padding)
 		RESTORE_INT(rightPadding, &d->right_padding)
 		RESTORE_INT(bottomPadding, &d->bottom_padding)

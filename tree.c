@@ -136,7 +136,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		if (!rect_eq(r, cr)) {
 			window_move_resize(n->id, r.x, r.y, r.width, r.height);
 			if (frozen_pointer->action == ACTION_NONE) {
-				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", m->name, d->name, n->id, r.width, r.height, r.x, r.y);
+				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%X 0x%X 0x%X %ux%u+%i+%i\n", m->id, d->id, n->id, r.width, r.height, r.x, r.y);
 			}
 		}
 
@@ -183,7 +183,7 @@ void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir)
 
 	n->presel->split_dir = dir;
 
-	put_status(SBSC_MASK_NODE_PRESEL, "node_presel %s %s 0x%X dir %s\n", m->name, d->name, n->id, SPLIT_DIR_STR(dir));
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel 0x%X 0x%X 0x%X dir %s\n", m->id, d->id, n->id, SPLIT_DIR_STR(dir));
 }
 
 void presel_ratio(monitor_t *m, desktop_t *d, node_t *n, double ratio)
@@ -194,7 +194,7 @@ void presel_ratio(monitor_t *m, desktop_t *d, node_t *n, double ratio)
 
 	n->presel->split_ratio = ratio;
 
-	put_status(SBSC_MASK_NODE_PRESEL, "node_presel %s %s 0x%X ratio %lf\n", m->name, d->name, n->id, ratio);
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel 0x%X 0x%X 0x%X ratio %lf\n", m->id, d->id, n->id, ratio);
 }
 
 void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
@@ -210,7 +210,7 @@ void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
 	free(n->presel);
 	n->presel = NULL;
 
-	put_status(SBSC_MASK_NODE_PRESEL, "node_presel %s %s 0x%X cancel\n", m->name, d->name, n->id);
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel 0x%X 0x%X 0x%X cancel\n", m->id, d->id, n->id);
 }
 
 node_t *find_public(desktop_t *d)
@@ -402,8 +402,13 @@ void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	d->focus = n;
 
-	put_status(SBSC_MASK_NODE_ACTIVATE, "node_activate %s %s 0x%X\n", m->name, d->name, n!=NULL?n->id:0);
 	put_status(SBSC_MASK_REPORT);
+
+	if (n == NULL) {
+		return;
+	}
+
+	put_status(SBSC_MASK_NODE_ACTIVATE, "node_activate 0x%X 0x%X 0x%X\n", m->id, d->id, n->id);
 }
 
 void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n)
@@ -486,7 +491,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
-	put_status(SBSC_MASK_NODE_FOCUS, "node_focus %s %s 0x%X\n", m->name, d->name, n->id);
+	put_status(SBSC_MASK_NODE_FOCUS, "node_focus 0x%X 0x%X 0x%X\n", m->id, d->id, n->id);
 
 	stack(d, n, true);
 	set_input_focus(n);
@@ -1221,7 +1226,7 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		return false;
 	}
 
-	put_status(SBSC_MASK_NODE_SWAP, "node_swap %s %s 0x%X %s %s 0x%X\n", m1->name, d1->name, n1->id, m2->name, d2->name, n2->id);
+	put_status(SBSC_MASK_NODE_SWAP, "node_swap 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n", m1->id, d1->id, n1->id, m2->id, d2->id, n2->id);
 
 	node_t *pn1 = n1->parent;
 	node_t *pn2 = n2->parent;
@@ -1337,7 +1342,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		return false;
 	}
 
-	put_status(SBSC_MASK_NODE_TRANSFER, "node_transfer %s %s 0x%X %s %s 0x%X\n", ms->name, ds->name, ns->id, md->name, dd->name, nd!=NULL?nd->id:0);
+	put_status(SBSC_MASK_NODE_TRANSFER, "node_transfer 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n", ms->id, ds->id, ns->id, md->id, dd->id, nd!=NULL?nd->id:0);
 
 	bool held_focus = is_descendant(ds->focus, ns);
 	/* avoid ending up with a dangling pointer (because of unlink_node) */
@@ -1497,7 +1502,7 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 	n->client->last_layer = n->client->layer;
 	n->client->layer = l;
 
-	put_status(SBSC_MASK_NODE_LAYER, "node_layer %s %s 0x%X %s\n", m->name, d->name, n->id, LAYER_STR(l));
+	put_status(SBSC_MASK_NODE_LAYER, "node_layer 0x%X 0x%X 0x%X %s\n", m->id, d->id, n->id, LAYER_STR(l));
 
 	if (d->focus == n) {
 		neutralize_occluding_windows(m, d, n);
@@ -1529,7 +1534,7 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_NODE_STATE, "node_state %s %s 0x%X %s off\n", m->name, d->name, n->id, STATE_STR(c->last_state));
+	put_status(SBSC_MASK_NODE_STATE, "node_state 0x%X 0x%X 0x%X %s off\n", m->id, d->id, n->id, STATE_STR(c->last_state));
 
 	switch (c->state) {
 		case STATE_TILED:
@@ -1543,7 +1548,7 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 			break;
 	}
 
-	put_status(SBSC_MASK_NODE_STATE, "node_state %s %s 0x%X %s on\n", m->name, d->name, n->id, STATE_STR(c->state));
+	put_status(SBSC_MASK_NODE_STATE, "node_state 0x%X 0x%X 0x%X %s on\n", m->id, d->id, n->id, STATE_STR(c->state));
 
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);
@@ -1616,7 +1621,7 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	n->locked = value;
 
-	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X locked %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%X 0x%X 0x%X locked %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);
@@ -1643,7 +1648,7 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		m->sticky_count--;
 	}
 
-	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X sticky %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%X 0x%X 0x%X sticky %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);
@@ -1659,7 +1664,7 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	n->private = value;
 
-	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X private %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%X 0x%X 0x%X private %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);
@@ -1674,7 +1679,7 @@ void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	n->client->urgent = value;
 
-	put_status(SBSC_MASK_NODE_FLAG, "node_flag %s %s 0x%X urgent %s\n", m->name, d->name, n->id, ON_OFF_STR(value));
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%X 0x%X 0x%X urgent %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 	put_status(SBSC_MASK_REPORT);
 }
 

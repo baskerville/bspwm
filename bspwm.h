@@ -39,8 +39,7 @@
 xcb_connection_t *dpy;
 int default_screen, screen_width, screen_height;
 uint32_t clients_count;
-unsigned int monitor_uid;
-unsigned int desktop_uid;
+uint32_t resource_id_base;
 xcb_screen_t *screen;
 xcb_window_t root;
 char config_path[MAXLEN];

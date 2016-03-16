@@ -595,7 +595,7 @@ int cmd_monitor(char **args, int num)
 			}
 			put_status(SBSC_MASK_REPORT);
 			while (num > 0) {
-				add_desktop(trg.monitor, make_desktop(*args));
+				add_desktop(trg.monitor, make_desktop(*args, XCB_NONE));
 				num--, args++;
 			}
 			while (d != NULL) {
@@ -613,22 +613,15 @@ int cmd_monitor(char **args, int num)
 				return MSG_SYNTAX;
 			}
 			while (num > 0) {
-				add_desktop(trg.monitor, make_desktop(*args));
+				add_desktop(trg.monitor, make_desktop(*args, XCB_NONE));
 				num--, args++;
 			}
-		} else if (streq("-r", *args) || streq("--remove-desktops", *args)) {
-			num--, args++;
-			if (num < 1) {
-				return MSG_SYNTAX;
+		} else if (streq("-r", *args) || streq("--remove", *args)) {
+			if (mon_head == mon_tail) {
+				return MSG_FAILURE;
 			}
-			while (num > 0) {
-				coordinates_t dst;
-				if (locate_desktop(*args, &dst) && dst.monitor->desk_head != dst.monitor->desk_tail && dst.desktop->root == NULL) {
-					remove_desktop(dst.monitor, dst.desktop);
-					show_desktop(dst.monitor->desk);
-				}
-				num--, args++;
-			}
+			remove_monitor(trg.monitor);
+			return MSG_SUCCESS;
 		} else if (streq("-o", *args) || streq("--order-desktops", *args)) {
 			num--, args++;
 			if (num < 1) {
@@ -775,9 +768,9 @@ int cmd_query(char **args, int num, FILE *rsp)
 	if (dom == DOMAIN_NODE) {
 		query_node_ids(trg, node_sel, rsp);
 	} else if (dom == DOMAIN_DESKTOP) {
-		query_desktop_names(trg, desktop_sel, rsp);
+		query_desktop_ids(trg, desktop_sel, rsp);
 	} else if (dom == DOMAIN_MONITOR) {
-		query_monitor_names(trg, monitor_sel, rsp);
+		query_monitor_ids(trg, monitor_sel, rsp);
 	} else {
 		if (trg.node != NULL) {
 			query_node(trg.node, rsp);
@@ -840,7 +833,7 @@ int cmd_rule(char **args, int num, FILE *rsp)
 			if (num < 1) {
 				return MSG_SYNTAX;
 			}
-			int idx;
+			uint16_t idx;
 			while (num > 0) {
 				if (parse_index(*args, &idx)) {
 					remove_rule_by_index(idx - 1);
@@ -931,26 +924,12 @@ int cmd_wm(char **args, int num, FILE *rsp)
 			num--, args++;
 			xcb_rectangle_t r;
 			if (parse_rectangle(*args, &r)) {
-				monitor_t *m = make_monitor(&r);
+				monitor_t *m = make_monitor(&r, XCB_NONE);
 				snprintf(m->name, sizeof(m->name), "%s", name);
 				add_monitor(m);
-				add_desktop(m, make_desktop(NULL));
+				add_desktop(m, make_desktop(NULL, XCB_NONE));
 			} else {
 				return MSG_SYNTAX;
-			}
-		} else if (streq("-r", *args) || streq("--remove-monitor", *args)) {
-			num--, args++;
-			if (num < 1) {
-				return MSG_SYNTAX;
-			}
-			if (mon_head == mon_tail) {
-				return MSG_FAILURE;
-			}
-			monitor_t *m = find_monitor(*args);
-			if (m != NULL) {
-				remove_monitor(m);
-			} else {
-				return MSG_FAILURE;
 			}
 		} else if (streq("-o", *args) || streq("--adopt-orphans", *args)) {
 			adopt_orphans();

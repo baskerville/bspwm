@@ -64,6 +64,7 @@ void query_monitor(monitor_t *m, FILE *rsp)
 	fprintf(rsp, "{");
 	fprintf(rsp, "\"name\":\"%s\",", m->name);
 	fprintf(rsp, "\"id\":%u,", m->id);
+	fprintf(rsp, "\"randrId\":%u,", m->randr_id);
 	fprintf(rsp, "\"wired\":%s,", BOOL_STR(m->wired));
 	fprintf(rsp, "\"topPadding\":%i,", m->top_padding);
 	fprintf(rsp, "\"rightPadding\":%i,", m->right_padding);
@@ -90,6 +91,7 @@ void query_desktop(desktop_t *d, FILE *rsp)
 {
 	fprintf(rsp, "{");
 	fprintf(rsp, "\"name\":\"%s\",", d->name);
+	fprintf(rsp, "\"id\":%u,", d->id);
 	fprintf(rsp, "\"layout\":\"%s\",", LAYOUT_STR(d->layout));
 	fprintf(rsp, "\"topPadding\":%i,", d->top_padding);
 	fprintf(rsp, "\"rightPadding\":%i,", d->right_padding);
@@ -255,7 +257,7 @@ void query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t loc,
 	}
 }
 
-void query_desktop_names(coordinates_t loc, desktop_select_t *sel, FILE *rsp)
+void query_desktop_ids(coordinates_t loc, desktop_select_t *sel, FILE *rsp)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (loc.monitor != NULL && m != loc.monitor) {
@@ -268,12 +270,12 @@ void query_desktop_names(coordinates_t loc, desktop_select_t *sel, FILE *rsp)
 			    (sel != NULL && !desktop_matches(&trg, &ref, *sel))) {
 				continue;
 			}
-			fprintf(rsp, "%s\n", d->name);
+			fprintf(rsp, "0x%X\n", d->id);
 		}
 	}
 }
 
-void query_monitor_names(coordinates_t loc, monitor_select_t *sel, FILE *rsp)
+void query_monitor_ids(coordinates_t loc, monitor_select_t *sel, FILE *rsp)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		coordinates_t ref = {mon, NULL, NULL};
@@ -282,7 +284,7 @@ void query_monitor_names(coordinates_t loc, monitor_select_t *sel, FILE *rsp)
 			(sel != NULL && !monitor_matches(&trg, &ref, *sel))) {
 			continue;
 		}
-		fprintf(rsp, "%s\n", m->name);
+		fprintf(rsp, "0x%X\n", m->id);
 	}
 }
 
@@ -432,7 +434,8 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 	cycle_dir_t cyc;
 	history_dir_t hdi;
-	int idx;
+	uint16_t idx;
+	uint32_t id;
 	if (parse_cycle_direction(desc, &cyc)) {
 		dst->monitor = ref->monitor;
 		dst->desktop = closest_desktop(ref->monitor, ref->desktop, cyc, sel);
@@ -464,6 +467,10 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		if (desktop_from_index(idx, dst, NULL)) {
 			return desktop_matches(dst, ref, sel);
 		}
+	} else if (parse_id(desc, &id)) {
+		if (desktop_from_id(id, dst, NULL)) {
+			return desktop_matches(dst, ref, sel);
+		}
 	} else {
 		if (locate_desktop(desc, dst)) {
 			return desktop_matches(dst, ref, sel);
@@ -486,7 +493,8 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	direction_t dir;
 	cycle_dir_t cyc;
 	history_dir_t hdi;
-	int idx;
+	uint16_t idx;
+	uint32_t id;
 	if (parse_direction(desc, &dir)) {
 		dst->monitor = nearest_monitor(ref->monitor, dir, sel);
 	} else if (parse_cycle_direction(desc, &cyc)) {
@@ -509,7 +517,11 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		}
 	} else if (parse_index(desc, &idx)) {
 		if (monitor_from_index(idx, dst)) {
-			monitor_matches(dst, ref, sel);
+			return monitor_matches(dst, ref, sel);
+		}
+	} else if (parse_id(desc, &id)) {
+		if (monitor_from_id(id, dst)) {
+			return monitor_matches(dst, ref, sel);
 		}
 	} else {
 		if (locate_monitor(desc, dst)) {
@@ -562,14 +574,14 @@ bool locate_monitor(char *name, coordinates_t *loc)
 	return false;
 }
 
-bool desktop_from_index(int i, coordinates_t *loc, monitor_t *mm)
+bool desktop_from_id(uint32_t id, coordinates_t *loc, monitor_t *mm)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (mm != NULL && m != mm) {
 			continue;
 		}
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, i--) {
-			if (i == 1) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (d->id == id) {
 				loc->monitor = m;
 				loc->desktop = d;
 				loc->node = NULL;
@@ -580,10 +592,41 @@ bool desktop_from_index(int i, coordinates_t *loc, monitor_t *mm)
 	return false;
 }
 
-bool monitor_from_index(int i, coordinates_t *loc)
+bool desktop_from_index(uint16_t idx, coordinates_t *loc, monitor_t *mm)
 {
-	for (monitor_t *m = mon_head; m != NULL; m = m->next, i--) {
-		if (i == 1) {
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (mm != NULL && m != mm) {
+			continue;
+		}
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, idx--) {
+			if (idx == 1) {
+				loc->monitor = m;
+				loc->desktop = d;
+				loc->node = NULL;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool monitor_from_id(uint32_t id, coordinates_t *loc)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		if (m->id == id) {
+			loc->monitor = m;
+			loc->desktop = NULL;
+			loc->node = NULL;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool monitor_from_index(int idx, coordinates_t *loc)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next, idx--) {
+		if (idx == 1) {
 			loc->monitor = m;
 			loc->desktop = NULL;
 			loc->node = NULL;

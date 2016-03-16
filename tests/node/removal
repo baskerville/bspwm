@@ -16,4 +16,4 @@ bspc node @/2 -k
 
 window remove
 
-bspc monitor -r "test-removal"
+bspc desktop "test-removal" -r

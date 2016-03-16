@@ -197,7 +197,7 @@ void configure_request(xcb_generic_event_t *evt)
 
 		if (is_managed && mask & XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT) {
 			xcb_rectangle_t r = c->floating_rectangle;
-			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry %s %s 0x%X %ux%u+%i+%i\n", loc.monitor->name, loc.desktop->name, e->window, r.width, r.height, r.x, r.y);
+			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%X 0x%X 0x%X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, e->window, r.width, r.height, r.x, r.y);
 		}
 	}
 

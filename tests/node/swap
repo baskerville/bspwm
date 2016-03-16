@@ -22,4 +22,5 @@ bspc desktop -f "test-swap-b"
 window remove 1 2
 window remove 4
 
-bspc monitor -r "test-swap-a" "test-swap-b"
+bspc desktop "test-swap-a" -r
+bspc desktop "test-swap-b" -r

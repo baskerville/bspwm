@@ -39,11 +39,14 @@
 #include "window.h"
 #include "monitor.h"
 
-monitor_t *make_monitor(xcb_rectangle_t *rect)
+monitor_t *make_monitor(xcb_rectangle_t *rect, uint32_t id)
 {
 	monitor_t *m = malloc(sizeof(monitor_t));
-	snprintf(m->name, sizeof(m->name), "%s%02d", DEFAULT_MON_NAME, ++monitor_uid);
-	m->id = XCB_NONE;
+	if (id == XCB_NONE) {
+		m->id = xcb_generate_id(dpy);
+	}
+	m->randr_id = XCB_NONE;
+	snprintf(m->name, sizeof(m->name), "%s", DEFAULT_MON_NAME);
 	m->root = XCB_NONE;
 	m->prev = m->next = NULL;
 	m->desk = m->desk_head = m->desk_tail = NULL;
@@ -75,8 +78,8 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 		}
 	} else {
 		window_move_resize(m->root, rect->x, rect->y, rect->width, rect->height);
-		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry %s %ux%u+%i+%i\n",
-		           m->name, rect->width, rect->height, rect->x, rect->y);
+		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry 0x%X %ux%u+%i+%i\n",
+		           m->id, rect->width, rect->height, rect->x, rect->y);
 	}
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 		for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
@@ -88,7 +91,7 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 
 void rename_monitor(monitor_t *m, const char *name)
 {
-	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename %s %s\n", m->name, name);
+	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename 0x%X %s %s\n", m->id, m->name, name);
 
 	snprintf(m->name, sizeof(m->name), "%s", name);
 
@@ -105,10 +108,10 @@ monitor_t *find_monitor(char *name)
 	return NULL;
 }
 
-monitor_t *get_monitor_by_id(xcb_randr_output_t id)
+monitor_t *get_monitor_by_randr_id(xcb_randr_output_t id)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (m->id == id) {
+		if (m->randr_id == id) {
 			return m;
 		}
 	}
@@ -181,7 +184,7 @@ void focus_monitor(monitor_t *m)
 		center_pointer(m->rectangle);
 	}
 
-	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus %s\n", m->name);
+	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%X\n", m->id);
 }
 
 void add_monitor(monitor_t *m)
@@ -214,7 +217,7 @@ void add_monitor(monitor_t *m)
 		}
 	}
 
-	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add %s 0x%X %ux%u+%i+%i\n", m->name, m->id, r.width, r.height, r.x, r.y);
+	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add 0x%X %s %ux%u+%i+%i\n", m->id, m->name, r.width, r.height, r.x, r.y);
 
 	put_status(SBSC_MASK_REPORT);
 }
@@ -256,7 +259,7 @@ void remove_monitor(monitor_t *m)
 		}
 	}
 
-	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove %s\n", m->name);
+	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove 0x%X\n", m->id);
 
 	xcb_destroy_window(dpy, m->root);
 	free(m);
@@ -286,7 +289,7 @@ bool swap_monitors(monitor_t *m1, monitor_t *m2)
 		return false;
 	}
 
-	put_status(SBSC_MASK_MONITOR_SWAP, "monitor_swap %s %s\n", m1->name, m2->name);
+	put_status(SBSC_MASK_MONITOR_SWAP, "monitor_swap 0x%X 0x%X\n", m1->id, m2->id);
 
 	if (mon_head == m1) {
 		mon_head = m2;
@@ -444,22 +447,22 @@ bool update_monitors(void)
 				xcb_randr_get_crtc_info_reply_t *cir = xcb_randr_get_crtc_info_reply(dpy, xcb_randr_get_crtc_info(dpy, info->crtc, XCB_CURRENT_TIME), NULL);
 				if (cir != NULL) {
 					xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
-					mm = get_monitor_by_id(outputs[i]);
+					mm = get_monitor_by_randr_id(outputs[i]);
 					if (mm != NULL) {
 						update_root(mm, &rect);
 						mm->wired = true;
 					} else {
-						mm = make_monitor(&rect);
+						mm = make_monitor(&rect, XCB_NONE);
 						char *name = (char *)xcb_randr_get_output_info_name(info);
 						size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info) + 1);
 						snprintf(mm->name, name_len, "%s", name);
-						mm->id = outputs[i];
+						mm->randr_id = outputs[i];
 						add_monitor(mm);
 					}
 				}
 				free(cir);
 			} else if (!remove_disabled_monitors && info->connection != XCB_RANDR_CONNECTION_DISCONNECTED) {
-				m = get_monitor_by_id(outputs[i]);
+				m = get_monitor_by_randr_id(outputs[i]);
 				if (m != NULL) {
 					m->wired = true;
 				}
@@ -470,7 +473,7 @@ bool update_monitors(void)
 
 	xcb_randr_get_output_primary_reply_t *gpo = xcb_randr_get_output_primary_reply(dpy, xcb_randr_get_output_primary(dpy, root), NULL);
 	if (gpo != NULL) {
-		pri_mon = get_monitor_by_id(gpo->output);
+		pri_mon = get_monitor_by_randr_id(gpo->output);
 	}
 	free(gpo);
 
@@ -516,7 +519,7 @@ bool update_monitors(void)
 	/* add one desktop to each new monitor */
 	for (m = mon_head; m != NULL; m = m->next) {
 		if (m->desk == NULL) {
-			add_desktop(m, make_desktop(NULL));
+			add_desktop(m, make_desktop(NULL, XCB_NONE));
 		}
 	}
 
