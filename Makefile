@@ -1,4 +1,5 @@
-VERSION := $(shell git describe 2> /dev/null || cat VERSION)
+VERCMD  ?= git describe 2> /dev/null
+VERSION := $(shell $(VERCMD) || cat VERSION)
 
 CPPFLAGS += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
 CFLAGS   += -std=c99 -pedantic -Wall -Wextra
@@ -11,14 +12,14 @@ DOCPREFIX ?= $(PREFIX)/share/doc/bspwm
 BASHCPL   ?= $(PREFIX)/share/bash-completion/completions
 ZSHCPL    ?= $(PREFIX)/share/zsh/site-functions
 
-MD_DOCS = README.md doc/CHANGELOG.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
+MD_DOCS    = README.md doc/CHANGELOG.md doc/CONTRIBUTING.md doc/INSTALL.md doc/MISC.md doc/TODO.md
 XSESSIONS ?= $(PREFIX)/share/xsessions
 
-WM_SRC = bspwm.c helpers.c geometry.c jsmn.c settings.c monitor.c desktop.c tree.c stack.c history.c \
+WM_SRC   = bspwm.c helpers.c geometry.c jsmn.c settings.c monitor.c desktop.c tree.c stack.c history.c \
 	 events.c pointer.c window.c messages.c parse.c query.c restore.c rule.c ewmh.c subscribe.c
-WM_OBJ = $(WM_SRC:.c=.o)
-CLI_SRC = bspc.c helpers.c
-CLI_OBJ = $(CLI_SRC:.c=.o)
+WM_OBJ  := $(WM_SRC:.c=.o)
+CLI_SRC  = bspc.c helpers.c
+CLI_OBJ := $(CLI_SRC:.c=.o)
 
 all: bspwm bspc
 
