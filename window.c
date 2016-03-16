@@ -211,7 +211,7 @@ void unmanage_window(xcb_window_t win)
 {
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
-		put_status(SBSC_MASK_NODE_UNMANAGE, "node_unmanage %s %s 0x%X\n", loc.monitor, loc.desktop, win);
+		put_status(SBSC_MASK_NODE_UNMANAGE, "node_unmanage %s %s 0x%X\n", loc.monitor->name, loc.desktop->name, win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
 		if (frozen_pointer->window == win) {
 			frozen_pointer->action = ACTION_NONE;
