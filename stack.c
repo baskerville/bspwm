@@ -32,7 +32,7 @@
 
 stacking_list_t *make_stack(node_t *n)
 {
-	stacking_list_t *s = malloc(sizeof(stacking_list_t));
+	stacking_list_t *s = calloc(1, sizeof(stacking_list_t));
 	s->node = n;
 	s->prev = s->next = NULL;
 	return s;

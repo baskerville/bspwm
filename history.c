@@ -30,7 +30,7 @@
 
 history_t *make_history(monitor_t *m, desktop_t *d, node_t *n)
 {
-	history_t *h = malloc(sizeof(history_t));
+	history_t *h = calloc(1, sizeof(history_t));
 	h->loc = (coordinates_t) {m, d, n};
 	h->prev = h->next = NULL;
 	h->latest = true;

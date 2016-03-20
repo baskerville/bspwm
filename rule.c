@@ -37,7 +37,7 @@
 
 rule_t *make_rule(void)
 {
-	rule_t *r = malloc(sizeof(rule_t));
+	rule_t *r = calloc(1, sizeof(rule_t));
 	r->class_name[0] = r->instance_name[0] = r->effect[0] = '\0';
 	r->next = r->prev = NULL;
 	r->one_shot = false;
@@ -109,7 +109,7 @@ rule_consequence_t *make_rule_conquence(void)
 
 pending_rule_t *make_pending_rule(int fd, xcb_window_t win, rule_consequence_t *csq)
 {
-	pending_rule_t *pr = malloc(sizeof(pending_rule_t));
+	pending_rule_t *pr = calloc(1, sizeof(pending_rule_t));
 	pr->prev = pr->next = NULL;
 	pr->fd = fd;
 	pr->win = win;
@@ -167,7 +167,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 				csq->focus = false;
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
 				if (csq->state == NULL) {
-					csq->state = malloc(sizeof(client_state_t));
+					csq->state = calloc(1, sizeof(client_state_t));
 				}
 				*(csq->state) = STATE_FLOATING;
 				csq->center = true;
@@ -190,17 +190,17 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 			xcb_atom_t a = win_state.atoms[i];
 			if (a == ewmh->_NET_WM_STATE_FULLSCREEN) {
 				if (csq->state == NULL) {
-					csq->state = malloc(sizeof(client_state_t));
+					csq->state = calloc(1, sizeof(client_state_t));
 				}
 				*(csq->state) = STATE_FULLSCREEN;
 			} else if (a == ewmh->_NET_WM_STATE_BELOW) {
 				if (csq->layer == NULL) {
-					csq->layer = malloc(sizeof(stack_layer_t));
+					csq->layer = calloc(1, sizeof(stack_layer_t));
 				}
 				*(csq->layer) = LAYER_BELOW;
 			} else if (a == ewmh->_NET_WM_STATE_ABOVE) {
 				if (csq->layer == NULL) {
-					csq->layer = malloc(sizeof(stack_layer_t));
+					csq->layer = calloc(1, sizeof(stack_layer_t));
 				}
 				*(csq->layer) = LAYER_ABOVE;
 			} else if (a == ewmh->_NET_WM_STATE_STICKY) {
@@ -214,7 +214,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 	xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
 	if (transient_for != XCB_NONE) {
 		if (csq->state == NULL) {
-			csq->state = malloc(sizeof(client_state_t));
+			csq->state = calloc(1, sizeof(client_state_t));
 		}
 		*(csq->state) = STATE_FLOATING;
 	}
@@ -224,7 +224,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 		if ((size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_MIN_SIZE|XCB_ICCCM_SIZE_HINT_P_MAX_SIZE)) &&
 		    size_hints.min_width == size_hints.max_width && size_hints.min_height == size_hints.max_height) {
 			if (csq->state == NULL) {
-				csq->state = malloc(sizeof(client_state_t));
+				csq->state = calloc(1, sizeof(client_state_t));
 			}
 			*(csq->state) = STATE_FLOATING;
 		}
@@ -324,7 +324,7 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		client_state_t cst;
 		if (parse_client_state(value, &cst)) {
 			if (csq->state == NULL) {
-				csq->state = malloc(sizeof(client_state_t));
+				csq->state = calloc(1, sizeof(client_state_t));
 			}
 			*(csq->state) = cst;
 		}
@@ -332,7 +332,7 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		stack_layer_t lyr;
 		if (parse_stack_layer(value, &lyr)) {
 			if (csq->layer == NULL) {
-				csq->layer = malloc(sizeof(stack_layer_t));
+				csq->layer = calloc(1, sizeof(stack_layer_t));
 			}
 			*(csq->layer) = lyr;
 		}

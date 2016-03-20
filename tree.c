@@ -180,7 +180,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 
 presel_t *make_presel(void)
 {
-	presel_t *p = malloc(sizeof(presel_t));
+	presel_t *p = calloc(1, sizeof(presel_t));
 	p->split_dir = DIR_EAST;
 	p->split_ratio = split_ratio;
 	p->feedback = XCB_NONE;
@@ -654,7 +654,7 @@ node_t *make_node(uint32_t id)
 	if (id == XCB_NONE) {
 		id = xcb_generate_id(dpy);
 	}
-	node_t *n = malloc(sizeof(node_t));
+	node_t *n = calloc(1, sizeof(node_t));
 	n->id = id;
 	n->parent = n->first_child = n->second_child = NULL;
 	n->vacant = n->hidden = n->sticky = n->private = n->locked = false;
@@ -668,7 +668,7 @@ node_t *make_node(uint32_t id)
 
 client_t *make_client(void)
 {
-	client_t *c = malloc(sizeof(client_t));
+	client_t *c = calloc(1, sizeof(client_t));
 	c->state = c->last_state = STATE_TILED;
 	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
