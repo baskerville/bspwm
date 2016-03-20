@@ -204,7 +204,7 @@ bool parse_id(char *s, uint32_t *id)
 	char *end;
 	errno = 0;
 	uint32_t v = strtol(s, &end, 0);
-	if (errno != 0 || *end != '\0' || v < resource_id_base) {
+	if (errno != 0 || *end != '\0') {
 		return false;
 	}
 	*id = v;

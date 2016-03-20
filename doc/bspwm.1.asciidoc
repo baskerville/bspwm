@@ -64,7 +64,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := (<node_id>|PATH|DIR|CYCLE_DIR|last|older|newer|biggest|focused)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -80,32 +80,32 @@ JUMP := first|1|second|2|brother|parent|DIR
 Descriptors
 ^^^^^^^^^^^
 
-<node_id>::
-	Selects the node with the given ID.
-
-'PATH'::
-	Selects the node at the given path.
-
 'DIR'::
 	Selects the window in the given (spacial) direction relative to the active node.
 
 'CYCLE_DIR'::
 	Selects the window in the given (cyclic) direction.
 
-biggest::
-	Selects the biggest window on the current desktop.
+'PATH'::
+	Selects the node at the given path.
 
 last::
 	Selects the previously focused node.
-
-focused::
-	Selects the currently focused node.
 
 older::
 	Selects the node older than the focused node in the history.
 
 newer::
 	Selects the node newer than the focused node in the history.
+
+focused::
+	Selects the currently focused node.
+
+biggest::
+	Selects the biggest window on the current desktop.
+
+<node_id>::
+	Selects the node with the given ID.
 
 Path Jumps
 ^^^^^^^^^^
@@ -160,20 +160,11 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := (<desktop_id>|<desktop_name>|[MONITOR_SEL:](focused|^<n>)|CYCLE_DIR|last|older|newer)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
+DESKTOP_SEL := (CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
 
 Descriptors
 ^^^^^^^^^^^
-
-<desktop_id>::
-	Selects the desktop with the given ID.
-
-<desktop_name>::
-	Selects the desktop with the given name.
-
-^<n>::
-	Selects the nth desktop.
 
 'CYCLE_DIR'::
 	Selects the desktop in the given direction relative to the active desktop.
@@ -181,14 +172,23 @@ Descriptors
 last::
 	Selects the previously focused desktop.
 
-focused::
-	Selects the currently focused desktop.
-
 older::
 	Selects the desktop older than the focused desktop in the history.
 
 newer::
 	Selects the desktop newer than the focused desktop in the history.
+
+focused::
+	Selects the currently focused desktop.
+
+^<n>::
+	Selects the nth desktop.
+
+<desktop_id>::
+	Selects the desktop with the given ID.
+
+<desktop_name>::
+	Selects the desktop with the given name.
 
 Modifiers
 ^^^^^^^^^
@@ -211,20 +211,11 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := (<monitor_id>|<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[.[!]occupied][.[!]focused]
+MONITOR_SEL := (DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
 ----
 
 Descriptors
 ^^^^^^^^^^^
-
-<monitor_id>::
-	Selects the monitor with the given ID.
-
-<monitor_name>::
-	Selects the monitor with the given name.
-
-^<n>::
-	Selects the nth monitor.
 
 'DIR'::
 	Selects the monitor in the given (spacial) direction relative to the active monitor.
@@ -232,20 +223,30 @@ Descriptors
 'CYCLE_DIR'::
 	Selects the monitor in the given (cyclic) direction relative to the active monitor.
 
-primary::
-	Selects the primary monitor.
-
 last::
 	Selects the previously focused monitor.
-
-focused::
-	Selects the currently focused monitor.
 
 older::
 	Selects the monitor older than the focused monitor in the history.
 
 newer::
 	Selects the monitor newer than the focused monitor in the history.
+
+focused::
+	Selects the currently focused monitor.
+
+primary::
+	Selects the primary monitor.
+
+^<n>::
+	Selects the nth monitor.
+
+<monitor_id>::
+	Selects the monitor with the given ID.
+
+<monitor_name>::
+	Selects the monitor with the given name.
+
 
 Modifiers
 ^^^^^^^^^

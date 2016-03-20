@@ -463,14 +463,10 @@ bool desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 				}
 			}
 		}
-	} else if (parse_index(desc, &idx)) {
-		if (desktop_from_index(idx, dst, NULL)) {
-			return desktop_matches(dst, ref, sel);
-		}
-	} else if (parse_id(desc, &id)) {
-		if (desktop_from_id(id, dst, NULL)) {
-			return desktop_matches(dst, ref, sel);
-		}
+	} else if (parse_index(desc, &idx) && desktop_from_index(idx, dst, NULL)) {
+		return desktop_matches(dst, ref, sel);
+	} else if (parse_id(desc, &id) && desktop_from_id(id, dst, NULL)) {
+		return desktop_matches(dst, ref, sel);
 	} else {
 		if (locate_desktop(desc, dst)) {
 			return desktop_matches(dst, ref, sel);
@@ -515,14 +511,10 @@ bool monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		if (monitor_matches(&loc, ref, sel)) {
 			dst->monitor = mon;
 		}
-	} else if (parse_index(desc, &idx)) {
-		if (monitor_from_index(idx, dst)) {
-			return monitor_matches(dst, ref, sel);
-		}
-	} else if (parse_id(desc, &id)) {
-		if (monitor_from_id(id, dst)) {
-			return monitor_matches(dst, ref, sel);
-		}
+	} else if (parse_index(desc, &idx) && monitor_from_index(idx, dst)) {
+		return monitor_matches(dst, ref, sel);
+	} else if (parse_id(desc, &id)&& monitor_from_id(id, dst)) {
+		return monitor_matches(dst, ref, sel);
 	} else {
 		if (locate_monitor(desc, dst)) {
 			return monitor_matches(dst, ref, sel);

@@ -226,9 +226,7 @@ void setup(void)
 {
 	init();
 	ewmh_init();
-	const xcb_setup_t *current_setup = xcb_get_setup(dpy);
-	resource_id_base = current_setup->resource_id_base;
-	screen = xcb_setup_roots_iterator(current_setup).data;
+	screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
 
 	if (screen == NULL) {
 		err("Can't acquire the default screen.\n");

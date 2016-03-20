@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/16/2016
+.\"      Date: 03/20/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-2-g212442e
+.\"    Source: Bspwm 0.9.1-3-g9ae96eb
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/16/2016" "Bspwm 0\&.9\&.1\-2\-g212442e" "Bspwm Manual"
+.TH "BSPWM" "1" "03/20/2016" "Bspwm 0\&.9\&.1\-3\-g9ae96eb" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -92,7 +92,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := (<node_id>|PATH|DIR|CYCLE_DIR|last|older|newer|biggest|focused)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -116,16 +116,6 @@ JUMP := first|1|second|2|brother|parent|DIR
 \fBDescriptors\fR
 .RS 4
 .PP
-<node_id>
-.RS 4
-Selects the node with the given ID\&.
-.RE
-.PP
-\fIPATH\fR
-.RS 4
-Selects the node at the given path\&.
-.RE
-.PP
 \fIDIR\fR
 .RS 4
 Selects the window in the given (spacial) direction relative to the active node\&.
@@ -136,19 +126,14 @@ Selects the window in the given (spacial) direction relative to the active node\
 Selects the window in the given (cyclic) direction\&.
 .RE
 .PP
-biggest
+\fIPATH\fR
 .RS 4
-Selects the biggest window on the current desktop\&.
+Selects the node at the given path\&.
 .RE
 .PP
 last
 .RS 4
 Selects the previously focused node\&.
-.RE
-.PP
-focused
-.RS 4
-Selects the currently focused node\&.
 .RE
 .PP
 older
@@ -159,6 +144,21 @@ Selects the node older than the focused node in the history\&.
 newer
 .RS 4
 Selects the node newer than the focused node in the history\&.
+.RE
+.PP
+focused
+.RS 4
+Selects the currently focused node\&.
+.RE
+.PP
+biggest
+.RS 4
+Selects the biggest window on the current desktop\&.
+.RE
+.PP
+<node_id>
+.RS 4
+Selects the node with the given ID\&.
 .RE
 .RE
 .sp
@@ -254,7 +254,7 @@ Select a desktop\&.
 .RS 4
 .\}
 .nf
-DESKTOP_SEL := (<desktop_id>|<desktop_name>|[MONITOR_SEL:](focused|^<n>)|CYCLE_DIR|last|older|newer)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
+DESKTOP_SEL := (CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
 .fi
 .if n \{\
 .RE
@@ -268,21 +268,6 @@ DESKTOP_SEL := (<desktop_id>|<desktop_name>|[MONITOR_SEL:](focused|^<n>)|CYCLE_D
 \fBDescriptors\fR
 .RS 4
 .PP
-<desktop_id>
-.RS 4
-Selects the desktop with the given ID\&.
-.RE
-.PP
-<desktop_name>
-.RS 4
-Selects the desktop with the given name\&.
-.RE
-.PP
-^<n>
-.RS 4
-Selects the nth desktop\&.
-.RE
-.PP
 \fICYCLE_DIR\fR
 .RS 4
 Selects the desktop in the given direction relative to the active desktop\&.
@@ -293,11 +278,6 @@ last
 Selects the previously focused desktop\&.
 .RE
 .PP
-focused
-.RS 4
-Selects the currently focused desktop\&.
-.RE
-.PP
 older
 .RS 4
 Selects the desktop older than the focused desktop in the history\&.
@@ -306,6 +286,26 @@ Selects the desktop older than the focused desktop in the history\&.
 newer
 .RS 4
 Selects the desktop newer than the focused desktop in the history\&.
+.RE
+.PP
+focused
+.RS 4
+Selects the currently focused desktop\&.
+.RE
+.PP
+^<n>
+.RS 4
+Selects the nth desktop\&.
+.RE
+.PP
+<desktop_id>
+.RS 4
+Selects the desktop with the given ID\&.
+.RE
+.PP
+<desktop_name>
+.RS 4
+Selects the desktop with the given name\&.
 .RE
 .RE
 .sp
@@ -345,7 +345,7 @@ Select a monitor\&.
 .RS 4
 .\}
 .nf
-MONITOR_SEL := (<monitor_id>|<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focused|older|newer)[\&.[!]occupied][\&.[!]focused]
+MONITOR_SEL := (DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
 .fi
 .if n \{\
 .RE
@@ -359,21 +359,6 @@ MONITOR_SEL := (<monitor_id>|<monitor_name>|^<n>|DIR|CYCLE_DIR|last|primary|focu
 \fBDescriptors\fR
 .RS 4
 .PP
-<monitor_id>
-.RS 4
-Selects the monitor with the given ID\&.
-.RE
-.PP
-<monitor_name>
-.RS 4
-Selects the monitor with the given name\&.
-.RE
-.PP
-^<n>
-.RS 4
-Selects the nth monitor\&.
-.RE
-.PP
 \fIDIR\fR
 .RS 4
 Selects the monitor in the given (spacial) direction relative to the active monitor\&.
@@ -384,19 +369,9 @@ Selects the monitor in the given (spacial) direction relative to the active moni
 Selects the monitor in the given (cyclic) direction relative to the active monitor\&.
 .RE
 .PP
-primary
-.RS 4
-Selects the primary monitor\&.
-.RE
-.PP
 last
 .RS 4
 Selects the previously focused monitor\&.
-.RE
-.PP
-focused
-.RS 4
-Selects the currently focused monitor\&.
 .RE
 .PP
 older
@@ -407,6 +382,31 @@ Selects the monitor older than the focused monitor in the history\&.
 newer
 .RS 4
 Selects the monitor newer than the focused monitor in the history\&.
+.RE
+.PP
+focused
+.RS 4
+Selects the currently focused monitor\&.
+.RE
+.PP
+primary
+.RS 4
+Selects the primary monitor\&.
+.RE
+.PP
+^<n>
+.RS 4
+Selects the nth monitor\&.
+.RE
+.PP
+<monitor_id>
+.RS 4
+Selects the monitor with the given ID\&.
+.RE
+.PP
+<monitor_name>
+.RS 4
+Selects the monitor with the given name\&.
 .RE
 .RE
 .sp
