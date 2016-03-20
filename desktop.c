@@ -206,7 +206,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
 desktop_t *make_desktop(const char *name, uint32_t id)
 {
-	desktop_t *d = malloc(sizeof(desktop_t));
+	desktop_t *d = calloc(1, sizeof(desktop_t));
 	snprintf(d->name, sizeof(d->name), "%s", name == NULL ? DEFAULT_DESK_NAME : name);
 	if (id == XCB_NONE) {
 		d->id = xcb_generate_id(dpy);

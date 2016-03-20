@@ -40,7 +40,7 @@
 
 monitor_t *make_monitor(const char *name, xcb_rectangle_t *rect, uint32_t id)
 {
-	monitor_t *m = malloc(sizeof(monitor_t));
+	monitor_t *m = calloc(1, sizeof(monitor_t));
 	if (id == XCB_NONE) {
 		m->id = xcb_generate_id(dpy);
 	}

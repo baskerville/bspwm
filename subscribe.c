@@ -33,7 +33,7 @@
 
 subscriber_list_t *make_subscriber_list(FILE *stream, int field)
 {
-	subscriber_list_t *sb = malloc(sizeof(subscriber_list_t));
+	subscriber_list_t *sb = calloc(1, sizeof(subscriber_list_t));
 	sb->prev = sb->next = NULL;
 	sb->stream = stream;
 	sb->field = field;

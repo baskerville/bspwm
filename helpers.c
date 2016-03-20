@@ -67,8 +67,8 @@ char *read_string(const char *file_path, size_t *tlen)
 	char buf[BUFSIZ], *content = NULL;
 	size_t len = sizeof(buf);
 
-	if ((content = malloc(len * sizeof(char))) == NULL) {
-		perror("Read file: malloc");
+	if ((content = calloc(len, sizeof(char))) == NULL) {
+		perror("Read file: calloc");
 		goto end;
 	}
 
@@ -109,9 +109,9 @@ end:
 
 char *copy_string(char *str, size_t len)
 {
-	char *cpy = malloc((len+1) * sizeof(char));
+	char *cpy = calloc(1, ((len+1) * sizeof(char)));
 	if (cpy == NULL) {
-		perror("Copy string: malloc");
+		perror("Copy string: calloc");
 		return NULL;
 	}
 	strncpy(cpy, str, len);
