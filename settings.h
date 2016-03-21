@@ -38,6 +38,7 @@
 #define FOCUSED_BORDER_COLOR          "#817f7f"
 #define PRESEL_FEEDBACK_COLOR         "#f4d775"
 
+#define PADDING              {0, 0, 0, 0}
 #define WINDOW_GAP           6
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
@@ -65,6 +66,7 @@ char active_border_color[MAXLEN];
 char focused_border_color[MAXLEN];
 char presel_feedback_color[MAXLEN];
 
+padding_t padding;
 int window_gap;
 unsigned int border_width;
 double split_ratio;

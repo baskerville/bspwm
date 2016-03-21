@@ -47,10 +47,12 @@ monitor_t *make_monitor(xcb_rectangle_t *rect, uint32_t id)
 	}
 	m->randr_id = XCB_NONE;
 	snprintf(m->name, sizeof(m->name), "%s", DEFAULT_MON_NAME);
+	m->padding = padding;
+	m->border_width = border_width;
+	m->window_gap = window_gap;
 	m->root = XCB_NONE;
 	m->prev = m->next = NULL;
 	m->desk = m->desk_head = m->desk_tail = NULL;
-	m->top_padding = m->right_padding = m->bottom_padding = m->left_padding = 0;
 	m->wired = true;
 	m->sticky_count = 0;
 	if (rect != NULL) {
@@ -454,8 +456,9 @@ bool update_monitors(void)
 					} else {
 						mm = make_monitor(&rect, XCB_NONE);
 						char *name = (char *)xcb_randr_get_output_info_name(info);
-						size_t name_len = MIN(sizeof(mm->name), (size_t)xcb_randr_get_output_info_name_length(info) + 1);
-						snprintf(mm->name, name_len, "%s", name);
+						int len = xcb_randr_get_output_info_name_length(info);
+						size_t name_size = MIN(sizeof(mm->name), (size_t) len + 1);
+						snprintf(mm->name, name_size, "%s", name);
 						mm->randr_id = outputs[i];
 						add_monitor(mm);
 					}

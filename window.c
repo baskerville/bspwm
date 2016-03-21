@@ -86,7 +86,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	if (csq->node_desc[0] != '\0') {
 		coordinates_t ref = {m, d, f};
 		coordinates_t trg = {NULL, NULL, NULL};
-		if (node_from_desc(csq->node_desc, &ref, &trg)) {
+		if (node_from_desc(csq->node_desc, &ref, &trg) == SELECTOR_OK) {
 			m = trg.monitor;
 			d = trg.desktop;
 			f = trg.node;
@@ -94,7 +94,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	} else if (csq->desktop_desc[0] != '\0') {
 		coordinates_t ref = {m, d, NULL};
 		coordinates_t trg = {NULL, NULL, NULL};
-		if (desktop_from_desc(csq->desktop_desc, &ref, &trg)) {
+		if (desktop_from_desc(csq->desktop_desc, &ref, &trg) == SELECTOR_OK) {
 			m = trg.monitor;
 			d = trg.desktop;
 			f = trg.desktop->focus;
@@ -102,7 +102,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	} else if (csq->monitor_desc[0] != '\0') {
 		coordinates_t ref = {m, NULL, NULL};
 		coordinates_t trg = {NULL, NULL, NULL};
-		if (monitor_from_desc(csq->monitor_desc, &ref, &trg)) {
+		if (monitor_from_desc(csq->monitor_desc, &ref, &trg) == SELECTOR_OK) {
 			m = trg.monitor;
 			d = trg.monitor->desk;
 			f = trg.monitor->desk->focus;

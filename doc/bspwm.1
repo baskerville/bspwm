@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/20/2016
+.\"      Date: 03/21/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-3-g9ae96eb
+.\"    Source: Bspwm 0.9.1-7-gcbf43e9
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/20/2016" "Bspwm 0\&.9\&.1\-3\-g9ae96eb" "Bspwm Manual"
+.TH "BSPWM" "1" "03/21/2016" "Bspwm 0\&.9\&.1\-7\-gcbf43e9" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,6 +34,8 @@ bspwm \- Binary space partitioning window manager
 \fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-c\fR \fICONFIG_PATH\fR]
 .sp
 \fBbspc\fR \fIDOMAIN\fR [\fISELECTOR\fR] \fICOMMANDS\fR
+.sp
+\fBbspc\fR \fICOMMAND\fR [\fIOPTIONS\fR] [\fIARGUMENTS\fR]
 .SH "DESCRIPTION"
 .sp
 \fBbspwm\fR is a tiling window manager that represents windows as the leaves of a full binary tree\&.
@@ -703,7 +705,7 @@ Reorder the desktops of the selected monitor to match the given order\&.
 .PP
 \fB\-d\fR, \fB\-\-reset\-desktops\fR <name>\&...
 .RS 4
-Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops\&. Incidentally reset the settings of the existing desktops\&.
+Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops\&.
 .RE
 .PP
 \fB\-g\fR, \fB\-\-rectangle\fR WxH+X+Y
@@ -957,22 +959,7 @@ Quit with an optional exit status\&.
 .RE
 .SH "EXIT CODES"
 .sp
-If the server can\(cqt handle a message, \fBbspc\fR will return with one of the following exit codes:
-.PP
-1
-.RS 4
-Failure\&.
-.RE
-.PP
-2
-.RS 4
-Syntax error\&.
-.RE
-.PP
-3
-.RS 4
-Unknown command\&.
-.RE
+If the server can\(cqt handle a message, \fBbspc\fR will return with a non\-zero exit code\&.
 .SH "SETTINGS"
 .sp
 Colors are in the form \fI#RRGGBB\fR, booleans are \fItrue\fR, \fIon\fR, \fIfalse\fR or \fIoff\fR\&.
@@ -1112,17 +1099,17 @@ Merge overlapping monitors (the bigger remains)\&.
 .RS 4
 Padding space added at the sides of the monitor or desktop\&.
 .RE
-.SS "Default, Desktop Default and Window Settings"
-.PP
-\fIborder_width\fR
-.RS 4
-Window border width\&.
-.RE
-.SS "Default and Desktop Settings"
+.SS "Desktop Settings"
 .PP
 \fIwindow_gap\fR
 .RS 4
 Size of the gap that separates windows\&.
+.RE
+.SS "Node Settings"
+.PP
+\fIborder_width\fR
+.RS 4
+Window border width\&.
 .RE
 .SH "EVENTS"
 .PP

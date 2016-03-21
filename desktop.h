@@ -34,7 +34,6 @@ void change_layout(monitor_t *m, desktop_t *d, layout_t l);
 bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d);
 desktop_t *make_desktop(const char *name, uint32_t id);
 void rename_desktop(monitor_t *m, desktop_t *d, const char *name);
-void initialize_desktop(desktop_t *d);
 void insert_desktop(monitor_t *m, desktop_t *d);
 void add_desktop(monitor_t *m, desktop_t *d);
 desktop_t *find_desktop_in(const char *name, monitor_t *m);

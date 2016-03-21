@@ -43,6 +43,7 @@
 #define ON_OFF_STR(A)     ((A) ? "on" : "off")
 #define LAYOUT_STR(A)     ((A) == LAYOUT_TILED ? "tiled" : "monocle")
 #define LAYOUT_CHR(A)     ((A) == LAYOUT_TILED ? 'T' : 'M')
+#define CHILD_POL_STR(A)  ((A) == FIRST_CHILD ? "first_child" : "second_child")
 #define SPLIT_TYPE_STR(A) ((A) == TYPE_HORIZONTAL ? "horizontal" : "vertical")
 #define SPLIT_MODE_STR(A) ((A) == MODE_AUTOMATIC ? "automatic" : "manual")
 #define SPLIT_DIR_STR(A)  ((A) == DIR_NORTH ? "north" : ((A) == DIR_WEST ? "west" : ((A) == DIR_SOUTH ? "south" : "east")))
@@ -63,6 +64,7 @@
 void warn(char *fmt, ...);
 void err(char *fmt, ...);
 char *read_string(const char *file_path, size_t *tlen);
+char *copy_string(char *str, size_t len);
 uint32_t get_color_pixel(const char *color);
 bool is_hex_color(const char *color);
 

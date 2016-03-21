@@ -77,20 +77,16 @@ int main(int argc, char *argv[])
 		err("Failed to send the data.\n");
 	}
 
-	int ret = 0, nb;
+	int ret = EXIT_SUCCESS, nb;
 	while ((nb = recv(fd, rsp, sizeof(rsp)-1, 0)) > 0) {
-		if (nb == 1 && rsp[0] < MSG_LENGTH) {
-			ret = rsp[0];
-			if (ret == MSG_UNKNOWN) {
-				warn("Unknown command.\n");
-			} else if (ret == MSG_SYNTAX) {
-				warn("Invalid syntax.\n");
-			}
+		rsp[nb] = '\0';
+		if (rsp[0] == FAILURE_MESSAGE[0]) {
+			ret = EXIT_FAILURE;
+			printf("%s", rsp + 1);
 		} else {
-			rsp[nb] = '\0';
 			printf("%s", rsp);
-			fflush(stdout);
 		}
+		fflush(stdout);
 	}
 
 	close(fd);

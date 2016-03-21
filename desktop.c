@@ -160,7 +160,10 @@ desktop_t *make_desktop(const char *name, uint32_t id)
 	}
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
-	initialize_desktop(d);
+	d->layout = LAYOUT_TILED;
+	d->padding = (padding_t) PADDING;
+	d->window_gap = window_gap;
+	d->border_width = border_width;
 	return d;
 }
 
@@ -173,14 +176,6 @@ void rename_desktop(monitor_t *m, desktop_t *d, const char *name)
 
 	put_status(SBSC_MASK_REPORT);
 	ewmh_update_desktop_names();
-}
-
-void initialize_desktop(desktop_t *d)
-{
-	d->layout = LAYOUT_TILED;
-	d->top_padding = d->right_padding = d->bottom_padding = d->left_padding = 0;
-	d->window_gap = window_gap;
-	d->border_width = border_width;
 }
 
 void insert_desktop(monitor_t *m, desktop_t *d)
@@ -200,6 +195,8 @@ void add_desktop(monitor_t *m, desktop_t *d)
 {
 	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add 0x%X %s 0x%X\n", d->id, d->name, m->id);
 
+	d->border_width = m->border_width;
+	d->window_gap = m->window_gap;
 	insert_desktop(m, d);
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();

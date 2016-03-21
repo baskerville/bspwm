@@ -28,19 +28,26 @@
 #include "types.h"
 #include "subscribe.h"
 
-int handle_message(char *msg, int msg_len, FILE *rsp);
-int process_message(char **args, int num, FILE *rsp);
-int cmd_node(char **args, int num);
-int cmd_desktop(char **args, int num);
-int cmd_monitor(char **args, int num);
-int cmd_query(char **args, int num, FILE *rsp);
-int cmd_rule(char **args, int num, FILE *rsp);
-int cmd_pointer(char **args, int num);
-int cmd_wm(char **args, int num, FILE *rsp);
-int cmd_config(char **args, int num, FILE *rsp);
+enum {
+	SUBSCRIBE_SUCCESS,
+	SUBSCRIBE_FAILURE
+};
+
+void handle_message(char *msg, int msg_len, FILE *rsp);
+void process_message(char **args, int num, FILE *rsp);
+void cmd_node(char **args, int num, FILE *rsp);
+void cmd_desktop(char **args, int num, FILE *rsp);
+void cmd_monitor(char **args, int num, FILE *rsp);
+void cmd_query(char **args, int num, FILE *rsp);
+void cmd_rule(char **args, int num, FILE *rsp);
+void cmd_pointer(char **args, int num, FILE *rsp);
+void cmd_wm(char **args, int num, FILE *rsp);
 int cmd_subscribe(char **args, int num, FILE *rsp);
-int cmd_quit(char **args, int num);
-int set_setting(coordinates_t loc, char *name, char *value);
-int get_setting(coordinates_t loc, char *name, FILE* rsp);
+void cmd_quit(char **args, int num, FILE *rsp);
+void cmd_config(char **args, int num, FILE *rsp);
+void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp);
+void get_setting(coordinates_t loc, char *name, FILE* rsp);
+void handle_failure(int code, char *src, char *val, FILE *rsp);
+void fail(FILE *rsp, char *fmt, ...);
 
 #endif

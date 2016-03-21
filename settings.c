@@ -50,6 +50,7 @@ void load_settings(void)
 	snprintf(focused_border_color, sizeof(focused_border_color), "%s", FOCUSED_BORDER_COLOR);
 	snprintf(presel_feedback_color, sizeof(presel_feedback_color), "%s", PRESEL_FEEDBACK_COLOR);
 
+	padding = (padding_t) PADDING;
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;

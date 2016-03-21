@@ -204,6 +204,14 @@ struct node_t {
 	client_t *client;
 };
 
+typedef struct padding_t padding_t;
+struct padding_t {
+	int top;
+	int right;
+	int bottom;
+	int left;
+};
+
 typedef struct desktop_t desktop_t;
 struct desktop_t {
 	char name[SMALEN];
@@ -213,10 +221,7 @@ struct desktop_t {
 	node_t *focus;
 	desktop_t *prev;
 	desktop_t *next;
-	int top_padding;
-	int right_padding;
-	int bottom_padding;
-	int left_padding;
+	padding_t padding;
 	int window_gap;
 	unsigned int border_width;
 };
@@ -228,11 +233,10 @@ struct monitor_t {
 	xcb_randr_output_t randr_id;
 	xcb_window_t root;
 	bool wired;
-	int top_padding;
-	int right_padding;
-	int bottom_padding;
-	int left_padding;
+	padding_t padding;
 	unsigned int sticky_count;
+	int window_gap;
+	unsigned int border_width;
 	xcb_rectangle_t rectangle;
 	desktop_t *desk;
 	desktop_t *desk_head;

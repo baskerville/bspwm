@@ -17,6 +17,8 @@ Synopsis
 
 *bspc* 'DOMAIN' ['SELECTOR'] 'COMMANDS'
 
+*bspc* 'COMMAND' ['OPTIONS'] ['ARGUMENTS']
+
 Description
 -----------
 
@@ -422,7 +424,7 @@ Commands
 	Reorder the desktops of the selected monitor to match the given order.
 
 *-d*, *--reset-desktops* <name>...::
-	Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops. Incidentally reset the settings of the existing desktops.
+	Rename, add or remove desktops depending on whether the number of given names is equal, superior or inferior to the number of existing desktops.
 
 *-g*, *--rectangle* WxH+X+Y::
 	Set the rectangle of the selected monitor.
@@ -563,15 +565,7 @@ quit [<status>]::
 Exit Codes
 ----------
 
-If the server can't handle a message, *bspc* will return with one of the following exit codes:
-
-1::
-	Failure.
-2::
-	Syntax error.
-3::
-	Unknown command.
-
+If the server can't handle a message, *bspc* will return with a non-zero exit code.
 
 Settings
 --------
@@ -657,17 +651,17 @@ Monitor and Desktop Settings
 'left_padding'::
 	Padding space added at the sides of the monitor or desktop.
 
-Default, Desktop Default and Window Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-'border_width'::
-	Window border width.
-
-Default and Desktop Settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Desktop Settings
+~~~~~~~~~~~~~~~~
 
 'window_gap'::
 	Size of the gap that separates windows.
+
+Node Settings
+~~~~~~~~~~~~~
+
+'border_width'::
+	Window border width.
 
 
 Events

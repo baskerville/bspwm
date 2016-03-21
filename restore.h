@@ -34,11 +34,11 @@ node_t *restore_node(jsmntok_t **t, char *json);
 presel_t *restore_presel(jsmntok_t **t, char *json);
 client_t *restore_client(jsmntok_t **t, char *json);
 void restore_rectangle(xcb_rectangle_t *r, jsmntok_t **t, char *json);
+void restore_padding(padding_t *p, jsmntok_t **t, char *json);
 void restore_history(jsmntok_t **t, char *json);
 void restore_coordinates(coordinates_t *loc, jsmntok_t **t, char *json);
 void restore_stack(jsmntok_t **t, char *json);
 void restore_wm_state(xcb_atom_t *w, jsmntok_t **t, char *json);
 bool keyeq(char *s, jsmntok_t *key, char *json);
-char *copy_string(jsmntok_t *tok, char *json);
 
 #endif

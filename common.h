@@ -28,13 +28,6 @@
 #define SOCKET_PATH_TPL  "/tmp/bspwm%s_%i_%i-socket"
 #define SOCKET_ENV_VAR   "BSPWM_SOCKET"
 
-enum {
-	MSG_SUCCESS,
-	MSG_FAILURE,
-	MSG_SYNTAX,
-	MSG_UNKNOWN,
-	MSG_SUBSCRIBE,
-	MSG_LENGTH
-};
+#define FAILURE_MESSAGE  "\x07"
 
 #endif

@@ -166,14 +166,7 @@ int main(int argc, char *argv[])
 					msg[n] = '\0';
 					FILE *rsp = fdopen(cli_fd, "w");
 					if (rsp != NULL) {
-						int ret = handle_message(msg, n, rsp);
-						if (ret != MSG_SUBSCRIBE) {
-							if (ret != MSG_SUCCESS) {
-								fprintf(rsp, "%c", ret);
-							}
-							fflush(rsp);
-							fclose(rsp);
-						}
+						handle_message(msg, n, rsp);
 					} else {
 						warn("Can't open the client socket as file.\n");
 						close(cli_fd);

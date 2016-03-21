@@ -103,6 +103,17 @@ char *read_string(const char *file_path, size_t *tlen)
 	return content;
 }
 
+char *copy_string(char *str, size_t len)
+{
+	char *cpy = malloc((len+1) * sizeof(char));
+	if (cpy == NULL) {
+		perror("Copy string: malloc");
+		return NULL;
+	}
+	strncpy(cpy, str, len);
+	cpy[len] = '\0';
+	return cpy;
+}
 
 /* Adapted from i3wm */
 uint32_t get_color_pixel(const char *color)
