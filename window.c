@@ -156,7 +156,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	f = insert_node(m, d, n, f);
 	clients_count++;
 
-	put_status(SBSC_MASK_NODE_MANAGE, "node_manage 0x%X 0x%X 0x%X 0x%X\n", m->id, d->id, win, f!=NULL?f->id:0);
+	put_status(SBSC_MASK_NODE_MANAGE, "node_manage 0x%08X 0x%08X 0x%08X 0x%08X\n", m->id, d->id, win, f!=NULL?f->id:0);
 
 	if (f != NULL && f->client != NULL && csq->state != NULL && *(csq->state) == STATE_FLOATING) {
 		c->last_layer = c->layer = f->client->layer;
@@ -211,7 +211,7 @@ void unmanage_window(xcb_window_t win)
 {
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
-		put_status(SBSC_MASK_NODE_UNMANAGE, "node_unmanage 0x%X 0x%X 0x%X\n", loc.monitor->id, loc.desktop->id, win);
+		put_status(SBSC_MASK_NODE_UNMANAGE, "node_unmanage 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
 		if (frozen_pointer->window == win) {
 			frozen_pointer->action = ACTION_NONE;

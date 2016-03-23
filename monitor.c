@@ -80,7 +80,7 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 		}
 	} else {
 		window_move_resize(m->root, rect->x, rect->y, rect->width, rect->height);
-		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry 0x%X %ux%u+%i+%i\n",
+		put_status(SBSC_MASK_MONITOR_GEOMETRY, "monitor_geometry 0x%08X %ux%u+%i+%i\n",
 		           m->id, rect->width, rect->height, rect->x, rect->y);
 	}
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
@@ -93,7 +93,7 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 
 void rename_monitor(monitor_t *m, const char *name)
 {
-	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename 0x%X %s %s\n", m->id, m->name, name);
+	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename 0x%08X %s %s\n", m->id, m->name, name);
 
 	snprintf(m->name, sizeof(m->name), "%s", name);
 
@@ -186,7 +186,7 @@ void focus_monitor(monitor_t *m)
 		center_pointer(m->rectangle);
 	}
 
-	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%X\n", m->id);
+	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%08X\n", m->id);
 }
 
 void add_monitor(monitor_t *m)
@@ -219,7 +219,7 @@ void add_monitor(monitor_t *m)
 		}
 	}
 
-	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add 0x%X %s %ux%u+%i+%i\n", m->id, m->name, r.width, r.height, r.x, r.y);
+	put_status(SBSC_MASK_MONITOR_ADD, "monitor_add 0x%08X %s %ux%u+%i+%i\n", m->id, m->name, r.width, r.height, r.x, r.y);
 
 	put_status(SBSC_MASK_REPORT);
 }
@@ -261,7 +261,7 @@ void remove_monitor(monitor_t *m)
 		}
 	}
 
-	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove 0x%X\n", m->id);
+	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove 0x%08X\n", m->id);
 
 	xcb_destroy_window(dpy, m->root);
 	free(m);
@@ -291,7 +291,7 @@ bool swap_monitors(monitor_t *m1, monitor_t *m2)
 		return false;
 	}
 
-	put_status(SBSC_MASK_MONITOR_SWAP, "monitor_swap 0x%X 0x%X\n", m1->id, m2->id);
+	put_status(SBSC_MASK_MONITOR_SWAP, "monitor_swap 0x%08X 0x%08X\n", m1->id, m2->id);
 
 	if (mon_head == m1) {
 		mon_head = m2;

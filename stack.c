@@ -180,11 +180,11 @@ void stack(desktop_t *d, node_t *n, bool focused)
 			if (i < 0 || (i == 0 && !focused)) {
 				stack_insert_before(s, f);
 				window_below(f->id, s->node->id);
-				put_status(SBSC_MASK_NODE_STACK, "node_stack 0x%X below 0x%X\n", f->id, s->node->id);
+				put_status(SBSC_MASK_NODE_STACK, "node_stack 0x%08X below 0x%08X\n", f->id, s->node->id);
 			} else {
 				stack_insert_after(s, f);
 				window_above(f->id, s->node->id);
-				put_status(SBSC_MASK_NODE_STACK, "node_stack 0x%X above 0x%X\n", f->id, s->node->id);
+				put_status(SBSC_MASK_NODE_STACK, "node_stack 0x%08X above 0x%08X\n", f->id, s->node->id);
 			}
 		}
 	}
