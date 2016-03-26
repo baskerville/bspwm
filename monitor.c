@@ -380,15 +380,15 @@ monitor_t *monitor_from_point(xcb_point_t pt)
 
 monitor_t *monitor_from_client(client_t *c)
 {
-	xcb_point_t pt = {c->floating_rectangle.x, c->floating_rectangle.y};
+	int16_t xc = c->floating_rectangle.x + c->floating_rectangle.width/2;
+	int16_t yc = c->floating_rectangle.y + c->floating_rectangle.height/2;
+	xcb_point_t pt = {xc, yc};
 	monitor_t *nearest = monitor_from_point(pt);
 	if (nearest == NULL) {
-		int x = (c->floating_rectangle.x + c->floating_rectangle.width) / 2;
-		int y = (c->floating_rectangle.y + c->floating_rectangle.height) / 2;
 		int dmin = INT_MAX;
 		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 			xcb_rectangle_t r = m->rectangle;
-			int d = abs((r.x + r.width / 2) - x) + abs((r.y + r.height / 2) - y);
+			int d = abs((r.x + r.width / 2) - xc) + abs((r.y + r.height / 2) - yc);
 			if (d < dmin) {
 				dmin = d;
 				nearest = m;

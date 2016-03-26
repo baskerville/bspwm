@@ -1437,7 +1437,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	unlink_node(ms, ds, ns);
 	insert_node(md, dd, ns, nd);
 
-	if (md != ms) {
+	if (md != ms && (ns->client == NULL || monitor_from_client(ns->client) != md)) {
 		adapt_geometry(&ms->rectangle, &md->rectangle, ns);
 	}
 

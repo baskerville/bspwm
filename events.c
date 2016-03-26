@@ -203,7 +203,9 @@ void configure_request(xcb_generic_event_t *evt)
 
 	if (is_managed) {
 		monitor_t *m = monitor_from_client(c);
-		adapt_geometry(&m->rectangle, &loc.monitor->rectangle, loc.node);
+		if (m != loc.monitor) {
+			transfer_node(loc.monitor, loc.desktop, loc.node, m, m->desk, m->desk->focus);
+		}
 	}
 }
 
