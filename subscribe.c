@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include "bspwm.h"
 #include "tree.h"
+#include "desktop.h"
 #include "settings.h"
 #include "subscribe.h"
 
@@ -82,14 +83,10 @@ void add_subscriber(FILE *stream, int field)
 int print_report(FILE *stream)
 {
 	fprintf(stream, "%s", status_prefix);
-	bool urgent = false;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		fprintf(stream, "%c%s", (mon == m ? 'M' : 'm'), m->name);
-		for (desktop_t *d = m->desk_head; d != NULL; d = d->next, urgent = false) {
-			for (node_t *n = first_extrema(d->root); n != NULL && !urgent; n = next_leaf(n, d->root)) {
-				urgent |= n->client->urgent;
-			}
-			char c = (urgent ? 'u' : (d->root == NULL ? 'f' : 'o'));
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			char c = (is_urgent(d) ? 'u' : (d->root == NULL ? 'f' : 'o'));
 			if (m->desk == d) {
 				c = toupper(c);
 			}

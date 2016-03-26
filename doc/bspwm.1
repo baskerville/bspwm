@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/21/2016
+.\"      Date: 03/26/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-7-gcbf43e9
+.\"    Source: Bspwm 0.9.1-7-geb209d8
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/21/2016" "Bspwm 0\&.9\&.1\-7\-gcbf43e9" "Bspwm Manual"
+.TH "BSPWM" "1" "03/26/2016" "Bspwm 0\&.9\&.1\-7\-geb209d8" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -94,7 +94,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -226,6 +226,11 @@ Only consider nodes in or not in the current desktop\&.
 [!]leaf
 .RS 4
 Only consider leaves or internal nodes\&.
+.RE
+.PP
+[!]window
+.RS 4
+Only consider nodes that hold or don\(cqt hold a window\&.
 .RE
 .PP
 [!](tiled|pseudo_tiled|floating|fullscreen)
@@ -594,6 +599,11 @@ Set or toggle the given flag for the selected node\&.
 \fB\-l\fR, \fB\-\-layer\fR below|normal|above
 .RS 4
 Set the stacking layer of the selected window\&.
+.RE
+.PP
+\fB\-i\fR, \fB\-\-insert\-receptacle\fR
+.RS 4
+Insert a receptacle node at the selected node\&.
 .RE
 .PP
 \fB\-c\fR, \fB\-\-close\fR

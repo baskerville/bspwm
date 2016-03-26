@@ -27,6 +27,8 @@ echo "-> Swap"
 ./node/swap || abort
 echo "-> Flags"
 ./node/flags || abort
+echo "-> Receptacle"
+./node/receptacle || abort
 
 echo "Desktop"
 echo "-> Transfer"

@@ -165,7 +165,7 @@ stacking_list_t *limit_below(node_t *n)
 void stack(desktop_t *d, node_t *n, bool focused)
 {
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (IS_FLOATING(f->client) && !auto_raise) {
+		if (f->client == NULL || (IS_FLOATING(f->client) && !auto_raise)) {
 			continue;
 		}
 

@@ -66,7 +66,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -143,6 +143,9 @@ Modifiers
 
 [!]leaf::
 	Only consider leaves or internal nodes.
+
+[!]window::
+	Only consider nodes that hold or don't hold a window.
 
 [!](tiled|pseudo_tiled|floating|fullscreen)::
 	Only consider windows in or not in the given state.
@@ -363,6 +366,9 @@ Commands
 
 *-l*, *--layer* below|normal|above::
 	Set the stacking layer of the selected window.
+
+*-i*, *--insert-receptacle*::
+	Insert a receptacle node at the selected node.
 
 *-c*, *--close*::
 	Close the windows rooted at the selected node.

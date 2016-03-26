@@ -137,12 +137,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 		}
 	}
 
-	if (trg.node == NULL) {
-		fail(rsp, "");
-		return;
-	}
-
-	bool dirty = false;
+	bool changed = false;
 
 	while (num > 0) {
 		if (streq("-f", *args) || streq("--focus", *args)) {
@@ -155,7 +150,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			focus_node(dst.monitor, dst.desktop, dst.node);
+			if (!focus_node(dst.monitor, dst.desktop, dst.node)) {
+				fail(rsp, "");
+				break;
+			}
 		} else if (streq("-a", *args) || streq("--activate", *args)) {
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
@@ -170,7 +168,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "");
 				break;
 			}
-			activate_node(dst.monitor, dst.desktop, dst.node);
+			if (!activate_node(dst.monitor, dst.desktop, dst.node)) {
+				fail(rsp, "");
+				break;
+			}
 		} else if (streq("-d", *args) || streq("--to-desktop", *args)) {
 			num--, args++;
 			if (num < 1) {
@@ -257,13 +258,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node->client == NULL) {
-				fail(rsp, "");
-				break;
-			}
 			stack_layer_t lyr;
 			if (parse_stack_layer(*args, &lyr)) {
-				set_layer(trg.monitor, trg.desktop, trg.node, lyr);
+				if (!set_layer(trg.monitor, trg.desktop, trg.node, lyr)) {
+					fail(rsp, "");
+					break;
+				}
 			} else {
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
@@ -281,15 +281,15 @@ void cmd_node(char **args, int num, FILE *rsp)
 				(*args)++;
 			}
 			if (parse_client_state(*args, &cst)) {
-				if (trg.node->client == NULL) {
+				if (alternate && trg.node != NULL && trg.node->client != NULL &&
+				    trg.node->client->state == cst) {
+					cst = trg.node->client->last_state;
+				}
+				if (!set_state(trg.monitor, trg.desktop, trg.node, cst)) {
 					fail(rsp, "");
 					break;
 				}
-				if (alternate && trg.node->client->state == cst) {
-					cst = trg.node->client->last_state;
-				}
-				set_state(trg.monitor, trg.desktop, trg.node, cst);
-				dirty = true;
+				changed = true;
 			} else {
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
@@ -298,6 +298,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 			num--, args++;
 			if (num < 1) {
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			if (trg.node == NULL || trg.node->client == NULL) {
+				fail(rsp, "");
 				break;
 			}
 			char *key = strtok(*args, EQL_TOK);
@@ -330,7 +334,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node->vacant) {
+			if (trg.node == NULL || trg.node->vacant) {
 				fail(rsp, "");
 				break;
 			}
@@ -348,7 +352,9 @@ void cmd_node(char **args, int num, FILE *rsp)
 						cancel_presel(trg.monitor, trg.desktop, trg.node);
 					} else {
 						presel_dir(trg.monitor, trg.desktop, trg.node, dir);
-						draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
+						if (!IS_RECEPTACLE(trg.node)) {
+							draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
+						}
 					}
 				} else {
 					fail(rsp, "node %s: Invalid argument: '%s%s'.\n", *(args - 1), alternate?"~":"", *args);
@@ -361,7 +367,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node->vacant) {
+			if (trg.node == NULL || trg.node->vacant) {
 				fail(rsp, "");
 				break;
 			}
@@ -379,13 +385,17 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
 			if ((*args)[0] == '+' || (*args)[0] == '-') {
 				int pix;
 				if (sscanf(*args, "%i", &pix) == 1) {
 					int max = (trg.node->split_type == TYPE_HORIZONTAL ? trg.node->rectangle.height : trg.node->rectangle.width);
 					double rat = ((max * trg.node->split_ratio) + pix) / max;
 					if (rat > 0 && rat < 1) {
-						trg.node->split_ratio = rat;
+						set_ratio(trg.node, rat);
 					} else {
 						fail(rsp, "");
 						break;
@@ -397,23 +407,27 @@ void cmd_node(char **args, int num, FILE *rsp)
 			} else {
 				double rat;
 				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
-					trg.node->split_ratio = rat;
+					set_ratio(trg.node, rat);
 				} else {
 					fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 					break;
 				}
 			}
-			dirty = true;
+			changed = true;
 		} else if (streq("-F", *args) || streq("--flip", *args)) {
 			num--, args++;
 			if (num < 1) {
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
 			flip_t flp;
 			if (parse_flip(*args, &flp)) {
 				flip_tree(trg.node, flp);
-				dirty = true;
+				changed = true;
 			} else {
 				fail(rsp, "");
 				break;
@@ -424,52 +438,75 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
 			int deg;
 			if (parse_degree(*args, &deg)) {
 				rotate_tree(trg.node, deg);
-				dirty = true;
+				changed = true;
 			} else {
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
 		} else if (streq("-E", *args) || streq("--equalize", *args)) {
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
 			equalize_tree(trg.node);
-			dirty = true;
+			changed = true;
 		} else if (streq("-B", *args) || streq("--balance", *args)) {
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
 			balance_tree(trg.node);
-			dirty = true;
+			changed = true;
 		} else if (streq("-C", *args) || streq("--circulate", *args)) {
 			num--, args++;
 			if (num < 1) {
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
 			circulate_dir_t cir;
 			if (parse_circulate_direction(*args, &cir)) {
 				circulate_leaves(trg.monitor, trg.desktop, trg.node, cir);
-				dirty = true;
+				changed = true;
 			} else {
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-i", *args) || streq("--insert-receptacle", *args)) {
+			insert_receptacle(trg.monitor, trg.desktop, trg.node);
+			changed = true;
 		} else if (streq("-c", *args) || streq("--close", *args)) {
 			if (num > 1) {
 				fail(rsp, "node %s: Trailing commands.\n", *args);
 				break;
 			}
-			if (locked_count(trg.node) > 0) {
+			if (trg.node == NULL || locked_count(trg.node) > 0) {
 				fail(rsp, "");
 				break;
 			}
-			window_close(trg.node);
+			close_node(trg.node);
 			break;
 		} else if (streq("-k", *args) || streq("--kill", *args)) {
 			if (num > 1) {
 				fail(rsp, "node %s: Trailing commands.\n", *args);
 				break;
 			}
-			window_kill(trg.monitor, trg.desktop, trg.node);
-			dirty = true;
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
+			kill_node(trg.monitor, trg.desktop, trg.node);
+			changed = true;
 			break;
 		} else {
 			fail(rsp, "node: Unknown command: '%s'.\n", *args);
@@ -479,7 +516,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 		num--, args++;
 	}
 
-	if (dirty) {
+	if (changed) {
 		arrange(trg.monitor, trg.desktop);
 	}
 }
@@ -504,7 +541,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 		}
 	}
 
-	bool dirty = false;
+	bool changed = false;
 
 	while (num > 0) {
 		if (streq("-f", *args) || streq("--focus", *args)) {
@@ -644,7 +681,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 		num--, args++;
 	}
 
-	if (dirty) {
+	if (changed) {
 		arrange(trg.monitor, trg.desktop);
 	}
 }
@@ -880,6 +917,10 @@ void cmd_query(char **args, int num, FILE *rsp)
 				}
 			} else {
 				trg = ref;
+				if (ref.node == NULL) {
+					fail(rsp, "");
+					goto end;
+				}
 			}
 			t++;
 		} else {
@@ -1199,14 +1240,18 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		} else if (loc.desktop != NULL) { \
 			loc.desktop->k = v; \
 			for (node_t *n = first_extrema(loc.desktop->root); n != NULL; n = next_leaf(n, loc.desktop->root)) { \
-				n->client->k = v; \
+				if (n->client != NULL) { \
+					n->client->k = v; \
+				} \
 			} \
 		} else if (loc.monitor != NULL) { \
 			loc.monitor->k = v; \
 			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) { \
 				d->k = v; \
 				for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) { \
-					n->client->k = v; \
+					if (n->client != NULL) { \
+						n->client->k = v; \
+					} \
 				} \
 			} \
 		} else { \
@@ -1216,7 +1261,9 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) { \
 					d->k = v; \
 					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) { \
-						n->client->k = v; \
+						if (n->client != NULL) { \
+							n->client->k = v; \
+						} \
 					} \
 				} \
 			} \
@@ -1345,6 +1392,9 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+						if (n->client == NULL) {
+							continue;
+						}
 						xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
 					}
 				}

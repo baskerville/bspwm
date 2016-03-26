@@ -258,6 +258,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 			}
 			if (rule->one_shot) {
 				remove_rule(rule);
+				break;
 			}
 		}
 		rule = next;
@@ -365,6 +366,6 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 void list_rules(FILE *rsp)
 {
 	for (rule_t *r = rule_head; r != NULL; r = r->next) {
-		fprintf(rsp, "%s:%s => %s\n", r->class_name, r->instance_name, r->effect);
+		fprintf(rsp, "%s:%s %c> %s\n", r->class_name, r->instance_name, r->one_shot?'-':'=', r->effect);
 	}
 }

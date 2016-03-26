@@ -38,6 +38,7 @@
 #define IS_TILED(c)       (c->state == STATE_TILED || c->state == STATE_PSEUDO_TILED)
 #define IS_FLOATING(c)    (c->state == STATE_FLOATING)
 #define IS_FULLSCREEN(c)  (c->state == STATE_FULLSCREEN)
+#define IS_RECEPTACLE(n)  (is_leaf(n) && n->client == NULL)
 
 #define BOOL_STR(A)       ((A) ? "true" : "false")
 #define ON_OFF_STR(A)     ((A) ? "on" : "off")

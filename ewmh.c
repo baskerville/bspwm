@@ -99,6 +99,9 @@ void ewmh_set_wm_desktop(node_t *n, desktop_t *d)
 {
 	uint32_t i = ewmh_get_desktop_index(d);
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		if (f->client == NULL) {
+			continue;
+		}
 		xcb_ewmh_set_wm_desktop(ewmh, f->id, i);
 	}
 }
@@ -109,6 +112,9 @@ void ewmh_update_wm_desktops(void)
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			uint32_t i = ewmh_get_desktop_index(d);
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (n->client == NULL) {
+					continue;
+				}
 				xcb_ewmh_set_wm_desktop(ewmh, n->id, i);
 			}
 		}
@@ -163,6 +169,9 @@ void ewmh_update_client_list(bool stacking)
 		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 			for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 				for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+					if (n->client == NULL) {
+						continue;
+					}
 					wins[i++] = n->id;
 				}
 			}

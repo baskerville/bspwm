@@ -172,6 +172,9 @@ bool restore_tree(const char *file_path)
 			refresh_presel_feebacks_in(d->root, d, m);
 			restack_presel_feedback(d);
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (n->client == NULL) {
+					continue;
+				}
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 				xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
 			}

@@ -94,6 +94,10 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 
 	if (is_leaf(n)) {
 
+		if (n->client == NULL) {
+			return;
+		}
+
 		unsigned int bw;
 		if ((borderless_monocle && n->client->state == STATE_TILED && d->layout == LAYOUT_MONOCLE)
 		    || n->client->state == STATE_FULLSCREEN) {
@@ -173,6 +177,15 @@ presel_t *make_presel(void)
 	p->split_ratio = split_ratio;
 	p->feedback = XCB_NONE;
 	return p;
+}
+
+void set_ratio(node_t *n, double rat)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	n->split_ratio = rat;
 }
 
 void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir)
@@ -259,6 +272,19 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
 	if (f == NULL) {
 		d->root = n;
+	} else if (IS_RECEPTACLE(f) && f->presel == NULL) {
+		node_t *p = f->parent;
+		if (p != NULL) {
+			if (is_first_child(f)) {
+				p->first_child = n;
+			} else {
+				p->second_child = n;
+			}
+		} else {
+			d->root = n;
+		}
+		n->parent = p;
+		free(f);
 	} else {
 		node_t *c = make_node(XCB_NONE);
 		node_t *p = f->parent;
@@ -369,19 +395,29 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 	}
 
-	if (d->focus == NULL) {
+	if (d->focus == NULL && !IS_RECEPTACLE(n)) {
 		d->focus = n;
 	}
 
 	return f;
 }
 
-void activate_node(monitor_t *m, desktop_t *d, node_t *n)
+void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 {
+	node_t *r = make_node(XCB_NONE);
+	insert_node(m, d, r, n);
+}
+
+bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
+{
+	if (IS_RECEPTACLE(n)) {
+		return false;
+	}
+
 	if (n == NULL && d->root != NULL) {
 		n = history_last_node(d, NULL);
 		if (n == NULL) {
-			n = first_extrema(d->root);
+			n = first_focusable_leaf(d->root);
 		}
 	}
 
@@ -392,7 +428,7 @@ void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		stack(d, n, true);
 		if (d->focus != n) {
 			for (node_t *f = first_extrema(d->focus); f != NULL; f = next_leaf(f, d->focus)) {
-				if (!is_descendant(f, n)) {
+				if (f->client != NULL && !is_descendant(f, n)) {
 					window_draw_border(f->id, get_border_color(false, (m == mon)));
 				}
 			}
@@ -401,14 +437,17 @@ void activate_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	d->focus = n;
+	history_add(m, d, n);
 
 	put_status(SBSC_MASK_REPORT);
 
 	if (n == NULL) {
-		return;
+		return true;
 	}
 
 	put_status(SBSC_MASK_NODE_ACTIVATE, "node_activate 0x%08X 0x%08X 0x%08X\n", m->id, d->id, n->id);
+
+	return true;
 }
 
 void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n)
@@ -427,12 +466,16 @@ void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n
 	}
 }
 
-void focus_node(monitor_t *m, desktop_t *d, node_t *n)
+bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
+	if (IS_RECEPTACLE(n)) {
+		return false;
+	}
+
 	if (n == NULL && d->root != NULL) {
 		n = history_last_node(d, NULL);
 		if (n == NULL) {
-			n = first_extrema(d->root);
+			n = first_focusable_leaf(d->root);
 		}
 	}
 
@@ -471,7 +514,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	if (d->focus != n) {
 		for (node_t *f = first_extrema(d->focus); f != NULL; f = next_leaf(f, d->focus)) {
-			if (!is_descendant(f, n)) {
+			if (f->client != NULL && !is_descendant(f, n)) {
 				window_draw_border(f->id, get_border_color(false, true));
 			}
 		}
@@ -488,7 +531,7 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	put_status(SBSC_MASK_REPORT);
 
 	if (n == NULL) {
-		return;
+		return true;
 	}
 
 	put_status(SBSC_MASK_NODE_FOCUS, "node_focus 0x%08X 0x%08X 0x%08X\n", m->id, d->id, n->id);
@@ -509,6 +552,8 @@ void focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (pointer_follows_focus) {
 		center_pointer(get_rectangle(d, n));
 	}
+
+	return true;
 }
 
 void update_focused(void)
@@ -668,6 +713,16 @@ node_t *second_extrema(node_t *n)
 	}
 }
 
+node_t *first_focusable_leaf(node_t *n)
+{
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		if (f->client != NULL) {
+			return f;
+		}
+	}
+	return NULL;
+}
+
 node_t *next_leaf(node_t *n, node_t *r)
 {
 	if (n == NULL) {
@@ -698,23 +753,23 @@ node_t *prev_leaf(node_t *n, node_t *r)
 	return second_extrema(p->parent->first_child);
 }
 
-node_t *next_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
+node_t *next_tiled_leaf(node_t *n, node_t *r)
 {
 	node_t *next = next_leaf(n, r);
-	if (next == NULL || IS_TILED(next->client)) {
+	if (next == NULL || (next->client != NULL && IS_TILED(next->client))) {
 		return next;
 	} else {
-		return next_tiled_leaf(d, next, r);
+		return next_tiled_leaf(next, r);
 	}
 }
 
-node_t *prev_tiled_leaf(desktop_t *d, node_t *n, node_t *r)
+node_t *prev_tiled_leaf(node_t *n, node_t *r)
 {
 	node_t *prev = prev_leaf(n, r);
-	if (prev == NULL || IS_TILED(prev->client)) {
+	if (prev == NULL || (prev->client != NULL && IS_TILED(prev->client))) {
 		return prev;
 	} else {
-		return prev_tiled_leaf(d, prev, r);
+		return prev_tiled_leaf(prev, r);
 	}
 }
 
@@ -857,11 +912,12 @@ node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir
 	coordinates_t ref = {m, d, n};
 	coordinates_t loc = {m, d, nearest};
 
-	if (node_matches(&loc, &ref, sel)) {
-		return nearest;
-	} else {
+	if (nearest != NULL && (nearest->vacant ||
+	                        nearest->client == NULL || !node_matches(&loc, &ref, sel))) {
 		return NULL;
 	}
+
+	return nearest;
 }
 
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
@@ -885,14 +941,13 @@ node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t 
 	coordinates_t ref = {m, d, n};
 
 	for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-		if (a->vacant || !is_adjacent(n, a, dir) || a == n) {
+		if (a->vacant || a->client == NULL || !is_adjacent(n, a, dir) || a == n) {
 			continue;
 		}
 		coordinates_t loc = {m, d, a};
 		if (!node_matches(&loc, &ref, sel)) {
 			continue;
 		}
-
 		int rank = history_rank(d, a);
 		if (rank >= 0 && rank < min_rank) {
 			nearest = a;
@@ -937,12 +992,12 @@ node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t
 	for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
 		coordinates_t loc = {m, d, a};
 		if (a == n ||
+		    a->client == NULL ||
 		    !node_matches(&loc, &ref, sel) ||
 		    (n->client != NULL && (IS_TILED(a->client) != IS_TILED(n->client))) ||
 		    (IS_TILED(a->client) && !is_adjacent(n, a, dir))) {
 			continue;
 		}
-
 		get_side_handle(d, a, dir2, &pt2);
 		double ds2 = distance(pt, pt2);
 		if (ds2 < ds) {
@@ -987,7 +1042,7 @@ int tiled_count(node_t *n)
 	}
 	int cnt = 0;
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (IS_TILED(f->client)) {
+		if (f->client != NULL && IS_TILED(f->client)) {
 			cnt++;
 		}
 	}
@@ -1006,7 +1061,7 @@ node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, node_select_t sel)
 
 	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
 		coordinates_t loc = {m, d, f};
-		if (f->vacant || !node_matches(&loc, &ref, sel)) {
+		if (f->client == NULL || f->vacant || !node_matches(&loc, &ref, sel)) {
 			continue;
 		}
 		unsigned int f_area = node_area(d, f);
@@ -1161,6 +1216,33 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 
 		propagate_vacant_state(m, d, b);
 	}
+}
+
+void close_node(node_t *n)
+{
+	if (n == NULL) {
+		return;
+	} else if (n->client != NULL) {
+		send_client_message(n->id, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
+	} else {
+		close_node(n->first_child);
+		close_node(n->second_child);
+	}
+}
+
+void kill_node(monitor_t *m, desktop_t *d, node_t *n)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		if (f->client != NULL) {
+			xcb_kill_client(dpy, f->id);
+		}
+	}
+
+	remove_node(m, d, n);
 }
 
 void remove_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -1425,7 +1507,7 @@ node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, nod
 	coordinates_t ref = {m, d, n};
 	while (f != n) {
 		coordinates_t loc = {m, d, f};
-		if (node_matches(&loc, &ref, sel)) {
+		if (f->client != NULL && node_matches(&loc, &ref, sel)) {
 			return f;
 		}
 		f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
@@ -1438,17 +1520,25 @@ node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, nod
 
 void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir)
 {
-	if (d == NULL || d->root == NULL || d->focus == NULL || is_leaf(n)) {
+	if (n == NULL || d->focus == NULL || is_leaf(n)) {
 		return;
 	}
 	node_t *p = d->focus->parent;
 	bool focus_first_child = is_first_child(d->focus);
 	if (dir == CIRCULATE_FORWARD) {
-		for (node_t *s = second_extrema(n), *f = prev_tiled_leaf(d, s, n); f != NULL; s = prev_tiled_leaf(d, f, n), f = prev_tiled_leaf(d, s, n)) {
+		node_t *e = second_extrema(n);
+		while (e != NULL && (e->client == NULL || !IS_TILED(e->client))) {
+			e = prev_leaf(e, n);
+		}
+		for (node_t *s = e, *f = prev_tiled_leaf(s, n); f != NULL; s = prev_tiled_leaf(f, n), f = prev_tiled_leaf(s, n)) {
 			swap_nodes(m, d, f, m, d, s);
 		}
 	} else {
-		for (node_t *f = first_extrema(n), *s = next_tiled_leaf(d, f, n); s != NULL; f = next_tiled_leaf(d, s, n), s = next_tiled_leaf(d, f, n)) {
+		node_t *e = first_extrema(n);
+		while (e != NULL && (e->client == NULL || !IS_TILED(e->client))) {
+			e = next_leaf(e, n);
+		}
+		for (node_t *f = e, *s = next_tiled_leaf(f, n); s != NULL; f = next_tiled_leaf(s, n), s = next_tiled_leaf(f, n)) {
 			swap_nodes(m, d, f, m, d, s);
 		}
 	}
@@ -1493,10 +1583,10 @@ void propagate_vacant_state(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
-void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
+bool set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 {
 	if (n == NULL || n->client->layer == l) {
-		return;
+		return false;
 	}
 
 	n->client->last_layer = n->client->layer;
@@ -1509,12 +1599,14 @@ void set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 	}
 
 	stack(d, n, (d->focus == n));
+
+	return true;
 }
 
-void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
+bool set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 {
 	if (n == NULL || n->client->state == s) {
-		return;
+		return false;
 	}
 
 	client_t *c = n->client;
@@ -1553,6 +1645,8 @@ void set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);
 	}
+
+	return true;
 }
 
 void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -1599,16 +1693,17 @@ void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 void neutralize_occluding_windows(monitor_t *m, desktop_t *d, node_t *n)
 {
-	bool dirty = false;
+	bool changed = false;
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
 		for (node_t *a = first_extrema(d->root); a != NULL; a = next_leaf(a, d->root)) {
-			if (a != f && IS_FULLSCREEN(a->client) && stack_cmp(f->client, a->client) < 0) {
+			if (a != f && a->client != NULL && f->client != NULL &&
+			    IS_FULLSCREEN(a->client) && stack_cmp(f->client, a->client) < 0) {
 				set_state(m, d, a, a->client->last_state);
-				dirty = true;
+				changed = true;
 			}
 		}
 	}
-	if (dirty) {
+	if (changed) {
 		arrange(m, d);
 	}
 }

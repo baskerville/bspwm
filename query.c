@@ -312,6 +312,7 @@ node_select_t make_node_select(void)
 		.focused = OPTION_NONE,
 		.local = OPTION_NONE,
 		.leaf = OPTION_NONE,
+		.window = OPTION_NONE,
 		.tiled = OPTION_NONE,
 		.pseudo_tiled = OPTION_NONE,
 		.floating = OPTION_NONE,
@@ -453,10 +454,6 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	}
 
 	free(desc_copy);
-
-	if (dst->node == NULL) {
-		return SELECTOR_INVALID;
-	}
 
 	return SELECTOR_OK;
 }
@@ -633,6 +630,9 @@ bool locate_window(xcb_window_t win, coordinates_t *loc)
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (n->client == NULL) {
+					continue;
+				}
 				if (n->id == win) {
 					loc->monitor = m;
 					loc->desktop = d;
@@ -760,9 +760,16 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	}
 
 	if (sel.leaf != OPTION_NONE &&
-	    loc->node->client == NULL
+	    !is_leaf(loc->node)
 	    ? sel.leaf == OPTION_TRUE
 	    : sel.leaf == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.window != OPTION_NONE &&
+	    loc->node->client == NULL
+	    ? sel.window == OPTION_TRUE
+	    : sel.window == OPTION_FALSE) {
 		return false;
 	}
 

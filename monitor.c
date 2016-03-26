@@ -85,6 +85,9 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 	}
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 		for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+			if (n->client == NULL) {
+				continue;
+			}
 			adapt_geometry(&last_rect, rect, n);
 		}
 		arrange(m, d);
@@ -141,6 +144,9 @@ void adapt_geometry(xcb_rectangle_t *rs, xcb_rectangle_t *rd, node_t *n)
 	}
 
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		if (f->client == NULL) {
+			continue;
+		}
 		client_t *c = f->client;
 		/* Clip the rectangle to fit into the monitor.	Without this, the fitting
 		 * algorithm doesn't work as expected. This also conserves the

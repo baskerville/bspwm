@@ -287,12 +287,7 @@ void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
 	if (ds == NULL || dd == NULL || ds == dd) {
 		return;
 	}
-	node_t *n = first_extrema(ds->root);
-	while (n != NULL) {
-		node_t *next = next_leaf(n, ds->root);
-		transfer_node(ms, ds, n, md, dd, dd->focus);
-		n = next;
-	}
+	transfer_node(ms, ds, ds->root, md, dd, dd->focus);
 }
 
 bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
@@ -424,6 +419,9 @@ void hide_desktop(desktop_t *d)
 bool is_urgent(desktop_t *d)
 {
 	for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+		if (n->client == NULL) {
+			continue;
+		}
 		if (n->client->urgent) {
 			return true;
 		}

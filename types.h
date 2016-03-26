@@ -131,6 +131,7 @@ typedef struct {
 	option_bool_t focused;
 	option_bool_t local;
 	option_bool_t leaf;
+	option_bool_t window;
 	option_bool_t tiled;
 	option_bool_t pseudo_tiled;
 	option_bool_t floating;

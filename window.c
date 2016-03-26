@@ -274,9 +274,10 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		initialize_presel_feedback(n);
 	}
 
-	int gap = gapless_monocle && (d->layout == LAYOUT_MONOCLE || (single_monocle && tiled_count(d->root) == 1))
-		? 0
-		: d->window_gap;
+	int gap = gapless_monocle && (d->layout == LAYOUT_MONOCLE ||
+	                              (single_monocle && tiled_count(d->root) == 1))
+	          ? 0
+	          : d->window_gap;
 
 	presel_t *p = n->presel;
 	xcb_rectangle_t rect = n->rectangle;
@@ -365,7 +366,7 @@ void draw_border(node_t *n, bool focused_node, bool focused_monitor)
 
 	uint32_t border_color_pxl = get_border_color(focused_node, focused_monitor);
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (f->client->border_width > 0) {
+		if (f->client != NULL && f->client->border_width > 0) {
 			window_draw_border(f->id, border_color_pxl);
 		}
 	}
@@ -407,31 +408,6 @@ void adopt_orphans(void)
 	}
 
 	free(qtr);
-}
-
-void window_close(node_t *n)
-{
-	if (n == NULL) {
-		return;
-	} else if (n->client != NULL) {
-		send_client_message(n->id, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
-	} else {
-		window_close(n->first_child);
-		window_close(n->second_child);
-	}
-}
-
-void window_kill(monitor_t *m, desktop_t *d, node_t *n)
-{
-	if (n == NULL) {
-		return;
-	}
-
-	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		xcb_kill_client(dpy, f->id);
-	}
-
-	remove_node(m, d, n);
 }
 
 uint32_t get_border_color(bool focused_node, bool focused_monitor)
