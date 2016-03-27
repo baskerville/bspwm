@@ -430,14 +430,15 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			}
 			move = strtok(NULL, PTH_TOK);
 		}
+		free(desc_copy);
 		if (dst->node != NULL) {
-			free(desc_copy);
 			if (node_matches(dst, ref, sel)) {
 				return SELECTOR_OK;
 			} else {
 				return SELECTOR_INVALID;
 			}
 		}
+		return SELECTOR_OK;
 	} else {
 		uint32_t id;
 		if (parse_id(desc, &id)) {
@@ -454,6 +455,10 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	}
 
 	free(desc_copy);
+
+	if (dst->node == NULL) {
+		return SELECTOR_INVALID;
+	}
 
 	return SELECTOR_OK;
 }

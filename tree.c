@@ -410,7 +410,7 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (IS_RECEPTACLE(n)) {
+	if (d == mon->desk || IS_RECEPTACLE(n)) {
 		return false;
 	}
 

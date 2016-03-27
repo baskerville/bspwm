@@ -150,7 +150,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			if (!focus_node(dst.monitor, dst.desktop, dst.node)) {
+			if (dst.node == NULL || !focus_node(dst.monitor, dst.desktop, dst.node)) {
 				fail(rsp, "");
 				break;
 			}
@@ -164,11 +164,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			if (dst.desktop == mon->desk) {
-				fail(rsp, "");
-				break;
-			}
-			if (!activate_node(dst.monitor, dst.desktop, dst.node)) {
+			if (dst.node == NULL || !activate_node(dst.monitor, dst.desktop, dst.node)) {
 				fail(rsp, "");
 				break;
 			}
