@@ -22,6 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <xcb/xcb_keysyms.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include "bspwm.h"
 #include "query.h"
@@ -30,7 +32,145 @@
 #include "tree.h"
 #include "monitor.h"
 #include "subscribe.h"
+#include "events.h"
 #include "window.h"
+#include "pointer.h"
+
+void pointer_init(void)
+{
+	num_lock = modfield_from_keysym(XK_Num_Lock);
+	caps_lock = modfield_from_keysym(XK_Caps_Lock);
+	scroll_lock = modfield_from_keysym(XK_Scroll_Lock);
+	if (caps_lock == XCB_NO_SYMBOL) {
+		caps_lock = XCB_MOD_MASK_LOCK;
+	}
+	grabbing = false;
+	grabbed_node = NULL;
+}
+
+void grab_buttons(void)
+{
+#define GRAB(b, m) \
+	xcb_grab_button(dpy, false, root, XCB_EVENT_MASK_BUTTON_PRESS, \
+	                XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, b, m)
+	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
+	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
+		uint8_t button = buttons[i];
+		if (click_to_focus && button == XCB_BUTTON_INDEX_1) {
+			GRAB(button, XCB_MOD_MASK_ANY);
+			continue;
+		}
+		GRAB(button, pointer_modifier);
+		if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | num_lock | caps_lock | scroll_lock);
+		}
+		if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | num_lock | caps_lock);
+		}
+		if (caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | caps_lock | scroll_lock);
+		}
+		if (num_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | num_lock | scroll_lock);
+		}
+		if (num_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | num_lock);
+		}
+		if (caps_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | caps_lock);
+		}
+		if (scroll_lock != XCB_NO_SYMBOL) {
+			GRAB(button, pointer_modifier | scroll_lock);
+		}
+	}
+#undef GRAB
+}
+
+void ungrab_buttons(void)
+{
+	xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_ANY, root, XCB_MOD_MASK_ANY);
+}
+
+int16_t modfield_from_keysym(xcb_keysym_t keysym)
+{
+	uint16_t modfield = 0;
+	xcb_keycode_t *keycodes = NULL, *mod_keycodes = NULL;
+	xcb_get_modifier_mapping_reply_t *reply = NULL;
+	xcb_key_symbols_t *symbols = xcb_key_symbols_alloc(dpy);
+
+	if ((keycodes = xcb_key_symbols_get_keycode(symbols, keysym)) == NULL ||
+	    (reply = xcb_get_modifier_mapping_reply(dpy, xcb_get_modifier_mapping(dpy), NULL)) == NULL ||
+	    reply->keycodes_per_modifier < 1 ||
+	    (mod_keycodes = xcb_get_modifier_mapping_keycodes(reply)) == NULL) {
+		goto end;
+	}
+
+	unsigned int num_mod = xcb_get_modifier_mapping_keycodes_length(reply) / reply->keycodes_per_modifier;
+	for (unsigned int i = 0; i < num_mod; i++) {
+		for (unsigned int j = 0; j < reply->keycodes_per_modifier; j++) {
+			xcb_keycode_t mk = mod_keycodes[i * reply->keycodes_per_modifier + j];
+			if (mk == XCB_NO_SYMBOL) {
+				continue;
+			}
+			for (xcb_keycode_t *k = keycodes; *k != XCB_NO_SYMBOL; k++) {
+				if (*k == mk) {
+					modfield |= (1 << i);
+				}
+			}
+		}
+	}
+
+end:
+	xcb_key_symbols_free(symbols);
+	free(keycodes);
+	free(reply);
+	return modfield;
+}
+
+resize_handle_t get_handle(node_t *n, xcb_point_t pos, pointer_action_t pac)
+{
+	resize_handle_t rh = HANDLE_BOTTOM_RIGHT;
+	xcb_rectangle_t rect = get_rectangle(NULL, n);
+	if (pac == ACTION_RESIZE_SIDE) {
+		float W = rect.width;
+		float H = rect.height;
+		float ratio = W / H;
+		float x = pos.x - rect.x;
+		float y = pos.y - rect.y;
+		float diag_a = ratio * y;
+		float diag_b = W - diag_a;
+		if (x < diag_a) {
+			if (x < diag_b) {
+				rh = HANDLE_LEFT;
+			} else {
+				rh = HANDLE_BOTTOM;
+			}
+		} else {
+			if (x < diag_b) {
+				rh = HANDLE_TOP;
+			} else {
+				rh = HANDLE_RIGHT;
+			}
+		}
+	} else if (pac == ACTION_RESIZE_CORNER) {
+		int16_t mid_x = rect.x + (rect.width / 2);
+		int16_t mid_y = rect.y + (rect.height / 2);
+		if (pos.x > mid_x) {
+			if (pos.y > mid_y) {
+				rh = HANDLE_BOTTOM_RIGHT;
+			} else {
+				rh = HANDLE_TOP_RIGHT;
+			}
+		} else {
+			if (pos.y > mid_y) {
+				rh = HANDLE_BOTTOM_LEFT;
+			} else {
+				rh = HANDLE_TOP_LEFT;
+			}
+		}
+	}
+	return rh;
+}
 
 void grab_pointer(pointer_action_t pac)
 {
@@ -40,321 +180,90 @@ void grab_pointer(pointer_action_t pac)
 	query_pointer(&win, &pos);
 
 	coordinates_t loc;
-	if (locate_window(win, &loc)) {
-		client_t *c = loc.node->client;
 
-		frozen_pointer->position = pos;
-		frozen_pointer->action = pac;
-		frozen_pointer->monitor = loc.monitor;
-		frozen_pointer->desktop = loc.desktop;
-		frozen_pointer->node = loc.node;
-		frozen_pointer->client = c;
-		frozen_pointer->window = loc.node->id;
-		frozen_pointer->horizontal_fence = NULL;
-		frozen_pointer->vertical_fence = NULL;
-
-		switch (pac)  {
-			case ACTION_FOCUS:
-				if (loc.node != mon->desk->focus) {
-					bool backup = pointer_follows_monitor;
-					pointer_follows_monitor = false;
-					focus_node(loc.monitor, loc.desktop, loc.node);
-					pointer_follows_monitor = backup;
-				} else if (focus_follows_pointer) {
-					stack(loc.desktop, loc.node, true);
-				}
-				frozen_pointer->action = ACTION_NONE;
-				break;
-			case ACTION_MOVE:
-			case ACTION_RESIZE_SIDE:
-			case ACTION_RESIZE_CORNER:
-				if (IS_FLOATING(c)) {
-					frozen_pointer->rectangle = c->floating_rectangle;
-					frozen_pointer->is_tiled = false;
-				} else if (IS_TILED(c)) {
-					frozen_pointer->rectangle = c->tiled_rectangle;
-					frozen_pointer->is_tiled = (pac == ACTION_MOVE || c->state != STATE_PSEUDO_TILED);
-				} else {
-					frozen_pointer->action = ACTION_NONE;
-					return;
-				}
-				if (pac == ACTION_RESIZE_SIDE) {
-					float W = frozen_pointer->rectangle.width;
-					float H = frozen_pointer->rectangle.height;
-					float ratio = W / H;
-					float x = pos.x - frozen_pointer->rectangle.x;
-					float y = pos.y - frozen_pointer->rectangle.y;
-					float diag_a = ratio * y;
-					float diag_b = W - diag_a;
-					if (x < diag_a) {
-						if (x < diag_b) {
-							frozen_pointer->side = SIDE_LEFT;
-						} else {
-							frozen_pointer->side = SIDE_BOTTOM;
-						}
-					} else {
-						if (x < diag_b) {
-							frozen_pointer->side = SIDE_TOP;
-						} else {
-							frozen_pointer->side = SIDE_RIGHT;
-						}
-					}
-				} else if (pac == ACTION_RESIZE_CORNER) {
-					int16_t mid_x = frozen_pointer->rectangle.x + (frozen_pointer->rectangle.width / 2);
-					int16_t mid_y = frozen_pointer->rectangle.y + (frozen_pointer->rectangle.height / 2);
-					if (pos.x > mid_x) {
-						if (pos.y > mid_y) {
-							frozen_pointer->corner = CORNER_BOTTOM_RIGHT;
-						} else {
-							frozen_pointer->corner = CORNER_TOP_RIGHT;
-						}
-					} else {
-						if (pos.y > mid_y) {
-							frozen_pointer->corner = CORNER_BOTTOM_LEFT;
-						} else {
-							frozen_pointer->corner = CORNER_TOP_LEFT;
-						}
-					}
-				}
-				if (frozen_pointer->is_tiled) {
-					if (pac == ACTION_RESIZE_SIDE) {
-						switch (frozen_pointer->side) {
-							case SIDE_TOP:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_NORTH);
-								break;
-							case SIDE_RIGHT:
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_EAST);
-								break;
-							case SIDE_BOTTOM:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_SOUTH);
-								break;
-							case SIDE_LEFT:
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_WEST);
-								break;
-						}
-					} else if (pac == ACTION_RESIZE_CORNER) {
-						switch (frozen_pointer->corner) {
-							case CORNER_TOP_LEFT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_NORTH);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_WEST);
-								break;
-							case CORNER_TOP_RIGHT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_NORTH);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_EAST);
-								break;
-							case CORNER_BOTTOM_RIGHT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_SOUTH);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_EAST);
-								break;
-							case CORNER_BOTTOM_LEFT:
-								frozen_pointer->horizontal_fence = find_fence(loc.node, DIR_SOUTH);
-								frozen_pointer->vertical_fence = find_fence(loc.node, DIR_WEST);
-								break;
-						}
-					}
-					if (frozen_pointer->horizontal_fence != NULL) {
-						frozen_pointer->horizontal_ratio = frozen_pointer->horizontal_fence->split_ratio;
-					}
-					if (frozen_pointer->vertical_fence != NULL) {
-						frozen_pointer->vertical_ratio = frozen_pointer->vertical_fence->split_ratio;
-					}
-				}
-				break;
-			case ACTION_NONE:
-				break;
-		}
-	} else {
+	if (!locate_window(win, &loc)) {
 		if (pac == ACTION_FOCUS) {
 			monitor_t *m = monitor_from_point(pos);
 			if (m != NULL && m != mon && (win == XCB_NONE || win == m->root)) {
 				focus_node(m, m->desk, m->desk->focus);
 			}
 		}
-		frozen_pointer->action = ACTION_NONE;
-	}
-}
-
-void track_pointer(int root_x, int root_y)
-{
-	if (frozen_pointer->action == ACTION_NONE) {
 		return;
 	}
 
-	int delta_x, delta_y, x = 0, y = 0, w = 1, h = 1;
-
-	pointer_action_t pac = frozen_pointer->action;
-	monitor_t *m = frozen_pointer->monitor;
-	desktop_t *d = frozen_pointer->desktop;
-	node_t *n = frozen_pointer->node;
-	client_t *c = frozen_pointer->client;
-	xcb_window_t win = frozen_pointer->window;
-	xcb_rectangle_t rect = frozen_pointer->rectangle;
-	node_t *vertical_fence = frozen_pointer->vertical_fence;
-	node_t *horizontal_fence = frozen_pointer->horizontal_fence;
-
-	delta_x = root_x - frozen_pointer->position.x;
-	delta_y = root_y - frozen_pointer->position.y;
-
-	switch (pac) {
-		case ACTION_MOVE:
-			if (frozen_pointer->is_tiled) {
-				xcb_window_t pwin = XCB_NONE;
-				query_pointer(&pwin, NULL);
-				if (pwin == win) {
-					return;
-				}
-				coordinates_t loc;
-				bool is_managed = (pwin == XCB_NONE ? false : locate_window(pwin, &loc));
-				if (is_managed && !IS_FLOATING(loc.node->client) && loc.monitor == m) {
-					swap_nodes(m, d, n, m, d, loc.node);
-				} else {
-					if (is_managed && loc.monitor == m) {
-						return;
-					} else if (!is_managed) {
-						xcb_point_t pt = (xcb_point_t) {root_x, root_y};
-						monitor_t *pmon = monitor_from_point(pt);
-						if (pmon == NULL || pmon == m) {
-							return;
-						} else {
-							loc.monitor = pmon;
-							loc.desktop = pmon->desk;
-						}
-					}
-					bool focused = (n == mon->desk->focus);
-					transfer_node(m, d, n, loc.monitor, loc.desktop, loc.desktop->focus);
-					if (focused) {
-						focus_node(loc.monitor, loc.desktop, n);
-					}
-					frozen_pointer->monitor = loc.monitor;
-					frozen_pointer->desktop = loc.desktop;
-				}
-			} else {
-				x = rect.x + delta_x;
-				y = rect.y + delta_y;
-				window_move(win, x, y);
-				c->floating_rectangle.x = x;
-				c->floating_rectangle.y = y;
-				xcb_point_t pt = (xcb_point_t) {root_x, root_y};
-				monitor_t *pmon = monitor_from_point(pt);
-				if (pmon == NULL || pmon == m) {
-					return;
-				}
-				bool focused = (n == mon->desk->focus);
-				transfer_node(m, d, n, pmon, pmon->desk, pmon->desk->focus);
-				if (focused) {
-					focus_node(pmon, pmon->desk, n);
-				}
-				frozen_pointer->monitor = pmon;
-				frozen_pointer->desktop = pmon->desk;
-			}
-			break;
-		case ACTION_RESIZE_SIDE:
-		case ACTION_RESIZE_CORNER:
-			if (frozen_pointer->is_tiled) {
-				if (vertical_fence != NULL) {
-					double sr = frozen_pointer->vertical_ratio + (double) delta_x / vertical_fence->rectangle.width;
-					sr = MAX(0, sr);
-					sr = MIN(1, sr);
-					vertical_fence->split_ratio = sr;
-				}
-				if (horizontal_fence != NULL) {
-					double sr = frozen_pointer->horizontal_ratio + (double) delta_y / horizontal_fence->rectangle.height;
-					sr = MAX(0, sr);
-					sr = MIN(1, sr);
-					horizontal_fence->split_ratio = sr;
-				}
-				arrange(m, d);
-			} else {
-				if (pac == ACTION_RESIZE_SIDE) {
-					switch (frozen_pointer->side) {
-						case SIDE_TOP:
-							x = rect.x;
-							y = rect.y + delta_y;
-							w = rect.width;
-							h = rect.height - delta_y;
-							break;
-						case SIDE_RIGHT:
-							x = rect.x;
-							y = rect.y;
-							w = rect.width + delta_x;
-							h = rect.height;
-							break;
-						case SIDE_BOTTOM:
-							x = rect.x;
-							y = rect.y;
-							w = rect.width;
-							h = rect.height + delta_y;
-							break;
-						case SIDE_LEFT:
-							x = rect.x + delta_x;
-							y = rect.y;
-							w = rect.width - delta_x;
-							h = rect.height;
-							break;
-					}
-				} else if (pac == ACTION_RESIZE_CORNER) {
-					switch (frozen_pointer->corner) {
-						case CORNER_TOP_LEFT:
-							x = rect.x + delta_x;
-							y = rect.y + delta_y;
-							w = rect.width - delta_x;
-							h = rect.height - delta_y;
-							break;
-						case CORNER_TOP_RIGHT:
-							x = rect.x;
-							y = rect.y + delta_y;
-							w = rect.width + delta_x;
-							h = rect.height - delta_y;
-							break;
-						case CORNER_BOTTOM_LEFT:
-							x = rect.x + delta_x;
-							y = rect.y;
-							w = rect.width - delta_x;
-							h = rect.height + delta_y;
-							break;
-						case CORNER_BOTTOM_RIGHT:
-							x = rect.x;
-							y = rect.y;
-							w = rect.width + delta_x;
-							h = rect.height + delta_y;
-							break;
-					}
-				}
-
-				int oldw = w, oldh = h;
-				restrain_floating_size(c, &w, &h);
-
-				if (c->state == STATE_FLOATING) {
-					if (oldw == w) {
-						c->floating_rectangle.x = x;
-						c->floating_rectangle.width = w;
-					}
-					if (oldh == h) {
-						c->floating_rectangle.y = y;
-						c->floating_rectangle.height = h;
-					}
-					window_move_resize(win, c->floating_rectangle.x,
-					                        c->floating_rectangle.y,
-					                        c->floating_rectangle.width,
-					                        c->floating_rectangle.height);
-				} else {
-					c->floating_rectangle.width = w;
-					c->floating_rectangle.height = h;
-					arrange(m, d);
-				}
-			}
-			break;
-		case ACTION_FOCUS:
-		case ACTION_NONE:
-			break;
+	if (pac == ACTION_FOCUS) {
+		if (loc.node != mon->desk->focus) {
+			focus_node(loc.monitor, loc.desktop, loc.node);
+		} else if (focus_follows_pointer) {
+			stack(loc.desktop, loc.node, true);
+		}
+		return;
 	}
+
+	if (loc.node->client->state == STATE_FULLSCREEN) {
+		return;
+	}
+
+	xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(dpy, xcb_grab_pointer(dpy, 0, root, XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME), NULL);
+
+	if (reply == NULL || reply->status != XCB_GRAB_STATUS_SUCCESS) {
+		return;
+	}
+
+	track_pointer(loc, pac, pos);
 }
 
-void ungrab_pointer(void)
+void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 {
-	if (frozen_pointer->action != ACTION_NONE) {
-		xcb_rectangle_t r = get_rectangle(frozen_pointer->desktop, frozen_pointer->node);
-		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", frozen_pointer->monitor->id, frozen_pointer->desktop->id, frozen_pointer->window, r.width, r.height, r.x, r.y);
+	node_t *n = loc.node;
+	resize_handle_t rh = get_handle(loc.node, pos, pac);
+
+	uint16_t last_motion_x = pos.x, last_motion_y = pos.y;
+	xcb_timestamp_t last_motion_time = 0;
+
+	xcb_generic_event_t *evt = NULL;
+
+	grabbing = true;
+	grabbed_node = n;
+
+	do {
+		free(evt);
+		while ((evt = xcb_wait_for_event(dpy)) == NULL) {
+			xcb_flush(dpy);
+		}
+		uint8_t resp_type = XCB_EVENT_RESPONSE_TYPE(evt);
+		if (resp_type == XCB_MOTION_NOTIFY) {
+			xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t*) evt;
+			int64_t dtime = e->time - last_motion_time;
+			if (dtime < 20) {
+				continue;
+			}
+			last_motion_time = e->time;
+			int16_t dx = e->root_x - last_motion_x;
+			int16_t dy = e->root_y - last_motion_y;
+			if (pac == ACTION_MOVE) {
+				move_client(&loc, dx, dy);
+			} else {
+				resize_client(&loc, rh, dx, dy);
+			}
+			last_motion_x = e->root_x;
+			last_motion_y = e->root_y;
+			xcb_flush(dpy);
+		} else if (resp_type == XCB_BUTTON_RELEASE) {
+			grabbing = false;
+		} else {
+			handle_event(evt);
+		}
+	} while (grabbing && grabbed_node != NULL);
+
+	xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
+
+	if (grabbed_node == NULL) {
+		grabbing = false;
+		return;
 	}
-	frozen_pointer->action = ACTION_NONE;
+
+	xcb_rectangle_t r = get_rectangle(NULL, n);
+
+	put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, loc.node->id, r.width, r.height, r.x, r.y);
 }

@@ -25,8 +25,24 @@
 #ifndef BSPWM_POINTER_H
 #define BSPWM_POINTER_H
 
+#define XK_Num_Lock     0xff7f
+#define XK_Caps_Lock    0xffe5
+#define XK_Scroll_Lock  0xff14
+
+uint16_t num_lock;
+uint16_t caps_lock;
+uint16_t scroll_lock;
+
+bool grabbing;
+node_t *grabbed_node;
+
+void pointer_init(void);
+void grab_buttons(void);
+void ungrab_buttons(void);
+int16_t modfield_from_keysym(xcb_keysym_t keysym);
+resize_handle_t get_handle(node_t *n, xcb_point_t pos, pointer_action_t pac);
 void grab_pointer(pointer_action_t pac);
-void track_pointer(int root_x, int root_y);
+void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos);
 void ungrab_pointer(void);
 
 #endif

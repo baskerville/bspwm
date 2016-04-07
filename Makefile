@@ -3,7 +3,7 @@ VERSION := $(shell $(VERCMD) || cat VERSION)
 
 CPPFLAGS += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
 CFLAGS   += -std=c99 -pedantic -Wall -Wextra
-LDLIBS    = -lm -lxcb -lxcb-util -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama
+LDLIBS    = -lm -lxcb -lxcb-util -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama
 
 PREFIX    ?= /usr/local
 BINPREFIX ?= $(PREFIX)/bin

@@ -33,6 +33,7 @@
 #include "rule.h"
 #include "settings.h"
 #include "geometry.h"
+#include "pointer.h"
 #include "stack.h"
 #include "tree.h"
 #include "parse.h"
@@ -131,16 +132,11 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	c->border_width = csq->border ? d->border_width : 0;
 	n->client = c;
 	initialize_client(n);
-	update_floating_rectangle(n);
+	initialize_floating_rectangle(n);
 
 	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0) {
 		csq->center = true;
 	}
-
-	c->min_width = csq->min_width;
-	c->max_width = csq->max_width;
-	c->min_height = csq->min_height;
-	c->max_height = csq->max_height;
 
 	monitor_t *mm = monitor_from_client(c);
 	embrace_client(mm, c);
@@ -213,9 +209,6 @@ void unmanage_window(xcb_window_t win)
 	if (locate_window(win, &loc)) {
 		put_status(SBSC_MASK_NODE_UNMANAGE, "node_unmanage 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
-		if (frozen_pointer->window == win) {
-			frozen_pointer->action = ACTION_NONE;
-		}
 		arrange(loc.monitor, loc.desktop);
 	} else {
 		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
@@ -377,18 +370,6 @@ void window_draw_border(xcb_window_t win, uint32_t border_color_pxl)
 	xcb_change_window_attributes(dpy, win, XCB_CW_BORDER_PIXEL, &border_color_pxl);
 }
 
-pointer_state_t *make_pointer_state(void)
-{
-	pointer_state_t *p = malloc(sizeof(pointer_state_t));
-	p->monitor = NULL;
-	p->desktop = NULL;
-	p->node = p->vertical_fence = p->horizontal_fence = NULL;
-	p->client = NULL;
-	p->window = XCB_NONE;
-	p->action = ACTION_NONE;
-	return p;
-}
-
 void adopt_orphans(void)
 {
 	xcb_query_tree_reply_t *qtr = xcb_query_tree_reply(dpy, xcb_query_tree(dpy, root), NULL);
@@ -421,7 +402,7 @@ uint32_t get_border_color(bool focused_node, bool focused_monitor)
 	}
 }
 
-void update_floating_rectangle(node_t *n)
+void initialize_floating_rectangle(node_t *n)
 {
 	client_t *c = n->client;
 
@@ -434,34 +415,218 @@ void update_floating_rectangle(node_t *n)
 	free(geo);
 }
 
-void restrain_floating_width(client_t *c, int *width)
+bool move_client(coordinates_t *loc, int dx, int dy)
 {
-	if (*width < 1) {
-		*width = 1;
+	node_t *n = loc->node;
+
+	if (n == NULL || n->client == NULL) {
+		return false;
 	}
-	if (c->min_width > 0 && *width < c->min_width) {
-		*width = c->min_width;
-	} else if (c->max_width > 0 && *width > c->max_width) {
-		*width = c->max_width;
+
+	monitor_t *pm = NULL;
+
+	if (IS_TILED(n->client)) {
+		if (!grabbing) {
+			return false;
+		}
+		xcb_window_t pwin = XCB_NONE;
+		query_pointer(&pwin, NULL);
+		if (pwin == n->id) {
+			return false;
+		}
+		coordinates_t dst;
+		bool is_managed = (pwin != XCB_NONE && locate_window(pwin, &dst));
+		if (is_managed && dst.monitor == loc->monitor && IS_TILED(dst.node->client)) {
+			swap_nodes(loc->monitor, loc->desktop, n, loc->monitor, loc->desktop, dst.node);
+			return true;
+		} else {
+			if (is_managed && dst.monitor == loc->monitor) {
+				return false;
+			} else {
+				xcb_point_t pt = {0, 0};
+				query_pointer(NULL, &pt);
+				pm = monitor_from_point(pt);
+			}
+		}
+	} else {
+		client_t *c = n->client;
+		xcb_rectangle_t rect = c->floating_rectangle;
+		int16_t x = rect.x + dx;
+		int16_t y = rect.y + dy;
+		window_move(n->id, x, y);
+		c->floating_rectangle.x = x;
+		c->floating_rectangle.y = y;
+		if (!grabbing) {
+			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc->monitor->id, loc->desktop->id, loc->node->id, rect.width, rect.height, x, y);
+		}
+		pm = monitor_from_client(c);
 	}
+
+	if (pm == NULL || pm == loc->monitor) {
+		return true;
+	}
+
+	bool focused = (n == mon->desk->focus);
+	transfer_node(loc->monitor, loc->desktop, n, pm, pm->desk, pm->desk->focus);
+	loc->monitor = pm;
+	loc->desktop = pm->desk;
+	if (focused) {
+		focus_node(pm, pm->desk, n);
+	}
+
+	return true;
 }
 
-void restrain_floating_height(client_t *c, int *height)
+bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy)
 {
-	if (*height < 1) {
-		*height = 1;
+	node_t *n = loc->node;
+	if (n == NULL || n->client == NULL || n->client->state == STATE_FULLSCREEN) {
+		return false;
 	}
-	if (c->min_height > 0 && *height < c->min_height) {
-		*height = c->min_height;
-	} else if (c->max_height > 0 && *height > c->max_height) {
-		*height = c->max_height;
+	node_t *horizontal_fence = NULL, *vertical_fence = NULL;
+	xcb_rectangle_t rect = get_rectangle(NULL, n);
+	uint16_t width = rect.width, height = rect.height;
+	int16_t x = rect.x, y = rect.y;
+	if (n->client->state == STATE_TILED) {
+		if (rh & HANDLE_LEFT) {
+			vertical_fence = find_fence(n, DIR_WEST);
+		} else if (rh & HANDLE_RIGHT) {
+			vertical_fence = find_fence(n, DIR_EAST);
+		}
+		if (rh & HANDLE_TOP) {
+			horizontal_fence = find_fence(n, DIR_NORTH);
+		} else if (rh & HANDLE_BOTTOM) {
+			horizontal_fence = find_fence(n, DIR_SOUTH);
+		}
+		if (vertical_fence != NULL) {
+			double sr = vertical_fence->split_ratio + (double) dx / vertical_fence->rectangle.width;
+			sr = MAX(0, sr);
+			sr = MIN(1, sr);
+			vertical_fence->split_ratio = sr;
+		}
+		if (horizontal_fence != NULL) {
+			double sr = horizontal_fence->split_ratio + (double) dy / horizontal_fence->rectangle.height;
+			sr = MAX(0, sr);
+			sr = MIN(1, sr);
+			horizontal_fence->split_ratio = sr;
+		}
+		arrange(loc->monitor, loc->desktop);
+	} else {
+		int w = width + dx * (rh & HANDLE_LEFT ? -1 : (rh & HANDLE_RIGHT ? 1 : 0));
+		int h = height + dy * (rh & HANDLE_TOP ? -1 : (rh & HANDLE_BOTTOM ? 1 : 0));
+		width = MAX(1, w);
+		height = MAX(1, h);
+		apply_size_hints(n->client, &width, &height);
+		if (rh & HANDLE_LEFT) {
+			x += rect.width - width;
+		}
+		if (rh & HANDLE_TOP) {
+			y += rect.height - height;
+		}
+		n->client->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
+		if (n->client->state == STATE_FLOATING) {
+			window_move_resize(n->id, x, y, width, height);
+			if (!grabbing) {
+				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc->monitor->id, loc->desktop->id, loc->node->id, width, height, x, y);
+			}
+		} else {
+			arrange(loc->monitor, loc->desktop);
+		}
 	}
+	return true;
 }
 
-void restrain_floating_size(client_t *c, int *width, int *height)
+/* taken from awesomeWM */
+void apply_size_hints(client_t *c, uint16_t *width, uint16_t *height)
 {
-	restrain_floating_width(c, width);
-	restrain_floating_height(c, height);
+	if (!honor_size_hints) {
+		return;
+	}
+
+	int32_t minw = 0, minh = 0;
+	int32_t basew = 0, baseh = 0, real_basew = 0, real_baseh = 0;
+
+	if (c->state == STATE_FULLSCREEN) {
+		return;
+	}
+
+	if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_BASE_SIZE) {
+		basew = c->size_hints.base_width;
+		baseh = c->size_hints.base_height;
+		real_basew = basew;
+		real_baseh = baseh;
+	} else if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE) {
+		/* base size is substituted with min size if not specified */
+		basew = c->size_hints.min_width;
+		baseh = c->size_hints.min_height;
+	}
+
+	if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE) {
+		minw = c->size_hints.min_width;
+		minh = c->size_hints.min_height;
+	} else if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_BASE_SIZE) {
+		/* min size is substituted with base size if not specified */
+		minw = c->size_hints.base_width;
+		minh = c->size_hints.base_height;
+	}
+
+	/* Handle the size aspect ratio */
+	if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_P_ASPECT &&
+	    c->size_hints.min_aspect_den > 0 &&
+	    c->size_hints.max_aspect_den > 0 &&
+	    *height > real_baseh &&
+	    *width > real_basew) {
+		/* ICCCM mandates:
+		 * If a base size is provided along with the aspect ratio fields, the base size should be subtracted from the
+		 * window size prior to checking that the aspect ratio falls in range. If a base size is not provided, nothing
+		 * should be subtracted from the window size. (The minimum size is not to be used in place of the base size for
+		 * this purpose.)
+		 */
+		double dx = *width - real_basew;
+		double dy = *height - real_baseh;
+		double ratio = dx / dy;
+		double min = c->size_hints.min_aspect_num / (double) c->size_hints.min_aspect_den;
+		double max = c->size_hints.max_aspect_num / (double) c->size_hints.max_aspect_den;
+
+		if (max > 0 && min > 0 && ratio > 0) {
+			if (ratio < min) {
+				/* dx is lower than allowed, make dy lower to compensate this (+ 0.5 to force proper rounding). */
+				dy = dx / min + 0.5;
+				*width  = dx + real_basew;
+				*height = dy + real_baseh;
+			} else if (ratio > max) {
+				/* dx is too high, lower it (+0.5 for proper rounding) */
+				dx = dy * max + 0.5;
+				*width  = dx + real_basew;
+				*height = dy + real_baseh;
+			}
+		}
+	}
+
+	/* Handle the minimum size */
+	*width = MAX(*width, minw);
+	*height = MAX(*height, minh);
+
+	/* Handle the maximum size */
+	if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_P_MAX_SIZE)
+	{
+		if (c->size_hints.max_width > 0) {
+			*width = MIN(*width, c->size_hints.max_width);
+		}
+		if (c->size_hints.max_height > 0) {
+			*height = MIN(*height, c->size_hints.max_height);
+		}
+	}
+
+	/* Handle the size increment */
+	if (c->size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_RESIZE_INC | XCB_ICCCM_SIZE_HINT_BASE_SIZE) &&
+	    c->size_hints.width_inc > 0 && c->size_hints.height_inc > 0) {
+		uint16_t t1 = *width, t2 = *height;
+		unsigned_subtract(t1, basew);
+		unsigned_subtract(t2, baseh);
+		*width -= t1 % c->size_hints.width_inc;
+		*height -= t2 % c->size_hints.height_inc;
+	}
 }
 
 void query_pointer(xcb_window_t *win, xcb_point_t *pt)
@@ -626,9 +791,9 @@ void set_input_focus(node_t *n)
 	if (n == NULL || n->client == NULL) {
 		clear_input_focus();
 	} else {
-		if (n->client->icccm_input) {
+		if (n->client->icccm_props.input_hint) {
 			xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_PARENT, n->id, XCB_CURRENT_TIME);
-		} else if (n->client->icccm_focus) {
+		} else if (n->client->icccm_props.take_focus) {
 			send_client_message(n->id, ewmh->WM_PROTOCOLS, WM_TAKE_FOCUS);
 		}
 	}
@@ -641,6 +806,9 @@ void clear_input_focus(void)
 
 void center_pointer(xcb_rectangle_t r)
 {
+	if (grabbing) {
+		return;
+	}
 	int16_t cx = r.x + r.width / 2;
 	int16_t cy = r.y + r.height / 2;
 	window_lower(motion_recorder);

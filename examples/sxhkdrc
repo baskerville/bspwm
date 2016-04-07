@@ -105,33 +105,17 @@ super + ctrl + shift + space
 	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
 
 #
-# resize tiled/floating
+# move/resize
 #
 
-# expand the tiled space in the given direction
+# expand a window by moving one of its side outward
 super + alt + {h,j,k,l}
-	bspc node {@west -r -10,@south -r +10,@north -r -10,@east -r +10}
+	bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
 
-# contract the tiled space in the given direction
-super + alt + shift + {h,j,k,l}
-	bspc node {@east -r -10,@north -r +10,@south -r -10,@west -r +10}
+# contract a window by moving one of its side inward
+super + alt + shit + {h,j,k,l}
+	bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
 
 # move a floating window
 super + {Left,Down,Up,Right}
-	xdo move {-x -20,-y +20,-y -20,-x +20}
-
-#
-# pointer focus/move/resize
-#
-
-# focus
-~button1
-	bspc pointer -g focus
-
-# start move/resize
-super + button{1-3}
-	; bspc pointer -g {move,resize_side,resize_corner}
-
-# end move/resize
-super + @button{1-3}
-	bspc pointer -u
+	bspc node -v {-20 0,0 20,0 -20,20 0}

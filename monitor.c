@@ -139,10 +139,6 @@ void embrace_client(monitor_t *m, client_t *c)
 
 void adapt_geometry(xcb_rectangle_t *rs, xcb_rectangle_t *rd, node_t *n)
 {
-	if (frozen_pointer->action != ACTION_NONE) {
-		return;
-	}
-
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
 		if (f->client == NULL) {
 			continue;
@@ -189,7 +185,12 @@ void focus_monitor(monitor_t *m)
 	mon = m;
 
 	if (pointer_follows_monitor) {
-		center_pointer(m->rectangle);
+		xcb_point_t pt;
+		query_pointer(NULL, &pt);
+		monitor_t *mp = monitor_from_point(pt);
+		if (mp != m) {
+			center_pointer(m->rectangle);
+		}
 	}
 
 	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%08X\n", m->id);

@@ -1,8 +1,3 @@
-- Add zoom feature (view point distinct from root).
-- Add receptacles (leaves with NULL client pointer).
-- Handle window size constraints specified by size hints.
 - Add support for showing/hiding nodes.
-- Implement all the MUSTs in the EWMH specification.
-- Set more attributes in `make_client` (instead of doing it in `apply_rules`) and don't pass `XCB_NONE` as argument.
+- Add zoom feature (view point distinct from root).
 - Use BSD `sys/{queue/tree}.h` for {list,tree} structures?
-- Handle malloc failure everywhere.

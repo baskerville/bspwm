@@ -210,22 +210,6 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 		xcb_ewmh_get_atoms_reply_wipe(&win_state);
 	}
 
-	xcb_size_hints_t size_hints;
-	if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
-		if (size_hints.min_width > 0 && size_hints.min_height > 0 &&
-		    size_hints.min_width == size_hints.max_width &&
-		    size_hints.min_height == size_hints.max_height) {
-			if (csq->state == NULL) {
-				csq->state = malloc(sizeof(client_state_t));
-			}
-			*(csq->state) = STATE_FLOATING;
-		}
-		csq->min_width = size_hints.min_width;
-		csq->max_width = size_hints.max_width;
-		csq->min_height = size_hints.min_height;
-		csq->max_height = size_hints.max_height;
-	}
-
 	xcb_window_t transient_for = XCB_NONE;
 	xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
 	if (transient_for != XCB_NONE) {
@@ -233,6 +217,17 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 			csq->state = malloc(sizeof(client_state_t));
 		}
 		*(csq->state) = STATE_FLOATING;
+	}
+
+	xcb_size_hints_t size_hints;
+	if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
+		if ((size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_MIN_SIZE|XCB_ICCCM_SIZE_HINT_P_MAX_SIZE)) &&
+		    size_hints.min_width == size_hints.max_width && size_hints.min_height == size_hints.max_height) {
+			if (csq->state == NULL) {
+				csq->state = malloc(sizeof(client_state_t));
+			}
+			*(csq->state) = STATE_FLOATING;
+		}
 	}
 
 	xcb_icccm_get_wm_class_reply_t reply;

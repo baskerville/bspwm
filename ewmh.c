@@ -180,43 +180,29 @@ void ewmh_update_client_list(bool stacking)
 	}
 }
 
-bool ewmh_wm_state_add(node_t *n, xcb_atom_t state)
+void ewmh_wm_state_update(node_t *n)
 {
 	client_t *c = n->client;
-
-	if (c == NULL || c->wm_states_count >= MAX_WM_STATES) {
-		return false;
+	size_t count = 0;
+	uint32_t values[12];
+#define HANDLE_WM_STATE(s)  \
+	if (WM_FLAG_##s & c->wm_flags) { \
+		values[count++] = ewmh->_NET_WM_STATE_##s; \
 	}
-
-	for (int i = 0; i < c->wm_states_count; i++) {
-		if (c->wm_state[i] == state) {
-			return false;
-		}
-	}
-
-	c->wm_state[c->wm_states_count] = state;
-	c->wm_states_count++;
-	xcb_ewmh_set_wm_state(ewmh, n->id, c->wm_states_count, c->wm_state);
-	return true;
-}
-
-bool ewmh_wm_state_remove(node_t *n, xcb_atom_t state)
-{
-	client_t *c = n->client;
-	if (c == NULL) {
-		return false;
-	}
-	for (int i = 0; i < c->wm_states_count; i++) {
-		if (c->wm_state[i] == state) {
-			for (int j = i; j < (c->wm_states_count - 1); j++) {
-				c->wm_state[j] = c->wm_state[j + 1];
-			}
-			c->wm_states_count--;
-			xcb_ewmh_set_wm_state(ewmh, n->id, c->wm_states_count, c->wm_state);
-			return true;
-		}
-	}
-	return false;
+	HANDLE_WM_STATE(MODAL)
+	HANDLE_WM_STATE(STICKY)
+	HANDLE_WM_STATE(MAXIMIZED_VERT)
+	HANDLE_WM_STATE(MAXIMIZED_HORZ)
+	HANDLE_WM_STATE(SHADED)
+	HANDLE_WM_STATE(SKIP_TASKBAR)
+	HANDLE_WM_STATE(SKIP_PAGER)
+	HANDLE_WM_STATE(HIDDEN)
+	HANDLE_WM_STATE(FULLSCREEN)
+	HANDLE_WM_STATE(ABOVE)
+	HANDLE_WM_STATE(BELOW)
+	HANDLE_WM_STATE(DEMANDS_ATTENTION)
+#undef HANDLE_WM_STATE
+	xcb_ewmh_set_wm_state(ewmh, n->id, count, values);
 }
 
 void ewmh_set_supporting(xcb_window_t win)

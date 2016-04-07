@@ -20,6 +20,8 @@ bool parse_cycle_direction(char *s, cycle_dir_t *d);
 bool parse_circulate_direction(char *s, circulate_dir_t *d);
 bool parse_history_direction(char *s, history_dir_t *d);
 bool parse_flip(char *s, flip_t *f);
+bool parse_resize_handle(char *s, resize_handle_t *h);
+bool parse_modifier_mask(char *s, uint16_t *m);
 bool parse_pointer_action(char *s, pointer_action_t *a);
 bool parse_child_polarity(char *s, child_polarity_t *p);
 bool parse_degree(char *s, int *d);

@@ -100,8 +100,6 @@ void process_message(char **args, int num, FILE *rsp)
 		cmd_wm(++args, --num, rsp);
 	} else if (streq("rule", *args)) {
 		cmd_rule(++args, --num, rsp);
-	} else if (streq("pointer", *args)) {
-		cmd_pointer(++args, --num, rsp);
 	} else if (streq("config", *args)) {
 		cmd_config(++args, --num, rsp);
 	} else if (streq("quit", *args)) {
@@ -374,6 +372,57 @@ void cmd_node(char **args, int num, FILE *rsp)
 			} else {
 				presel_ratio(trg.monitor, trg.desktop, trg.node, rat);
 				draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
+			}
+		} else if (streq("-v", *args) || streq("--move", *args)) {
+			num--, args++;
+			if (num < 2) {
+				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			int dx = 0, dy = 0;
+			if (sscanf(*args, "%i", &dx) == 1) {
+				num--, args++;
+				if (sscanf(*args, "%i", &dy) == 1) {
+					if (!move_client(&trg, dx, dy)) {
+						fail(rsp, "");
+						break;
+					}
+				} else {
+					fail(rsp, "node %s: Invalid dy argument: '%s'.\n", *(args - 3), *args);
+					break;
+				}
+			} else {
+				fail(rsp, "node %s: Invalid dx argument: '%s'.\n", *(args - 2), *args);
+				break;
+			}
+		} else if (streq("-z", *args) || streq("--resize", *args)) {
+			num--, args++;
+			if (num < 3) {
+				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			resize_handle_t rh;
+			if (parse_resize_handle(*args, &rh)) {
+				num--, args++;
+				int dx = 0, dy = 0;
+				if (sscanf(*args, "%i", &dx) == 1) {
+					num--, args++;
+					if (sscanf(*args, "%i", &dy) == 1) {
+						if (!resize_client(&trg, rh, dx, dy)) {
+							fail(rsp, "");
+							break;
+						}
+					} else {
+						fail(rsp, "node %s: Invalid dy argument: '%s'.\n", *(args - 3), *args);
+						break;
+					}
+				} else {
+					fail(rsp, "node %s: Invalid dx argument: '%s'.\n", *(args - 2), *args);
+					break;
+				}
+			} else {
+				fail(rsp, "node %s: Invalid resize handle argument: '%s'.\n", *(args - 1), *args);
+				break;
 			}
 		} else if (streq("-r", *args) || streq("--ratio", *args)) {
 			num--, args++;
@@ -1028,51 +1077,6 @@ void cmd_rule(char **args, int num, FILE *rsp)
 	}
 }
 
-void cmd_pointer(char **args, int num, FILE *rsp)
-{
-	if (num < 1) {
-		fail(rsp, "pointer: Missing commands.\n");
-		return;
-	}
-
-	while (num > 0) {
-		if (streq("-t", *args) || streq("--track", *args)) {
-			num--, args++;
-			if (num < 2) {
-				fail(rsp, "pointer %s: Not enough arguments.\n", *(args - 1));
-				return;
-			}
-			int x, y;
-			if (sscanf(*args, "%i", &x) == 1 && sscanf(*(args + 1), "%i", &y) == 1) {
-				track_pointer(x, y);
-			} else {
-				fail(rsp, "");
-				return;
-			}
-			num--, args++;
-		} else if (streq("-g", *args) || streq("--grab", *args)) {
-			num--, args++;
-			if (num < 1) {
-				fail(rsp, "pointer %s: Not enough arguments.\n", *(args - 1));
-				return;
-			}
-			pointer_action_t pac;
-			if (parse_pointer_action(*args, &pac)) {
-				grab_pointer(pac);
-			} else {
-				fail(rsp, "pointer %s: Invalid argument: '%s'.\n", *(args - 1), *args);
-				return;
-			}
-		} else if (streq("-u", *args) || streq("--ungrab", *args)) {
-			ungrab_pointer();
-		} else {
-			fail(rsp, "pointer: Unknown command: '%s'.\n", *args);
-			return;
-		}
-		num--, args++;
-	}
-}
-
 void cmd_wm(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
@@ -1377,6 +1381,22 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("pointer_modifier", name)) {
+		if (parse_modifier_mask(value, &pointer_modifier)) {
+			ungrab_buttons();
+			grab_buttons();
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
+	} else if (streq("click_to_focus", name)) {
+		if (parse_bool(value, &click_to_focus)) {
+			ungrab_buttons();
+			grab_buttons();
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("focus_follows_pointer", name)) {
 		bool b;
 		if (parse_bool(value, &b)) {
@@ -1426,6 +1446,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(focus_by_distance)
 		SET_BOOL(ignore_ewmh_focus)
 		SET_BOOL(center_pseudo_tiled)
+		SET_BOOL(honor_size_hints)
 #undef SET_BOOL
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1500,6 +1521,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", status_prefix);
 	} else if (streq("initial_polarity", name)) {
 		fprintf(rsp, "%s", CHILD_POL_STR(initial_polarity));
+	} else if (streq("pointer_modifier", name)) {
+		print_modifier_mask(pointer_modifier, rsp);
 #define GET_COLOR(s) \
 	} else if (streq(#s, name)) { \
 		fprintf(rsp, "%s", s);
@@ -1515,6 +1538,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(gapless_monocle)
 	GET_BOOL(paddingless_monocle)
 	GET_BOOL(single_monocle)
+	GET_BOOL(click_to_focus)
 	GET_BOOL(focus_follows_pointer)
 	GET_BOOL(pointer_follows_focus)
 	GET_BOOL(pointer_follows_monitor)
@@ -1522,6 +1546,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(focus_by_distance)
 	GET_BOOL(ignore_ewmh_focus)
 	GET_BOOL(center_pseudo_tiled)
+	GET_BOOL(honor_size_hints)
 	GET_BOOL(remove_disabled_monitors)
 	GET_BOOL(remove_unplugged_monitors)
 	GET_BOOL(merge_overlapping_monitors)

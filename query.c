@@ -30,6 +30,7 @@
 #include "history.h"
 #include "parse.h"
 #include "monitor.h"
+#include "window.h"
 #include "tree.h"
 #include "query.h"
 
@@ -162,16 +163,6 @@ void query_client(client_t *c, FILE *rsp)
 		fprintf(rsp, "\"lastLayer\":\"%s\",", LAYER_STR(c->last_layer));
 		fprintf(rsp, "\"urgent\":%s,", BOOL_STR(c->urgent));
 		fprintf(rsp, "\"visible\":%s,", BOOL_STR(c->visible));
-		fprintf(rsp, "\"icccmFocus\":%s,", BOOL_STR(c->icccm_focus));
-		fprintf(rsp, "\"icccmInput\":%s,", BOOL_STR(c->icccm_input));
-		fprintf(rsp, "\"minWidth\":%u,", c->min_width);
-		fprintf(rsp, "\"maxWidth\":%u,", c->max_width);
-		fprintf(rsp, "\"minHeight\":%u,", c->min_height);
-		fprintf(rsp, "\"maxHeight\":%u,", c->max_height);
-		fprintf(rsp, "\"wmStatesCount\":%i,", c->wm_states_count);
-		fprintf(rsp, "\"wmState\":");
-		query_wm_state(c->wm_state, c->wm_states_count, rsp);
-		fprintf(rsp,",");
 		fprintf(rsp, "\"tiledRectangle\":");
 		query_rectangle(c->tiled_rectangle, rsp);
 		fprintf(rsp,",");
@@ -189,18 +180,6 @@ void query_rectangle(xcb_rectangle_t r, FILE *rsp)
 void query_padding(padding_t p, FILE *rsp)
 {
 	fprintf(rsp, "{\"top\":%i,\"right\":%i,\"bottom\":%i,\"left\":%i}", p.top, p.right, p.bottom, p.left);
-}
-
-void query_wm_state(xcb_atom_t *wm_state, int wm_states_count, FILE *rsp)
-{
-	fprintf(rsp, "[");
-	for (int i = 0; i < wm_states_count; i++) {
-		fprintf(rsp, "%u", wm_state[i]);
-		if (i < wm_states_count - 1) {
-			fprintf(rsp, ",");
-		}
-	}
-	fprintf(rsp, "]");
 }
 
 void query_history(FILE *rsp)
@@ -305,6 +284,36 @@ int query_monitor_ids(coordinates_t loc, monitor_select_t *sel, FILE *rsp)
 	return count;
 }
 
+void print_modifier_mask(uint16_t m, FILE *rsp)
+{
+	switch (m) {
+		case XCB_MOD_MASK_SHIFT:
+			fprintf(rsp, "shift");
+			break;
+		case XCB_MOD_MASK_CONTROL:
+			fprintf(rsp, "control");
+			break;
+		case XCB_MOD_MASK_LOCK:
+			fprintf(rsp, "lock");
+			break;
+		case XCB_MOD_MASK_1:
+			fprintf(rsp, "mod1");
+			break;
+		case XCB_MOD_MASK_2:
+			fprintf(rsp, "mod2");
+			break;
+		case XCB_MOD_MASK_3:
+			fprintf(rsp, "mod3");
+			break;
+		case XCB_MOD_MASK_4:
+			fprintf(rsp, "mod4");
+			break;
+		case XCB_MOD_MASK_5:
+			fprintf(rsp, "mod5");
+			break;
+	}
+}
+
 node_select_t make_node_select(void)
 {
 	node_select_t sel = {
@@ -395,6 +404,14 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			dst->monitor = mon;
 			dst->desktop = mon->desk;
 			dst->node = mon->desk->focus;
+		}
+	} else if (streq("pointed", desc)) {
+		xcb_window_t win;
+		query_pointer(&win, NULL);
+		if (locate_window(win, dst) && node_matches(dst, ref, sel)) {
+			return SELECTOR_OK;
+		} else {
+			return SELECTOR_INVALID;
 		}
 	} else if (*desc == '@') {
 		desc++;

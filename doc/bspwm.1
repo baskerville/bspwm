@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/26/2016
+.\"      Date: 04/07/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-7-geb209d8
+.\"    Source: Bspwm 0.9.1-11-ge1b5f77
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/26/2016" "Bspwm 0\&.9\&.1\-7\-geb209d8" "Bspwm Manual"
+.TH "BSPWM" "1" "04/07/2016" "Bspwm 0\&.9\&.1\-11\-ge1b5f77" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -552,6 +552,24 @@ and the current preselection direction matches
 Set the splitting ratio of the preselection area\&.
 .RE
 .PP
+\fB\-v\fR, \fB\-\-move\fR \fIdx\fR \fIdy\fR
+.RS 4
+Move the selected window by
+\fIdx\fR
+pixels horizontally and
+\fIdy\fR
+pixels vertically\&.
+.RE
+.PP
+\fB\-z\fR, \fB\-\-resize\fR top|left|bottom|right|top_left|top_right|bottom_right|bottom_left \fIdx\fR \fIdy\fR
+.RS 4
+Resize the selected window by moving the given handle by
+\fIdx\fR
+pixels horizontally and
+\fIdy\fR
+pixels vertically\&.
+.RE
+.PP
 \fB\-r\fR, \fB\-\-ratio\fR \fIRATIO\fR|(+|\-)\fIPIXELS\fR
 .RS 4
 Set the splitting ratio of the selected node (0 <
@@ -848,42 +866,6 @@ Enable or disable the recording of node focus history\&.
 Print the current status information\&.
 .RE
 .RE
-.SS "Pointer"
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBGeneral Syntax\fR
-.RS 4
-.sp
-pointer \fICOMMANDS\fR
-.RE
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBCommands\fR
-.RS 4
-.PP
-\fB\-g\fR, \fB\-\-grab\fR focus|move|resize_side|resize_corner
-.RS 4
-Initiate the given pointer action\&.
-.RE
-.PP
-\fB\-t\fR, \fB\-\-track\fR <x> <y>
-.RS 4
-Pass the pointer root coordinates for the current pointer action\&.
-.RE
-.PP
-\fB\-u\fR, \fB\-\-ungrab\fR
-.RS 4
-Terminate the current pointer action\&.
-.RE
-.RE
 .SS "Rule"
 .sp
 .it 1 an-trap
@@ -1063,6 +1045,24 @@ Set the desktop layout to
 if there\(cqs only one tiled window in the tree\&.
 .RE
 .PP
+\fIpointer_modifier\fR
+.RS 4
+Keyboard modifier used for moving or resizing windows\&. Accept the following values:
+\fBshift\fR,
+\fBcontrol\fR,
+\fBlock\fR,
+\fBmod1\fR,
+\fBmod2\fR,
+\fBmod3\fR,
+\fBmod4\fR,
+\fBmod5\fR\&.
+.RE
+.PP
+\fIclick_to_focus\fR
+.RS 4
+Focus a window (or a monitor) by clicking it\&.
+.RE
+.PP
 \fIfocus_follows_pointer\fR
 .RS 4
 Focus the window under the pointer\&.
@@ -1087,6 +1087,11 @@ Ignore EWMH focus requests coming from applications\&.
 .RS 4
 Center pseudo tiled windows into their tiling rectangles\&. Defaults to
 \fItrue\fR\&.
+.RE
+.PP
+\fIhonor_size_hints\fR
+.RS 4
+Apply ICCCM window size hints\&.
 .RE
 .PP
 \fIremove_disabled_monitors\fR
@@ -1120,6 +1125,29 @@ Size of the gap that separates windows\&.
 \fIborder_width\fR
 .RS 4
 Window border width\&.
+.RE
+.SH "POINTER BINDINGS"
+.PP
+\fIbutton1\fR
+.RS 4
+Focus the window under the pointer if
+\fIclick_to_focus\fR
+is set\&.
+.RE
+.PP
+\fIpointer_modifier\fR + \fIbutton1\fR
+.RS 4
+Move the window under the pointer\&.
+.RE
+.PP
+\fIpointer_modifier\fR + \fIbutton2\fR
+.RS 4
+Resize the window under the pointer by dragging the nearest side\&.
+.RE
+.PP
+\fIpointer_modifier\fR + \fIbutton3\fR
+.RS 4
+Resize the window under the pointer by dragging the nearest corner\&.
 .RE
 .SH "EVENTS"
 .PP

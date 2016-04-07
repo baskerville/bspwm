@@ -32,6 +32,7 @@
 #include "subscribe.h"
 #include "tree.h"
 #include "window.h"
+#include "pointer.h"
 #include "events.h"
 
 void handle_event(xcb_generic_event_t *evt)
@@ -58,6 +59,9 @@ void handle_event(xcb_generic_event_t *evt)
 			break;
 		case XCB_ENTER_NOTIFY:
 			enter_notify(evt);
+			break;
+		case XCB_BUTTON_PRESS:
+			button_press(evt);
 			break;
 		case XCB_MOTION_NOTIFY:
 			motion_notify(evt);
@@ -90,54 +94,9 @@ void configure_request(xcb_generic_event_t *evt)
 	coordinates_t loc;
 	bool is_managed = locate_window(e->window, &loc);
 	client_t *c = (is_managed ? loc.node->client : NULL);
-	int w = 0, h = 0;
+	uint16_t width, height;
 
-	if (is_managed && !IS_FLOATING(c)) {
-		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
-			c->floating_rectangle.x = e->x;
-		}
-		if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
-			c->floating_rectangle.y = e->y;
-		}
-		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
-			w = e->width;
-		}
-		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
-			h = e->height;
-		}
-
-		if (w != 0) {
-			restrain_floating_width(c, &w);
-			c->floating_rectangle.width = w;
-		}
-
-		if (h != 0) {
-			restrain_floating_height(c, &h);
-			c->floating_rectangle.height = h;
-		}
-
-		xcb_configure_notify_event_t evt;
-		unsigned int bw = c->border_width;
-
-		xcb_rectangle_t rect = get_rectangle(loc.desktop, loc.node);
-
-		evt.response_type = XCB_CONFIGURE_NOTIFY;
-		evt.event = e->window;
-		evt.window = e->window;
-		evt.above_sibling = XCB_NONE;
-		evt.x = rect.x;
-		evt.y = rect.y;
-		evt.width = rect.width;
-		evt.height = rect.height;
-		evt.border_width = bw;
-		evt.override_redirect = false;
-
-		xcb_send_event(dpy, false, e->window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
-
-		if (c->state == STATE_PSEUDO_TILED) {
-			arrange(loc.monitor, loc.desktop);
-		}
-	} else {
+	if (!is_managed) {
 		uint16_t mask = 0;
 		uint32_t values[7];
 		unsigned short i = 0;
@@ -145,67 +104,109 @@ void configure_request(xcb_generic_event_t *evt)
 		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
 			mask |= XCB_CONFIG_WINDOW_X;
 			values[i++] = e->x;
-			if (is_managed) {
-				c->floating_rectangle.x = e->x;
-			}
 		}
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
 			mask |= XCB_CONFIG_WINDOW_Y;
 			values[i++] = e->y;
-			if (is_managed) {
-				c->floating_rectangle.y = e->y;
-			}
 		}
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
 			mask |= XCB_CONFIG_WINDOW_WIDTH;
-			w = e->width;
-			if (is_managed) {
-				restrain_floating_width(c, &w);
-				c->floating_rectangle.width = w;
-			}
-			values[i++] = w;
+			values[i++] = e->width;
 		}
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
 			mask |= XCB_CONFIG_WINDOW_HEIGHT;
-			h = e->height;
-			if (is_managed) {
-				restrain_floating_height(c, &h);
-				c->floating_rectangle.height = h;
-			}
-			values[i++] = h;
+			values[i++] = e->height;
 		}
 
-		if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) {
+		if (e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) {
 			mask |= XCB_CONFIG_WINDOW_BORDER_WIDTH;
 			values[i++] = e->border_width;
 		}
 
-		if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
+		if (e->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
 			mask |= XCB_CONFIG_WINDOW_SIBLING;
 			values[i++] = e->sibling;
 		}
 
-		if (!is_managed && e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
+		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
 			mask |= XCB_CONFIG_WINDOW_STACK_MODE;
 			values[i++] = e->stack_mode;
 		}
 
 		xcb_configure_window(dpy, e->window, mask, values);
 
-		if (is_managed && mask & XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT) {
-			xcb_rectangle_t r = c->floating_rectangle;
-			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, e->window, r.width, r.height, r.x, r.y);
-		}
-	}
+	} else if (IS_FLOATING(c)) {
+		width = c->floating_rectangle.width;
+		height = c->floating_rectangle.height;
 
-	if (is_managed) {
+		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
+			c->floating_rectangle.x = e->x;
+		}
+
+		if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
+			c->floating_rectangle.y = e->y;
+		}
+
+		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
+			width = e->width;
+		}
+
+		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
+			height = e->height;
+		}
+
+		apply_size_hints(c, &width, &height);
+		c->floating_rectangle.width = width;
+		c->floating_rectangle.height = height;
+		xcb_rectangle_t r = c->floating_rectangle;
+
+		window_move_resize(e->window, r.x, r.y, r.width, r.height);
+
+		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, e->window, r.width, r.height, r.x, r.y);
+
 		monitor_t *m = monitor_from_client(c);
 		if (m != loc.monitor) {
 			transfer_node(loc.monitor, loc.desktop, loc.node, m, m->desk, m->desk->focus);
 		}
+	} else {
+		if (c->state == STATE_PSEUDO_TILED) {
+			width = c->floating_rectangle.width;
+			height = c->floating_rectangle.height;
+			if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
+				width = e->width;
+			}
+			if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
+				height = e->height;
+			}
+			apply_size_hints(c, &width, &height);
+			if (width != c->floating_rectangle.width || height != c->floating_rectangle.height) {
+				c->floating_rectangle.width = width;
+				c->floating_rectangle.height = height;
+				arrange(loc.monitor, loc.desktop);
+			}
+		}
+
+
+		xcb_configure_notify_event_t evt;
+		unsigned int bw = c->border_width;
+
+		xcb_rectangle_t r = IS_FULLSCREEN(c) ? loc.monitor->rectangle : c->tiled_rectangle;
+
+		evt.response_type = XCB_CONFIGURE_NOTIFY;
+		evt.event = e->window;
+		evt.window = e->window;
+		evt.above_sibling = XCB_NONE;
+		evt.x = r.x;
+		evt.y = r.y;
+		evt.width = r.width;
+		evt.height = r.height;
+		evt.border_width = bw;
+		evt.override_redirect = false;
+
+		xcb_send_event(dpy, false, e->window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
 	}
 }
 
@@ -243,18 +244,7 @@ void property_notify(xcb_generic_event_t *evt)
 			set_urgent(loc.monitor, loc.desktop, loc.node, xcb_icccm_wm_hints_get_urgency(&hints));
 	} else if (e->atom == XCB_ATOM_WM_NORMAL_HINTS) {
 		client_t *c = loc.node->client;
-		xcb_size_hints_t size_hints;
-		if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, e->window), &size_hints, NULL) == 1 &&
-		    (size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE))) {
-			c->min_width = size_hints.min_width;
-			c->max_width = size_hints.max_width;
-			c->min_height = size_hints.min_height;
-			c->max_height = size_hints.max_height;
-			int w = c->floating_rectangle.width;
-			int h = c->floating_rectangle.height;
-			restrain_floating_size(c, &w, &h);
-			c->floating_rectangle.width = w;
-			c->floating_rectangle.height = h;
+		if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, e->window), &c->size_hints, NULL) == 1) {
 			arrange(loc.monitor, loc.desktop);
 		}
 	}
@@ -317,6 +307,28 @@ void focus_in(xcb_generic_event_t *evt)
 	}
 }
 
+void button_press(xcb_generic_event_t *evt)
+{
+    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
+    switch (e->detail) {
+		case XCB_BUTTON_INDEX_1:
+			if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
+				xcb_allow_events(dpy, XCB_ALLOW_REPLAY_POINTER, e->time);
+				xcb_flush(dpy);
+				grab_pointer(ACTION_FOCUS);
+			} else {
+				grab_pointer(ACTION_MOVE);
+			}
+			break;
+		case XCB_BUTTON_INDEX_2:
+			grab_pointer(ACTION_RESIZE_SIDE);
+			break;
+		case XCB_BUTTON_INDEX_3:
+			grab_pointer(ACTION_RESIZE_CORNER);
+			break;
+	}
+}
+
 void enter_notify(xcb_generic_event_t *evt)
 {
 	xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
@@ -345,7 +357,11 @@ void motion_notify(xcb_generic_event_t *evt)
 {
 	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
 
-	int dtime = e->time - last_motion_time;
+	static uint16_t last_motion_x = 0, last_motion_y = 0;
+	static xcb_timestamp_t last_motion_time = 0;
+
+	int64_t dtime = e->time - last_motion_time;
+
 	if (dtime > 1000) {
 		last_motion_time = e->time;
 		last_motion_x = e->event_x;
@@ -434,7 +450,25 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_urgent(m, d, n, !n->client->urgent);
 		}
+#define HANDLE_WM_STATE(s)  \
+	} else if (state == ewmh->_NET_WM_STATE_##s) { \
+		if (action == XCB_EWMH_WM_STATE_ADD) { \
+			n->client->wm_flags |= WM_FLAG_##s; \
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) { \
+			n->client->wm_flags &= ~WM_FLAG_##s; \
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) { \
+			n->client->wm_flags ^= WM_FLAG_##s; \
+		} \
+		ewmh_wm_state_update(n);
+	HANDLE_WM_STATE(MODAL)
+	HANDLE_WM_STATE(MAXIMIZED_VERT)
+	HANDLE_WM_STATE(MAXIMIZED_HORZ)
+	HANDLE_WM_STATE(SHADED)
+	HANDLE_WM_STATE(SKIP_TASKBAR)
+	HANDLE_WM_STATE(SKIP_PAGER)
+	HANDLE_WM_STATE(HIDDEN)
 	}
+#undef HANDLE_WM_STATE
 }
 
 void process_error(xcb_generic_event_t *evt)

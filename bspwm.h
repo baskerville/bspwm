@@ -59,7 +59,6 @@ subscriber_list_t *subscribe_tail;
 pending_rule_t *pending_rule_head;
 pending_rule_t *pending_rule_tail;
 
-pointer_state_t *frozen_pointer;
 xcb_window_t meta_window;
 xcb_window_t motion_recorder;
 xcb_atom_t WM_TAKE_FOCUS;

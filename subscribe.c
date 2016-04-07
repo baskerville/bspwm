@@ -24,11 +24,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include "bspwm.h"
-#include "tree.h"
 #include "desktop.h"
 #include "settings.h"
 #include "subscribe.h"

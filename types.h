@@ -26,6 +26,7 @@
 #define BSPWM_TYPES_H
 #include <stdbool.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_icccm.h>
 #include <xcb/randr.h>
 #include <xcb/xcb_event.h>
 #include "helpers.h"
@@ -49,6 +50,21 @@ typedef enum {
 	STATE_FLOATING,
 	STATE_FULLSCREEN
 } client_state_t;
+
+typedef enum {
+	WM_FLAG_MODAL = 1 << 0,
+	WM_FLAG_STICKY = 1 << 1,
+	WM_FLAG_MAXIMIZED_VERT = 1 << 2,
+	WM_FLAG_MAXIMIZED_HORZ = 1 << 3,
+	WM_FLAG_SHADED = 1 << 4,
+	WM_FLAG_SKIP_TASKBAR = 1 << 5,
+	WM_FLAG_SKIP_PAGER = 1 << 6,
+	WM_FLAG_HIDDEN = 1 << 7,
+	WM_FLAG_FULLSCREEN = 1 << 8,
+	WM_FLAG_ABOVE = 1 << 9,
+	WM_FLAG_BELOW = 1 << 10,
+	WM_FLAG_DEMANDS_ATTENTION = 1 << 11,
+} wm_flags_t;
 
 typedef enum {
 	LAYER_BELOW,
@@ -90,21 +106,17 @@ typedef enum {
 } direction_t;
 
 typedef enum {
-	CORNER_TOP_LEFT,
-	CORNER_TOP_RIGHT,
-	CORNER_BOTTOM_RIGHT,
-	CORNER_BOTTOM_LEFT
-} corner_t;
+	HANDLE_LEFT = 1 << 0,
+	HANDLE_TOP = 1 << 1,
+	HANDLE_RIGHT = 1 << 2,
+	HANDLE_BOTTOM = 1 << 3,
+	HANDLE_TOP_LEFT = HANDLE_TOP | HANDLE_LEFT,
+	HANDLE_TOP_RIGHT = HANDLE_TOP | HANDLE_RIGHT,
+	HANDLE_BOTTOM_RIGHT = HANDLE_BOTTOM | HANDLE_RIGHT,
+	HANDLE_BOTTOM_LEFT = HANDLE_BOTTOM | HANDLE_LEFT
+} resize_handle_t;
 
 typedef enum {
-	SIDE_LEFT,
-	SIDE_TOP,
-	SIDE_RIGHT,
-	SIDE_BOTTOM
-} side_t;
-
-typedef enum {
-	ACTION_NONE,
 	ACTION_FOCUS,
 	ACTION_MOVE,
 	ACTION_RESIZE_SIDE,
@@ -158,6 +170,12 @@ typedef struct {
 	option_bool_t focused;
 } monitor_select_t;
 
+typedef struct icccm_props_t icccm_props_t;
+struct icccm_props_t {
+	bool take_focus;
+	bool input_hint;
+};
+
 typedef struct {
 	char class_name[3 * SMALEN / 2];
 	char instance_name[3 * SMALEN / 2];
@@ -170,14 +188,9 @@ typedef struct {
 	stack_layer_t last_layer;
 	xcb_rectangle_t floating_rectangle;
 	xcb_rectangle_t tiled_rectangle;
-	bool icccm_focus;
-	bool icccm_input;
-	uint16_t min_width;
-	uint16_t max_width;
-	uint16_t min_height;
-	uint16_t max_height;
-	xcb_atom_t wm_state[MAX_WM_STATES];
-	int wm_states_count;
+	xcb_size_hints_t size_hints;
+	icccm_props_t icccm_props;
+	wm_flags_t wm_flags;
 } client_t;
 
 typedef struct presel_t presel_t;
@@ -296,10 +309,6 @@ typedef struct {
 	double split_ratio;
 	stack_layer_t *layer;
 	client_state_t *state;
-	uint16_t min_width;
-	uint16_t max_width;
-	uint16_t min_height;
-	uint16_t max_height;
 	bool locked;
 	bool sticky;
 	bool private;
@@ -318,28 +327,5 @@ struct pending_rule_t {
 	pending_rule_t *prev;
 	pending_rule_t *next;
 };
-
-typedef struct {
-	xcb_point_t position;
-	pointer_action_t action;
-	xcb_rectangle_t rectangle;
-	node_t *vertical_fence;
-	node_t *horizontal_fence;
-	monitor_t *monitor;
-	desktop_t *desktop;
-	node_t *node;
-	client_t *client;
-	xcb_window_t window;
-	bool is_tiled;
-	double vertical_ratio;
-	double horizontal_ratio;
-	corner_t corner;
-	side_t side;
-} pointer_state_t;
-
-typedef struct {
-	node_t *fence;
-	unsigned int distance;
-} fence_distance_t;
 
 #endif

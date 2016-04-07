@@ -340,6 +340,12 @@ Commands
 *-o*, *--presel-ratio* 'RATIO'::
 	Set the splitting ratio of the preselection area.
 
+*-v*, *--move* 'dx' 'dy'::
+	Move the selected window by 'dx' pixels horizontally and 'dy' pixels vertically.
+
+*-z*, *--resize* top|left|bottom|right|top_left|top_right|bottom_right|bottom_left 'dx' 'dy'::
+	Resize the selected window by moving the given handle by 'dx' pixels horizontally and 'dy' pixels vertically.
+
 *-r*, *--ratio* 'RATIO'|(+|-)'PIXELS'::
 	Set the splitting ratio of the selected node (0 < 'RATIO' < 1).
 
@@ -502,26 +508,6 @@ Commands
 *-g*, *--get-status*::
 	Print the current status information.
 
-Pointer
-~~~~~~~
-
-General Syntax
-^^^^^^^^^^^^^^
-
-pointer 'COMMANDS'
-
-Commands
-^^^^^^^^
-
-*-g*, *--grab* focus|move|resize_side|resize_corner::
-	Initiate the given pointer action.
-
-*-t*, *--track* <x> <y>::
-	Pass the pointer root coordinates for the current pointer action.
-
-*-u*, *--ungrab*::
-	Terminate the current pointer action.
-
 Rule
 ~~~~
 
@@ -624,6 +610,12 @@ Global Settings
 'single_monocle'::
 	Set the desktop layout to *monocle* if there's only one tiled window in the tree.
 
+'pointer_modifier'::
+	Keyboard modifier used for moving or resizing windows. Accept the following values: *shift*, *control*, *lock*, *mod1*, *mod2*, *mod3*, *mod4*, *mod5*.
+
+'click_to_focus'::
+	Focus a window (or a monitor) by clicking it.
+
 'focus_follows_pointer'::
 	Focus the window under the pointer.
 
@@ -638,6 +630,9 @@ Global Settings
 
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
+
+'honor_size_hints'::
+	Apply ICCCM window size hints.
 
 'remove_disabled_monitors'::
 	Consider disabled monitors as disconnected.
@@ -669,6 +664,20 @@ Node Settings
 'border_width'::
 	Window border width.
 
+Pointer Bindings
+----------------
+
+'button1'::
+	Focus the window under the pointer if 'click_to_focus' is set.
+
+'pointer_modifier' + 'button1'::
+	Move the window under the pointer.
+
+'pointer_modifier' + 'button2'::
+	Resize the window under the pointer by dragging the nearest side.
+
+'pointer_modifier' + 'button3'::
+	Resize the window under the pointer by dragging the nearest corner.
 
 Events
 ------

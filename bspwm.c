@@ -39,6 +39,7 @@
 #include "monitor.h"
 #include "settings.h"
 #include "messages.h"
+#include "pointer.h"
 #include "events.h"
 #include "common.h"
 #include "window.h"
@@ -191,6 +192,7 @@ int main(int argc, char *argv[])
 	cleanup();
 	close(sock_fd);
 	unlink(socket_path);
+	ungrab_buttons();
 	xcb_ewmh_connection_wipe(ewmh);
 	xcb_destroy_window(dpy, meta_window);
 	xcb_destroy_window(dpy, motion_recorder);
@@ -209,7 +211,6 @@ void init(void)
 	stack_head = stack_tail = NULL;
 	subscribe_head = subscribe_tail = NULL;
 	pending_rule_head = pending_rule_tail = NULL;
-	last_motion_time = last_motion_x = last_motion_y = 0;
 	auto_raise = sticky_still = record_history = true;
 	randr_base = 0;
 	exit_status = 0;
@@ -219,6 +220,8 @@ void setup(void)
 {
 	init();
 	ewmh_init();
+	pointer_init();
+
 	screen = xcb_setup_roots_iterator(xcb_get_setup(dpy)).data;
 
 	if (screen == NULL) {
@@ -227,6 +230,7 @@ void setup(void)
 
 	root = screen->root;
 	register_events();
+	grab_buttons();
 
 	screen_width = screen->width_in_pixels;
 	screen_height = screen->height_in_pixels;
@@ -315,7 +319,6 @@ void setup(void)
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_current_desktop();
-	frozen_pointer = make_pointer_state();
 	xcb_get_input_focus_reply_t *ifo = xcb_get_input_focus_reply(dpy, xcb_get_input_focus(dpy), NULL);
 	if (ifo != NULL && (ifo->focus == XCB_INPUT_FOCUS_POINTER_ROOT || ifo->focus == XCB_NONE)) {
 		clear_input_focus();
@@ -351,7 +354,6 @@ void cleanup(void)
 	}
 
 	empty_history();
-	free(frozen_pointer);
 }
 
 bool check_connection (xcb_connection_t *dpy)

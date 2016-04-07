@@ -40,7 +40,6 @@ void cmd_desktop(char **args, int num, FILE *rsp);
 void cmd_monitor(char **args, int num, FILE *rsp);
 void cmd_query(char **args, int num, FILE *rsp);
 void cmd_rule(char **args, int num, FILE *rsp);
-void cmd_pointer(char **args, int num, FILE *rsp);
 void cmd_wm(char **args, int num, FILE *rsp);
 int cmd_subscribe(char **args, int num, FILE *rsp);
 void cmd_quit(char **args, int num, FILE *rsp);

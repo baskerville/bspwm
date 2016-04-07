@@ -36,6 +36,7 @@
 #include "geometry.h"
 #include "subscribe.h"
 #include "settings.h"
+#include "pointer.h"
 #include "stack.h"
 #include "window.h"
 #include "tree.h"
@@ -81,7 +82,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 
 	n->rectangle = rect;
 
-	if (pointer_follows_focus && mon->desk->focus == n && frozen_pointer->action == ACTION_NONE) {
+	if (pointer_follows_focus && mon->desk->focus == n) {
 		xcb_rectangle_t r = rect;
 		r.width -= d->window_gap;
 		r.height -= d->window_gap;
@@ -137,9 +138,11 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 			r = m->rectangle;
 		}
 
+		apply_size_hints(n->client, &r.width, &r.height);
+
 		if (!rect_eq(r, cr)) {
 			window_move_resize(n->id, r.x, r.y, r.width, r.height);
-			if (frozen_pointer->action == ACTION_NONE) {
+			if (!grabbing) {
 				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", m->id, d->id, n->id, r.width, r.height, r.x, r.y);
 			}
 		}
@@ -614,43 +617,55 @@ node_t *make_node(uint32_t id)
 
 client_t *make_client(void)
 {
-	client_t *c = malloc(sizeof(client_t));
+	client_t *c = calloc(1, sizeof(client_t));
 	c->state = c->last_state = STATE_TILED;
 	c->layer = c->last_layer = LAYER_NORMAL;
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
-	c->urgent = c->visible = c->icccm_focus = false;
-	c->icccm_input = true;
-	c->wm_states_count = 0;
 	return c;
 }
 
 void initialize_client(node_t *n)
 {
 	xcb_window_t win = n->id;
-	if (win != XCB_NONE) {
-		client_t *c = n->client;
-		xcb_icccm_get_wm_protocols_reply_t protocols;
-		if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protocols, NULL) == 1) {
-			if (has_proto(WM_TAKE_FOCUS, &protocols)) {
-				c->icccm_focus = true;
-			}
-			xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
+	client_t *c = n->client;
+	xcb_icccm_get_wm_protocols_reply_t protos;
+	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protos, NULL) == 1) {
+		if (has_proto(WM_TAKE_FOCUS, &protos)) {
+			c->icccm_props.take_focus = true;
 		}
-		xcb_ewmh_get_atoms_reply_t wm_state;
-		if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
-			for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_WM_STATES; i++) {
-				ewmh_wm_state_add(n, wm_state.atoms[i]);
-			}
-			xcb_ewmh_get_atoms_reply_wipe(&wm_state);
-		}
-		xcb_icccm_wm_hints_t hints;
-		if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, win), &hints, NULL) == 1
-		    && (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
-			c->icccm_input = hints.input;
-		}
+		xcb_icccm_get_wm_protocols_reply_wipe(&protos);
 	}
+	xcb_ewmh_get_atoms_reply_t wm_state;
+	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
+		for (unsigned int i = 0; i < wm_state.atoms_len && i < MAX_WM_STATES; i++) {
+#define HANDLE_WM_STATE(s) \
+			if (wm_state.atoms[i] == ewmh->_NET_WM_STATE_##s) { \
+				c->wm_flags |= WM_FLAG_##s; continue; \
+			}
+			HANDLE_WM_STATE(MODAL)
+			HANDLE_WM_STATE(STICKY)
+			HANDLE_WM_STATE(MAXIMIZED_VERT)
+			HANDLE_WM_STATE(MAXIMIZED_HORZ)
+			HANDLE_WM_STATE(SHADED)
+			HANDLE_WM_STATE(SKIP_TASKBAR)
+			HANDLE_WM_STATE(SKIP_PAGER)
+			HANDLE_WM_STATE(HIDDEN)
+			HANDLE_WM_STATE(FULLSCREEN)
+			HANDLE_WM_STATE(ABOVE)
+			HANDLE_WM_STATE(BELOW)
+			HANDLE_WM_STATE(DEMANDS_ATTENTION)
+#undef HANDLE_WM_STATE
+		}
+		xcb_ewmh_get_atoms_reply_wipe(&wm_state);
+	}
+	xcb_icccm_wm_hints_t hints;
+	if (xcb_icccm_get_wm_hints_reply(dpy, xcb_icccm_get_wm_hints(dpy, win), &hints, NULL) == 1
+		&& (hints.flags & XCB_ICCCM_WM_HINT_INPUT)) {
+		c->icccm_props.input_hint = hints.input;
+	}
+	xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &c->size_hints, NULL);
 }
 
 bool is_leaf(node_t *n)
@@ -1261,6 +1276,9 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 		m->sticky_count -= sticky_count(n);
 	}
 	clients_count -= clients_count_in(n);
+	if (grabbed_node == n) {
+		grabbed_node = NULL;
+	}
 	free(n->client);
 	free(n);
 
@@ -1592,6 +1610,18 @@ bool set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 	n->client->last_layer = n->client->layer;
 	n->client->layer = l;
 
+	if (l == LAYER_ABOVE) {
+		n->client->wm_flags |= WM_FLAG_ABOVE;
+		n->client->wm_flags &= ~WM_FLAG_BELOW;
+	} else if (l == LAYER_BELOW) {
+		n->client->wm_flags |= WM_FLAG_BELOW;
+		n->client->wm_flags &= ~WM_FLAG_ABOVE;
+	} else {
+		n->client->wm_flags &= ~(WM_FLAG_ABOVE | WM_FLAG_BELOW);
+	}
+
+	ewmh_wm_state_update(n);
+
 	put_status(SBSC_MASK_NODE_LAYER, "node_layer 0x%08X 0x%08X 0x%08X %s\n", m->id, d->id, n->id, LAYER_STR(l));
 
 	if (d->focus == n) {
@@ -1677,17 +1707,18 @@ void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	set_vacant_state(m, d, n, value);
 
 	if (value) {
-		ewmh_wm_state_add(n, ewmh->_NET_WM_STATE_FULLSCREEN);
+		c->wm_flags |= WM_FLAG_FULLSCREEN;
 		c->last_layer = c->layer;
 		c->layer = LAYER_ABOVE;
 	} else {
-		ewmh_wm_state_remove(n, ewmh->_NET_WM_STATE_FULLSCREEN);
+		c->wm_flags &= ~WM_FLAG_FULLSCREEN;
 		c->layer = c->last_layer;
 		if (d->focus == n) {
 			neutralize_occluding_windows(m, d, n);
 		}
 	}
 
+	ewmh_wm_state_update(n);
 	stack(d, n, (d->focus == n));
 }
 
@@ -1736,11 +1767,18 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->sticky = value;
 
 	if (value) {
-		ewmh_wm_state_add(n, ewmh->_NET_WM_STATE_STICKY);
 		m->sticky_count++;
 	} else {
-		ewmh_wm_state_remove(n, ewmh->_NET_WM_STATE_STICKY);
 		m->sticky_count--;
+	}
+
+	if (n->client != NULL) {
+		if (value) {
+			n->client->wm_flags |= WM_FLAG_STICKY;
+		} else {
+			n->client->wm_flags &= ~WM_FLAG_STICKY;
+		}
+		ewmh_wm_state_update(n);
 	}
 
 	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%08X 0x%08X 0x%08X sticky %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
@@ -1773,6 +1811,14 @@ void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	}
 
 	n->client->urgent = value;
+
+	if (value) {
+		n->client->wm_flags |= WM_FLAG_DEMANDS_ATTENTION;
+	} else {
+		n->client->wm_flags &= ~WM_FLAG_DEMANDS_ATTENTION;
+	}
+
+	ewmh_wm_state_update(n);
 
 	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%08X 0x%08X 0x%08X urgent %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 	put_status(SBSC_MASK_REPORT);

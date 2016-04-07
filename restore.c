@@ -175,6 +175,7 @@ bool restore_tree(const char *file_path)
 				if (n->client == NULL) {
 					continue;
 				}
+				initialize_client(n);
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 				xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
 			}
@@ -433,17 +434,6 @@ client_t *restore_client(jsmntok_t **t, char *json)
 			RESTORE_UINT(borderWidth, &c->border_width)
 			RESTORE_BOOL(urgent, &c->urgent)
 			RESTORE_BOOL(visible, &c->visible)
-			RESTORE_BOOL(icccmFocus, &c->icccm_focus)
-			RESTORE_BOOL(icccmInput, &c->icccm_input)
-			RESTORE_USINT(minWidth, &c->min_width)
-			RESTORE_USINT(maxWidth, &c->max_width)
-			RESTORE_USINT(minHeight, &c->min_height)
-			RESTORE_USINT(maxHeight, &c->max_height)
-			RESTORE_INT(wmStatesCount, &c->wm_states_count)
-			} else if (keyeq("wmState", *t, json)) {
-				(*t)++;
-				restore_wm_state(c->wm_state, t, json);
-				continue;
 			} else if (keyeq("tiledRectangle", *t, json)) {
 				(*t)++;
 				restore_rectangle(&c->tiled_rectangle, t, json);
@@ -562,17 +552,6 @@ void restore_stack(jsmntok_t **t, char *json)
 		if (locate_window(id, &loc)) {
 			stack_insert_after(stack_tail, loc.node);
 		}
-		(*t)++;
-	}
-}
-
-void restore_wm_state(xcb_atom_t *w, jsmntok_t **t, char *json)
-{
-	int s = (*t)->size;
-	(*t)++;
-
-	for (int i = 0; i < s; i++) {
-		sscanf(json + (*t)->start, "%u", &w[i]);
 		(*t)++;
 	}
 }
