@@ -1393,10 +1393,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 	           streq("pointer_action2", name) ||
 	           streq("pointer_action3", name)) {
 		int index = name[14] - '1';
-		if (parse_pointer_action(value, &pointer_actions[index])) {
-			ungrab_buttons();
-			grab_buttons();
-		} else {
+		if (!parse_pointer_action(value, &pointer_actions[index])) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
