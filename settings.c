@@ -57,6 +57,10 @@ void load_settings(void)
 	initial_polarity = FIRST_CHILD;
 	pointer_modifier = POINTER_MODIFIER;
 
+	pointer_actions[0] = ACTION_MOVE;
+	pointer_actions[1] = ACTION_RESIZE_SIDE;
+	pointer_actions[2] = ACTION_RESIZE_CORNER;
+
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
 	paddingless_monocle = PADDINGLESS_MONOCLE;

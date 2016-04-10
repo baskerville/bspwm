@@ -1389,6 +1389,17 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("pointer_action1", name) ||
+	           streq("pointer_action2", name) ||
+	           streq("pointer_action3", name)) {
+		int index = name[14] - '1';
+		if (parse_pointer_action(value, &pointer_actions[index])) {
+			ungrab_buttons();
+			grab_buttons();
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("click_to_focus", name)) {
 		if (parse_bool(value, &click_to_focus)) {
 			ungrab_buttons();

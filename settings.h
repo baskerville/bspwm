@@ -77,6 +77,7 @@ double split_ratio;
 
 child_polarity_t initial_polarity;
 uint16_t pointer_modifier;
+pointer_action_t pointer_actions[3];
 
 bool borderless_monocle;
 bool gapless_monocle;

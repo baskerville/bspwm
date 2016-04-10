@@ -317,14 +317,14 @@ void button_press(xcb_generic_event_t *evt)
 				xcb_flush(dpy);
 				grab_pointer(ACTION_FOCUS);
 			} else {
-				grab_pointer(ACTION_MOVE);
+				grab_pointer(pointer_actions[0]);
 			}
 			break;
 		case XCB_BUTTON_INDEX_2:
-			grab_pointer(ACTION_RESIZE_SIDE);
+			grab_pointer(pointer_actions[1]);
 			break;
 		case XCB_BUTTON_INDEX_3:
-			grab_pointer(ACTION_RESIZE_CORNER);
+			grab_pointer(pointer_actions[2]);
 			break;
 	}
 }

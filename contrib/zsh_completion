@@ -3,7 +3,7 @@
 _bspc() {
 	local -a commands settings
 	commands=('node' 'desktop' 'monitor' 'query' 'rule' 'restore' 'wm' 'subscribe' 'config' 'quit')
-	settings=('external_rules_command' 'status_prefix' 'normal_border_color' 'active_border_color' 'focused_border_color' 'presel_feedback_color' 'border_width' 'window_gap' 'top_padding' 'right_padding' 'bottom_padding' 'left_padding' 'split_ratio' 'initial_polarity' 'borderless_monocle' 'gapless_monocle' 'leaf_monocle' 'pointer_modifier' 'click_to_focus' 'focus_follows_pointer' 'pointer_follows_focus' 'pointer_follows_monitor' 'history_aware_focus' 'focus_by_distance' 'ignore_ewmh_focus' 'center_pseudo_tiled' 'honor_size_hints' 'remove_disabled_monitors' 'remove_unplugged_monitors' 'merge_overlapping_monitors')
+	settings=('external_rules_command' 'status_prefix' 'normal_border_color' 'active_border_color' 'focused_border_color' 'presel_feedback_color' 'border_width' 'window_gap' 'top_padding' 'right_padding' 'bottom_padding' 'left_padding' 'split_ratio' 'initial_polarity' 'borderless_monocle' 'gapless_monocle' 'leaf_monocle' 'pointer_modifier' 'pointer_action1' 'pointer_action2' 'pointer_action3' 'click_to_focus' 'focus_follows_pointer' 'pointer_follows_focus' 'pointer_follows_monitor' 'history_aware_focus' 'focus_by_distance' 'ignore_ewmh_focus' 'center_pseudo_tiled' 'honor_size_hints' 'remove_disabled_monitors' 'remove_unplugged_monitors' 'merge_overlapping_monitors')
 	if (( CURRENT == 2 )) ; then
 		_values 'command' "$commands[@]"
 	elif (( CURRENT == 3 )) ; then
