@@ -314,6 +314,24 @@ void print_modifier_mask(uint16_t m, FILE *rsp)
 	}
 }
 
+void print_pointer_action(pointer_action_t a, FILE *rsp)
+{
+	switch (a) {
+		case ACTION_FOCUS:
+			fprintf(rsp, "focus");
+			break;
+		case ACTION_MOVE:
+			fprintf(rsp, "move");
+			break;
+		case ACTION_RESIZE_SIDE:
+			fprintf(rsp, "resize_side");
+			break;
+		case ACTION_RESIZE_CORNER:
+			fprintf(rsp, "resize_corner");
+			break;
+	}
+}
+
 node_select_t make_node_select(void)
 {
 	node_select_t sel = {

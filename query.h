@@ -57,6 +57,7 @@ int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t loc, 
 int query_desktop_ids(coordinates_t loc, desktop_select_t *sel, FILE *rsp);
 int query_monitor_ids(coordinates_t loc, monitor_select_t *sel, FILE *rsp);
 void print_modifier_mask(uint16_t m, FILE *rsp);
+void print_pointer_action(pointer_action_t a, FILE *rsp);
 node_select_t make_node_select(void);
 desktop_select_t make_desktop_select(void);
 monitor_select_t make_monitor_select(void);

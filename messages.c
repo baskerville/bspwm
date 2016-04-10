@@ -1531,6 +1531,11 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", CHILD_POL_STR(initial_polarity));
 	} else if (streq("pointer_modifier", name)) {
 		print_modifier_mask(pointer_modifier, rsp);
+	} else if (streq("pointer_action1", name) ||
+	           streq("pointer_action2", name) ||
+	           streq("pointer_action3", name)) {
+		int index = name[14] - '1';
+		print_pointer_action(pointer_actions[index], rsp);
 #define GET_COLOR(s) \
 	} else if (streq(#s, name)) { \
 		fprintf(rsp, "%s", s);
