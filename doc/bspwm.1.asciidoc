@@ -613,8 +613,10 @@ Global Settings
 'pointer_modifier'::
 	Keyboard modifier used for moving or resizing windows. Accept the following values: *shift*, *control*, *lock*, *mod1*, *mod2*, *mod3*, *mod4*, *mod5*.
 
-'pointer_action1', 'pointer_action2', 'pointer_action3'::
-	Action performed when pressing mouse buttons 1,2 & 3. Accept the following values: *move*, *resize_side*, *resize_corner*, *focus*.
+'pointer_action1'::
+'pointer_action2'::
+'pointer_action3'::
+	Action performed when pressing 'pointer_modifier' + 'button<n>'. Accept the following values: *move*, *resize_side*, *resize_corner*, *focus*.
 
 'click_to_focus'::
 	Focus a window (or a monitor) by clicking it.
@@ -681,6 +683,8 @@ Pointer Bindings
 
 'pointer_modifier' + 'button3'::
 	Resize the window under the pointer by dragging the nearest corner.
+
+The behavior of 'pointer_modifier' + 'button<n>' can be modified through the 'pointer_action<n>' setting.
 
 Events
 ------

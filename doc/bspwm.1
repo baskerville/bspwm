@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/07/2016
+.\"      Date: 04/10/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-11-ge1b5f77
+.\"    Source: Bspwm 0.9.1-16-gc6c52e2
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/07/2016" "Bspwm 0\&.9\&.1\-11\-ge1b5f77" "Bspwm Manual"
+.TH "BSPWM" "1" "04/10/2016" "Bspwm 0\&.9\&.1\-16\-gc6c52e2" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1060,7 +1060,10 @@ Keyboard modifier used for moving or resizing windows\&. Accept the following va
 .PP
 \fIpointer_action1\fR, \fIpointer_action2\fR, \fIpointer_action3\fR
 .RS 4
-Action performed when pressing mouse buttons 1,2 & 3\&. Accept the following values:
+Action performed when pressing
+\fIpointer_modifier\fR
++
+\fIbutton<n>\fR\&. Accept the following values:
 \fBmove\fR,
 \fBresize_side\fR,
 \fBresize_corner\fR,
@@ -1158,6 +1161,8 @@ Resize the window under the pointer by dragging the nearest side\&.
 .RS 4
 Resize the window under the pointer by dragging the nearest corner\&.
 .RE
+.sp
+The behavior of \fIpointer_modifier\fR + \fIbutton<n>\fR can be modified through the \fIpointer_action<n>\fR setting\&.
 .SH "EVENTS"
 .PP
 \fIreport\fR
