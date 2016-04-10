@@ -842,14 +842,14 @@ node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir,
 	if (history_aware_focus) {
 		nearest = nearest_from_history(m, d, n, dir, sel);
 	}
-    if (nearest == NULL) {
-        if (focus_by_distance) {
-            nearest = nearest_from_distance(m, d, n, dir, sel);
-        } else {
-            nearest = nearest_from_tree(m, d, n, dir, sel);
-        }
-    }
-    return nearest;
+	if (nearest == NULL) {
+		if (focus_by_distance) {
+			nearest = nearest_from_distance(m, d, n, dir, sel);
+		} else {
+			nearest = nearest_from_tree(m, d, n, dir, sel);
+		}
+	}
+	return nearest;
 }
 
 /* returns *true* if *a* is a child of *b* */
@@ -907,23 +907,23 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 
 node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
 {
-    if (n == NULL) {
-        return NULL;
-    }
+	if (n == NULL) {
+		return NULL;
+	}
 
-    node_t *fence = find_fence(n, dir);
+	node_t *fence = find_fence(n, dir);
 
-    if (fence == NULL) {
-        return NULL;
-    }
+	if (fence == NULL) {
+		return NULL;
+	}
 
-    node_t *nearest = NULL;
+	node_t *nearest = NULL;
 
-    if (dir == DIR_NORTH || dir == DIR_WEST) {
-        nearest = second_extrema(fence->first_child);
-    } else if (dir == DIR_SOUTH || dir == DIR_EAST) {
-        nearest = first_extrema(fence->second_child);
-    }
+	if (dir == DIR_NORTH || dir == DIR_WEST) {
+		nearest = second_extrema(fence->first_child);
+	} else if (dir == DIR_SOUTH || dir == DIR_EAST) {
+		nearest = first_extrema(fence->second_child);
+	}
 
 	coordinates_t ref = {m, d, n};
 	coordinates_t loc = {m, d, nearest};

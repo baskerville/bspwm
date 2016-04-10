@@ -105,8 +105,8 @@ void history_swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_
 
 void history_remove(desktop_t *d, node_t *n, bool deep)
 {
-   /* removing from the newest to the oldest is required */
-   /* for maintaining the *latest* attribute */
+	/* removing from the newest to the oldest is required */
+	/* for maintaining the *latest* attribute */
 	history_t *b = history_tail;
 	while (b != NULL) {
 		if ((n != NULL && ((deep && is_descendant(b->loc.node, n)) || (!deep && b->loc.node == n))) ||

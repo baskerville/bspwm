@@ -309,8 +309,8 @@ void focus_in(xcb_generic_event_t *evt)
 
 void button_press(xcb_generic_event_t *evt)
 {
-    xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
-    switch (e->detail) {
+	xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
+	switch (e->detail) {
 		case XCB_BUTTON_INDEX_1:
 			if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
 				xcb_allow_events(dpy, XCB_ALLOW_REPLAY_POINTER, e->time);
