@@ -288,6 +288,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 		n->parent = p;
 		free(f);
+		f = NULL;
 	} else {
 		node_t *c = make_node(XCB_NONE);
 		node_t *p = f->parent;
