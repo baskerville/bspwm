@@ -50,39 +50,42 @@ void pointer_init(void)
 
 void grab_buttons(void)
 {
+	if (click_to_focus) {
+		grab_button(XCB_BUTTON_INDEX_1, XCB_NONE);
+	}
+	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
+	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
+		grab_button(buttons[i], pointer_modifier);
+	}
+}
+
+void grab_button(uint8_t button, uint16_t modifier)
+{
 #define GRAB(b, m) \
 	xcb_grab_button(dpy, false, root, XCB_EVENT_MASK_BUTTON_PRESS, \
 	                XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, b, m)
-	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
-	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
-		uint8_t button = buttons[i];
-		if (click_to_focus && button == XCB_BUTTON_INDEX_1) {
-			GRAB(button, XCB_MOD_MASK_ANY);
-			continue;
-		}
-		GRAB(button, pointer_modifier);
+		GRAB(button, modifier);
 		if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | num_lock | caps_lock | scroll_lock);
+			GRAB(button, modifier | num_lock | caps_lock | scroll_lock);
 		}
 		if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | num_lock | caps_lock);
+			GRAB(button, modifier | num_lock | caps_lock);
 		}
 		if (caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | caps_lock | scroll_lock);
+			GRAB(button, modifier | caps_lock | scroll_lock);
 		}
 		if (num_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | num_lock | scroll_lock);
+			GRAB(button, modifier | num_lock | scroll_lock);
 		}
 		if (num_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | num_lock);
+			GRAB(button, modifier | num_lock);
 		}
 		if (caps_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | caps_lock);
+			GRAB(button, modifier | caps_lock);
 		}
 		if (scroll_lock != XCB_NO_SYMBOL) {
-			GRAB(button, pointer_modifier | scroll_lock);
+			GRAB(button, modifier | scroll_lock);
 		}
-	}
 #undef GRAB
 }
 
