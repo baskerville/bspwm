@@ -397,17 +397,6 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	history_dir_t hdi;
 	if (parse_direction(desc, &dir)) {
 		dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
-		if (dst->node == NULL && mon_head != mon_tail) {
-			monitor_t *m = nearest_monitor(ref->monitor, dir, make_monitor_select());
-			if (m != NULL) {
-				coordinates_t loc = {m, m->desk, m->desk->focus};
-				if (node_matches(&loc, ref, sel)) {
-					dst->monitor = m;
-					dst->desktop = m->desk;
-					dst->node = m->desk->focus;
-				}
-			}
-		}
 	} else if (parse_cycle_direction(desc, &cyc)) {
 		dst->node = closest_node(ref->monitor, ref->desktop, ref->node, cyc, sel);
 	} else if (parse_history_direction(desc, &hdi)) {
