@@ -423,14 +423,6 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			dst->desktop = mon->desk;
 			dst->node = mon->desk->focus;
 		}
-	} else if (streq("pointed", desc)) {
-		xcb_window_t win;
-		query_pointer(&win, NULL);
-		if (locate_window(win, dst) && node_matches(dst, ref, sel)) {
-			return SELECTOR_OK;
-		} else {
-			return SELECTOR_INVALID;
-		}
 	} else if (*desc == '@') {
 		desc++;
 		if (colon != NULL) {
