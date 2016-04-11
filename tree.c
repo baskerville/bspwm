@@ -1637,7 +1637,7 @@ bool set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 
 bool set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s)
 {
-	if (n == NULL || n->client->state == s) {
+	if (n == NULL || n->client == NULL || n->client->state == s) {
 		return false;
 	}
 
