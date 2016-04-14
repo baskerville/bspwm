@@ -294,7 +294,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL || trg.node->client == NULL) {
+			if (trg.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
