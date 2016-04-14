@@ -883,17 +883,21 @@ void cmd_query(char **args, int num, FILE *rsp)
 	desktop_select_t *desktop_sel = NULL;
 	node_select_t *node_sel = NULL;
 	domain_t dom = DOMAIN_TREE;
-	int d = 0, t = 0;
+
+	if (num < 1) {
+		fail(rsp, "query: Not enough arguments.\n");
+		return;
+	}
 
 	while (num > 0) {
 		if (streq("-T", *args) || streq("--tree", *args)) {
-			dom = DOMAIN_TREE, d++;
+			dom = DOMAIN_TREE;
 		} else if (streq("-M", *args) || streq("--monitors", *args)) {
-			dom = DOMAIN_MONITOR, d++;
+			dom = DOMAIN_MONITOR;
 		} else if (streq("-D", *args) || streq("--desktops", *args)) {
-			dom = DOMAIN_DESKTOP, d++;
+			dom = DOMAIN_DESKTOP;
 		} else if (streq("-N", *args) || streq("--nodes", *args)) {
-			dom = DOMAIN_NODE, d++;
+			dom = DOMAIN_NODE;
 		} else if (streq("-m", *args) || streq("--monitor", *args)) {
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
@@ -916,7 +920,6 @@ void cmd_query(char **args, int num, FILE *rsp)
 			} else {
 				trg.monitor = ref.monitor;
 			}
-			t++;
 		} else if (streq("-d", *args) || streq("--desktop", *args)) {
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
@@ -940,7 +943,6 @@ void cmd_query(char **args, int num, FILE *rsp)
 				trg.monitor = ref.monitor;
 				trg.desktop = ref.desktop;
 			}
-			t++;
 		} else if (streq("-n", *args) || streq("--node", *args)) {
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
@@ -967,7 +969,6 @@ void cmd_query(char **args, int num, FILE *rsp)
 					goto end;
 				}
 			}
-			t++;
 		} else {
 			fail(rsp, "query: Unknown option: '%s'.\n", *args);
 			goto end;
@@ -975,8 +976,8 @@ void cmd_query(char **args, int num, FILE *rsp)
 		num--, args++;
 	}
 
-	if (d != 1 || t > 1) {
-		fail(rsp, "query: Exactly one domain and at most one constraint must be specified.\n");
+	if (dom == DOMAIN_TREE && trg.monitor == NULL) {
+		fail(rsp, "query -T: No constraints given.\n");
 		goto end;
 	}
 
@@ -997,11 +998,8 @@ void cmd_query(char **args, int num, FILE *rsp)
 			query_node(trg.node, rsp);
 		} else if (trg.desktop != NULL) {
 			query_desktop(trg.desktop, rsp);
-		} else  if (trg.monitor != NULL) {
+		} else  {
 			query_monitor(trg.monitor, rsp);
-		} else {
-			fail(rsp, "");
-			goto end;
 		}
 		fprintf(rsp, "\n");
 	}

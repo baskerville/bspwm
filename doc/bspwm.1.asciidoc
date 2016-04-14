@@ -476,7 +476,9 @@ Commands
 Options
 ^^^^^^^
 
-[*-m*,*--monitor* ['MONITOR_SEL']] | [*-d*,*--desktop* ['DESKTOP_SEL']] | [*-n*, *--node* ['NODE_SEL']]::
+*-m*,*--monitor* ['MONITOR_SEL']::
+*-d*,*--desktop* ['DESKTOP_SEL']::
+*-n*, *--node* ['NODE_SEL']::
 	Constrain matches to the selected monitor, desktop or node. The descriptor can be omitted for '-M', '-D' and '-N'.
 
 Wm
