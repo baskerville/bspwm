@@ -310,11 +310,11 @@ void focus_in(xcb_generic_event_t *evt)
 void button_press(xcb_generic_event_t *evt)
 {
 	xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
+	bool replay = false;
 	switch (e->detail) {
 		case XCB_BUTTON_INDEX_1:
 			if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
-				xcb_allow_events(dpy, XCB_ALLOW_REPLAY_POINTER, e->time);
-				xcb_flush(dpy);
+				replay = true;
 				grab_pointer(ACTION_FOCUS);
 			} else {
 				grab_pointer(pointer_actions[0]);
@@ -327,6 +327,8 @@ void button_press(xcb_generic_event_t *evt)
 			grab_pointer(pointer_actions[2]);
 			break;
 	}
+	xcb_allow_events(dpy, replay ? XCB_ALLOW_REPLAY_POINTER : XCB_ALLOW_SYNC_POINTER, e->time);
+	xcb_flush(dpy);
 }
 
 void enter_notify(xcb_generic_event_t *evt)
