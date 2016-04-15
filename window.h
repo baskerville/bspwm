@@ -45,6 +45,7 @@ void window_draw_border(xcb_window_t win, uint32_t border_color_pxl);
 void adopt_orphans(void);
 uint32_t get_border_color(bool focused_node, bool focused_monitor);
 void initialize_floating_rectangle(node_t *n);
+xcb_rectangle_t get_window_rectangle(node_t *n);
 bool move_client(coordinates_t *loc, int dx, int dy);
 bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy);
 void apply_size_hints(client_t *c, uint16_t *width, uint16_t *height);

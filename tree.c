@@ -108,7 +108,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		}
 
 		xcb_rectangle_t r;
-		xcb_rectangle_t cr = get_rectangle(d, n);
+		xcb_rectangle_t cr = get_window_rectangle(n);
 		client_state_t s = n->client->state;
 		if (s == STATE_TILED || s == STATE_PSEUDO_TILED) {
 			int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
@@ -136,6 +136,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		/* fullscreen clients */
 		} else {
 			r = m->rectangle;
+			n->client->tiled_rectangle = r;
 		}
 
 		apply_size_hints(n->client, &r.width, &r.height);
@@ -1837,13 +1838,10 @@ xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n)
 {
 	client_t *c = n->client;
 	if (c != NULL) {
-		xcb_get_geometry_reply_t *g = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, n->id), NULL);
-		if (g != NULL) {
-			xcb_rectangle_t rect = (xcb_rectangle_t) {g->x, g->y, g->width, g->height};
-			free(g);
-			return rect;
+		if (IS_FLOATING(c)) {
+			return c->floating_rectangle;
 		} else {
-			return (xcb_rectangle_t) {0, 0, screen_width, screen_height};
+			return c->tiled_rectangle;
 		}
 	} else {
 		int wg = (d == NULL ? 0 : (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap));
