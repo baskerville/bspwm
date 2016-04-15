@@ -69,6 +69,7 @@ void activate_desktop(monitor_t *m, desktop_t *d)
 desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
 {
 	desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
+
 	if (f == NULL) {
 		f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
 	}

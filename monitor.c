@@ -351,11 +351,11 @@ monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, monitor_select_t sel)
 	}
 
 	while (f != m) {
-		coordinates_t loc = {m, NULL, NULL};
+		coordinates_t loc = {f, NULL, NULL};
 		if (monitor_matches(&loc, &loc, sel)) {
 			return f;
 		}
-		f = (dir == CYCLE_PREV ? m->prev : m->next);
+		f = (dir == CYCLE_PREV ? f->prev : f->next);
 		if (f == NULL) {
 			f = (dir == CYCLE_PREV ? mon_tail : mon_head);
 		}
