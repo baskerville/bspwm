@@ -63,9 +63,6 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_BUTTON_PRESS:
 			button_press(evt);
 			break;
-		case XCB_MOTION_NOTIFY:
-			motion_notify(evt);
-			break;
 		case XCB_FOCUS_IN:
 			focus_in(evt);
 			break;
@@ -315,7 +312,13 @@ void button_press(xcb_generic_event_t *evt)
 		case XCB_BUTTON_INDEX_1:
 			if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
 				replay = true;
+				bool pff = pointer_follows_focus;
+				bool pfm = pointer_follows_monitor;
+				pointer_follows_focus = false;
+				pointer_follows_monitor = false;
 				grab_pointer(ACTION_FOCUS);
+				pointer_follows_focus = pff;
+				pointer_follows_monitor = pfm;
 			} else {
 				grab_pointer(pointer_actions[0]);
 			}
@@ -336,71 +339,32 @@ void enter_notify(xcb_generic_event_t *evt)
 	xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
 	xcb_window_t win = e->event;
 
-	if (e->mode != XCB_NOTIFY_MODE_NORMAL ||
-	    (mon->desk->focus != NULL &&
-	     mon->desk->focus->id == win)) {
+	if (e->mode != XCB_NOTIFY_MODE_NORMAL) {
 		return;
 	}
 
-	xcb_get_window_attributes_reply_t *wa = xcb_get_window_attributes_reply(dpy, xcb_get_window_attributes(dpy, motion_recorder), NULL);
-
-	if (wa == NULL) {
-		return;
-	}
-
-	if (wa->map_state == XCB_MAP_STATE_UNMAPPED) {
-		enable_motion_recorder();
-	} else {
-		disable_motion_recorder();
-	}
-}
-
-void motion_notify(xcb_generic_event_t *evt)
-{
-	xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *) evt;
-
-	static uint16_t last_motion_x = 0, last_motion_y = 0;
-	static xcb_timestamp_t last_motion_time = 0;
-
-	int64_t dtime = e->time - last_motion_time;
-
-	if (dtime > 1000) {
-		last_motion_time = e->time;
-		last_motion_x = e->event_x;
-		last_motion_y = e->event_y;
-		return;
-	}
-
-	int mdist = abs(e->event_x - last_motion_x) + abs(e->event_y - last_motion_y);
-	if (mdist < 10) {
-		return;
-	}
-
-	xcb_window_t win = XCB_NONE;
-	xcb_point_t pt = {e->root_x, e->root_y};
-	query_pointer(&win, NULL);
-
-	bool pfm_backup = pointer_follows_monitor;
-	bool pff_backup = pointer_follows_focus;
-	auto_raise = false;
-	pointer_follows_monitor = false;
-	pointer_follows_focus = false;
 	coordinates_t loc;
+	bool pff = pointer_follows_focus;
+	bool pfm = pointer_follows_monitor;
+	pointer_follows_focus = false;
+	pointer_follows_monitor = false;
+	auto_raise = false;
+
 	if (locate_window(win, &loc)) {
-		if (loc.node != mon->desk->focus) {
+		if (loc.monitor->desk == loc.desktop && loc.node != mon->desk->focus) {
 			focus_node(loc.monitor, loc.desktop, loc.node);
 		}
 	} else {
+		xcb_point_t pt = {e->root_x, e->root_y};
 		monitor_t *m = monitor_from_point(pt);
 		if (m != NULL && m != mon) {
 			focus_node(m, m->desk, m->desk->focus);
 		}
 	}
-	pointer_follows_monitor = pfm_backup;
-	pointer_follows_focus = pff_backup;
-	auto_raise = true;
 
-	disable_motion_recorder();
+	pointer_follows_focus = pff;
+	pointer_follows_monitor = pfm;
+	auto_raise = true;
 }
 
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)

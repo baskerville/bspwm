@@ -1429,7 +1429,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 				for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 					window_hide(m->root);
 				}
-				disable_motion_recorder();
 			}
 			return;
 		} else {

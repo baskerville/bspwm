@@ -544,16 +544,6 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	stack(d, n, true);
 	set_input_focus(n);
 
-	if (focus_follows_pointer) {
-		xcb_window_t win = XCB_NONE;
-		query_pointer(&win, NULL);
-		if (win != n->id) {
-			enable_motion_recorder();
-		} else {
-			disable_motion_recorder();
-		}
-	}
-
 	if (pointer_follows_focus) {
 		center_pointer(get_rectangle(d, n));
 	}

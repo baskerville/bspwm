@@ -185,12 +185,7 @@ void focus_monitor(monitor_t *m)
 	mon = m;
 
 	if (pointer_follows_monitor) {
-		xcb_point_t pt;
-		query_pointer(NULL, &pt);
-		monitor_t *mp = monitor_from_point(pt);
-		if (mp != m) {
-			center_pointer(m->rectangle);
-		}
+		center_pointer(m->rectangle);
 	}
 
 	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%08X\n", m->id);
@@ -542,7 +537,6 @@ bool update_monitors(void)
 	}
 
 	free(sres);
-	update_motion_recorder();
 
 	return (mon != NULL);
 }

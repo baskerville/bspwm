@@ -647,8 +647,6 @@ void apply_size_hints(client_t *c, uint16_t *width, uint16_t *height)
 
 void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {
-	window_lower(motion_recorder);
-
 	xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
 
 	if (qpr != NULL) {
@@ -674,8 +672,6 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 	}
 
 	free(qpr);
-
-	window_raise(motion_recorder);
 }
 
 void window_border_width(xcb_window_t win, uint32_t bw)
@@ -775,28 +771,6 @@ void window_show(xcb_window_t win)
 	window_set_visibility(win, true);
 }
 
-void enable_motion_recorder(void)
-{
-	window_raise(motion_recorder);
-	window_show(motion_recorder);
-}
-
-void disable_motion_recorder(void)
-{
-	window_hide(motion_recorder);
-}
-
-void update_motion_recorder(void)
-{
-	xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, root), NULL);
-
-	if (geo != NULL) {
-		window_resize(motion_recorder, geo->width, geo->height);
-	}
-
-	free(geo);
-}
-
 void update_input_focus(void)
 {
 	set_input_focus(mon->desk->focus);
@@ -827,9 +801,7 @@ void center_pointer(xcb_rectangle_t r)
 	}
 	int16_t cx = r.x + r.width / 2;
 	int16_t cy = r.y + r.height / 2;
-	window_lower(motion_recorder);
 	xcb_warp_pointer(dpy, XCB_NONE, root, 0, 0, 0, 0, cx, cy);
-	window_raise(motion_recorder);
 }
 
 void get_atom(char *name, xcb_atom_t *atom)
