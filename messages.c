@@ -886,6 +886,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 	desktop_select_t *desktop_sel = NULL;
 	node_select_t *node_sel = NULL;
 	domain_t dom = DOMAIN_TREE;
+	uint8_t d = 0;
 
 	if (num < 1) {
 		fail(rsp, "query: Not enough arguments.\n");
@@ -894,13 +895,13 @@ void cmd_query(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (streq("-T", *args) || streq("--tree", *args)) {
-			dom = DOMAIN_TREE;
+			dom = DOMAIN_TREE, d++;
 		} else if (streq("-M", *args) || streq("--monitors", *args)) {
-			dom = DOMAIN_MONITOR;
+			dom = DOMAIN_MONITOR, d++;
 		} else if (streq("-D", *args) || streq("--desktops", *args)) {
-			dom = DOMAIN_DESKTOP;
+			dom = DOMAIN_DESKTOP, d++;
 		} else if (streq("-N", *args) || streq("--nodes", *args)) {
-			dom = DOMAIN_NODE;
+			dom = DOMAIN_NODE, d++;
 		} else if (streq("-m", *args) || streq("--monitor", *args)) {
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
@@ -979,8 +980,18 @@ void cmd_query(char **args, int num, FILE *rsp)
 		num--, args++;
 	}
 
+	if (d < 1) {
+		fail(rsp, "query: No commands given.\n");
+		goto end;
+	}
+
+	if (d > 1) {
+		fail(rsp, "query: Multiple commands given.\n");
+		goto end;
+	}
+
 	if (dom == DOMAIN_TREE && trg.monitor == NULL) {
-		fail(rsp, "query -T: No constraints given.\n");
+		fail(rsp, "query -T: No options given.\n");
 		goto end;
 	}
 
