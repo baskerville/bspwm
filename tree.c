@@ -1811,16 +1811,21 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 void set_hidden_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
 	n->hidden = value;
+
 	if (n->client != NULL) {
 		window_set_visibility(n->id, !value);
+
 		if (IS_TILED(n->client)) {
 			set_vacant(m, d, n, value);
 		}
+
 		if (value) {
 			n->client->wm_flags |= WM_FLAG_HIDDEN;
 		} else {
 			n->client->wm_flags &= ~WM_FLAG_HIDDEN;
 		}
+
+		ewmh_wm_state_update(n);
 	}
 }
 
