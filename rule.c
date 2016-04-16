@@ -342,13 +342,14 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 			csq->split_ratio = rat;
 		}
 	} else if (parse_bool(value, &v)) {
-		if (streq("locked", key))
-			csq->locked = true;
+		if (streq("hidden", key))
+			csq->hidden = true;
 #define SETCSQ(name) \
 		else if (streq(#name, key)) \
 			csq->name = v;
 		SETCSQ(sticky)
 		SETCSQ(private)
+		SETCSQ(locked)
 		SETCSQ(center)
 		SETCSQ(follow)
 		SETCSQ(manage)

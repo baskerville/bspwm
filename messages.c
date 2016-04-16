@@ -312,12 +312,15 @@ void cmd_node(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			if (streq("locked", key)) {
-				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->locked));
+			if (streq("hidden", key)) {
+				set_hidden(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->hidden));
+				changed = true;
 			} else if (streq("sticky", key)) {
 				set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->sticky));
 			} else if (streq("private", key)) {
 				set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->private));
+			} else if (streq("locked", key)) {
+				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->locked));
 			} else {
 				fail(rsp, "node %s: Invalid key: '%s'.\n", *(args - 1), key);
 				break;

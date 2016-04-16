@@ -148,9 +148,10 @@ typedef struct {
 	option_bool_t pseudo_tiled;
 	option_bool_t floating;
 	option_bool_t fullscreen;
-	option_bool_t locked;
+	option_bool_t hidden;
 	option_bool_t sticky;
 	option_bool_t private;
+	option_bool_t locked;
 	option_bool_t urgent;
 	option_bool_t same_class;
 	option_bool_t below;
@@ -181,7 +182,7 @@ typedef struct {
 	char instance_name[3 * SMALEN / 2];
 	unsigned int border_width;
 	bool urgent;
-	bool visible;
+	bool shown;
 	client_state_t state;
 	client_state_t last_state;
 	stack_layer_t layer;
@@ -209,6 +210,7 @@ struct node_t {
 	presel_t *presel;
 	xcb_rectangle_t rectangle;
 	bool vacant;
+	bool hidden;
 	bool sticky;
 	bool private;
 	bool locked;
@@ -309,9 +311,10 @@ typedef struct {
 	double split_ratio;
 	stack_layer_t *layer;
 	client_state_t *state;
-	bool locked;
+	bool hidden;
 	bool sticky;
 	bool private;
+	bool locked;
 	bool center;
 	bool follow;
 	bool manage;

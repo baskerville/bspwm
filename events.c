@@ -400,6 +400,14 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			set_layer(m, d, n, n->client->layer == LAYER_ABOVE ? n->client->last_layer : LAYER_ABOVE);
 		}
+	} else if (state == ewmh->_NET_WM_STATE_HIDDEN) {
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			set_hidden(m, d, n, true);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+			set_hidden(m, d, n, false);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			set_hidden(m, d, n, !n->hidden);
+		}
 	} else if (state == ewmh->_NET_WM_STATE_STICKY) {
 		if (action == XCB_EWMH_WM_STATE_ADD) {
 			set_sticky(m, d, n, true);
@@ -432,7 +440,6 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 	HANDLE_WM_STATE(SHADED)
 	HANDLE_WM_STATE(SKIP_TASKBAR)
 	HANDLE_WM_STATE(SKIP_PAGER)
-	HANDLE_WM_STATE(HIDDEN)
 	}
 #undef HANDLE_WM_STATE
 }

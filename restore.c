@@ -343,6 +343,7 @@ node_t *restore_node(jsmntok_t **t, char *json)
 			RESTORE_DOUBLE(splitRatio, &n->split_ratio)
 			RESTORE_INT(birthRotation, &n->birth_rotation)
 			RESTORE_BOOL(vacant, &n->vacant)
+			RESTORE_BOOL(hidden, &n->hidden)
 			RESTORE_BOOL(sticky, &n->sticky)
 			RESTORE_BOOL(private, &n->private)
 			RESTORE_BOOL(locked, &n->locked)
@@ -433,7 +434,7 @@ client_t *restore_client(jsmntok_t **t, char *json)
 			RESTORE_ANY(lastLayer, &c->last_layer, parse_stack_layer)
 			RESTORE_UINT(borderWidth, &c->border_width)
 			RESTORE_BOOL(urgent, &c->urgent)
-			RESTORE_BOOL(visible, &c->visible)
+			RESTORE_BOOL(shown, &c->shown)
 			} else if (keyeq("tiledRectangle", *t, json)) {
 				(*t)++;
 				restore_rectangle(&c->tiled_rectangle, t, json);

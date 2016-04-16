@@ -167,18 +167,22 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		c->last_state = c->state;
 	}
 
-	set_locked(m, d, n, csq->locked);
+	set_hidden(m, d, n, csq->hidden);
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
+	set_locked(m, d, n, csq->locked);
 
 	arrange(m, d);
 
-	bool give_focus = (csq->focus && (d == mon->desk || csq->follow));
+	bool focused = false;
 
-	if (give_focus) {
-		focus_node(m, d, n);
-	} else if (csq->focus) {
-		activate_node(m, d, n);
+	if (!csq->hidden && csq->focus) {
+		if (d == mon->desk || csq->follow) {
+			focused = true;
+			focus_node(m, d, n);
+		} else {
+			activate_node(m, d, n);
+		}
 	} else {
 		stack(d, n, false);
 	}
@@ -193,7 +197,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	}
 
 	/* the same function is already called in `focus_node` but has no effects on unmapped windows */
-	if (give_focus) {
+	if (focused) {
 		xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
 	}
 
@@ -654,7 +658,7 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 			*win = qpr->child;
 			xcb_point_t pt = {qpr->root_x, qpr->root_y};
 			for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
-				if (!s->node->client->visible) {
+				if (!s->node->client->shown || s->node->hidden) {
 					continue;
 				}
 				xcb_rectangle_t rect = get_rectangle(NULL, s->node);

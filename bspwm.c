@@ -248,6 +248,7 @@ void setup(void)
 	                          ewmh->_NET_CLOSE_WINDOW,
 	                          ewmh->_NET_WM_DESKTOP,
 	                          ewmh->_NET_WM_STATE,
+	                          ewmh->_NET_WM_STATE_HIDDEN,
 	                          ewmh->_NET_WM_STATE_FULLSCREEN,
 	                          ewmh->_NET_WM_STATE_BELOW,
 	                          ewmh->_NET_WM_STATE_ABOVE,

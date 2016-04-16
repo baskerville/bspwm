@@ -118,6 +118,7 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "\"splitRatio\":%lf,", n->split_ratio);
 		fprintf(rsp, "\"birthRotation\":%i,", n->birth_rotation);
 		fprintf(rsp, "\"vacant\":%s,", BOOL_STR(n->vacant));
+		fprintf(rsp, "\"hidden\":%s,", BOOL_STR(n->hidden));
 		fprintf(rsp, "\"sticky\":%s,", BOOL_STR(n->sticky));
 		fprintf(rsp, "\"private\":%s,", BOOL_STR(n->private));
 		fprintf(rsp, "\"locked\":%s,", BOOL_STR(n->locked));
@@ -162,7 +163,7 @@ void query_client(client_t *c, FILE *rsp)
 		fprintf(rsp, "\"layer\":\"%s\",", LAYER_STR(c->layer));
 		fprintf(rsp, "\"lastLayer\":\"%s\",", LAYER_STR(c->last_layer));
 		fprintf(rsp, "\"urgent\":%s,", BOOL_STR(c->urgent));
-		fprintf(rsp, "\"visible\":%s,", BOOL_STR(c->visible));
+		fprintf(rsp, "\"shown\":%s,", BOOL_STR(c->shown));
 		fprintf(rsp, "\"tiledRectangle\":");
 		query_rectangle(c->tiled_rectangle, rsp);
 		fprintf(rsp,",");
@@ -240,6 +241,9 @@ int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t loc, 
 		    (sel == NULL || node_matches(&trg, &ref, *sel))) {
 			fprintf(rsp, "0x%08X\n", n->id);
 			count++;
+			if (sel != NULL) {
+				return count;
+			}
 		}
 		count += query_node_ids_in(n->first_child, d, m, loc, sel, rsp);
 		count += query_node_ids_in(n->second_child, d, m, loc, sel, rsp);
@@ -344,9 +348,10 @@ node_select_t make_node_select(void)
 		.pseudo_tiled = OPTION_NONE,
 		.floating = OPTION_NONE,
 		.fullscreen = OPTION_NONE,
-		.locked = OPTION_NONE,
+		.hidden = OPTION_NONE,
 		.sticky = OPTION_NONE,
 		.private = OPTION_NONE,
+		.locked = OPTION_NONE,
 		.urgent = OPTION_NONE,
 		.same_class = OPTION_NONE,
 		.below = OPTION_NONE,
@@ -801,6 +806,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	    : sel.p == OPTION_FALSE) { \
 		return false; \
 	}
+	NFLAG(hidden)
 	NFLAG(sticky)
 	NFLAG(private)
 	NFLAG(locked)

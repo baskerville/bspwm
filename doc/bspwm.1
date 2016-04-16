@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/14/2016
+.\"      Date: 04/16/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-26-g789cb8a
+.\"    Source: Bspwm 0.9.1-32-g828c93f
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/14/2016" "Bspwm 0\&.9\&.1\-26\-g789cb8a" "Bspwm Manual"
+.TH "BSPWM" "1" "04/16/2016" "Bspwm 0\&.9\&.1\-32\-g828c93f" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -98,7 +98,7 @@ NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[\&.[
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
-FLAG := urgent|sticky|private|locked
+FLAG := hidden|sticky|private|locked|urgent
 
 LAYER := below|normal|above
 
@@ -243,7 +243,7 @@ Only consider windows in or not in the given state\&.
 Only consider windows that have or don\(cqt have the same class as the current window\&.
 .RE
 .PP
-[!](private|urgent|sticky|locked)
+[!](hidden|sticky|private|locked|urgent)
 .RS 4
 Only consider windows that have or don\(cqt have the given flag set\&.
 .RE
@@ -458,11 +458,9 @@ Fills its monitor rectangle and has no borders\&. It is send in the ABOVE layer 
 .RE
 .SH "NODE FLAGS"
 .PP
-locked
+hidden
 .RS 4
-Ignores the
-\fBnode \-\-close\fR
-message\&.
+Is hidden and doesn\(cqt occupy any tiling space\&.
 .RE
 .PP
 sticky
@@ -473,6 +471,13 @@ Stays in the focused desktop of its monitor\&.
 private
 .RS 4
 Tries to keep the same tiling position/size\&.
+.RE
+.PP
+locked
+.RS 4
+Ignores the
+\fBnode \-\-close\fR
+message\&.
 .RE
 .PP
 urgent
@@ -609,7 +614,7 @@ Set the state of the selected window\&. If
 is present and the current state matches the given state, then the argument is interpreted as the last state\&.
 .RE
 .PP
-\fB\-g\fR, \fB\-\-flag\fR locked|sticky|private[=on|off]
+\fB\-g\fR, \fB\-\-flag\fR hidden|sticky|private|locked[=on|off]
 .RS 4
 Set or toggle the given flag for the selected node\&.
 .RE
@@ -887,7 +892,7 @@ rule \fICOMMANDS\fR
 \fBCommands\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(locked|sticky|private|center|follow|manage|focus|border)=(on|off)]
+\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|center|follow|manage|focus|border)=(on|off)]
 .RS 4
 Create a new rule\&.
 .RE
@@ -1290,7 +1295,7 @@ The geometry of a window changed\&.
 The state of a window changed\&.
 .RE
 .PP
-\fInode_flag <monitor_id> <desktop_id> <node_id> sticky|private|locked|urgent on|off\fR
+\fInode_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|urgent on|off\fR
 .RS 4
 One of the flags of a node changed\&.
 .RE

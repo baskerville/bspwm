@@ -163,7 +163,8 @@ void empty_history(void)
 node_t *history_last_node(desktop_t *d, node_t *n)
 {
 	for (history_t *h = history_tail; h != NULL; h = h->prev) {
-		if (h->latest && h->loc.node != NULL && !is_descendant(h->loc.node, n) && h->loc.desktop == d) {
+		if (h->latest && h->loc.node != NULL && !h->loc.node->hidden &&
+		    !is_descendant(h->loc.node, n) && h->loc.desktop == d) {
 			return h->loc.node;
 		}
 	}
@@ -201,6 +202,7 @@ bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst
 		if (!h->latest ||
 		    h->loc.node == NULL ||
 		    h->loc.node == ref->node ||
+		    h->loc.node->hidden ||
 		    !node_matches(&h->loc, ref, sel)) {
 			continue;
 		}
