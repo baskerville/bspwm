@@ -205,14 +205,14 @@ void add_desktop(monitor_t *m, desktop_t *d)
 	put_status(SBSC_MASK_REPORT);
 }
 
-desktop_t *find_desktop_in(const char *name, monitor_t *m)
+desktop_t *find_desktop_in(uint32_t id, monitor_t *m)
 {
 	if (m == NULL) {
 		return NULL;
 	}
 
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-		if (streq(d->name, name)) {
+		if (d->id == id) {
 			return d;
 		}
 	}

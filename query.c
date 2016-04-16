@@ -37,9 +37,9 @@
 void query_tree(FILE *rsp)
 {
 	fprintf(rsp, "{");
-	fprintf(rsp, "\"focusedMonitorName\":\"%s\",", mon->name);
+	fprintf(rsp, "\"focusedMonitorId\":%u,", mon->id);
 	if (pri_mon != NULL) {
-		fprintf(rsp, "\"primaryMonitorName\":\"%s\",", pri_mon->name);
+		fprintf(rsp, "\"primaryMonitorId\":%u,", pri_mon->id);
 	}
 	fprintf(rsp, "\"clientsCount\":%i,", clients_count);
 	fprintf(rsp, "\"monitors\":");
@@ -71,13 +71,13 @@ void query_monitor(monitor_t *m, FILE *rsp)
 	fprintf(rsp, "\"stickyCount\":%i,", m->sticky_count);
 	fprintf(rsp, "\"windowGap\":%i,", m->window_gap);
 	fprintf(rsp, "\"borderWidth\":%u,", m->border_width);
+	fprintf(rsp, "\"focusedDesktopId\":%u,", m->desk->id);
 	fprintf(rsp, "\"padding\":");
 	query_padding(m->padding, rsp);
 	fprintf(rsp,",");
 	fprintf(rsp, "\"rectangle\":");
 	query_rectangle(m->rectangle, rsp);
 	fprintf(rsp,",");
-	fprintf(rsp, "\"focusedDesktopName\":\"%s\",", m->desk->name);
 	fprintf(rsp, "\"desktops\":");
 	fprintf(rsp, "[");
 	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
@@ -197,7 +197,7 @@ void query_history(FILE *rsp)
 
 void query_coordinates(coordinates_t *loc, FILE *rsp)
 {
-	fprintf(rsp, "{\"monitorName\":\"%s\",\"desktopName\":\"%s\",\"nodeId\":%u}", loc->monitor->name, loc->desktop->name, loc->node!=NULL?loc->node->id:0);
+	fprintf(rsp, "{\"monitorId\":%u,\"desktopId\":%u,\"nodeId\":%u}", loc->monitor->id, loc->desktop->id, loc->node!=NULL?loc->node->id:0);
 }
 
 void query_stack(FILE *rsp)

@@ -36,7 +36,7 @@ desktop_t *make_desktop(const char *name, uint32_t id);
 void rename_desktop(monitor_t *m, desktop_t *d, const char *name);
 void insert_desktop(monitor_t *m, desktop_t *d);
 void add_desktop(monitor_t *m, desktop_t *d);
-desktop_t *find_desktop_in(const char *name, monitor_t *m);
+desktop_t *find_desktop_in(uint32_t id, monitor_t *m);
 void empty_desktop(monitor_t *m, desktop_t *d);
 void unlink_desktop(monitor_t *m, desktop_t *d);
 void remove_desktop(monitor_t *m, desktop_t *d);

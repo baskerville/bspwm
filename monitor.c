@@ -103,10 +103,10 @@ void rename_monitor(monitor_t *m, const char *name)
 	put_status(SBSC_MASK_REPORT);
 }
 
-monitor_t *find_monitor(char *name)
+monitor_t *find_monitor(uint32_t id)
 {
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (streq(m->name, name)) {
+		if (m->id == id) {
 			return m;
 		}
 	}

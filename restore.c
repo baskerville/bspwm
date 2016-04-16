@@ -112,17 +112,15 @@ bool restore_tree(const char *file_path)
 	}
 
 	jsmntok_t *t = tokens + 1;
-	char *focusedMonitorName = NULL, *primaryMonitorName = NULL;
+	uint32_t focused_monitor_id = 0, primary_monitor_id = 0;
 
 	for (int i = 0; i < num; i++) {
-		if (keyeq("focusedMonitorName", t, json)) {
-			free(focusedMonitorName);
+		if (keyeq("focusedMonitorId", t, json)) {
 			t++;
-			focusedMonitorName = copy_string(json + t->start, t->end - t->start);
-		} else if (keyeq("primaryMonitorName", t, json)) {
-			free(primaryMonitorName);
+			sscanf(json + t->start, "%u", &focused_monitor_id);
+		} else if (keyeq("primaryMonitorId", t, json)) {
 			t++;
-			primaryMonitorName = copy_string(json + t->start, t->end - t->start);
+			sscanf(json + t->start, "%u", &primary_monitor_id);
 		} else if (keyeq("clientsCount", t, json)) {
 			t++;
 			sscanf(json + t->start, "%u", &clients_count);
@@ -150,22 +148,19 @@ bool restore_tree(const char *file_path)
 		t++;
 	}
 
-	if (focusedMonitorName != NULL) {
+	if (focused_monitor_id != 0) {
 		coordinates_t loc;
-		if (locate_monitor(focusedMonitorName, &loc)) {
+		if (monitor_from_id(focused_monitor_id, &loc)) {
 			mon = loc.monitor;
 		}
 	}
 
-	if (primaryMonitorName != NULL) {
+	if (primary_monitor_id != 0) {
 		coordinates_t loc;
-		if (locate_monitor(primaryMonitorName, &loc)) {
+		if (monitor_from_id(primary_monitor_id, &loc)) {
 			pri_mon = loc.monitor;
 		}
 	}
-
-	free(focusedMonitorName);
-	free(primaryMonitorName);
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
@@ -229,7 +224,7 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 	int num = (*t)->size;
 	(*t)++;
 	monitor_t *m = make_monitor(NULL, UINT32_MAX);
-	char *focusedDesktopName = NULL;
+	uint32_t focused_desktop_id = 0;
 
 	for (int i = 0; i < num; i++) {
 		if (keyeq("name", *t, json)) {
@@ -241,6 +236,7 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 		RESTORE_UINT(stickyCount, &m->sticky_count)
 		RESTORE_INT(windowGap, &m->window_gap)
 		RESTORE_UINT(borderWidth, &m->border_width)
+		RESTORE_UINT(focusedDesktopId, &focused_desktop_id)
 		} else if (keyeq("padding", *t, json)) {
 			(*t)++;
 			restore_padding(&m->padding, t, json);
@@ -250,10 +246,6 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 			restore_rectangle(&m->rectangle, t, json);
 			update_root(m, &m->rectangle);
 			continue;
-		} else if (keyeq("focusedDesktopName", *t, json)) {
-			free(focusedDesktopName);
-			(*t)++;
-			focusedDesktopName = copy_string(json + (*t)->start, (*t)->end - (*t)->start);
 		} else if (keyeq("desktops", *t, json)) {
 			(*t)++;
 			int s = (*t)->size;
@@ -270,16 +262,14 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 		(*t)++;
 	}
 
-	if (focusedDesktopName != NULL) {
+	if (focused_desktop_id != 0) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (streq(focusedDesktopName, d->name)) {
+			if (d->id == focused_desktop_id) {
 				m->desk = d;
 				break;
 			}
 		}
 	}
-
-	free(focusedDesktopName);
 
 	return m;
 }
@@ -519,23 +509,21 @@ void restore_coordinates(coordinates_t *loc, jsmntok_t **t, char *json)
 {
 	int s = (*t)->size;
 	(*t)++;
+	uint32_t id = 0;
 
 	for (int i = 0; i < s; i++) {
-		if (keyeq("monitorName", *t, json)) {
+		if (keyeq("monitorId", *t, json)) {
 			(*t)++;
-			char *name = copy_string(json + (*t)->start, (*t)->end - (*t)->start);
-			loc->monitor = find_monitor(name);
-			free(name);
-		} else if (keyeq("desktopName", *t, json)) {
+			sscanf(json + (*t)->start, "%u", &id);
+			loc->monitor = find_monitor(id);
+		} else if (keyeq("desktopId", *t, json)) {
 			(*t)++;
-			char *name = copy_string(json + (*t)->start, (*t)->end - (*t)->start);
-			loc->desktop = find_desktop_in(name, loc->monitor);
-			free(name);
+			sscanf(json + (*t)->start, "%u", &id);
+			loc->desktop = find_desktop_in(id, loc->monitor);
 		} else if (keyeq("nodeId", *t, json)) {
 			(*t)++;
-			uint32_t id;
 			sscanf(json + (*t)->start, "%u", &id);
-			loc->node = find_by_id_in(loc->desktop!=NULL?loc->desktop->root:NULL, id);
+			loc->node = find_by_id_in(loc->desktop != NULL ? loc->desktop->root : NULL, id);
 		}
 		(*t)++;
 	}
