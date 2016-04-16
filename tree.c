@@ -1813,7 +1813,9 @@ void set_hidden_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->hidden = value;
 
 	if (n->client != NULL) {
-		window_set_visibility(n->id, !value);
+		if (n->client->shown) {
+			window_set_visibility(n->id, !value);
+		}
 
 		if (IS_TILED(n->client)) {
 			set_vacant(m, d, n, value);
