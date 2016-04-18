@@ -622,6 +622,8 @@ client_t *make_client(void)
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
+	c->urgent = false;
+	c->shown = false;
 	c->wm_flags = 0;
 	c->icccm_props.input_hint = true;
 	c->icccm_props.take_focus = false;
