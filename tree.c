@@ -69,7 +69,15 @@ void arrange(monitor_t *m, desktop_t *d)
 		rect.height -= d->window_gap;
 	}
 
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, false);
+	}
+
 	apply_layout(m, d, d->root, rect, rect);
+
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, true);
+	}
 
 	d->layout = last_layout;
 }
@@ -1790,6 +1798,11 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		return;
 	}
 
+
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, false);
+	}
+
 	bool held_focus = is_descendant(d->focus, n);
 
 	propagate_hidden_downward(m, d, n, value);
@@ -1807,6 +1820,10 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		} else {
 			activate_node(m, d, d->focus);
 		}
+	}
+
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, true);
 	}
 }
 
@@ -1991,6 +2008,20 @@ void get_side_handle(desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt)
 			pt->x = rect.x + (rect.width / 2);
 			pt->y = rect.y;
 			break;
+	}
+}
+
+void listen_enter_notify(node_t *n, bool enable)
+{
+	uint32_t mask = CLIENT_EVENT_MASK | (enable ? XCB_EVENT_MASK_ENTER_WINDOW : 0);
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		if (f->client == NULL) {
+			continue;
+		}
+		xcb_change_window_attributes(dpy, f->id, XCB_CW_EVENT_MASK, &mask);
+		if (f->presel != NULL) {
+			xcb_change_window_attributes(dpy, f->presel->feedback, XCB_CW_EVENT_MASK, &mask);
+		}
 	}
 }
 

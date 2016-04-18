@@ -244,8 +244,8 @@ void initialize_presel_feedback(node_t *n)
 	}
 
 	xcb_window_t win = xcb_generate_id(dpy);
-	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_SAVE_UNDER;
-	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1};
+	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_SAVE_UNDER | XCB_CW_EVENT_MASK;
+	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1, XCB_EVENT_MASK_ENTER_WINDOW};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, win, root, 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			          XCB_COPY_FROM_PARENT, mask, values);
 
@@ -473,7 +473,17 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 		xcb_rectangle_t rect = c->floating_rectangle;
 		int16_t x = rect.x + dx;
 		int16_t y = rect.y + dy;
+
+		if (focus_follows_pointer) {
+			listen_enter_notify(loc->desktop->root, false);
+		}
+
 		window_move(n->id, x, y);
+
+		if (focus_follows_pointer) {
+			listen_enter_notify(loc->desktop->root, true);
+		}
+
 		c->floating_rectangle.x = x;
 		c->floating_rectangle.y = y;
 		if (!grabbing) {
@@ -545,7 +555,16 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy)
 		}
 		n->client->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
 		if (n->client->state == STATE_FLOATING) {
+			if (focus_follows_pointer) {
+				listen_enter_notify(loc->desktop->root, false);
+			}
+
 			window_move_resize(n->id, x, y, width, height);
+
+			if (focus_follows_pointer) {
+				listen_enter_notify(loc->desktop->root, true);
+			}
+
 			if (!grabbing) {
 				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc->monitor->id, loc->desktop->id, loc->node->id, width, height, x, y);
 			}

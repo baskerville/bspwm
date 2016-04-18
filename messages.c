@@ -1424,24 +1424,14 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 				return;
 			}
 			focus_follows_pointer = b;
-			uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
-						if (n->client == NULL) {
-							continue;
-						}
-						xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
-					}
-				}
-			}
-			if (focus_follows_pointer) {
-				for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+				if (b) {
 					window_show(m->root);
-				}
-			} else {
-				for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+				} else {
 					window_hide(m->root);
+				}
+				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+					listen_enter_notify(d->root, b);
 				}
 			}
 			return;

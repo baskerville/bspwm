@@ -40,9 +40,17 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 {
 	focus_monitor(m);
 
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, false);
+	}
+
 	show_desktop(d);
 	if (m->desk != d) {
 		hide_desktop(m->desk);
+	}
+
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, true);
 	}
 
 	m->desk = d;

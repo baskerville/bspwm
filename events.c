@@ -160,7 +160,15 @@ void configure_request(xcb_generic_event_t *evt)
 		c->floating_rectangle.height = height;
 		xcb_rectangle_t r = c->floating_rectangle;
 
+		if (focus_follows_pointer) {
+			listen_enter_notify(loc.desktop->root, false);
+		}
+
 		window_move_resize(e->window, r.x, r.y, r.width, r.height);
+
+		if (focus_follows_pointer) {
+			listen_enter_notify(loc.desktop->root, true);
+		}
 
 		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, e->window, r.width, r.height, r.x, r.y);
 
@@ -339,25 +347,36 @@ void enter_notify(xcb_generic_event_t *evt)
 	xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *) evt;
 	xcb_window_t win = e->event;
 
-	if (e->mode != XCB_NOTIFY_MODE_NORMAL) {
+	if (e->mode != XCB_NOTIFY_MODE_NORMAL || e->detail == XCB_NOTIFY_DETAIL_INFERIOR) {
 		return;
 	}
 
-	coordinates_t loc;
+	xcb_point_t pt = {e->root_x, e->root_y};
+	monitor_t *m = monitor_from_point(pt);
+
+	if (m == NULL) {
+		return;
+	}
+
 	bool pff = pointer_follows_focus;
 	bool pfm = pointer_follows_monitor;
 	pointer_follows_focus = false;
 	pointer_follows_monitor = false;
 	auto_raise = false;
 
-	if (locate_window(win, &loc)) {
-		if (loc.monitor->desk == loc.desktop && loc.node != mon->desk->focus) {
-			focus_node(loc.monitor, loc.desktop, loc.node);
+	desktop_t *d = m->desk;
+	node_t *n = NULL;
+
+	for (n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+		if (n->id == win || (n->presel != NULL && n->presel->feedback == win)) {
+			break;
 		}
-	} else {
-		xcb_point_t pt = {e->root_x, e->root_y};
-		monitor_t *m = monitor_from_point(pt);
-		if (m != NULL && m != mon) {
+	}
+
+	if (n != mon->desk->focus) {
+		if (n != NULL) {
+			focus_node(m, d, n);
+		} else if (m != mon) {
 			focus_node(m, m->desk, m->desk->focus);
 		}
 	}
