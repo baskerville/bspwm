@@ -245,7 +245,7 @@ void initialize_presel_feedback(node_t *n)
 
 	xcb_window_t win = xcb_generate_id(dpy);
 	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_SAVE_UNDER | XCB_CW_EVENT_MASK;
-	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1, XCB_EVENT_MASK_ENTER_WINDOW};
+	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1, focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, win, root, 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			          XCB_COPY_FROM_PARENT, mask, values);
 
