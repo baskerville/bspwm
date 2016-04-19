@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/16/2016
+.\"      Date: 04/19/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-32-g828c93f
+.\"    Source: Bspwm 0.9.1-39-ge70f826
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/16/2016" "Bspwm 0\&.9\&.1\-32\-g828c93f" "Bspwm Manual"
+.TH "BSPWM" "1" "04/19/2016" "Bspwm 0\&.9\&.1\-39\-ge70f826" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -94,7 +94,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -151,6 +151,11 @@ Selects the node newer than the focused node in the history\&.
 focused
 .RS 4
 Selects the currently focused node\&.
+.RE
+.PP
+pointed
+.RS 4
+Selects the window under the pointer\&.
 .RE
 .PP
 biggest

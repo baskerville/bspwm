@@ -66,7 +66,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -102,6 +102,9 @@ newer::
 
 focused::
 	Selects the currently focused node.
+
+pointed::
+	Selects the window under the pointer.
 
 biggest::
 	Selects the biggest window on the current desktop.

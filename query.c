@@ -410,6 +410,14 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		history_find_node(HISTORY_OLDER, ref, dst, sel);
 	} else if (streq("biggest", desc)) {
 		dst->node = find_biggest(ref->monitor, ref->desktop, ref->node, sel);
+	} else if (streq("pointed", desc)) {
+		xcb_window_t win;
+		query_pointer(&win, NULL);
+		if (locate_window(win, dst) && node_matches(dst, ref, sel)) {
+			return SELECTOR_OK;
+		} else {
+			return SELECTOR_INVALID;
+		}
 	} else if (streq("focused", desc)) {
 		coordinates_t loc = {mon, mon->desk, mon->desk->focus};
 		if (node_matches(&loc, ref, sel)) {
