@@ -229,7 +229,7 @@ void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, false);
+		listen_enter_notify(n, false);
 	}
 
 	if (n->presel->feedback != XCB_NONE) {
@@ -237,7 +237,7 @@ void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, true);
+		listen_enter_notify(n, true);
 	}
 
 	free(n->presel);
