@@ -85,7 +85,7 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n);
 void destroy_tree(monitor_t *m, desktop_t *d, node_t *n);
 bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2);
 bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd);
-node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, node_select_t sel);
+bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, node_select_t sel);
 void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir);
 void set_vacant(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_vacant_local(monitor_t *m, desktop_t *d, node_t *n, bool value);

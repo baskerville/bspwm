@@ -403,7 +403,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	if (parse_direction(desc, &dir)) {
 		dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
 	} else if (parse_cycle_direction(desc, &cyc)) {
-		dst->node = closest_node(ref->monitor, ref->desktop, ref->node, cyc, sel);
+		find_closest_node(ref, dst, cyc, sel);
 	} else if (parse_history_direction(desc, &hdi)) {
 		history_find_node(hdi, ref, dst, sel);
 	} else if (streq("last", desc)) {
@@ -511,8 +511,7 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	uint16_t idx;
 	uint32_t id;
 	if (parse_cycle_direction(desc, &cyc)) {
-		dst->monitor = ref->monitor;
-		dst->desktop = closest_desktop(ref->monitor, ref->desktop, cyc, sel);
+		find_closest_desktop(ref, dst, cyc, sel);
 	} else if (parse_history_direction(desc, &hdi)) {
 		history_find_desktop(hdi, ref, dst, sel);
 	} else if (streq("last", desc)) {
@@ -520,8 +519,7 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("focused", desc)) {
 		coordinates_t loc = {mon, mon->desk, NULL};
 		if (desktop_matches(&loc, ref, sel)) {
-			dst->monitor = mon;
-			dst->desktop = mon->desk;
+			*dst = loc;
 		}
 	} else if (colon != NULL) {
 		*colon = '\0';
@@ -530,7 +528,7 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			if (streq("focused", colon + 1)) {
 				coordinates_t loc = {dst->monitor, dst->monitor->desk, NULL};
 				if (desktop_matches(&loc, ref, sel)) {
-					dst->desktop = dst->monitor->desk;
+					*dst = loc;
 				}
 			} else if (parse_index(colon + 1, &idx)) {
 				free(desc_copy);

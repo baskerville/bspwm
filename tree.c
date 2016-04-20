@@ -1541,29 +1541,43 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	return true;
 }
 
-node_t *closest_node(monitor_t *m, desktop_t *d, node_t *n, cycle_dir_t dir, node_select_t sel)
+bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, node_select_t sel)
 {
-	if (n == NULL) {
-		return NULL;
+	if (ref->node == NULL) {
+		return false;
 	}
+
+	monitor_t *m = ref->monitor;
+	desktop_t *d = ref->desktop;
+	node_t *n = ref->node;
 
 	node_t *f = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
-	if (f == NULL) {
-		f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
-	}
 
-	coordinates_t ref = {m, d, n};
+#define HANDLE_BOUNDARIES(f)  \
+	while (f == NULL) { \
+		d = (dir == CYCLE_PREV ? d->prev : d->next); \
+		if (d == NULL) { \
+			m = (dir == CYCLE_PREV ? m->prev : m->next); \
+			if (m == NULL) { \
+				m = (dir == CYCLE_PREV ? mon_tail : mon_head); \
+			} \
+			d = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head); \
+		} \
+		f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root)); \
+	}
+	HANDLE_BOUNDARIES(f);
+
 	while (f != n) {
 		coordinates_t loc = {m, d, f};
-		if (f->client != NULL && !f->hidden && node_matches(&loc, &ref, sel)) {
-			return f;
+		if (f->client != NULL && !f->hidden && node_matches(&loc, ref, sel)) {
+			*dst = loc;
+			return true;
 		}
 		f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
-		if (f == NULL) {
-			f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root));
-		}
+		HANDLE_BOUNDARIES(f);
 	}
-	return NULL;
+#undef HANDLE_EXTREMUM
+	return false;
 }
 
 void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir)

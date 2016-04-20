@@ -74,26 +74,34 @@ void activate_desktop(monitor_t *m, desktop_t *d)
 	put_status(SBSC_MASK_REPORT);
 }
 
-desktop_t *closest_desktop(monitor_t *m, desktop_t *d, cycle_dir_t dir, desktop_select_t sel)
+bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, desktop_select_t sel)
 {
+	monitor_t *m = ref->monitor;
+	desktop_t *d = ref->desktop;
 	desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
 
-	if (f == NULL) {
-		f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
+#define HANDLE_BOUNDARIES(f)  \
+	if (f == NULL) { \
+		m = (dir == CYCLE_PREV ? m->prev : m->next); \
+		if (m == NULL) { \
+			m = (dir == CYCLE_PREV ? mon_tail : mon_head); \
+		} \
+		f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head); \
 	}
+	HANDLE_BOUNDARIES(f)
 
 	while (f != d) {
 		coordinates_t loc = {m, f, NULL};
 		if (desktop_matches(&loc, &loc, sel)) {
-			return f;
+			*dst = loc;
+			return true;
 		}
 		f = (dir == CYCLE_PREV ? f->prev : f->next);
-		if (f == NULL) {
-			f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head);
-		}
+		HANDLE_BOUNDARIES(f)
 	}
+#undef HANDLE_BOUNDARIES
 
-	return NULL;
+	return false;
 }
 
 void change_layout(monitor_t *m, desktop_t *d, layout_t l)
