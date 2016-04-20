@@ -228,8 +228,16 @@ void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, false);
+	}
+
 	if (n->presel->feedback != XCB_NONE) {
 		xcb_destroy_window(dpy, n->presel->feedback);
+	}
+
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, true);
 	}
 
 	free(n->presel);
