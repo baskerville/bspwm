@@ -721,12 +721,6 @@ void window_move_resize(xcb_window_t win, int16_t x, int16_t y, uint16_t w, uint
 	xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT, values);
 }
 
-void window_raise(xcb_window_t win)
-{
-	uint32_t values[] = {XCB_STACK_MODE_ABOVE};
-	xcb_configure_window(dpy, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
-}
-
 void window_center(monitor_t *m, client_t *c)
 {
 	xcb_rectangle_t *r = &c->floating_rectangle;
