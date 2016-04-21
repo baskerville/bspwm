@@ -92,7 +92,7 @@ bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t di
 
 	while (f != d) {
 		coordinates_t loc = {m, f, NULL};
-		if (desktop_matches(&loc, &loc, sel)) {
+		if (desktop_matches(&loc, ref, sel)) {
 			*dst = loc;
 			return true;
 		}
