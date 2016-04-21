@@ -64,7 +64,6 @@ bool is_child(node_t *a, node_t *b);
 bool is_descendant(node_t *a, node_t *b);
 bool find_by_id(uint32_t id, coordinates_t *loc);
 node_t *find_by_id_in(node_t *r, uint32_t id);
-node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel);
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel);
 node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel);
 void get_opposite(direction_t src, direction_t *dst);

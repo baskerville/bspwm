@@ -34,7 +34,6 @@
 #define EXTERNAL_RULES_COMMAND  ""
 #define STATUS_PREFIX           "W"
 
-
 #define NORMAL_BORDER_COLOR           "#30302f"
 #define ACTIVE_BORDER_COLOR           "#474645"
 #define FOCUSED_BORDER_COLOR          "#817f7f"
@@ -46,7 +45,6 @@
 #define SPLIT_RATIO          0.5
 
 #define HISTORY_AWARE_FOCUS         false
-#define FOCUS_BY_DISTANCE           false
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
 #define PADDINGLESS_MONOCLE         false
@@ -87,7 +85,6 @@ bool focus_follows_pointer;
 bool pointer_follows_focus;
 bool pointer_follows_monitor;
 bool history_aware_focus;
-bool focus_by_distance;
 bool ignore_ewmh_focus;
 bool center_pseudo_tiled;
 bool click_to_focus;

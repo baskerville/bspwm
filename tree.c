@@ -873,11 +873,7 @@ node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir,
 		nearest = nearest_from_history(m, d, n, dir, sel);
 	}
 	if (nearest == NULL) {
-		if (focus_by_distance) {
-			nearest = nearest_from_distance(m, d, n, dir, sel);
-		} else {
-			nearest = nearest_from_tree(m, d, n, dir, sel);
-		}
+		nearest = nearest_from_distance(m, d, n, dir, sel);
 	}
 	return nearest;
 }
@@ -933,37 +929,6 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 			return find_by_id_in(r->second_child, id);
 		}
 	}
-}
-
-node_t *nearest_from_tree(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
-{
-	if (n == NULL) {
-		return NULL;
-	}
-
-	node_t *fence = find_fence(n, dir);
-
-	if (fence == NULL) {
-		return NULL;
-	}
-
-	node_t *nearest = NULL;
-
-	if (dir == DIR_NORTH || dir == DIR_WEST) {
-		nearest = second_extrema(fence->first_child);
-	} else if (dir == DIR_SOUTH || dir == DIR_EAST) {
-		nearest = first_extrema(fence->second_child);
-	}
-
-	coordinates_t ref = {m, d, n};
-	coordinates_t loc = {m, d, nearest};
-
-	if (nearest != NULL && (nearest->vacant ||
-	                        nearest->client == NULL || !node_matches(&loc, &ref, sel))) {
-		return NULL;
-	}
-
-	return nearest;
 }
 
 node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
