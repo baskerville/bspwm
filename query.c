@@ -401,7 +401,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	cycle_dir_t cyc;
 	history_dir_t hdi;
 	if (parse_direction(desc, &dir)) {
-		dst->node = nearest_neighbor(ref->monitor, ref->desktop, ref->node, dir, sel);
+		find_nearest_neighbor(ref, dst, dir, sel);
 	} else if (parse_cycle_direction(desc, &cyc)) {
 		find_closest_node(ref, dst, cyc, sel);
 	} else if (parse_history_direction(desc, &hdi)) {

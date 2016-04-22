@@ -23,6 +23,7 @@
  */
 
 #include <math.h>
+#include "types.h"
 #include "geometry.h"
 
 double distance(xcb_point_t a, xcb_point_t b)
@@ -39,6 +40,35 @@ bool is_inside(xcb_point_t p, xcb_rectangle_t r)
 unsigned int area(xcb_rectangle_t r)
 {
 	return r.width * r.height;
+}
+
+
+xcb_point_t center(xcb_rectangle_t r)
+{
+	return (xcb_point_t) {r.x + r.width/2, r.y + r.height/2};
+}
+
+double rdistance(xcb_rectangle_t r1, xcb_rectangle_t r2)
+{
+	return distance(center(r1), center(r2));
+}
+
+bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
+{
+	switch (dir) {
+		case DIR_NORTH:
+			return (r2.y + r2.height) <= r1.y;
+			break;
+		case DIR_WEST:
+			return (r2.x + r2.width) <= r1.x;
+			break;
+		case DIR_SOUTH:
+			return r2.y >= (r1.y + r1.height);
+			break;
+		case DIR_EAST:
+			return r2.x >= (r1.x + r1.width);
+			break;
+	}
 }
 
 bool rect_eq(xcb_rectangle_t a, xcb_rectangle_t b)

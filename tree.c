@@ -861,23 +861,6 @@ node_t *find_fence(node_t *n, direction_t dir)
 	return NULL;
 }
 
-node_t *nearest_neighbor(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
-{
-	if (n == NULL || (n->client != NULL && IS_FULLSCREEN(n->client)) ||
-	    (d->layout == LAYOUT_MONOCLE && (n->client != NULL && IS_TILED(n->client)))) {
-		return NULL;
-	}
-
-	node_t *nearest = NULL;
-	if (history_aware_focus) {
-		nearest = nearest_from_history(m, d, n, dir, sel);
-	}
-	if (nearest == NULL) {
-		nearest = nearest_from_distance(m, d, n, dir, sel);
-	}
-	return nearest;
-}
-
 /* returns *true* if *a* is a child of *b* */
 bool is_child(node_t *a, node_t *b)
 {
@@ -931,111 +914,70 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 	}
 }
 
-node_t *nearest_from_history(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
+void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
 {
-	if (n == NULL || (n->client != NULL && !IS_TILED(n->client))) {
-		return NULL;
+	if (ref->node == NULL) {
+		return;
 	}
 
-	node_t *target = find_fence(n, dir);
-	if (target == NULL) {
-		return NULL;
-	}
-	if (dir == DIR_NORTH || dir == DIR_WEST) {
-		target = target->first_child;
-	} else if (dir == DIR_SOUTH || dir == DIR_EAST) {
-		target = target->second_child;
+	if (history_aware_focus) {
+		nearest_from_history(ref, dst, dir, sel);
 	}
 
-	node_t *nearest = NULL;
-	int min_rank = INT_MAX;
-	coordinates_t ref = {m, d, n};
-
-	for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-		if (a->vacant || a->client == NULL || !is_adjacent(n, a, dir) || a == n) {
-			continue;
-		}
-		coordinates_t loc = {m, d, a};
-		if (!node_matches(&loc, &ref, sel)) {
-			continue;
-		}
-		int rank = history_rank(d, a);
-		if (rank >= 0 && rank < min_rank) {
-			nearest = a;
-			min_rank = rank;
-		}
+	if (dst->node == NULL) {
+		nearest_from_distance(ref, dst, dir, sel);
 	}
-
-	return nearest;
 }
 
-node_t *nearest_from_distance(monitor_t *m, desktop_t *d, node_t *n, direction_t dir, node_select_t sel)
+void nearest_from_distance(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
 {
-	if (n == NULL) {
-		return NULL;
-	}
+	xcb_rectangle_t rect = get_rectangle(ref->desktop, ref->node);
+	double md = DBL_MAX;
 
-	node_t *target = NULL;
-
-	if (n->client == NULL || IS_TILED(n->client)) {
-		target = find_fence(n, dir);
-		if (target == NULL) {
-			return NULL;
-		}
-		if (dir == DIR_NORTH || dir == DIR_WEST) {
-			target = target->first_child;
-		} else if (dir == DIR_SOUTH || dir == DIR_EAST) {
-			target = target->second_child;
-		}
-	} else {
-		target = d->root;
-	}
-
-	node_t *nearest = NULL;
-	direction_t dir2 = DIR_NORTH;
-	xcb_point_t pt;
-	xcb_point_t pt2;
-	get_side_handle(d, n, dir, &pt);
-	get_opposite(dir, &dir2);
-	double ds = DBL_MAX;
-	coordinates_t ref = {m, d, n};
-
-	for (node_t *a = first_extrema(target); a != NULL; a = next_leaf(a, target)) {
-		coordinates_t loc = {m, d, a};
-		if (a == n ||
-		    a->client == NULL ||
-		    a->hidden ||
-		    !node_matches(&loc, &ref, sel) ||
-		    (n->client != NULL && (IS_TILED(a->client) != IS_TILED(n->client))) ||
-		    (IS_TILED(a->client) && !is_adjacent(n, a, dir))) {
-			continue;
-		}
-		get_side_handle(d, a, dir2, &pt2);
-		double ds2 = distance(pt, pt2);
-		if (ds2 < ds) {
-			ds = ds2;
-			nearest = a;
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		desktop_t *d = m->desk;
+		for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
+			coordinates_t loc = {m, d, f};
+			xcb_rectangle_t r = get_rectangle(d, f);
+			if (f == ref->node ||
+			    f->client == NULL ||
+			    f->hidden ||
+			    !node_matches(&loc, ref, sel) ||
+			    !on_dir_side(rect, r, dir)) {
+				continue;
+			}
+			double fd = rdistance(rect, r);
+			if (fd < md) {
+				md = fd;
+				*dst = loc;
+			}
 		}
 	}
-
-	return nearest;
 }
 
-void get_opposite(direction_t src, direction_t *dst)
+void nearest_from_history(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
 {
-	switch (src) {
-		case DIR_EAST:
-			*dst = DIR_WEST;
-			break;
-		case DIR_SOUTH:
-			*dst = DIR_NORTH;
-			break;
-		case DIR_WEST:
-			*dst = DIR_EAST;
-			break;
-		case DIR_NORTH:
-			*dst = DIR_SOUTH;
-			break;
+	xcb_rectangle_t rect = get_rectangle(ref->desktop, ref->node);
+	int mr = INT_MAX;
+
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		desktop_t *d = m->desk;
+		for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
+			coordinates_t loc = {m, d, f};
+			xcb_rectangle_t r = get_rectangle(d, f);
+			if (f == ref->node ||
+			    f->client == NULL ||
+			    f->hidden ||
+			    !node_matches(&loc, ref, sel) ||
+			    !on_dir_side(rect, r, dir)) {
+				continue;
+			}
+			int fr = history_rank(f);
+			if (fr >= 0 && fr < mr) {
+				*dst = loc;
+				mr = fr;
+			}
+		}
 	}
 }
 
@@ -1971,30 +1913,6 @@ xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n)
 		rect.width -= wg;
 		rect.height -= wg;
 		return rect;
-	}
-}
-
-void get_side_handle(desktop_t *d, node_t *n, direction_t dir, xcb_point_t *pt)
-{
-	xcb_rectangle_t rect = get_rectangle(d, n);
-
-	switch (dir) {
-		case DIR_EAST:
-			pt->x = rect.x + rect.width;
-			pt->y = rect.y + (rect.height / 2);
-			break;
-		case DIR_SOUTH:
-			pt->x = rect.x + (rect.width / 2);
-			pt->y = rect.y + rect.height;
-			break;
-		case DIR_WEST:
-			pt->x = rect.x;
-			pt->y = rect.y + (rect.height / 2);
-			break;
-		case DIR_NORTH:
-			pt->x = rect.x + (rect.width / 2);
-			pt->y = rect.y;
-			break;
 	}
 }
 

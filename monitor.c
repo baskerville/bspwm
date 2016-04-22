@@ -23,6 +23,7 @@
  */
 
 #include <limits.h>
+#include <float.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -396,28 +397,21 @@ monitor_t *monitor_from_client(client_t *c)
 
 monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel)
 {
-	int dmin = INT_MAX;
+	double dmin = DBL_MAX;
 	monitor_t *nearest = NULL;
 	xcb_rectangle_t rect = m->rectangle;
 	for (monitor_t *f = mon_head; f != NULL; f = f->next) {
-		if (f == m) {
-			continue;
-		}
 		coordinates_t loc = {f, NULL, NULL};
-		if (!monitor_matches(&loc, &loc, sel)) {
+		xcb_rectangle_t r = f->rectangle;
+		if (f == m ||
+		    !monitor_matches(&loc, &loc, sel) ||
+		    !on_dir_side(rect, r, dir)) {
 			continue;
 		}
-		xcb_rectangle_t r = f->rectangle;
-		if ((dir == DIR_WEST && r.x < rect.x) ||
-		    (dir == DIR_EAST && r.x >= (rect.x + rect.width)) ||
-		    (dir == DIR_NORTH && r.y < rect.y) ||
-		    (dir == DIR_SOUTH && r.y >= (rect.y + rect.height))) {
-			int d = abs((r.x + r.width / 2) - (rect.x + rect.width / 2)) +
-			        abs((r.y + r.height / 2) - (rect.y + rect.height / 2));
-			if (d < dmin) {
-				dmin = d;
-				nearest = f;
-			}
+		double d = rdistance(rect, r);
+		if (d < dmin) {
+			dmin = d;
+			nearest = f;
 		}
 	}
 	return nearest;

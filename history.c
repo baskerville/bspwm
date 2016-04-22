@@ -261,11 +261,11 @@ bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *
 	return false;
 }
 
-int history_rank(desktop_t *d, node_t *n)
+int history_rank(node_t *n)
 {
 	int i = 0;
 	history_t *h = history_tail;
-	while (h != NULL && (!h->latest || h->loc.node != n || h->loc.desktop != d)) {
+	while (h != NULL && (!h->latest || h->loc.node != n)) {
 		h = h->prev;
 		i++;
 	}
