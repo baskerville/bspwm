@@ -1530,6 +1530,10 @@ void set_vacant(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 void set_vacant_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
+	if (n->vacant == value) {
+		return;
+	}
+
 	n->vacant = value;
 
 	if (value) {
@@ -1758,6 +1762,10 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 void set_hidden_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
+	if (n->hidden == value) {
+		return;
+	}
+
 	n->hidden = value;
 
 	if (n->client != NULL) {
