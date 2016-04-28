@@ -261,17 +261,17 @@ bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *
 	return false;
 }
 
-int history_rank(node_t *n)
+uint32_t history_rank(node_t *n)
 {
-	int i = 0;
+	uint32_t r = 0;
 	history_t *h = history_tail;
 	while (h != NULL && (!h->latest || h->loc.node != n)) {
 		h = h->prev;
-		i++;
+		r++;
 	}
 	if (h == NULL) {
-		return -1;
+		return UINT32_MAX;
 	} else {
-		return i;
+		return r;
 	}
 }

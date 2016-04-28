@@ -397,7 +397,7 @@ monitor_t *monitor_from_client(client_t *c)
 
 monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel)
 {
-	double dmin = DBL_MAX;
+	uint32_t dmin = UINT32_MAX;
 	monitor_t *nearest = NULL;
 	xcb_rectangle_t rect = m->rectangle;
 	for (monitor_t *f = mon_head; f != NULL; f = f->next) {
@@ -408,7 +408,7 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel)
 		    !on_dir_side(rect, r, dir)) {
 			continue;
 		}
-		double d = rdistance(rect, r);
+		uint32_t d = rect_dir_dist(rect, r, dir);
 		if (d < dmin) {
 			dmin = d;
 			nearest = f;

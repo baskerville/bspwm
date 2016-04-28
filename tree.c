@@ -920,19 +920,8 @@ void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t d
 		return;
 	}
 
-	if (history_aware_focus) {
-		nearest_from_history(ref, dst, dir, sel);
-	}
-
-	if (dst->node == NULL) {
-		nearest_from_distance(ref, dst, dir, sel);
-	}
-}
-
-void nearest_from_distance(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
-{
 	xcb_rectangle_t rect = get_rectangle(ref->desktop, ref->node);
-	double md = DBL_MAX;
+	uint32_t md = UINT32_MAX, mr = UINT32_MAX;
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		desktop_t *d = m->desk;
@@ -946,36 +935,12 @@ void nearest_from_distance(coordinates_t *ref, coordinates_t *dst, direction_t d
 			    !on_dir_side(rect, r, dir)) {
 				continue;
 			}
-			double fd = rdistance(rect, r);
-			if (fd < md) {
+			uint32_t fd = rect_dir_dist(rect, r, dir);
+			uint32_t fr = history_rank(f);
+			if (fd < md || (fd == md && fr < mr)) {
 				md = fd;
-				*dst = loc;
-			}
-		}
-	}
-}
-
-void nearest_from_history(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
-{
-	xcb_rectangle_t rect = get_rectangle(ref->desktop, ref->node);
-	int mr = INT_MAX;
-
-	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		desktop_t *d = m->desk;
-		for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-			coordinates_t loc = {m, d, f};
-			xcb_rectangle_t r = get_rectangle(d, f);
-			if (f == ref->node ||
-			    f->client == NULL ||
-			    f->hidden ||
-			    !node_matches(&loc, ref, sel) ||
-			    !on_dir_side(rect, r, dir)) {
-				continue;
-			}
-			int fr = history_rank(f);
-			if (fr >= 0 && fr < mr) {
-				*dst = loc;
 				mr = fr;
+				*dst = loc;
 			}
 		}
 	}

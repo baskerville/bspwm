@@ -44,7 +44,6 @@
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
 
-#define HISTORY_AWARE_FOCUS         false
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
 #define PADDINGLESS_MONOCLE         false
@@ -84,7 +83,6 @@ bool single_monocle;
 bool focus_follows_pointer;
 bool pointer_follows_focus;
 bool pointer_follows_monitor;
-bool history_aware_focus;
 bool ignore_ewmh_focus;
 bool center_pseudo_tiled;
 bool click_to_focus;

@@ -48,25 +48,38 @@ xcb_point_t center(xcb_rectangle_t r)
 	return (xcb_point_t) {r.x + r.width/2, r.y + r.height/2};
 }
 
-double rdistance(xcb_rectangle_t r1, xcb_rectangle_t r2)
+uint32_t rect_dir_dist(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 {
-	return distance(center(r1), center(r2));
+	switch (dir) {
+		case DIR_NORTH:
+			return r1.y - (r2.y + r2.height);
+			break;
+		case DIR_WEST:
+			return r1.x - (r2.x + r2.width);
+			break;
+		case DIR_SOUTH:
+			return r2.y - (r1.y + r1.height);
+			break;
+		case DIR_EAST:
+			return r2.x - (r1.x + r1.width);
+			break;
+	}
 }
 
 bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 {
 	switch (dir) {
 		case DIR_NORTH:
-			return (r2.y + r2.height) <= r1.y;
+			return (r2.y + r2.height) <= r1.y && r2.x < (r1.x + r1.width) && (r2.x + r2.width) >= r1.x;
 			break;
 		case DIR_WEST:
-			return (r2.x + r2.width) <= r1.x;
+			return (r2.x + r2.width) <= r1.x && r2.y < (r1.y + r1.height) && (r2.y + r2.height) >= r1.y;
 			break;
 		case DIR_SOUTH:
-			return r2.y >= (r1.y + r1.height);
+			return r2.y >= (r1.y + r1.height) && r2.x < (r1.x + r1.width) && (r2.x + r2.width) >= r1.x;
 			break;
 		case DIR_EAST:
-			return r2.x >= (r1.x + r1.width);
+			return r2.x >= (r1.x + r1.width) && r2.y < (r1.y + r1.height) && (r2.y + r2.height) >= r1.y;
 			break;
 	}
 }

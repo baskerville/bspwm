@@ -600,9 +600,6 @@ Global Settings
 'initial_polarity'::
 	On which child should a new window be attached when adding a window on a single window tree in automatic mode. Accept the following values: *first_child*, *second_child*.
 
-'history_aware_focus'::
-	Give priority to the focus history when focusing nodes.
-
 'borderless_monocle'::
 	Remove borders of tiled windows for the *monocle* desktop layout.
 

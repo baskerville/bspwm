@@ -41,6 +41,6 @@ monitor_t *history_last_monitor(monitor_t *m);
 bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, node_select_t sel);
 bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel);
 bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, monitor_select_t sel);
-int history_rank(node_t *n);
+uint32_t history_rank(node_t *n);
 
 #endif
