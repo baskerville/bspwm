@@ -63,6 +63,8 @@ uint32_t rect_dir_dist(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 		case DIR_EAST:
 			return r2.x - (r1.x + r1.width);
 			break;
+		default:
+			return UINT32_MAX;
 	}
 }
 
@@ -81,6 +83,8 @@ bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 		case DIR_EAST:
 			return r2.x >= (r1.x + r1.width) && r2.y < (r1.y + r1.height) && (r2.y + r2.height) >= r1.y;
 			break;
+		default:
+			return false;
 	}
 }
 
