@@ -241,9 +241,6 @@ int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t loc, 
 		    (sel == NULL || node_matches(&trg, &ref, *sel))) {
 			fprintf(rsp, "0x%08X\n", n->id);
 			count++;
-			if (sel != NULL) {
-				return count;
-			}
 		}
 		count += query_node_ids_in(n->first_child, d, m, loc, sel, rsp);
 		count += query_node_ids_in(n->second_child, d, m, loc, sel, rsp);
