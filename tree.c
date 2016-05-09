@@ -968,29 +968,25 @@ int tiled_count(node_t *n)
 	return cnt;
 }
 
-node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, node_select_t sel)
+void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t sel)
 {
-	if (d == NULL) {
-		return NULL;
-	}
-
-	node_t *b = NULL;
 	unsigned int b_area = 0;
-	coordinates_t ref = {m, d, n};
 
-	for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
-		coordinates_t loc = {m, d, f};
-		if (f->client == NULL || f->vacant || !node_matches(&loc, &ref, sel)) {
-			continue;
-		}
-		unsigned int f_area = node_area(d, f);
-		if (f_area > b_area) {
-			b = f;
-			b_area = f_area;
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
+				coordinates_t loc = {m, d, f};
+				if (f->client == NULL || f->vacant || !node_matches(&loc, ref, sel)) {
+					continue;
+				}
+				unsigned int f_area = node_area(d, f);
+				if (f_area > b_area) {
+					*dst = loc;
+					b_area = f_area;
+				}
+			}
 		}
 	}
-
-	return b;
 }
 
 void rotate_tree(node_t *n, int deg)

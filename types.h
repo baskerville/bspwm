@@ -154,6 +154,8 @@ typedef struct {
 	option_bool_t locked;
 	option_bool_t urgent;
 	option_bool_t same_class;
+	option_bool_t descendant_of;
+	option_bool_t ancestor_of;
 	option_bool_t below;
 	option_bool_t normal;
 	option_bool_t above;

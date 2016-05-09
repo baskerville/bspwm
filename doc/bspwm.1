@@ -4,10 +4,10 @@
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 05/09/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-54-gcdc20bb
+.\"    Source: Bspwm 0.9.1-56-gbbc3406
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "05/09/2016" "Bspwm 0\&.9\&.1\-54\-gcdc20bb" "Bspwm Manual"
+.TH "BSPWM" "1" "05/09/2016" "Bspwm 0\&.9\&.1\-56\-gbbc3406" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -94,7 +94,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -120,12 +120,12 @@ JUMP := first|1|second|2|brother|parent|DIR
 .PP
 \fIDIR\fR
 .RS 4
-Selects the window in the given (spacial) direction relative to the active node\&.
+Selects the window in the given (spacial) direction relative to the reference node\&.
 .RE
 .PP
 \fICYCLE_DIR\fR
 .RS 4
-Selects the window in the given (cyclic) direction\&.
+Selects the window in the given (cyclic) direction relative to the reference node\&.
 .RE
 .PP
 \fIPATH\fR
@@ -135,17 +135,17 @@ Selects the node at the given path\&.
 .PP
 last
 .RS 4
-Selects the previously focused node\&.
+Selects the previously focused node relative to the reference node\&.
 .RE
 .PP
 older
 .RS 4
-Selects the node older than the focused node in the history\&.
+Selects the node older than the reference node in the history\&.
 .RE
 .PP
 newer
 .RS 4
-Selects the node newer than the focused node in the history\&.
+Selects the node newer than the reference node in the history\&.
 .RE
 .PP
 focused
@@ -160,7 +160,7 @@ Selects the window under the pointer\&.
 .PP
 biggest
 .RS 4
-Selects the biggest window on the current desktop\&.
+Selects the biggest window\&.
 .RE
 .PP
 <node_id>
@@ -177,7 +177,7 @@ Selects the node with the given ID\&.
 \fBPath Jumps\fR
 .RS 4
 .sp
-The initial node is the focused node (or the root if the path starts with \fI/\fR) of the focused desktop (or the selected desktop if the path has a \fIDESKTOP_SEL\fR prefix)\&.
+The initial node is the focused node (or the root if the path starts with \fI/\fR) of the reference desktop (or the selected desktop if the path has a \fIDESKTOP_SEL\fR prefix)\&.
 .PP
 1|first
 .RS 4
@@ -245,7 +245,17 @@ Only consider windows in or not in the given state\&.
 .PP
 [!]same_class
 .RS 4
-Only consider windows that have or don\(cqt have the same class as the current window\&.
+Only consider windows that have or don\(cqt have the same class as the reference window\&.
+.RE
+.PP
+[!]descendant_of
+.RS 4
+Only consider nodes that are or aren\(cqt descendants of the reference node\&.
+.RE
+.PP
+[!]ancestor_of
+.RS 4
+Only consider nodes that are or aren\(cqt ancestors of the reference node\&.
 .RE
 .PP
 [!](hidden|sticky|private|locked|urgent)
@@ -793,17 +803,17 @@ query \fICOMMANDS\fR [\fIOPTIONS\fR]
 \fBCommands\fR
 .RS 4
 .PP
-\fB\-N\fR, \fB\-\-nodes\fR
+\fB\-N\fR, \fB\-\-nodes\fR [\fINODE_SEL\fR]
 .RS 4
 List the IDs of the matching nodes\&.
 .RE
 .PP
-\fB\-D\fR, \fB\-\-desktops\fR
+\fB\-D\fR, \fB\-\-desktops\fR [\fIDESKTOP_SEL\fR]
 .RS 4
 List the IDs of the matching desktops\&.
 .RE
 .PP
-\fB\-M\fR, \fB\-\-monitors\fR
+\fB\-M\fR, \fB\-\-monitors\fR [\fIMONITOR_SEL\fR]
 .RS 4
 List the IDs of the matching monitors\&.
 .RE

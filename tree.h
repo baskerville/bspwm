@@ -66,7 +66,7 @@ node_t *find_by_id_in(node_t *r, uint32_t id);
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel);
 unsigned int node_area(desktop_t *d, node_t *n);
 int tiled_count(node_t *n);
-node_t *find_biggest(monitor_t *m, desktop_t *d, node_t *n, node_select_t sel);
+void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t sel);
 void rotate_tree(node_t *n, int deg);
 void rotate_brother(node_t *n);
 void unrotate_tree(node_t *n, int rot);

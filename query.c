@@ -212,54 +212,52 @@ void query_stack(FILE *rsp)
 	fprintf(rsp, "]");
 }
 
-int query_node_ids(coordinates_t loc, node_select_t *sel, FILE *rsp)
+int query_node_ids(coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor) {
+		if (trg->monitor != NULL && m != trg->monitor) {
 			continue;
 		}
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (loc.desktop != NULL && d != loc.desktop) {
+			if (trg->desktop != NULL && d != trg->desktop) {
 				continue;
 			}
-			count += query_node_ids_in(d->root, d, m, loc, sel, rsp);
+			count += query_node_ids_in(d->root, d, m, ref, trg, sel, rsp);
 		}
 	}
 	return count;
 }
 
-int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t loc, node_select_t *sel, FILE *rsp)
+int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp)
 {
 	int count = 0;
 	if (n == NULL) {
 		return 0;
 	} else {
-		coordinates_t ref = {mon, mon->desk, mon->desk->focus};
-		coordinates_t trg = {m, d, n};
-		if ((loc.node == NULL || n == loc.node) &&
-		    (sel == NULL || node_matches(&trg, &ref, *sel))) {
+		coordinates_t loc = {m, d, n};
+		if ((trg->node == NULL || n == trg->node) &&
+		    (sel == NULL || node_matches(&loc, ref, *sel))) {
 			fprintf(rsp, "0x%08X\n", n->id);
 			count++;
 		}
-		count += query_node_ids_in(n->first_child, d, m, loc, sel, rsp);
-		count += query_node_ids_in(n->second_child, d, m, loc, sel, rsp);
+		count += query_node_ids_in(n->first_child, d, m, ref, trg, sel, rsp);
+		count += query_node_ids_in(n->second_child, d, m, ref, trg, sel, rsp);
 	}
 	return count;
 }
 
-int query_desktop_ids(coordinates_t loc, desktop_select_t *sel, FILE *rsp)
+int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (loc.monitor != NULL && m != loc.monitor) {
+		if (trg->monitor != NULL && m != trg->monitor) {
 			continue;
 		}
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			coordinates_t ref = {mon, mon->desk, NULL};
-			coordinates_t trg = {m, d, NULL};
-			if ((loc.desktop != NULL && d != loc.desktop) ||
-			    (sel != NULL && !desktop_matches(&trg, &ref, *sel))) {
+			coordinates_t loc = {m, d, NULL};
+			if ((trg->desktop != NULL && d != trg->desktop) ||
+			    (sel != NULL && !desktop_matches(&loc, ref, *sel))) {
 				continue;
 			}
 			fprintf(rsp, "0x%08X\n", d->id);
@@ -269,14 +267,13 @@ int query_desktop_ids(coordinates_t loc, desktop_select_t *sel, FILE *rsp)
 	return count;
 }
 
-int query_monitor_ids(coordinates_t loc, monitor_select_t *sel, FILE *rsp)
+int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *sel, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		coordinates_t ref = {mon, NULL, NULL};
-		coordinates_t trg = {m, NULL, NULL};
-		if ((loc.monitor != NULL && m != loc.monitor) ||
-			(sel != NULL && !monitor_matches(&trg, &ref, *sel))) {
+		coordinates_t loc = {m, NULL, NULL};
+		if ((trg->monitor != NULL && m != trg->monitor) ||
+			(sel != NULL && !monitor_matches(&loc, ref, *sel))) {
 			continue;
 		}
 		fprintf(rsp, "0x%08X\n", m->id);
@@ -351,6 +348,8 @@ node_select_t make_node_select(void)
 		.locked = OPTION_NONE,
 		.urgent = OPTION_NONE,
 		.same_class = OPTION_NONE,
+		.descendant_of = OPTION_NONE,
+		.ancestor_of = OPTION_NONE,
 		.below = OPTION_NONE,
 		.normal = OPTION_NONE,
 		.above = OPTION_NONE
@@ -390,8 +389,6 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		return SELECTOR_BAD_MODIFIERS;
 	}
 
-	dst->monitor = ref->monitor;
-	dst->desktop = ref->desktop;
 	dst->node = NULL;
 
 	direction_t dir;
@@ -406,7 +403,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("last", desc)) {
 		history_find_node(HISTORY_OLDER, ref, dst, sel);
 	} else if (streq("biggest", desc)) {
-		dst->node = find_biggest(ref->monitor, ref->desktop, ref->node, sel);
+		find_biggest(ref, dst, sel);
 	} else if (streq("pointed", desc)) {
 		xcb_window_t win;
 		query_pointer(&win, NULL);
@@ -418,12 +415,11 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("focused", desc)) {
 		coordinates_t loc = {mon, mon->desk, mon->desk->focus};
 		if (node_matches(&loc, ref, sel)) {
-			dst->monitor = mon;
-			dst->desktop = mon->desk;
-			dst->node = mon->desk->focus;
+			*dst = loc;
 		}
 	} else if (*desc == '@') {
 		desc++;
+		*dst = *ref;
 		if (colon != NULL) {
 			*colon = '\0';
 			int ret;
@@ -833,6 +829,20 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	    streq(loc->node->client->class_name, ref->node->client->class_name)
 	    ? sel.same_class == OPTION_FALSE
 	    : sel.same_class == OPTION_TRUE) {
+		return false;
+	}
+
+	if (sel.descendant_of != OPTION_NONE &&
+	    !is_descendant(loc->node, ref->node)
+	    ? sel.descendant_of == OPTION_TRUE
+	    : sel.descendant_of == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.ancestor_of != OPTION_NONE &&
+	    !is_descendant(ref->node, loc->node)
+	    ? sel.ancestor_of == OPTION_TRUE
+	    : sel.ancestor_of == OPTION_FALSE) {
 		return false;
 	}
 

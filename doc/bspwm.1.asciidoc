@@ -66,7 +66,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class]
+NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -83,22 +83,22 @@ Descriptors
 ^^^^^^^^^^^
 
 'DIR'::
-	Selects the window in the given (spacial) direction relative to the active node.
+	Selects the window in the given (spacial) direction relative to the reference node.
 
 'CYCLE_DIR'::
-	Selects the window in the given (cyclic) direction.
+	Selects the window in the given (cyclic) direction relative to the reference node.
 
 'PATH'::
 	Selects the node at the given path.
 
 last::
-	Selects the previously focused node.
+	Selects the previously focused node relative to the reference node.
 
 older::
-	Selects the node older than the focused node in the history.
+	Selects the node older than the reference node in the history.
 
 newer::
-	Selects the node newer than the focused node in the history.
+	Selects the node newer than the reference node in the history.
 
 focused::
 	Selects the currently focused node.
@@ -107,7 +107,7 @@ pointed::
 	Selects the window under the pointer.
 
 biggest::
-	Selects the biggest window on the current desktop.
+	Selects the biggest window.
 
 <node_id>::
 	Selects the node with the given ID.
@@ -115,7 +115,7 @@ biggest::
 Path Jumps
 ^^^^^^^^^^
 
-The initial node is the focused node (or the root if the path starts with '/') of the focused desktop (or the selected desktop if the path has a 'DESKTOP_SEL' prefix).
+The initial node is the focused node (or the root if the path starts with '/') of the reference desktop (or the selected desktop if the path has a 'DESKTOP_SEL' prefix).
 
 1|first::
 	Jumps to the first child.
@@ -154,7 +154,13 @@ Modifiers
 	Only consider windows in or not in the given state.
 
 [!]same_class::
-	Only consider windows that have or don't have the same class as the current window.
+	Only consider windows that have or don't have the same class as the reference window.
+
+[!]descendant_of::
+	Only consider nodes that are or aren't descendants of the reference node.
+
+[!]ancestor_of::
+	Only consider nodes that are or aren't ancestors of the reference node.
 
 [!](hidden|sticky|private|locked|urgent)::
 	Only consider windows that have or don't have the given flag set.
@@ -473,13 +479,13 @@ query 'COMMANDS' ['OPTIONS']
 Commands
 ^^^^^^^^
 
-*-N*, *--nodes*::
+*-N*, *--nodes* ['NODE_SEL']::
 	List the IDs of the matching nodes.
 
-*-D*, *--desktops*::
+*-D*, *--desktops* ['DESKTOP_SEL']::
 	List the IDs of the matching desktops.
 
-*-M*, *--monitors*::
+*-M*, *--monitors* ['MONITOR_SEL']::
 	List the IDs of the matching monitors.
 
 *-T*, *--tree*::

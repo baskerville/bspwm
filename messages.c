@@ -123,11 +123,11 @@ void cmd_node(char **args, int num, FILE *rsp)
 	}
 
 	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
-	coordinates_t trg = ref;
 
 	if ((*args)[0] != OPT_CHR) {
 		int ret;
-		if ((ret = node_from_desc(*args, &ref, &trg)) == SELECTOR_OK) {
+		coordinates_t tmp = ref;
+		if ((ret = node_from_desc(*args, &tmp, &ref)) == SELECTOR_OK) {
 			num--, args++;
 		} else {
 			handle_failure(ret, "node", *args, rsp);
@@ -139,11 +139,11 @@ void cmd_node(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (streq("-f", *args) || streq("--focus", *args)) {
-			coordinates_t dst = trg;
+			coordinates_t dst = ref;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				int ret;
-				if ((ret = node_from_desc(*args, &trg, &dst)) != SELECTOR_OK) {
+				if ((ret = node_from_desc(*args, &ref, &dst)) != SELECTOR_OK) {
 					handle_failure(ret, "node -f", *args, rsp);
 					break;
 				}
@@ -153,11 +153,11 @@ void cmd_node(char **args, int num, FILE *rsp)
 				break;
 			}
 		} else if (streq("-a", *args) || streq("--activate", *args)) {
-			coordinates_t dst = trg;
+			coordinates_t dst = ref;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				int ret;
-				if ((ret = node_from_desc(*args, &trg, &dst)) != SELECTOR_OK) {
+				if ((ret = node_from_desc(*args, &ref, &dst)) != SELECTOR_OK) {
 					handle_failure(ret, "node -a", *args, rsp);
 					break;
 				}
@@ -174,10 +174,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = desktop_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus)) {
-					trg.monitor = dst.monitor;
-					trg.desktop = dst.desktop;
+			if ((ret = desktop_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (transfer_node(ref.monitor, ref.desktop, ref.node, dst.monitor, dst.desktop, dst.desktop->focus)) {
+					ref.monitor = dst.monitor;
+					ref.desktop = dst.desktop;
 				} else {
 					fail(rsp, "");
 					break;
@@ -194,10 +194,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = monitor_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus)) {
-					trg.monitor = dst.monitor;
-					trg.desktop = dst.monitor->desk;
+			if ((ret = monitor_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (transfer_node(ref.monitor, ref.desktop, ref.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus)) {
+					ref.monitor = dst.monitor;
+					ref.desktop = dst.monitor->desk;
 				} else {
 					fail(rsp, "");
 					break;
@@ -214,10 +214,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = node_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
-					trg.monitor = dst.monitor;
-					trg.desktop = dst.desktop;
+			if ((ret = node_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (transfer_node(ref.monitor, ref.desktop, ref.node, dst.monitor, dst.desktop, dst.node)) {
+					ref.monitor = dst.monitor;
+					ref.desktop = dst.desktop;
 				} else {
 					fail(rsp, "");
 					break;
@@ -234,10 +234,10 @@ void cmd_node(char **args, int num, FILE *rsp)
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = node_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
-					trg.monitor = dst.monitor;
-					trg.desktop = dst.desktop;
+			if ((ret = node_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (swap_nodes(ref.monitor, ref.desktop, ref.node, dst.monitor, dst.desktop, dst.node)) {
+					ref.monitor = dst.monitor;
+					ref.desktop = dst.desktop;
 				} else {
 					fail(rsp, "");
 					break;
@@ -254,7 +254,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 			}
 			stack_layer_t lyr;
 			if (parse_stack_layer(*args, &lyr)) {
-				if (!set_layer(trg.monitor, trg.desktop, trg.node, lyr)) {
+				if (!set_layer(ref.monitor, ref.desktop, ref.node, lyr)) {
 					fail(rsp, "");
 					break;
 				}
@@ -275,11 +275,11 @@ void cmd_node(char **args, int num, FILE *rsp)
 				(*args)++;
 			}
 			if (parse_client_state(*args, &cst)) {
-				if (alternate && trg.node != NULL && trg.node->client != NULL &&
-				    trg.node->client->state == cst) {
-					cst = trg.node->client->last_state;
+				if (alternate && ref.node != NULL && ref.node->client != NULL &&
+				    ref.node->client->state == cst) {
+					cst = ref.node->client->last_state;
 				}
-				if (!set_state(trg.monitor, trg.desktop, trg.node, cst)) {
+				if (!set_state(ref.monitor, ref.desktop, ref.node, cst)) {
 					fail(rsp, "");
 					break;
 				}
@@ -294,7 +294,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
@@ -313,14 +313,14 @@ void cmd_node(char **args, int num, FILE *rsp)
 				}
 			}
 			if (streq("hidden", key)) {
-				set_hidden(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->hidden));
+				set_hidden(ref.monitor, ref.desktop, ref.node, (a == ALTER_SET ? b : !ref.node->hidden));
 				changed = true;
 			} else if (streq("sticky", key)) {
-				set_sticky(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->sticky));
+				set_sticky(ref.monitor, ref.desktop, ref.node, (a == ALTER_SET ? b : !ref.node->sticky));
 			} else if (streq("private", key)) {
-				set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->private));
+				set_private(ref.monitor, ref.desktop, ref.node, (a == ALTER_SET ? b : !ref.node->private));
 			} else if (streq("locked", key)) {
-				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->locked));
+				set_locked(ref.monitor, ref.desktop, ref.node, (a == ALTER_SET ? b : !ref.node->locked));
 			} else {
 				fail(rsp, "node %s: Invalid key: '%s'.\n", *(args - 1), key);
 				break;
@@ -331,12 +331,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL || trg.node->vacant) {
+			if (ref.node == NULL || ref.node->vacant) {
 				fail(rsp, "");
 				break;
 			}
 			if (streq("cancel", *args)) {
-				cancel_presel(trg.monitor, trg.desktop, trg.node);
+				cancel_presel(ref.monitor, ref.desktop, ref.node);
 			} else {
 				bool alternate = false;
 				if ((*args)[0] == '~') {
@@ -345,12 +345,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 				}
 				direction_t dir;
 				if (parse_direction(*args, &dir)) {
-					if (alternate && trg.node->presel != NULL && trg.node->presel->split_dir == dir) {
-						cancel_presel(trg.monitor, trg.desktop, trg.node);
+					if (alternate && ref.node->presel != NULL && ref.node->presel->split_dir == dir) {
+						cancel_presel(ref.monitor, ref.desktop, ref.node);
 					} else {
-						presel_dir(trg.monitor, trg.desktop, trg.node, dir);
-						if (!IS_RECEPTACLE(trg.node)) {
-							draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
+						presel_dir(ref.monitor, ref.desktop, ref.node, dir);
+						if (!IS_RECEPTACLE(ref.node)) {
+							draw_presel_feedback(ref.monitor, ref.desktop, ref.node);
 						}
 					}
 				} else {
@@ -364,7 +364,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL || trg.node->vacant) {
+			if (ref.node == NULL || ref.node->vacant) {
 				fail(rsp, "");
 				break;
 			}
@@ -373,8 +373,8 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			} else {
-				presel_ratio(trg.monitor, trg.desktop, trg.node, rat);
-				draw_presel_feedback(trg.monitor, trg.desktop, trg.node);
+				presel_ratio(ref.monitor, ref.desktop, ref.node, rat);
+				draw_presel_feedback(ref.monitor, ref.desktop, ref.node);
 			}
 		} else if (streq("-v", *args) || streq("--move", *args)) {
 			num--, args++;
@@ -386,7 +386,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 			if (sscanf(*args, "%i", &dx) == 1) {
 				num--, args++;
 				if (sscanf(*args, "%i", &dy) == 1) {
-					if (!move_client(&trg, dx, dy)) {
+					if (!move_client(&ref, dx, dy)) {
 						fail(rsp, "");
 						break;
 					}
@@ -411,7 +411,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				if (sscanf(*args, "%i", &dx) == 1) {
 					num--, args++;
 					if (sscanf(*args, "%i", &dy) == 1) {
-						if (!resize_client(&trg, rh, dx, dy)) {
+						if (!resize_client(&ref, rh, dx, dy)) {
 							fail(rsp, "");
 							break;
 						}
@@ -433,17 +433,17 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
 			if ((*args)[0] == '+' || (*args)[0] == '-') {
 				int pix;
 				if (sscanf(*args, "%i", &pix) == 1) {
-					int max = (trg.node->split_type == TYPE_HORIZONTAL ? trg.node->rectangle.height : trg.node->rectangle.width);
-					double rat = ((max * trg.node->split_ratio) + pix) / max;
+					int max = (ref.node->split_type == TYPE_HORIZONTAL ? ref.node->rectangle.height : ref.node->rectangle.width);
+					double rat = ((max * ref.node->split_ratio) + pix) / max;
 					if (rat > 0 && rat < 1) {
-						set_ratio(trg.node, rat);
+						set_ratio(ref.node, rat);
 					} else {
 						fail(rsp, "");
 						break;
@@ -455,7 +455,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 			} else {
 				double rat;
 				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
-					set_ratio(trg.node, rat);
+					set_ratio(ref.node, rat);
 				} else {
 					fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 					break;
@@ -468,13 +468,13 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
 			flip_t flp;
 			if (parse_flip(*args, &flp)) {
-				flip_tree(trg.node, flp);
+				flip_tree(ref.node, flp);
 				changed = true;
 			} else {
 				fail(rsp, "");
@@ -486,31 +486,31 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
 			int deg;
 			if (parse_degree(*args, &deg)) {
-				rotate_tree(trg.node, deg);
+				rotate_tree(ref.node, deg);
 				changed = true;
 			} else {
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
 		} else if (streq("-E", *args) || streq("--equalize", *args)) {
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
-			equalize_tree(trg.node);
+			equalize_tree(ref.node);
 			changed = true;
 		} else if (streq("-B", *args) || streq("--balance", *args)) {
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
-			balance_tree(trg.node);
+			balance_tree(ref.node);
 			changed = true;
 		} else if (streq("-C", *args) || streq("--circulate", *args)) {
 			num--, args++;
@@ -518,42 +518,42 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
 			circulate_dir_t cir;
 			if (parse_circulate_direction(*args, &cir)) {
-				circulate_leaves(trg.monitor, trg.desktop, trg.node, cir);
+				circulate_leaves(ref.monitor, ref.desktop, ref.node, cir);
 				changed = true;
 			} else {
 				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
 		} else if (streq("-i", *args) || streq("--insert-receptacle", *args)) {
-			insert_receptacle(trg.monitor, trg.desktop, trg.node);
+			insert_receptacle(ref.monitor, ref.desktop, ref.node);
 			changed = true;
 		} else if (streq("-c", *args) || streq("--close", *args)) {
 			if (num > 1) {
 				fail(rsp, "node %s: Trailing commands.\n", *args);
 				break;
 			}
-			if (trg.node == NULL || locked_count(trg.node) > 0) {
+			if (ref.node == NULL || locked_count(ref.node) > 0) {
 				fail(rsp, "");
 				break;
 			}
-			close_node(trg.node);
+			close_node(ref.node);
 			break;
 		} else if (streq("-k", *args) || streq("--kill", *args)) {
 			if (num > 1) {
 				fail(rsp, "node %s: Trailing commands.\n", *args);
 				break;
 			}
-			if (trg.node == NULL) {
+			if (ref.node == NULL) {
 				fail(rsp, "");
 				break;
 			}
-			kill_node(trg.monitor, trg.desktop, trg.node);
+			kill_node(ref.monitor, ref.desktop, ref.node);
 			changed = true;
 			break;
 		} else {
@@ -565,7 +565,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 	}
 
 	if (changed) {
-		arrange(trg.monitor, trg.desktop);
+		arrange(ref.monitor, ref.desktop);
 	}
 }
 
@@ -577,11 +577,11 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 	}
 
 	coordinates_t ref = {mon, mon->desk, NULL};
-	coordinates_t trg = ref;
 
 	if ((*args)[0] != OPT_CHR) {
 		int ret;
-		if ((ret = desktop_from_desc(*args, &ref, &trg)) == SELECTOR_OK) {
+		coordinates_t tmp = ref;
+		if ((ret = desktop_from_desc(*args, &tmp, &ref)) == SELECTOR_OK) {
 			num--, args++;
 		} else {
 			handle_failure(ret, "desktop", *args, rsp);
@@ -593,22 +593,22 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (streq("-f", *args) || streq("--focus", *args)) {
-			coordinates_t dst = trg;
+			coordinates_t dst = ref;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				int ret;
-				if ((ret = desktop_from_desc(*args, &trg, &dst)) != SELECTOR_OK) {
+				if ((ret = desktop_from_desc(*args, &ref, &dst)) != SELECTOR_OK) {
 					handle_failure(ret, "desktop -f", *args, rsp);
 					break;
 				}
 			}
 			focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
 		} else if (streq("-a", *args) || streq("--activate", *args)) {
-			coordinates_t dst = trg;
+			coordinates_t dst = ref;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				int ret;
-				if ((ret = desktop_from_desc(*args, &trg, &dst)) != SELECTOR_OK) {
+				if ((ret = desktop_from_desc(*args, &ref, &dst)) != SELECTOR_OK) {
 					handle_failure(ret, "desktop -a", *args, rsp);
 					break;
 				}
@@ -623,15 +623,15 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 				fail(rsp, "desktop %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (trg.monitor->desk_head == trg.monitor->desk_tail) {
+			if (ref.monitor->desk_head == ref.monitor->desk_tail) {
 				fail(rsp, "");
 				break;
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = monitor_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (transfer_desktop(trg.monitor, dst.monitor, trg.desktop)) {
-					trg.monitor = dst.monitor;
+			if ((ret = monitor_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (transfer_desktop(ref.monitor, dst.monitor, ref.desktop)) {
+					ref.monitor = dst.monitor;
 				} else {
 					fail(rsp, "");
 					break;
@@ -648,9 +648,9 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = desktop_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop)) {
-					trg.monitor = dst.monitor;
+			if ((ret = desktop_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (swap_desktops(ref.monitor, ref.desktop, dst.monitor, dst.desktop)) {
+					ref.monitor = dst.monitor;
 				} else {
 					fail(rsp, "");
 					break;
@@ -667,22 +667,22 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			}
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				desktop_t *d = trg.desktop;
+				desktop_t *d = ref.desktop;
 				if (cyc == CYCLE_PREV) {
 					if (d->prev == NULL) {
 						while (d->next != NULL) {
-							swap_desktops(trg.monitor, d, trg.monitor, d->next);
+							swap_desktops(ref.monitor, d, ref.monitor, d->next);
 						}
 					} else {
-						swap_desktops(trg.monitor, d, trg.monitor, d->prev);
+						swap_desktops(ref.monitor, d, ref.monitor, d->prev);
 					}
 				} else {
 					if (d->next == NULL) {
 						while (d->prev != NULL) {
-							swap_desktops(trg.monitor, d, trg.monitor, d->prev);
+							swap_desktops(ref.monitor, d, ref.monitor, d->prev);
 						}
 					} else {
-						swap_desktops(trg.monitor, d, trg.monitor, d->next);
+						swap_desktops(ref.monitor, d, ref.monitor, d->next);
 					}
 				}
 			} else {
@@ -698,9 +698,9 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				change_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
+				change_layout(ref.monitor, ref.desktop, (ref.desktop->layout + 1) % 2);
 			} else if (parse_layout(*args, &lyt)) {
-				change_layout(trg.monitor, trg.desktop, lyt);
+				change_layout(ref.monitor, ref.desktop, lyt);
 			} else {
 				fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
@@ -711,15 +711,15 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 				fail(rsp, "desktop %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			rename_desktop(trg.monitor, trg.desktop, *args);
+			rename_desktop(ref.monitor, ref.desktop, *args);
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
 			if (num > 1) {
 				fail(rsp, "desktop %s: Trailing commands.\n", *args);
 				break;
 			}
-			if (trg.desktop->root == NULL &&
-			    trg.monitor->desk_head != trg.monitor->desk_tail) {
-				remove_desktop(trg.monitor, trg.desktop);
+			if (ref.desktop->root == NULL &&
+			    ref.monitor->desk_head != ref.monitor->desk_tail) {
+				remove_desktop(ref.monitor, ref.desktop);
 				return;
 			} else {
 				fail(rsp, "");
@@ -733,7 +733,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 	}
 
 	if (changed) {
-		arrange(trg.monitor, trg.desktop);
+		arrange(ref.monitor, ref.desktop);
 	}
 }
 
@@ -745,11 +745,11 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 	}
 
 	coordinates_t ref = {mon, NULL, NULL};
-	coordinates_t trg = ref;
 
 	if ((*args)[0] != OPT_CHR) {
 		int ret;
-		if ((ret = monitor_from_desc(*args, &ref, &trg)) == SELECTOR_OK) {
+		coordinates_t tmp = ref;
+		if ((ret = monitor_from_desc(*args, &tmp, &ref)) == SELECTOR_OK) {
 			num--, args++;
 		} else {
 			handle_failure(ret, "monitor", *args, rsp);
@@ -759,11 +759,11 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (streq("-f", *args) || streq("--focus", *args)) {
-			coordinates_t dst = trg;
+			coordinates_t dst = ref;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
 				int ret;
-				if ((ret = monitor_from_desc(*args, &trg, &dst)) != SELECTOR_OK) {
+				if ((ret = monitor_from_desc(*args, &ref, &dst)) != SELECTOR_OK) {
 					handle_failure(ret, "monitor -f", *args, rsp);
 					fail(rsp, "");
 					return;
@@ -776,24 +776,24 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				fail(rsp, "monitor %s: Not enough arguments.\n", *(args - 1));
 				return;
 			}
-			desktop_t *d = trg.monitor->desk_head;
+			desktop_t *d = ref.monitor->desk_head;
 			while (num > 0 && d != NULL) {
-				rename_desktop(trg.monitor, d, *args);
+				rename_desktop(ref.monitor, d, *args);
 				d = d->next;
 				num--, args++;
 			}
 			put_status(SBSC_MASK_REPORT);
 			while (num > 0) {
-				add_desktop(trg.monitor, make_desktop(*args, XCB_NONE));
+				add_desktop(ref.monitor, make_desktop(*args, XCB_NONE));
 				num--, args++;
 			}
 			while (d != NULL) {
 				desktop_t *next = d->next;
 				if (d == mon->desk) {
-					focus_node(trg.monitor, d->prev, d->prev->focus);
+					focus_node(ref.monitor, d->prev, d->prev->focus);
 				}
-				merge_desktops(trg.monitor, d, mon, mon->desk);
-				remove_desktop(trg.monitor, d);
+				merge_desktops(ref.monitor, d, mon, mon->desk);
+				remove_desktop(ref.monitor, d);
 				d = next;
 			}
 		} else if (streq("-a", *args) || streq("--add-desktops", *args)) {
@@ -803,7 +803,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				return;
 			}
 			while (num > 0) {
-				add_desktop(trg.monitor, make_desktop(*args, XCB_NONE));
+				add_desktop(ref.monitor, make_desktop(*args, XCB_NONE));
 				num--, args++;
 			}
 		} else if (streq("-r", *args) || streq("--remove", *args)) {
@@ -815,7 +815,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				fail(rsp, "");
 				return;
 			}
-			remove_monitor(trg.monitor);
+			remove_monitor(ref.monitor);
 			return;
 		} else if (streq("-o", *args) || streq("--order-desktops", *args)) {
 			num--, args++;
@@ -823,12 +823,12 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				fail(rsp, "monitor %s: Not enough arguments.\n", *(args - 1));
 				return;
 			}
-			desktop_t *d = trg.monitor->desk_head;
+			desktop_t *d = ref.monitor->desk_head;
 			while (d != NULL && num > 0) {
 				desktop_t *next = d->next;
 				coordinates_t dst;
-				if (locate_desktop(*args, &dst) && dst.monitor == trg.monitor) {
-					swap_desktops(trg.monitor, d, dst.monitor, dst.desktop);
+				if (locate_desktop(*args, &dst) && dst.monitor == ref.monitor) {
+					swap_desktops(ref.monitor, d, dst.monitor, dst.desktop);
 					if (next == dst.desktop) {
 						next = d;
 					}
@@ -844,7 +844,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 			}
 			xcb_rectangle_t r;
 			if (parse_rectangle(*args, &r)) {
-				update_root(trg.monitor, &r);
+				update_root(ref.monitor, &r);
 			} else {
 				fail(rsp, "monitor %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				return;
@@ -855,7 +855,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				fail(rsp, "monitor %s: Not enough arguments.\n", *(args - 1));
 				return;
 			}
-			rename_monitor(trg.monitor, *args);
+			rename_monitor(ref.monitor, *args);
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1) {
@@ -864,8 +864,8 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 			}
 			coordinates_t dst;
 			int ret;
-			if ((ret = monitor_from_desc(*args, &trg, &dst)) == SELECTOR_OK) {
-				if (!swap_monitors(trg.monitor, dst.monitor)) {
+			if ((ret = monitor_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
+				if (!swap_monitors(ref.monitor, dst.monitor)) {
 					fail(rsp, "");
 					return;
 				}
@@ -901,10 +901,37 @@ void cmd_query(char **args, int num, FILE *rsp)
 			dom = DOMAIN_TREE, d++;
 		} else if (streq("-M", *args) || streq("--monitors", *args)) {
 			dom = DOMAIN_MONITOR, d++;
+			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+				num--, args++;
+				int ret;
+				coordinates_t tmp = ref;
+				if ((ret = monitor_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
+					handle_failure(ret, "query -M", *args, rsp);
+					break;
+				}
+			}
 		} else if (streq("-D", *args) || streq("--desktops", *args)) {
 			dom = DOMAIN_DESKTOP, d++;
+			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+				num--, args++;
+				int ret;
+				coordinates_t tmp = ref;
+				if ((ret = desktop_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
+					handle_failure(ret, "query -D", *args, rsp);
+					break;
+				}
+			}
 		} else if (streq("-N", *args) || streq("--nodes", *args)) {
 			dom = DOMAIN_NODE, d++;
+			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
+				num--, args++;
+				int ret;
+				coordinates_t tmp = ref;
+				if ((ret = node_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
+					handle_failure(ret, "query -N", *args, rsp);
+					break;
+				}
+			}
 		} else if (streq("-m", *args) || streq("--monitor", *args)) {
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
 				num--, args++;
@@ -999,15 +1026,15 @@ void cmd_query(char **args, int num, FILE *rsp)
 	}
 
 	if (dom == DOMAIN_NODE) {
-		if (query_node_ids(trg, node_sel, rsp) < 1) {
+		if (query_node_ids(&ref, &trg, node_sel, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else if (dom == DOMAIN_DESKTOP) {
-		if (query_desktop_ids(trg, desktop_sel, rsp) < 1) {
+		if (query_desktop_ids(&ref, &trg, desktop_sel, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else if (dom == DOMAIN_MONITOR) {
-		if (query_monitor_ids(trg, monitor_sel, rsp) < 1) {
+		if (query_monitor_ids(&ref, &trg, monitor_sel, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else {
