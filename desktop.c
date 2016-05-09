@@ -58,10 +58,10 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 	put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus 0x%08X 0x%08X\n", m->id, d->id);
 }
 
-void activate_desktop(monitor_t *m, desktop_t *d)
+bool activate_desktop(monitor_t *m, desktop_t *d)
 {
-	if (d == m->desk) {
-		return;
+	if (m == mon || d == m->desk) {
+		return false;
 	}
 
 	show_desktop(d);
@@ -71,6 +71,8 @@ void activate_desktop(monitor_t *m, desktop_t *d)
 
 	put_status(SBSC_MASK_DESKTOP_ACTIVATE, "desktop_activate 0x%08X 0x%08X\n", m->id, d->id);
 	put_status(SBSC_MASK_REPORT);
+
+	return true;
 }
 
 bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, desktop_select_t sel)

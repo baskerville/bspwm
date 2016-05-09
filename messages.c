@@ -613,7 +613,10 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			activate_desktop(dst.monitor, dst.desktop);
+			if (!activate_desktop(dst.monitor, dst.desktop)) {
+				fail(rsp, "");
+				break;
+			}
 		} else if (streq("-m", *args) || streq("--to-monitor", *args)) {
 			num--, args++;
 			if (num < 1) {
