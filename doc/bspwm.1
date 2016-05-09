@@ -4,10 +4,10 @@
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 05/09/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-56-gbbc3406
+.\"    Source: Bspwm 0.9.1-57-ge471298
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "05/09/2016" "Bspwm 0\&.9\&.1\-56\-gbbc3406" "Bspwm Manual"
+.TH "BSPWM" "1" "05/09/2016" "Bspwm 0\&.9\&.1\-57\-ge471298" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -747,6 +747,11 @@ If \fIMONITOR_SEL\fR is omitted, \fBfocused\fR is assumed\&.
 Focus the selected or given monitor\&.
 .RE
 .PP
+\fB\-s\fR, \fB\-\-swap\fR \fIMONITOR_SEL\fR
+.RS 4
+Swap the selected monitor with the given monitor\&.
+.RE
+.PP
 \fB\-a\fR, \fB\-\-add\-desktops\fR <name>\&...
 .RS 4
 Create desktops with the given names in the selected monitor\&.
@@ -770,11 +775,6 @@ Set the rectangle of the selected monitor\&.
 \fB\-n\fR, \fB\-\-rename\fR <new_name>
 .RS 4
 Rename the selected monitor\&.
-.RE
-.PP
-\fB\-s\fR, \fB\-\-swap\fR \fIMONITOR_SEL\fR
-.RS 4
-Swap the selected monitor with the given monitor\&.
 .RE
 .PP
 \fB\-r\fR, \fB\-\-remove\fR

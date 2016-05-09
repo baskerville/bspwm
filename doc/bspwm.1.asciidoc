@@ -447,6 +447,9 @@ Commands
 *-f*, *--focus* ['MONITOR_SEL']::
 	Focus the selected or given monitor.
 
+*-s*, *--swap* 'MONITOR_SEL'::
+	Swap the selected monitor with the given monitor.
+
 *-a*, *--add-desktops* <name>...::
 	Create desktops with the given names in the selected monitor.
 
@@ -461,9 +464,6 @@ Commands
 
 *-n*, *--rename* <new_name>::
 	Rename the selected monitor.
-
-*-s*, *--swap* 'MONITOR_SEL'::
-	Swap the selected monitor with the given monitor.
 
 *-r*, *--remove*::
 	Remove the selected monitor.
