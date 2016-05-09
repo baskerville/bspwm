@@ -281,9 +281,7 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
 	desktop_t *d = ms->desk_head;
 	while (d != NULL) {
 		desktop_t *next = d->next;
-		if (d->root != NULL || strstr(d->name, DEFAULT_DESK_NAME) == NULL) {
-			transfer_desktop(ms, md, d);
-		}
+		transfer_desktop(ms, md, d);
 		d = next;
 	}
 }
