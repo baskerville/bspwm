@@ -320,6 +320,8 @@ General Syntax
 
 node ['NODE_SEL'] 'COMMANDS'
 
+If 'NODE_SEL' is omitted, *focused* is assumed.
+
 Commands
 ^^^^^^^^
 *-f*, *--focus* ['NODE_SEL']::
@@ -396,6 +398,8 @@ General Syntax
 
 desktop ['DESKTOP_SEL'] 'COMMANDS'
 
+If 'DESKTOP_SEL' is omitted, *focused* is assumed.
+
 COMMANDS
 ^^^^^^^^
 *-f*, *--focus* ['DESKTOP_SEL']::
@@ -429,6 +433,8 @@ General Syntax
 ^^^^^^^^^^^^^^
 
 monitor ['MONITOR_SEL'] 'COMMANDS'
+
+If 'MONITOR_SEL' is omitted, *focused* is assumed.
 
 Commands
 ^^^^^^^^

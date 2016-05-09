@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/28/2016
+.\"      Date: 05/09/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-50-g8f86e93
+.\"    Source: Bspwm 0.9.1-54-gcdc20bb
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/28/2016" "Bspwm 0\&.9\&.1\-50\-g8f86e93" "Bspwm Manual"
+.TH "BSPWM" "1" "05/09/2016" "Bspwm 0\&.9\&.1\-54\-gcdc20bb" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -506,6 +506,8 @@ In each layer, the window are orderered as follow: tiled & pseudo\-tiled < fulls
 .RS 4
 .sp
 node [\fINODE_SEL\fR] \fICOMMANDS\fR
+.sp
+If \fINODE_SEL\fR is omitted, \fBfocused\fR is assumed\&.
 .RE
 .sp
 .it 1 an-trap
@@ -655,6 +657,8 @@ Kill the windows rooted at the selected node\&.
 .RS 4
 .sp
 desktop [\fIDESKTOP_SEL\fR] \fICOMMANDS\fR
+.sp
+If \fIDESKTOP_SEL\fR is omitted, \fBfocused\fR is assumed\&.
 .RE
 .sp
 .it 1 an-trap
@@ -716,6 +720,8 @@ Remove the selected desktop\&.
 .RS 4
 .sp
 monitor [\fIMONITOR_SEL\fR] \fICOMMANDS\fR
+.sp
+If \fIMONITOR_SEL\fR is omitted, \fBfocused\fR is assumed\&.
 .RE
 .sp
 .it 1 an-trap
