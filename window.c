@@ -266,6 +266,10 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, false);
+	}
+
 	bool exists = (n->presel->feedback != XCB_NONE);
 	if (!exists) {
 		initialize_presel_feedback(n);
@@ -305,6 +309,10 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 
 	if (!exists && m->desk == d) {
 		window_show(p->feedback);
+	}
+
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, true);
 	}
 }
 
