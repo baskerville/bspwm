@@ -269,4 +269,16 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 	xcb_rectangle_t r = get_rectangle(NULL, n);
 
 	put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, loc.node->id, r.width, r.height, r.x, r.y);
+
+	if ((pac == ACTION_MOVE && IS_TILED(n->client)) ||
+	    ((pac == ACTION_RESIZE_CORNER || pac == ACTION_RESIZE_SIDE) &&
+	     n->client->state == STATE_TILED)) {
+		for (node_t *f = first_extrema(loc.desktop->root); f != NULL; f = next_leaf(f, loc.desktop->root)) {
+			if (f == n || f->client == NULL || !IS_TILED(f->client)) {
+				continue;
+			}
+			xcb_rectangle_t r = f->client->tiled_rectangle;
+			put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, f->id, r.width, r.height, r.x, r.y);
+		}
+	}
 }
