@@ -1100,6 +1100,12 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 			d->focus = NULL;
 		}
 
+		history_remove(d, p, false);
+		cancel_presel(m, d, p);
+		if (p->sticky) {
+			m->sticky_count--;
+		}
+
 		node_t *b = brother_tree(n);
 		node_t *g = p->parent;
 
@@ -1120,14 +1126,9 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 
 		b->birth_rotation = p->birth_rotation;
-		n->parent = NULL;
 
-		history_remove(d, p, false);
-		cancel_presel(m, d, p);
-		if (p->sticky) {
-			m->sticky_count--;
-		}
 		free(p);
+		n->parent = NULL;
 
 		propagate_flags_upward(m, d, b);
 	}
