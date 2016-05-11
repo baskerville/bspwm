@@ -20,6 +20,10 @@
 	- [bspwm (x86_64)](https://www.archlinux.org/packages/community/x86_64/bspwm)
 	- [bspwm (i686)](https://www.archlinux.org/packages/community/i686/bspwm)
 
+- Debian
+	- [packages](http://download.opensuse.org/repositories/home:/Head_on_a_Stick:/bspwm/Debian_8.0/)
+	- [guide](http://forums.debian.net/viewtopic.php?f=16&t=127708)
+
 - Gentoo Linux
 	- [bspwm](https://packages.gentoo.org/packages/x11-wm/bspwm)
 	- [bspwm-git](https://github.com/milomouse/ebuilds)
