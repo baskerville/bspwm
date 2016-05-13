@@ -37,25 +37,26 @@
 
 void focus_desktop(monitor_t *m, desktop_t *d)
 {
+	bool changed = (m != mon || m->desk != d);
+
 	focus_monitor(m);
 
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, false);
-	}
-
-	show_desktop(d);
 	if (m->desk != d) {
+		if (focus_follows_pointer) {
+			listen_enter_notify(d->root, false);
+		}
+		show_desktop(d);
 		hide_desktop(m->desk);
+		if (focus_follows_pointer) {
+			listen_enter_notify(d->root, true);
+		}
+		m->desk = d;
 	}
 
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, true);
+	if (changed) {
+		ewmh_update_current_desktop();
+		put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus 0x%08X 0x%08X\n", m->id, d->id);
 	}
-
-	m->desk = d;
-	ewmh_update_current_desktop();
-
-	put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus 0x%08X 0x%08X\n", m->id, d->id);
 }
 
 bool activate_desktop(monitor_t *m, desktop_t *d)
@@ -133,29 +134,30 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
 	unlink_desktop(ms, d);
 
-	if (ms->sticky_count > 0 && was_active && ms->desk != NULL) {
-		sticky_still = false;
-		transfer_sticky_nodes(ms, d, ms->desk, d->root);
-		sticky_still = true;
-	}
-
 	if (md->desk != NULL) {
 		hide_desktop(d);
 	}
 
 	insert_desktop(md, d);
 
+	if (was_active) {
+		if (mon == ms) {
+			focus_node(ms, NULL, NULL);
+		} else {
+			activate_node(ms, NULL, NULL);
+		}
+	}
+
+	if (ms->sticky_count > 0 && was_active) {
+		sticky_still = false;
+		transfer_sticky_nodes(ms, d, ms->desk, d->root);
+		sticky_still = true;
+	}
+
 	history_transfer_desktop(md, d);
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);
 	arrange(md, d);
 
-	if (was_active && ms->desk != NULL) {
-		if (mon == ms) {
-			focus_node(ms, ms->desk, ms->desk->focus);
-		} else {
-			activate_node(ms, ms->desk, ms->desk->focus);
-		}
-	}
 
 	if (md->desk == d) {
 		if (mon == md) {
@@ -271,10 +273,7 @@ void unlink_desktop(monitor_t *m, desktop_t *d)
 	}
 
 	if (m->desk == d) {
-		m->desk = history_last_desktop(m, d);
-		if (m->desk == NULL) {
-			m->desk = (prev == NULL ? next : prev);
-		}
+		m->desk = NULL;
 	}
 
 	d->prev = d->next = NULL;
@@ -284,8 +283,6 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 {
 	put_status(SBSC_MASK_DESKTOP_REMOVE, "desktop_remove 0x%08X 0x%08X\n", m->id, d->id);
 
-	bool was_focused = (mon != NULL && d == mon->desk);
-	bool was_active = (d == m->desk);
 	history_remove(d, NULL, false);
 	unlink_desktop(m, d);
 	empty_desktop(m, d);
@@ -295,11 +292,11 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 
-	if (mon != NULL && m->desk != NULL) {
-		if (was_focused) {
-			update_focused();
-		} else if (was_active) {
-			activate_node(m, m->desk, m->desk->focus);
+	if (mon != NULL && m->desk == NULL) {
+		if (m == mon) {
+			focus_node(m, NULL, NULL);
+		} else {
+			activate_node(m, NULL, NULL);
 		}
 	}
 

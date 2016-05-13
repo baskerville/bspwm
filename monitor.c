@@ -227,15 +227,10 @@ void add_monitor(monitor_t *m)
 	put_status(SBSC_MASK_REPORT);
 }
 
-void remove_monitor(monitor_t *m)
+void unlink_monitor(monitor_t *m)
 {
-	while (m->desk_head != NULL) {
-		remove_desktop(m, m->desk_head);
-	}
-
 	monitor_t *prev = m->prev;
 	monitor_t *next = m->next;
-	monitor_t *last_mon = history_last_monitor(m);
 
 	if (prev != NULL) {
 		prev->next = next;
@@ -258,16 +253,25 @@ void remove_monitor(monitor_t *m)
 	}
 
 	if (mon == m) {
-		mon = (last_mon == NULL ? (prev == NULL ? next : prev) : last_mon);
-		if (mon != NULL && mon->desk != NULL) {
-			update_focused();
-		}
+		mon = NULL;
 	}
+}
 
+void remove_monitor(monitor_t *m)
+{
 	put_status(SBSC_MASK_MONITOR_REMOVE, "monitor_remove 0x%08X\n", m->id);
 
+	while (m->desk_head != NULL) {
+		remove_desktop(m, m->desk_head);
+	}
+
+	unlink_monitor(m);
 	xcb_destroy_window(dpy, m->root);
 	free(m);
+
+	if (mon == NULL) {
+		focus_node(NULL, NULL, NULL);
+	}
 
 	put_status(SBSC_MASK_REPORT);
 }

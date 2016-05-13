@@ -430,7 +430,14 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (d == mon->desk || (n != NULL && !is_focusable(n))) {
+	if (d == NULL) {
+		d = history_last_desktop(m, NULL);
+		if (d == NULL) {
+			d = m->desk_head;
+		}
+	}
+
+	if (d == NULL) {
 		return false;
 	}
 
@@ -439,6 +446,10 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		if (n == NULL) {
 			n = first_focusable_leaf(d->root);
 		}
+	}
+
+	if (d == mon->desk || (n != NULL && !is_focusable(n))) {
+		return false;
 	}
 
 	if (n != NULL) {
@@ -488,7 +499,25 @@ void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n
 
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n != NULL && !is_focusable(n)) {
+	if (m == NULL) {
+		m = history_last_monitor(NULL);
+		if (m == NULL) {
+			m = mon_head;
+		}
+	}
+
+	if (m == NULL) {
+		return false;
+	}
+
+	if (d == NULL) {
+		d = history_last_desktop(m, NULL);
+		if (d == NULL) {
+			d = m->desk_head;
+		}
+	}
+
+	if (d == NULL) {
 		return false;
 	}
 
@@ -499,7 +528,11 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 	}
 
-	if (mon->desk != d || n == NULL || n->client == NULL) {
+	if (n != NULL && !is_focusable(n)) {
+		return false;
+	}
+
+	if ((mon != NULL && mon->desk != d) || n == NULL || n->client == NULL) {
 		clear_input_focus();
 	}
 
@@ -521,8 +554,10 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (mon != m) {
-		for (desktop_t *e = mon->desk_head; e != NULL; e = e->next) {
-			draw_border(e->focus, true, false);
+		if (mon != NULL) {
+			for (desktop_t *e = mon->desk_head; e != NULL; e = e->next) {
+				draw_border(e->focus, true, false);
+			}
 		}
 		for (desktop_t *e = m->desk_head; e != NULL; e = e->next) {
 			if (e == d) {
@@ -564,11 +599,6 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	return true;
-}
-
-void update_focused(void)
-{
-	focus_node(mon, mon->desk, mon->desk->focus);
 }
 
 void hide_node(node_t *n)
@@ -1167,8 +1197,6 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
-	node_t *last_focus = d->focus;
-
 	unlink_node(m, d, n);
 	history_remove(d, n, true);
 	remove_stack_node(n);
@@ -1186,11 +1214,11 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	ewmh_update_client_list(false);
 	ewmh_update_client_list(true);
 
-	if (d->focus != last_focus) {
+	if (d->focus == NULL) {
 		if (d == mon->desk) {
-			focus_node(m, d, d->focus);
+			focus_node(m, d, NULL);
 		} else {
-			activate_node(m, d, d->focus);
+			activate_node(m, d, NULL);
 		}
 	}
 }

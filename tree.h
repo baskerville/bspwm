@@ -38,7 +38,6 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n);
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n);
 void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n);
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n);
-void update_focused(void);
 void hide_node(node_t *n);
 void show_node(node_t *n);
 node_t *make_node(uint32_t id);
