@@ -64,6 +64,12 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 		return false;
 	}
 
+	if (m->sticky_count > 0) {
+		sticky_still = false;
+		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
+		sticky_still = true;
+	}
+
 	show_desktop(d);
 	hide_desktop(m->desk);
 
