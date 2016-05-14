@@ -245,12 +245,6 @@ desktop_t *find_desktop_in(uint32_t id, monitor_t *m)
 	return NULL;
 }
 
-void empty_desktop(monitor_t *m, desktop_t *d)
-{
-	destroy_tree(m, d, d->root);
-	d->root = d->focus = NULL;
-}
-
 void unlink_desktop(monitor_t *m, desktop_t *d)
 {
 	desktop_t *prev = d->prev;
@@ -285,7 +279,7 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 
 	history_remove(d, NULL, false);
 	unlink_desktop(m, d);
-	empty_desktop(m, d);
+	remove_node(m, d, d->root);
 	free(d);
 
 	ewmh_update_current_desktop();

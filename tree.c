@@ -246,6 +246,16 @@ void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
 	put_status(SBSC_MASK_NODE_PRESEL, "node_presel 0x%08X 0x%08X 0x%08X cancel\n", m->id, d->id, n->id);
 }
 
+void cancel_presel_in(monitor_t *m, desktop_t *d, node_t *n)
+{
+	if (n == NULL) {
+		return;
+	}
+	cancel_presel(m, d, n);
+	cancel_presel_in(m, d, n->first_child);
+	cancel_presel_in(m, d, n->second_child);
+}
+
 node_t *find_public(desktop_t *d)
 {
 	unsigned int b_manual_area = 0;
@@ -1200,21 +1210,20 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	unlink_node(m, d, n);
 	history_remove(d, n, true);
 	remove_stack_node(n);
-	cancel_presel(m, d, n);
+	cancel_presel_in(m, d, n);
 	if (m->sticky_count > 0) {
 		m->sticky_count -= sticky_count(n);
 	}
 	clients_count -= clients_count_in(n);
-	if (grabbed_node == n) {
+	if (is_descendant(grabbed_node, n)) {
 		grabbed_node = NULL;
 	}
-	free(n->client);
-	free(n);
+	free_node(n);
 
 	ewmh_update_client_list(false);
 	ewmh_update_client_list(true);
 
-	if (d->focus == NULL) {
+	if (mon != NULL && d->focus == NULL) {
 		if (d == mon->desk) {
 			focus_node(m, d, NULL);
 		} else {
@@ -1223,28 +1232,17 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
-void destroy_tree(monitor_t *m, desktop_t *d, node_t *n)
+void free_node(node_t *n)
 {
 	if (n == NULL) {
 		return;
 	}
 	node_t *first_child = n->first_child;
 	node_t *second_child = n->second_child;
-	if (n->client != NULL) {
-		remove_stack_node(n);
-		clients_count--;
-	}
-	if (n->sticky) {
-		m->sticky_count--;
-	}
-	cancel_presel(m, d, n);
 	free(n->client);
 	free(n);
-	if (first_child != NULL && second_child != NULL) {
-		first_child->parent = second_child->parent = NULL;
-		destroy_tree(m, d, first_child);
-		destroy_tree(m, d, second_child);
-	}
+	free_node(first_child);
+	free_node(second_child);
 }
 
 bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
