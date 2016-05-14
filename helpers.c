@@ -64,12 +64,12 @@ char *read_string(const char *file_path, size_t *tlen)
 		return NULL;
 	}
 
-	char buf[BUFSIZ], *content;
+	char buf[BUFSIZ], *content = NULL;
 	size_t len = sizeof(buf);
 
 	if ((content = malloc(len * sizeof(char))) == NULL) {
 		perror("Read file: malloc");
-		return NULL;
+		goto end;
 	}
 
 	int nb;
@@ -80,7 +80,8 @@ char *read_string(const char *file_path, size_t *tlen)
 		if (nb < 0) {
 			perror("Restore tree: read");
 			free(content);
-			return NULL;
+			content = NULL;
+			goto end;
 		} else if (nb == 0) {
 			break;
 		} else {
@@ -91,7 +92,8 @@ char *read_string(const char *file_path, size_t *tlen)
 				if (rcontent == NULL) {
 					perror("Read file: realloc");
 					free(content);
-					return NULL;
+					content = NULL;
+					goto end;
 				} else {
 					content = rcontent;
 				}
@@ -100,6 +102,8 @@ char *read_string(const char *file_path, size_t *tlen)
 		}
 	}
 
+end:
+	close(fd);
 	return content;
 }
 
