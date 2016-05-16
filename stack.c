@@ -190,21 +190,21 @@ void stack(desktop_t *d, node_t *n, bool focused)
 	}
 
 	ewmh_update_client_list(true);
-	restack_presel_feedback(d);
+	restack_presel_feedbacks(d);
 }
 
-void restack_presel_feedback(desktop_t *d)
+void restack_presel_feedbacks(desktop_t *d)
 {
 	stacking_list_t *s = stack_tail;
 	while (s != NULL && !IS_TILED(s->node->client)) {
 		s = s->prev;
 	}
 	if (s != NULL) {
-		restack_presel_feedback_in(d->root, s->node);
+		restack_presel_feedbacks_in(d->root, s->node);
 	}
 }
 
-void restack_presel_feedback_in(node_t *r, node_t *n)
+void restack_presel_feedbacks_in(node_t *r, node_t *n)
 {
 	if (r == NULL) {
 		return;
@@ -212,7 +212,7 @@ void restack_presel_feedback_in(node_t *r, node_t *n)
 		if (r->presel != NULL) {
 			window_above(r->presel->feedback, n->id);
 		}
-		restack_presel_feedback_in(r->first_child, n);
-		restack_presel_feedback_in(r->second_child, n);
+		restack_presel_feedbacks_in(r->first_child, n);
+		restack_presel_feedbacks_in(r->second_child, n);
 	}
 }

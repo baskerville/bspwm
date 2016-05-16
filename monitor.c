@@ -23,15 +23,12 @@
  */
 
 #include <limits.h>
-#include <float.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
-#include "history.h"
 #include "query.h"
 #include "settings.h"
 #include "geometry.h"

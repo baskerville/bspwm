@@ -695,14 +695,19 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 				fail(rsp, "desktop %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
+			bool ret;
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				change_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
+				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
 			} else if (parse_layout(*args, &lyt)) {
-				change_layout(trg.monitor, trg.desktop, lyt);
+				ret = set_layout(trg.monitor, trg.desktop, lyt);
 			} else {
 				fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+				break;
+			}
+			if (!ret) {
+				fail(rsp, "");
 				break;
 			}
 		} else if (streq("-n", *args) || streq("--rename", *args)) {
@@ -1451,6 +1456,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		bool b;
 		if (parse_bool(value, &b)) {
 			if (b == focus_follows_pointer) {
+				fail(rsp, "");
 				return;
 			}
 			focus_follows_pointer = b;

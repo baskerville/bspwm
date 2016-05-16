@@ -191,9 +191,9 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
 
 	if (d == m->desk) {
-		show_node(n);
+		show_node(d, n);
 	} else {
-		hide_node(n);
+		hide_node(d, n);
 	}
 
 	/* the same function is already called in `focus_node` but has no effects on unmapped windows */
@@ -262,7 +262,7 @@ void initialize_presel_feedback(node_t *n)
 
 void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n == NULL || n->presel == NULL) {
+	if (n == NULL || n->presel == NULL || d->layout == LAYOUT_MONOCLE) {
 		return;
 	}
 
@@ -275,11 +275,7 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		initialize_presel_feedback(n);
 	}
 
-	int gap = gapless_monocle && (d->layout == LAYOUT_MONOCLE ||
-	                              (single_monocle && tiled_count(d->root) == 1))
-	          ? 0
-	          : d->window_gap;
-
+	int gap = gapless_monocle && IS_MONOCLE(d) ? 0 : d->window_gap;
 	presel_t *p = n->presel;
 	xcb_rectangle_t rect = n->rectangle;
 	rect.x = rect.y = 0;
@@ -316,7 +312,7 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
-void refresh_presel_feebacks_in(node_t *n, desktop_t *d, monitor_t *m)
+void refresh_presel_feedbacks(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
 		return;
@@ -324,8 +320,34 @@ void refresh_presel_feebacks_in(node_t *n, desktop_t *d, monitor_t *m)
 		if (n->presel != NULL) {
 			draw_presel_feedback(m, d, n);
 		}
-		refresh_presel_feebacks_in(n->first_child, d, m);
-		refresh_presel_feebacks_in(n->second_child, d, m);
+		refresh_presel_feedbacks(m, d, n->first_child);
+		refresh_presel_feedbacks(m, d, n->second_child);
+	}
+}
+
+void show_presel_feedbacks(monitor_t *m, desktop_t *d, node_t *n)
+{
+	if (n == NULL) {
+		return;
+	} else {
+		if (n->presel != NULL) {
+			window_show(n->presel->feedback);
+		}
+		show_presel_feedbacks(m, d, n->first_child);
+		show_presel_feedbacks(m, d, n->second_child);
+	}
+}
+
+void hide_presel_feedbacks(monitor_t *m, desktop_t *d, node_t *n)
+{
+	if (n == NULL) {
+		return;
+	} else {
+		if (n->presel != NULL) {
+			window_hide(n->presel->feedback);
+		}
+		hide_presel_feedbacks(m, d, n->first_child);
+		hide_presel_feedbacks(m, d, n->second_child);
 	}
 }
 

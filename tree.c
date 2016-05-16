@@ -25,8 +25,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <float.h>
-#include <limits.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -47,22 +45,22 @@ void arrange(monitor_t *m, desktop_t *d)
 		return;
 	}
 
-	layout_t last_layout = d->layout;
+	layout_t l = d->layout;
 
-	if (single_monocle && tiled_count(d->root) == 1) {
-		d->layout = LAYOUT_MONOCLE;
+	if (single_monocle && tiled_count(d->root) <= 1) {
+		l = LAYOUT_MONOCLE;
 	}
 
 	xcb_rectangle_t rect = m->rectangle;
 
-	if (!paddingless_monocle || d->layout != LAYOUT_MONOCLE) {
+	if (!paddingless_monocle || l != LAYOUT_MONOCLE) {
 		rect.x += m->padding.left + d->padding.left;
 		rect.y += m->padding.top + d->padding.top;
 		rect.width -= m->padding.left + d->padding.left + d->padding.right + m->padding.right;
 		rect.height -= m->padding.top + d->padding.top + d->padding.bottom + m->padding.bottom;
 	}
 
-	if (!gapless_monocle || d->layout != LAYOUT_MONOCLE) {
+	if (!gapless_monocle || l != LAYOUT_MONOCLE) {
 		rect.x += d->window_gap;
 		rect.y += d->window_gap;
 		rect.width -= d->window_gap;
@@ -73,16 +71,14 @@ void arrange(monitor_t *m, desktop_t *d)
 		listen_enter_notify(d->root, false);
 	}
 
-	apply_layout(m, d, d->root, rect, rect);
+	apply_layout(m, d, d->root, l, rect, rect);
 
 	if (focus_follows_pointer) {
 		listen_enter_notify(d->root, true);
 	}
-
-	d->layout = last_layout;
 }
 
-void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
 {
 	if (n == NULL) {
 		return;
@@ -108,7 +104,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		}
 
 		unsigned int bw;
-		if ((borderless_monocle && n->client->state == STATE_TILED && d->layout == LAYOUT_MONOCLE)
+		if ((borderless_monocle && n->client->state == STATE_TILED && l == LAYOUT_MONOCLE)
 		    || n->client->state == STATE_FULLSCREEN) {
 			bw = 0;
 		} else {
@@ -119,7 +115,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		xcb_rectangle_t cr = get_window_rectangle(n);
 		client_state_t s = n->client->state;
 		if (s == STATE_TILED || s == STATE_PSEUDO_TILED) {
-			int wg = (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap);
+			int wg = (gapless_monocle && l == LAYOUT_MONOCLE ? 0 : d->window_gap);
 			/* tiled clients */
 			if (s == STATE_TILED) {
 				r = rect;
@@ -162,7 +158,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		xcb_rectangle_t first_rect;
 		xcb_rectangle_t second_rect;
 
-		if (d->layout == LAYOUT_MONOCLE || n->first_child->vacant || n->second_child->vacant) {
+		if (l == LAYOUT_MONOCLE || n->first_child->vacant || n->second_child->vacant) {
 			first_rect = second_rect = rect;
 		} else {
 			unsigned int fence;
@@ -177,8 +173,8 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 			}
 		}
 
-		apply_layout(m, d, n->first_child, first_rect, root_rect);
-		apply_layout(m, d, n->second_child, second_rect, root_rect);
+		apply_layout(m, d, n->first_child, l, first_rect, root_rect);
+		apply_layout(m, d, n->second_child, l, second_rect, root_rect);
 	}
 }
 
@@ -611,13 +607,13 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	return true;
 }
 
-void hide_node(node_t *n)
+void hide_node(desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
 		return;
 	} else {
 		if (!n->hidden) {
-			if (n->presel != NULL) {
+			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
 				window_hide(n->presel->feedback);
 			}
 			if (n->client != NULL) {
@@ -627,12 +623,12 @@ void hide_node(node_t *n)
 		if (n->client != NULL) {
 			n->client->shown = false;
 		}
-		hide_node(n->first_child);
-		hide_node(n->second_child);
+		hide_node(d, n->first_child);
+		hide_node(d, n->second_child);
 	}
 }
 
-void show_node(node_t *n)
+void show_node(desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
 		return;
@@ -641,15 +637,15 @@ void show_node(node_t *n)
 			if (n->client != NULL) {
 				window_show(n->id);
 			}
-			if (n->presel != NULL) {
+			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
 				window_show(n->presel->feedback);
 			}
 		}
 		if (n->client != NULL) {
 			n->client->shown = true;
 		}
-		show_node(n->first_child);
-		show_node(n->second_child);
+		show_node(d, n->first_child);
+		show_node(d, n->second_child);
 	}
 }
 
@@ -1318,11 +1314,11 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		history_swap_nodes(m1, d1, n1, m2, d2, n2);
 
 		if (m1->desk != d1 && m2->desk == d2) {
-			show_node(n1);
-			hide_node(n2);
+			show_node(d2, n1);
+			hide_node(d2, n2);
 		} else if (m1->desk == d1 && m2->desk != d2) {
-			hide_node(n1);
-			show_node(n2);
+			hide_node(d1, n1);
+			show_node(d1, n2);
 		}
 
 		if (n1_held_focus) {
@@ -1388,9 +1384,9 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		ewmh_set_wm_desktop(ns, dd);
 		if (sc == 0) {
 			if (ds == ms->desk && dd != md->desk) {
-				hide_node(ns);
+				hide_node(ds, ns);
 			} else if (ds != ms->desk && dd == md->desk) {
-				show_node(ns);
+				show_node(dd, ns);
 			}
 		}
 	}
@@ -1834,7 +1830,6 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);
 	}
-
 }
 
 void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value)
@@ -1904,7 +1899,7 @@ xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n)
 			return c->tiled_rectangle;
 		}
 	} else {
-		int wg = (d == NULL ? 0 : (gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap));
+		int wg = (d == NULL ? 0 : (gapless_monocle && IS_MONOCLE(d) ? 0 : d->window_gap));
 		xcb_rectangle_t rect = n->rectangle;
 		rect.width -= wg;
 		rect.height -= wg;

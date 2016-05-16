@@ -26,7 +26,7 @@
 #define BSPWM_TREE_H
 
 void arrange(monitor_t *m, desktop_t *d);
-void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
 presel_t *make_presel(void);
 void set_ratio(node_t *n, double rat);
 void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir);
@@ -39,8 +39,8 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n);
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n);
 void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n);
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n);
-void hide_node(node_t *n);
-void show_node(node_t *n);
+void hide_node(desktop_t *d, node_t *n);
+void show_node(desktop_t *d, node_t *n);
 node_t *make_node(uint32_t id);
 client_t *make_client(void);
 void initialize_client(node_t *n);

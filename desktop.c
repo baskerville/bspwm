@@ -31,6 +31,7 @@
 #include "monitor.h"
 #include "query.h"
 #include "tree.h"
+#include "window.h"
 #include "desktop.h"
 #include "subscribe.h"
 #include "settings.h"
@@ -112,15 +113,42 @@ bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t di
 	return false;
 }
 
-void change_layout(monitor_t *m, desktop_t *d, layout_t l)
+bool set_layout(monitor_t *m, desktop_t *d, layout_t l)
 {
+	if (d->layout == l) {
+		return false;
+	}
+
 	d->layout = l;
+
+	handle_presel_feedbacks(m, d);
+
 	arrange(m, d);
 
 	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(l));
 
 	if (d == m->desk) {
 		put_status(SBSC_MASK_REPORT);
+	}
+
+	return true;
+}
+
+void handle_presel_feedbacks(monitor_t *m, desktop_t *d)
+{
+	if (m->desk != d) {
+		return;
+	}
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, false);
+	}
+	if (d->layout == LAYOUT_MONOCLE) {
+		hide_presel_feedbacks(m, d, d->root);
+	} else {
+		show_presel_feedbacks(m, d, d->root);
+	}
+	if (focus_follows_pointer) {
+		listen_enter_notify(d->root, true);
 	}
 }
 
@@ -420,7 +448,7 @@ void show_desktop(desktop_t *d)
 	if (d == NULL) {
 		return;
 	}
-	show_node(d->root);
+	show_node(d, d->root);
 }
 
 void hide_desktop(desktop_t *d)
@@ -428,7 +456,7 @@ void hide_desktop(desktop_t *d)
 	if (d == NULL) {
 		return;
 	}
-	hide_node(d->root);
+	hide_node(d, d->root);
 }
 
 bool is_urgent(desktop_t *d)

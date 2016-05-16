@@ -164,8 +164,8 @@ bool restore_tree(const char *file_path)
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			refresh_presel_feebacks_in(d->root, d, m);
-			restack_presel_feedback(d);
+			refresh_presel_feedbacks(m, d, d->root);
+			restack_presel_feedbacks(d);
 			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
 				if (n->client == NULL) {
 					continue;

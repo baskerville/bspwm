@@ -39,6 +39,7 @@
 #define IS_FLOATING(c)    (c->state == STATE_FLOATING)
 #define IS_FULLSCREEN(c)  (c->state == STATE_FULLSCREEN)
 #define IS_RECEPTACLE(n)  (is_leaf(n) && n->client == NULL)
+#define IS_MONOCLE(d)     (d->layout == LAYOUT_MONOCLE || (single_monocle && tiled_count(d->root) <= 1))
 
 #define BOOL_STR(A)       ((A) ? "true" : "false")
 #define ON_OFF_STR(A)     ((A) ? "on" : "off")
