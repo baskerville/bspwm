@@ -1155,8 +1155,7 @@ void cmd_wm(char **args, int num, FILE *rsp)
 			num--, args++;
 			xcb_rectangle_t r;
 			if (parse_rectangle(*args, &r)) {
-				monitor_t *m = make_monitor(&r, XCB_NONE);
-				snprintf(m->name, sizeof(m->name), "%s", name);
+				monitor_t *m = make_monitor(name, &r, XCB_NONE);
 				add_monitor(m);
 				add_desktop(m, make_desktop(NULL, XCB_NONE));
 			} else {

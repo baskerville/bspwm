@@ -23,6 +23,7 @@
  */
 
 #include <limits.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -37,14 +38,14 @@
 #include "window.h"
 #include "monitor.h"
 
-monitor_t *make_monitor(xcb_rectangle_t *rect, uint32_t id)
+monitor_t *make_monitor(const char *name, xcb_rectangle_t *rect, uint32_t id)
 {
 	monitor_t *m = malloc(sizeof(monitor_t));
 	if (id == XCB_NONE) {
 		m->id = xcb_generate_id(dpy);
 	}
 	m->randr_id = XCB_NONE;
-	snprintf(m->name, sizeof(m->name), "%s", DEFAULT_MON_NAME);
+	snprintf(m->name, sizeof(m->name), "%s", name == NULL ? DEFAULT_MON_NAME : name);
 	m->padding = padding;
 	m->border_width = border_width;
 	m->window_gap = window_gap;
@@ -72,6 +73,7 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 		                  rect->x, rect->y, rect->width, rect->height, 0,
 		                  XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
 		xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
+		xcb_icccm_set_wm_name(dpy, m->root, XCB_ATOM_STRING, 8, strlen(m->name), m->name);
 		window_lower(m->root);
 		if (focus_follows_pointer) {
 			window_show(m->root);
@@ -97,6 +99,7 @@ void rename_monitor(monitor_t *m, const char *name)
 	put_status(SBSC_MASK_MONITOR_RENAME, "monitor_rename 0x%08X %s %s\n", m->id, m->name, name);
 
 	snprintf(m->name, sizeof(m->name), "%s", name);
+	xcb_icccm_set_wm_name(dpy, m->root, XCB_ATOM_STRING, 8, strlen(m->name), m->name);
 
 	put_status(SBSC_MASK_REPORT);
 }
@@ -449,11 +452,11 @@ bool update_monitors(void)
 						update_root(mm, &rect);
 						mm->wired = true;
 					} else {
-						mm = make_monitor(&rect, XCB_NONE);
-						char *name = (char *)xcb_randr_get_output_info_name(info);
-						int len = xcb_randr_get_output_info_name_length(info);
-						size_t name_size = MIN(sizeof(mm->name), (size_t) len + 1);
-						snprintf(mm->name, name_size, "%s", name);
+						char *name = (char *) xcb_randr_get_output_info_name(info);
+						size_t len = (size_t) xcb_randr_get_output_info_name_length(info);
+						char *name_copy = copy_string(name, len);
+						mm = make_monitor(name_copy, &rect, XCB_NONE);
+						free(name_copy);
 						mm->randr_id = outputs[i];
 						add_monitor(mm);
 					}

@@ -223,7 +223,7 @@ monitor_t *restore_monitor(jsmntok_t **t, char *json)
 {
 	int num = (*t)->size;
 	(*t)++;
-	monitor_t *m = make_monitor(NULL, UINT32_MAX);
+	monitor_t *m = make_monitor(NULL, NULL, UINT32_MAX);
 	uint32_t focused_desktop_id = 0;
 
 	for (int i = 0; i < num; i++) {
