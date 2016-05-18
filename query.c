@@ -764,7 +764,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	}
 
 	if (sel.focused != OPTION_NONE &&
-	    loc->node != mon->desk->focus
+	    loc->node != loc->desktop->focus
 	    ? sel.focused == OPTION_TRUE
 	    : sel.focused == OPTION_FALSE) {
 		return false;
@@ -894,7 +894,7 @@ bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t se
 	}
 
 	if (sel.focused != OPTION_NONE &&
-	    mon->desk != loc->desktop
+	    loc->desktop != loc->monitor->desk
 	    ? sel.focused == OPTION_TRUE
 	    : sel.focused == OPTION_FALSE) {
 		return false;
