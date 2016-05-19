@@ -459,6 +459,8 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			} else {
 				return SELECTOR_INVALID;
 			}
+		} else if (dst->desktop->root != NULL) {
+			return SELECTOR_INVALID;
 		}
 		return SELECTOR_OK;
 	} else {
