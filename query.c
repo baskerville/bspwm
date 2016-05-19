@@ -430,7 +430,9 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 				return ret;
 			}
 		}
-		dst->node = (*desc == '/' ? dst->desktop->root : dst->desktop->focus);
+		if (*desc == '/') {
+			dst->node = dst->desktop->root;
+		}
 		char *move = strtok(desc, PTH_TOK);
 		while (move != NULL && dst->node != NULL) {
 			if (streq("first", move) || streq("1", move)) {
