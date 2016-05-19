@@ -912,7 +912,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 				coordinates_t tmp = ref;
 				if ((ret = monitor_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
 					handle_failure(ret, "query -M", *args, rsp);
-					break;
+					goto end;
 				}
 			}
 		} else if (streq("-D", *args) || streq("--desktops", *args)) {
@@ -923,7 +923,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 				coordinates_t tmp = ref;
 				if ((ret = desktop_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
 					handle_failure(ret, "query -D", *args, rsp);
-					break;
+					goto end;
 				}
 			}
 		} else if (streq("-N", *args) || streq("--nodes", *args)) {
@@ -934,7 +934,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 				coordinates_t tmp = ref;
 				if ((ret = node_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
 					handle_failure(ret, "query -N", *args, rsp);
-					break;
+					goto end;
 				}
 			}
 		} else if (streq("-m", *args) || streq("--monitor", *args)) {
