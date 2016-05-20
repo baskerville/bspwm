@@ -424,6 +424,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			*colon = '\0';
 			int ret;
 			if ((ret = desktop_from_desc(desc, ref, dst)) == SELECTOR_OK) {
+				dst->node = dst->desktop->focus;
 				desc = colon + 1;
 			} else {
 				free(desc_copy);
