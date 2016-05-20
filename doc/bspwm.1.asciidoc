@@ -53,12 +53,16 @@ Selectors
 Selectors are used to select a target node, desktop, or monitor. A selector
 can either describe the target relatively or name it globally.
 
-Selectors consist of a descriptor and any number of non-conflicting modifiers
-as follows:
+Selectors consist of an optional reference, a descriptor and any number of
+non-conflicting modifiers as follows:
 
-	DESCRIPTOR(.MODIFIER)*
+	[REFERENCE#]DESCRIPTOR(.MODIFIER)*
 
-An exclamation mark can be prepended to certain modifiers in order to reverse their meaning.
+The relative targets are computed in relation to the given reference (the
+default reference value is *focused*).
+
+An exclamation mark can be prepended to any modifier in order to reverse its
+meaning.
 
 Node
 ~~~~
@@ -66,7 +70,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -142,7 +146,7 @@ Modifiers
 	Only consider nodes in automatic or manual insertion mode.
 
 [!]local::
-	Only consider nodes in or not in the current desktop.
+	Only consider nodes in or not in the reference desktop.
 
 [!]leaf::
 	Only consider leaves or internal nodes.
@@ -174,23 +178,23 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := (CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
 
 Descriptors
 ^^^^^^^^^^^
 
 'CYCLE_DIR'::
-	Selects the desktop in the given direction relative to the active desktop.
+	Selects the desktop in the given direction relative to the reference desktop.
 
 last::
-	Selects the previously focused desktop.
+	Selects the previously focused desktop relative to the reference desktop.
 
 older::
-	Selects the desktop older than the focused desktop in the history.
+	Selects the desktop older than the reference desktop in the history.
 
 newer::
-	Selects the desktop newer than the focused desktop in the history.
+	Selects the desktop newer than the reference desktop in the history.
 
 focused::
 	Selects the currently focused desktop.
@@ -217,7 +221,7 @@ Modifiers
 	Only consider urgent or non urgent desktops.
 
 [!]local::
-	Only consider inside or outside of the current monitor.
+	Only consider inside or outside of the reference monitor.
 
 Monitor
 ~~~~~~~
@@ -225,26 +229,26 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := (DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
 ----
 
 Descriptors
 ^^^^^^^^^^^
 
 'DIR'::
-	Selects the monitor in the given (spacial) direction relative to the active monitor.
+	Selects the monitor in the given (spacial) direction relative to the reference monitor.
 
 'CYCLE_DIR'::
-	Selects the monitor in the given (cyclic) direction relative to the active monitor.
+	Selects the monitor in the given (cyclic) direction relative to the reference monitor.
 
 last::
-	Selects the previously focused monitor.
+	Selects the previously focused monitor relative to the reference monitor.
 
 older::
-	Selects the monitor older than the focused monitor in the history.
+	Selects the monitor older than the reference monitor in the history.
 
 newer::
-	Selects the monitor newer than the focused monitor in the history.
+	Selects the monitor newer than the reference monitor in the history.
 
 focused::
 	Selects the currently focused monitor.
@@ -478,6 +482,8 @@ query 'COMMANDS' ['OPTIONS']
 
 Commands
 ^^^^^^^^
+
+The optional selectors are references.
 
 *-N*, *--nodes* ['NODE_SEL']::
 	List the IDs of the matching nodes.

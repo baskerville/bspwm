@@ -379,8 +379,33 @@ monitor_select_t make_monitor_select(void)
 
 int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	coordinates_t ref_copy = *ref;
+	ref = &ref_copy;
 	char *desc_copy = copy_string(desc, strlen(desc));
 	desc = desc_copy;
+
+	char *hash = NULL;
+	char *path = strrchr(desc, '@');
+	if (path == NULL) {
+		hash = strrchr(desc, '#');
+	} else {
+		if (path != desc && *(path - 1) == '#') {
+			hash = path - 1;
+		}
+	}
+
+	if (hash != NULL) {
+		*hash = '\0';
+		int ret;
+		coordinates_t tmp = {mon, mon->desk, mon->desk->focus};
+		if ((ret = node_from_desc(desc, &tmp, ref)) == SELECTOR_OK) {
+			desc = hash + 1;
+		} else {
+			free(desc_copy);
+			return ret;
+		}
+	}
+
 	node_select_t sel = make_node_select();
 	char *colon = strrchr(desc, ':');
 
@@ -492,8 +517,25 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	coordinates_t ref_copy = *ref;
+	ref = &ref_copy;
 	char *desc_copy = copy_string(desc, strlen(desc));
 	desc = desc_copy;
+
+	char *hash = strrchr(desc, '#');
+
+	if (hash != NULL) {
+		*hash = '\0';
+		int ret;
+		coordinates_t tmp = {mon, mon->desk, NULL};
+		if ((ret = desktop_from_desc(desc, &tmp, ref)) == SELECTOR_OK) {
+			desc = hash + 1;
+		} else {
+			free(desc_copy);
+			return ret;
+		}
+	}
+
 	desktop_select_t sel = make_desktop_select();
 	char *colon = strrchr(desc, ':');
 
@@ -582,8 +624,25 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	coordinates_t ref_copy = *ref;
+	ref = &ref_copy;
 	char *desc_copy = copy_string(desc, strlen(desc));
 	desc = desc_copy;
+
+	char *hash = strrchr(desc, '#');
+
+	if (hash != NULL) {
+		*hash = '\0';
+		int ret;
+		coordinates_t tmp = {mon, NULL, NULL};
+		if ((ret = monitor_from_desc(desc, &tmp, ref)) == SELECTOR_OK) {
+			desc = hash + 1;
+		} else {
+			free(desc_copy);
+			return ret;
+		}
+	}
+
 	monitor_select_t sel = make_monitor_select();
 
 	if (!parse_monitor_modifiers(desc, &sel)) {

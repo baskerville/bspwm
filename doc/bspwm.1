@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 05/09/2016
+.\"      Date: 05/20/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.1-57-ge471298
+.\"    Source: Bspwm 0.9.1-75-g666af89
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "05/09/2016" "Bspwm 0\&.9\&.1\-57\-ge471298" "Bspwm Manual"
+.TH "BSPWM" "1" "05/20/2016" "Bspwm 0\&.9\&.1\-75\-g666af89" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -73,19 +73,21 @@ CYCLE_DIR   := next | prev
 .sp
 Selectors are used to select a target node, desktop, or monitor\&. A selector can either describe the target relatively or name it globally\&.
 .sp
-Selectors consist of a descriptor and any number of non\-conflicting modifiers as follows:
+Selectors consist of an optional reference, a descriptor and any number of non\-conflicting modifiers as follows:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-DESCRIPTOR(\&.MODIFIER)*
+[REFERENCE#]DESCRIPTOR(\&.MODIFIER)*
 .fi
 .if n \{\
 .RE
 .\}
 .sp
-An exclamation mark can be prepended to certain modifiers in order to reverse their meaning\&.
+The relative targets are computed in relation to the given reference (the default reference value is \fBfocused\fR)\&.
+.sp
+An exclamation mark can be prepended to any modifier in order to reverse its meaning\&.
 .SS "Node"
 .sp
 Select a node\&.
@@ -94,7 +96,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := (DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -225,7 +227,7 @@ Only consider nodes in automatic or manual insertion mode\&.
 .PP
 [!]local
 .RS 4
-Only consider nodes in or not in the current desktop\&.
+Only consider nodes in or not in the reference desktop\&.
 .RE
 .PP
 [!]leaf
@@ -276,7 +278,7 @@ Select a desktop\&.
 .RS 4
 .\}
 .nf
-DESKTOP_SEL := (CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
 .fi
 .if n \{\
 .RE
@@ -292,22 +294,22 @@ DESKTOP_SEL := (CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop
 .PP
 \fICYCLE_DIR\fR
 .RS 4
-Selects the desktop in the given direction relative to the active desktop\&.
+Selects the desktop in the given direction relative to the reference desktop\&.
 .RE
 .PP
 last
 .RS 4
-Selects the previously focused desktop\&.
+Selects the previously focused desktop relative to the reference desktop\&.
 .RE
 .PP
 older
 .RS 4
-Selects the desktop older than the focused desktop in the history\&.
+Selects the desktop older than the reference desktop in the history\&.
 .RE
 .PP
 newer
 .RS 4
-Selects the desktop newer than the focused desktop in the history\&.
+Selects the desktop newer than the reference desktop in the history\&.
 .RE
 .PP
 focused
@@ -356,7 +358,7 @@ Only consider urgent or non urgent desktops\&.
 .PP
 [!]local
 .RS 4
-Only consider inside or outside of the current monitor\&.
+Only consider inside or outside of the reference monitor\&.
 .RE
 .RE
 .SS "Monitor"
@@ -367,7 +369,7 @@ Select a monitor\&.
 .RS 4
 .\}
 .nf
-MONITOR_SEL := (DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
 .fi
 .if n \{\
 .RE
@@ -383,27 +385,27 @@ MONITOR_SEL := (DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>
 .PP
 \fIDIR\fR
 .RS 4
-Selects the monitor in the given (spacial) direction relative to the active monitor\&.
+Selects the monitor in the given (spacial) direction relative to the reference monitor\&.
 .RE
 .PP
 \fICYCLE_DIR\fR
 .RS 4
-Selects the monitor in the given (cyclic) direction relative to the active monitor\&.
+Selects the monitor in the given (cyclic) direction relative to the reference monitor\&.
 .RE
 .PP
 last
 .RS 4
-Selects the previously focused monitor\&.
+Selects the previously focused monitor relative to the reference monitor\&.
 .RE
 .PP
 older
 .RS 4
-Selects the monitor older than the focused monitor in the history\&.
+Selects the monitor older than the reference monitor in the history\&.
 .RE
 .PP
 newer
 .RS 4
-Selects the monitor newer than the focused monitor in the history\&.
+Selects the monitor newer than the reference monitor in the history\&.
 .RE
 .PP
 focused
@@ -802,6 +804,8 @@ query \fICOMMANDS\fR [\fIOPTIONS\fR]
 .ps +1
 \fBCommands\fR
 .RS 4
+.sp
+The optional selectors are references\&.
 .PP
 \fB\-N\fR, \fB\-\-nodes\fR [\fINODE_SEL\fR]
 .RS 4
