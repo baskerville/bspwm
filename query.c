@@ -315,9 +315,6 @@ void print_modifier_mask(uint16_t m, FILE *rsp)
 void print_pointer_action(pointer_action_t a, FILE *rsp)
 {
 	switch (a) {
-		case ACTION_FOCUS:
-			fprintf(rsp, "focus");
-			break;
 		case ACTION_MOVE:
 			fprintf(rsp, "move");
 			break;
@@ -326,6 +323,12 @@ void print_pointer_action(pointer_action_t a, FILE *rsp)
 			break;
 		case ACTION_RESIZE_CORNER:
 			fprintf(rsp, "resize_corner");
+			break;
+		case ACTION_FOCUS:
+			fprintf(rsp, "focus");
+			break;
+		case ACTION_NONE:
+			fprintf(rsp, "none");
 			break;
 	}
 }

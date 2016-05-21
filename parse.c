@@ -227,6 +227,9 @@ bool parse_pointer_action(char *s, pointer_action_t *a)
 	} else if (streq("focus", s)) {
 		*a = ACTION_FOCUS;
 		return true;
+	} else if (streq("none", s)) {
+		*a = ACTION_NONE;
+		return true;
 	}
 	return false;
 }

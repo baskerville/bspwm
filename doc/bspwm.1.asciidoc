@@ -636,7 +636,7 @@ Global Settings
 'pointer_action1'::
 'pointer_action2'::
 'pointer_action3'::
-	Action performed when pressing 'pointer_modifier' + 'button<n>'. Accept the following values: *move*, *resize_side*, *resize_corner*, *focus*.
+	Action performed when pressing 'pointer_modifier' + 'button<n>'. Accept the following values: *move*, *resize_side*, *resize_corner*, *focus*, *none*.
 
 'click_to_focus'::
 	Focus a window (or a monitor) by clicking it.

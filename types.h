@@ -117,6 +117,7 @@ typedef enum {
 } resize_handle_t;
 
 typedef enum {
+	ACTION_NONE,
 	ACTION_FOCUS,
 	ACTION_MOVE,
 	ACTION_RESIZE_SIDE,

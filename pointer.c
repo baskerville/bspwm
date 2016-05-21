@@ -55,7 +55,9 @@ void grab_buttons(void)
 	}
 	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
 	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
-		grab_button(buttons[i], pointer_modifier);
+		if (pointer_actions[i] != ACTION_NONE) {
+			grab_button(buttons[i], pointer_modifier);
+		}
 	}
 }
 
