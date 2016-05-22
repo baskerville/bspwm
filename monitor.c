@@ -265,11 +265,13 @@ void remove_monitor(monitor_t *m)
 		remove_desktop(m, m->desk_head);
 	}
 
+	monitor_t *last_mon = mon;
+
 	unlink_monitor(m);
 	xcb_destroy_window(dpy, m->root);
 	free(m);
 
-	if (mon == NULL) {
+	if (mon != last_mon) {
 		focus_node(NULL, NULL, NULL);
 	}
 
