@@ -1435,6 +1435,11 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("pointer_motion_interval", name)) {
+		if (sscanf(value, "%u", &pointer_motion_interval) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
 	           streq("pointer_action3", name)) {
@@ -1568,6 +1573,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", CHILD_POL_STR(initial_polarity));
 	} else if (streq("pointer_modifier", name)) {
 		print_modifier_mask(pointer_modifier, rsp);
+	} else if (streq("pointer_motion_interval", name)) {
+		fprintf(rsp, "%u", pointer_motion_interval);
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
 	           streq("pointer_action3", name)) {

@@ -239,8 +239,8 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 		uint8_t resp_type = XCB_EVENT_RESPONSE_TYPE(evt);
 		if (resp_type == XCB_MOTION_NOTIFY) {
 			xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t*) evt;
-			int64_t dtime = e->time - last_motion_time;
-			if (dtime < 20) {
+			uint32_t dtime = e->time - last_motion_time;
+			if (dtime < pointer_motion_interval) {
 				continue;
 			}
 			last_motion_time = e->time;

@@ -56,6 +56,7 @@ void load_settings(void)
 	split_ratio = SPLIT_RATIO;
 	initial_polarity = FIRST_CHILD;
 	pointer_modifier = POINTER_MODIFIER;
+	pointer_motion_interval = POINTER_MOTION_INTERVAL;
 
 	pointer_actions[0] = ACTION_MOVE;
 	pointer_actions[1] = ACTION_RESIZE_SIDE;

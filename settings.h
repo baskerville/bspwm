@@ -27,12 +27,13 @@
 
 #include "types.h"
 
-#define WM_NAME                 "bspwm"
-#define CONFIG_NAME             WM_NAME "rc"
-#define CONFIG_HOME_ENV         "XDG_CONFIG_HOME"
-#define POINTER_MODIFIER        XCB_MOD_MASK_4
-#define EXTERNAL_RULES_COMMAND  ""
-#define STATUS_PREFIX           "W"
+#define WM_NAME                  "bspwm"
+#define CONFIG_NAME              WM_NAME "rc"
+#define CONFIG_HOME_ENV          "XDG_CONFIG_HOME"
+#define POINTER_MODIFIER         XCB_MOD_MASK_4
+#define POINTER_MOTION_INTERVAL  17
+#define EXTERNAL_RULES_COMMAND   ""
+#define STATUS_PREFIX            "W"
 
 #define NORMAL_BORDER_COLOR           "#30302f"
 #define ACTIVE_BORDER_COLOR           "#474645"
@@ -74,6 +75,7 @@ double split_ratio;
 
 child_polarity_t initial_polarity;
 uint16_t pointer_modifier;
+uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];
 
 bool borderless_monocle;

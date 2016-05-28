@@ -630,6 +630,9 @@ Global Settings
 'single_monocle'::
 	Set the desktop layout to *monocle* if there's only one tiled window in the tree.
 
+'pointer_motion_interval'::
+	The minimum interval, in milliseconds, between two motion notify events.
+
 'pointer_modifier'::
 	Keyboard modifier used for moving or resizing windows. Accept the following values: *shift*, *control*, *lock*, *mod1*, *mod2*, *mod3*, *mod4*, *mod5*.
 
