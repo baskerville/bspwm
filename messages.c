@@ -1317,7 +1317,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 	if (streq("border_width", name)) {
 		unsigned int bw;
 		if (sscanf(value, "%u", &bw) != 1) {
-			fail(rsp, "config: %s: Invalid value: '%s'.", name, value);
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
 		SET_DEF_DEFMON_DEFDESK_WIN(border_width, bw)
