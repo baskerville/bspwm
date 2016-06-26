@@ -167,6 +167,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	}
 
 	insert_desktop(md, d);
+	history_transfer_desktop(md, d);
 
 	if (was_active) {
 		if (mon == ms) {
@@ -182,10 +183,8 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 		sticky_still = true;
 	}
 
-	history_transfer_desktop(md, d);
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);
 	arrange(md, d);
-
 
 	if (md->desk == d) {
 		if (mon == md) {
