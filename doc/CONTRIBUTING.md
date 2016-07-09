@@ -17,7 +17,7 @@ I follow the [Linux Coding Style][4] with the following variations:
 - [Indent with tabs, align with spaces][5].
 - Always use braces when using control structures.
 
-[1]: http://cm.bell-labs.com/cm/cs/cbook/
+[1]: https://www.bell-labs.com/usr/dmr/www/cbook/
 [2]: http://www.x.org/releases/X11R7.5/doc/libxcb/tutorial/
 [3]: http://git-scm.com/documentation
 [4]: http://www.kernel.org/doc/Documentation/CodingStyle
