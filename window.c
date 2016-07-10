@@ -155,16 +155,15 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	put_status(SBSC_MASK_NODE_MANAGE, "node_manage 0x%08X 0x%08X 0x%08X 0x%08X\n", m->id, d->id, win, f!=NULL?f->id:0);
 
 	if (f != NULL && f->client != NULL && csq->state != NULL && *(csq->state) == STATE_FLOATING) {
-		c->last_layer = c->layer = f->client->layer;
+		c->layer = f->client->layer;
 	}
 
 	if (csq->layer != NULL) {
-		c->last_layer = c->layer = *(csq->layer);
+		c->layer = *(csq->layer);
 	}
 
 	if (csq->state != NULL) {
 		set_state(m, d, n, *(csq->state));
-		c->last_state = c->state;
 	}
 
 	set_hidden(m, d, n, csq->hidden);
