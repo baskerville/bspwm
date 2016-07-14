@@ -173,19 +173,6 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	arrange(m, d);
 
-	bool focused = false;
-
-	if (!csq->hidden && csq->focus) {
-		if (d == mon->desk || csq->follow) {
-			focused = true;
-			focus_node(m, d, n);
-		} else {
-			activate_node(m, d, n);
-		}
-	} else {
-		stack(d, n, false);
-	}
-
 	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
 
@@ -195,9 +182,14 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		hide_node(d, n);
 	}
 
-	/* the same function is already called in `focus_node` but has no effects on unmapped windows */
-	if (focused) {
-		xcb_set_input_focus(dpy, XCB_INPUT_FOCUS_POINTER_ROOT, win, XCB_CURRENT_TIME);
+	if (!csq->hidden && csq->focus) {
+		if (d == mon->desk || csq->follow) {
+			focus_node(m, d, n);
+		} else {
+			activate_node(m, d, n);
+		}
+	} else {
+		stack(d, n, false);
 	}
 
 	ewmh_set_wm_desktop(n, d);
