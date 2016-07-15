@@ -1357,9 +1357,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		return false;
 	}
 
-	unsigned int sc = 0;
-
-	if (sticky_still && ms->sticky_count > 0 && ds != dd && (sc = sticky_count(ns)) > 0) {
+	if (sticky_still && ds != dd && ms->sticky_count > 0 && sticky_count(ns) > 0) {
 		return false;
 	}
 
@@ -1382,7 +1380,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 
 	if (ds != dd) {
 		ewmh_set_wm_desktop(ns, dd);
-		if (sc == 0) {
+		if (sticky_still) {
 			if (ds == ms->desk && dd != md->desk) {
 				hide_node(ds, ns);
 			} else if (ds != ms->desk && dd == md->desk) {
