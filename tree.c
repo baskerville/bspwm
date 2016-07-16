@@ -997,7 +997,7 @@ int tiled_count(node_t *n)
 	}
 	int cnt = 0;
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (f->client != NULL && IS_TILED(f->client)) {
+		if (!f->hidden && f->client != NULL && IS_TILED(f->client)) {
 			cnt++;
 		}
 	}
