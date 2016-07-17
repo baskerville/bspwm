@@ -75,6 +75,26 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (config_path[0] == '\0') {
+		char *config_home = getenv(CONFIG_HOME_ENV);
+		if (config_home != NULL) {
+			snprintf(config_path, sizeof(config_path), "%s/%s/%s", config_home, WM_NAME, CONFIG_NAME);
+		} else {
+			snprintf(config_path, sizeof(config_path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, CONFIG_NAME);
+		}
+	}
+
+	dpy = xcb_connect(NULL, &default_screen);
+
+	if (!check_connection(dpy)) {
+		exit(EXIT_FAILURE);
+	}
+
+	load_settings();
+	setup();
+
+	dpy_fd = xcb_get_file_descriptor(dpy);
+
 	char *sp = getenv(SOCKET_ENV_VAR);
 	if (sp != NULL) {
 		snprintf(socket_path, sizeof(socket_path), "%s", sp);
@@ -104,26 +124,6 @@ int main(int argc, char *argv[])
 	if (listen(sock_fd, SOMAXCONN) == -1) {
 		err("Couldn't listen to the socket.\n");
 	}
-
-	if (config_path[0] == '\0') {
-		char *config_home = getenv(CONFIG_HOME_ENV);
-		if (config_home != NULL) {
-			snprintf(config_path, sizeof(config_path), "%s/%s/%s", config_home, WM_NAME, CONFIG_NAME);
-		} else {
-			snprintf(config_path, sizeof(config_path), "%s/%s/%s/%s", getenv("HOME"), ".config", WM_NAME, CONFIG_NAME);
-		}
-	}
-
-	dpy = xcb_connect(NULL, &default_screen);
-
-	if (!check_connection(dpy)) {
-		exit(EXIT_FAILURE);
-	}
-
-	load_settings();
-	setup();
-
-	dpy_fd = xcb_get_file_descriptor(dpy);
 
 	signal(SIGINT, sig_handler);
 	signal(SIGHUP, sig_handler);
