@@ -304,9 +304,9 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 {
 	put_status(SBSC_MASK_DESKTOP_REMOVE, "desktop_remove 0x%08X 0x%08X\n", m->id, d->id);
 
-	history_remove(d, NULL, false);
-	unlink_desktop(m, d);
 	remove_node(m, d, d->root);
+	unlink_desktop(m, d);
+	history_remove(d, NULL, false);
 	free(d);
 
 	ewmh_update_current_desktop();
