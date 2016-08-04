@@ -372,12 +372,8 @@ void enter_notify(xcb_generic_event_t *evt)
 		}
 	}
 
-	if (n != mon->desk->focus) {
-		if (n != NULL) {
-			focus_node(m, d, n);
-		} else if (m != mon) {
-			focus_node(m, m->desk, m->desk->focus);
-		}
+	if (n != mon->desk->focus || mon->desk->focus == NULL) {
+		focus_node(m, d, n == NULL ? d->focus : n);
 	}
 
 	pointer_follows_focus = pff;
