@@ -443,17 +443,15 @@ void initialize_floating_rectangle(node_t *n)
 xcb_rectangle_t get_window_rectangle(node_t *n)
 {
 	client_t *c = n->client;
-	xcb_get_geometry_reply_t *g = NULL;
 	if (c != NULL) {
-		g = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, n->id), NULL);
+		xcb_get_geometry_reply_t *g = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, n->id), NULL);
+		if (g != NULL) {
+			xcb_rectangle_t rect = (xcb_rectangle_t) {g->x, g->y, g->width, g->height};
+			free(g);
+			return rect;
+		}
 	}
-	if (g != NULL) {
-		xcb_rectangle_t rect = (xcb_rectangle_t) {g->x, g->y, g->width, g->height};
-		free(g);
-		return rect;
-	} else {
-		return (xcb_rectangle_t) {0, 0, screen_width, screen_height};
-	}
+	return (xcb_rectangle_t) {0, 0, screen_width, screen_height};
 }
 
 bool move_client(coordinates_t *loc, int dx, int dy)

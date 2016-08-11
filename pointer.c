@@ -212,8 +212,10 @@ void grab_pointer(pointer_action_t pac)
 	xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(dpy, xcb_grab_pointer(dpy, 0, root, XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME), NULL);
 
 	if (reply == NULL || reply->status != XCB_GRAB_STATUS_SUCCESS) {
+		free(reply);
 		return;
 	}
+	free(reply);
 
 	track_pointer(loc, pac, pos);
 }
@@ -260,6 +262,7 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 			handle_event(evt);
 		}
 	} while (grabbing && grabbed_node != NULL);
+	free(evt);
 
 	xcb_ungrab_pointer(dpy, XCB_CURRENT_TIME);
 
