@@ -26,11 +26,6 @@
 #include "types.h"
 #include "geometry.h"
 
-double distance(xcb_point_t a, xcb_point_t b)
-{
-	return hypot(a.x - b.x, a.y - b.y);
-}
-
 bool is_inside(xcb_point_t p, xcb_rectangle_t r)
 {
 	return (p.x >= r.x && p.x < (r.x + r.width) &&
@@ -43,45 +38,62 @@ unsigned int area(xcb_rectangle_t r)
 }
 
 
-xcb_point_t center(xcb_rectangle_t r)
+dpoint_t center(xcb_rectangle_t r)
 {
-	return (xcb_point_t) {r.x + r.width/2, r.y + r.height/2};
+	return (dpoint_t) {(double)r.x + ((double)r.width / 2), (double)r.y + ((double)r.height / 2)};
 }
 
-uint32_t rect_dir_dist(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
+double distance_center(xcb_rectangle_t r1, xcb_rectangle_t r2)
 {
-	switch (dir) {
-		case DIR_NORTH:
-			return r1.y - (r2.y + r2.height);
-			break;
-		case DIR_WEST:
-			return r1.x - (r2.x + r2.width);
-			break;
-		case DIR_SOUTH:
-			return r2.y - (r1.y + r1.height);
-			break;
-		case DIR_EAST:
-			return r2.x - (r1.x + r1.width);
-			break;
-		default:
-			return UINT32_MAX;
-	}
+	dpoint_t r1_center = center(r1);
+	dpoint_t r2_center = center(r2);
+	return hypot(r1_center.x - r2_center.x, r1_center.y - r2_center.y);
 }
 
 bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 {
+	dpoint_t r1_max = {r1.x + r1.width, r1.y + r1.height};
+	dpoint_t r2_max = {r2.x + r2.width, r2.y + r2.height};
+	dpoint_t r1_center = center(r1);
+	dpoint_t r2_center = center(r2);
+
 	switch (dir) {
 		case DIR_NORTH:
-			return (r2.y + r2.height) <= r1.y && r2.x < (r1.x + r1.width) && (r2.x + r2.width) >= r1.x;
+			if (r2_center.y >= r1_center.y)
+				return false;
 			break;
 		case DIR_WEST:
-			return (r2.x + r2.width) <= r1.x && r2.y < (r1.y + r1.height) && (r2.y + r2.height) >= r1.y;
+			if (r2_center.x >= r1_center.x)
+				return false;
 			break;
 		case DIR_SOUTH:
-			return r2.y >= (r1.y + r1.height) && r2.x < (r1.x + r1.width) && (r2.x + r2.width) >= r1.x;
+			if (r1_center.y >= r2_center.y)
+				return false;
 			break;
 		case DIR_EAST:
-			return r2.x >= (r1.x + r1.width) && r2.y < (r1.y + r1.height) && (r2.y + r2.height) >= r1.y;
+			if (r1_center.x >= r2_center.x)
+				return false;
+			break;
+		default:
+			return false;
+	}
+
+	switch (dir) {
+		case DIR_NORTH:
+		case DIR_SOUTH:
+			return
+				(r2.x >= r1.x && r2.x <= r1_max.x) ||
+				(r2_max.x >= r1.x && r2_max.x <= r1_max.x) ||
+				(r1.x >= r2.x && r1.x <= r2_max.x) ||
+				(r1_max.x >= r2.x && r1_max.x <= r2_max.x);
+			break;
+		case DIR_WEST:
+		case DIR_EAST:
+			return
+				(r2.y >= r1.y && r2.y <= r1_max.y) ||
+				(r2_max.y >= r1.y && r2_max.y <= r1_max.y) ||
+				(r1.y >= r2.y && r1.y <= r2_max.y) ||
+				(r1_max.y >= r2.y && r1_max.y <= r2_max.y);
 			break;
 		default:
 			return false;

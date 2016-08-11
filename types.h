@@ -334,4 +334,9 @@ struct pending_rule_t {
 	pending_rule_t *next;
 };
 
+typedef struct {
+    double x;
+    double y;
+} dpoint_t;
+
 #endif
