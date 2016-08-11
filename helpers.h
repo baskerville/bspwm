@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <float.h>
 
 #define LENGTH(x)         (sizeof(x) / sizeof(*x))
 #define MAX(A, B)         ((A) > (B) ? (A) : (B))
