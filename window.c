@@ -549,6 +549,9 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy)
 		} else if (rh & HANDLE_BOTTOM) {
 			horizontal_fence = find_fence(n, DIR_SOUTH);
 		}
+		if (vertical_fence == NULL && horizontal_fence == NULL) {
+			return false;
+		}
 		if (vertical_fence != NULL) {
 			double sr = vertical_fence->split_ratio + (double) dx / vertical_fence->rectangle.width;
 			sr = MAX(0, sr);
