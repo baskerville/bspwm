@@ -320,6 +320,8 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_DESKTOP;
 	} else if (streq("monitor", s)) {
 		*mask = SBSC_MASK_MONITOR;
+	} else if (streq("pointer", s)) {
+		*mask = SBSC_MASK_POINTER;
 	} else if (streq("node_manage", s)) {
 		*mask = SBSC_MASK_NODE_MANAGE;
 	} else if (streq("node_unmanage", s)) {
@@ -372,6 +374,18 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_MONITOR_FOCUS;
 	} else if (streq("monitor_geometry", s)) {
 		*mask = SBSC_MASK_MONITOR_GEOMETRY;
+	} else if (streq("pointer_move_start", s)) {
+		*mask = SBSC_MASK_POINTER_MOVE_START;
+	} else if (streq("pointer_move_end", s)) {
+		*mask = SBSC_MASK_POINTER_MOVE_END;
+	} else if (streq("pointer_resize_corner_start", s)) {
+		*mask = SBSC_MASK_POINTER_RESIZE_CORNER_START;
+	} else if (streq("pointer_resize_corner_end", s)) {
+		*mask = SBSC_MASK_POINTER_RESIZE_CORNER_END;
+	} else if (streq("pointer_resize_side_start", s)) {
+		*mask = SBSC_MASK_POINTER_RESIZE_SIDE_START;
+	} else if (streq("pointer_resize_side_end", s)) {
+		*mask = SBSC_MASK_POINTER_RESIZE_SIDE_END;
 	} else if (streq("report", s)) {
 		*mask = SBSC_MASK_REPORT;
 	} else {
