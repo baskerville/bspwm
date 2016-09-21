@@ -320,6 +320,8 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_DESKTOP;
 	} else if (streq("monitor", s)) {
 		*mask = SBSC_MASK_MONITOR;
+	} else if (streq("pointer_action", s)) {
+		*mask = SBSC_MASK_POINTER_ACTION;
 	} else if (streq("node_manage", s)) {
 		*mask = SBSC_MASK_NODE_MANAGE;
 	} else if (streq("node_unmanage", s)) {

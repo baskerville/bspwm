@@ -796,6 +796,9 @@ Events
 'node_layer <monitor_id> <desktop_id> <node_id> below|normal|above'::
 	The layer of a window changed.
 
+'pointer_action <monitor_id> <desktop_id> <node_id> move|resize_corner|resize_side begin|end'::
+	A pointer action occured.
+
 Please note that *bspwm* initializes monitors before it reads messages on its socket, therefore the initial monitor events can't be received.
 
 Report Format

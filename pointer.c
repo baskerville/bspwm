@@ -217,6 +217,14 @@ void grab_pointer(pointer_action_t pac)
 	}
 	free(reply);
 
+	if (pac == ACTION_MOVE) {
+		put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X move begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+	} else if (pac == ACTION_RESIZE_CORNER) {
+		put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X resize_corner begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+	} else if (pac == ACTION_RESIZE_SIDE) {
+		put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X resize_side begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+	}
+
 	track_pointer(loc, pac, pos);
 }
 
@@ -269,6 +277,14 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 	if (grabbed_node == NULL) {
 		grabbing = false;
 		return;
+	}
+
+	if (pac == ACTION_MOVE) {
+		put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X move end\n", loc.monitor->id, loc.desktop->id, n->id);
+	} else if (pac == ACTION_RESIZE_CORNER) {
+		put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X resize_corner end\n", loc.monitor->id, loc.desktop->id, n->id);
+	} else if (pac == ACTION_RESIZE_SIDE) {
+		put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X resize_side end\n", loc.monitor->id, loc.desktop->id, n->id);
 	}
 
 	xcb_rectangle_t r = get_rectangle(NULL, n);
