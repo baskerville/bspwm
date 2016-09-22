@@ -339,6 +339,7 @@ node_select_t make_node_select(void)
 		.automatic = OPTION_NONE,
 		.focused = OPTION_NONE,
 		.local = OPTION_NONE,
+		.active = OPTION_NONE,
 		.leaf = OPTION_NONE,
 		.window = OPTION_NONE,
 		.tiled = OPTION_NONE,
@@ -848,6 +849,13 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	    loc->desktop != ref->desktop
 	    ? sel.local == OPTION_TRUE
 	    : sel.local == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel.active != OPTION_NONE &&
+	    loc->desktop != loc->monitor->desk
+	    ? sel.active == OPTION_TRUE
+	    : sel.active == OPTION_FALSE) {
 		return false;
 	}
 
