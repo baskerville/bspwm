@@ -218,11 +218,11 @@ void grab_pointer(pointer_action_t pac)
 	free(reply);
 
 	if (pac == ACTION_MOVE) {
-		put_status(SBSC_MASK_POINTER_MOVE_START, "pointer_move_start 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+		put_status(SBSC_MASK_POINTER, "pointer_action 0x%08X 0x%08X 0x%08X move begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
 	} else if (pac == ACTION_RESIZE_CORNER) {
-		put_status(SBSC_MASK_POINTER_RESIZE_CORNER_START, "pointer_resize_corner_start 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+		put_status(SBSC_MASK_POINTER, "pointer_action 0x%08X 0x%08X 0x%08X resize_corner begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
 	} else if (pac == ACTION_RESIZE_SIDE) {
-		put_status(SBSC_MASK_POINTER_RESIZE_SIDE_START, "pointer_resize_side_start 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+		put_status(SBSC_MASK_POINTER, "pointer_action 0x%08X 0x%08X 0x%08X resize_side begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
 	}
 
 	track_pointer(loc, pac, pos);
@@ -280,11 +280,11 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 	}
 
 	if (pac == ACTION_MOVE) {
-		put_status(SBSC_MASK_POINTER_MOVE_END, "pointer_move_end 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, n->id);
+		put_status(SBSC_MASK_POINTER, "pointer_action 0x%08X 0x%08X 0x%08X move end\n", loc.monitor->id, loc.desktop->id, n->id);
 	} else if (pac == ACTION_RESIZE_CORNER) {
-		put_status(SBSC_MASK_POINTER_RESIZE_CORNER_END, "pointer_resize_corner_end 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, n->id);
+		put_status(SBSC_MASK_POINTER, "pointer_action 0x%08X 0x%08X 0x%08X resize_corner end\n", loc.monitor->id, loc.desktop->id, n->id);
 	} else if (pac == ACTION_RESIZE_SIDE) {
-		put_status(SBSC_MASK_POINTER_RESIZE_SIDE_END, "pointer_resize_side_end 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, n->id);
+		put_status(SBSC_MASK_POINTER, "pointer_action 0x%08X 0x%08X 0x%08X resize_side end\n", loc.monitor->id, loc.desktop->id, n->id);
 	}
 
 	xcb_rectangle_t r = get_rectangle(NULL, n);
