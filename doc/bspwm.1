@@ -1325,6 +1325,36 @@ One of the flags of a node changed\&.
 .RS 4
 The layer of a window changed\&.
 .RE
+.PP
+\fIpointer_move_start <monitor_id> <desktop_id> <node_id>\fR
+.RS 4
+The pointer action "move" has started.
+.RE
+.PP
+\fIpointer_move_end <monitor_id> <desktop_id> <node_id>\fR
+.RS 4
+The pointer action "move" has ended.
+.RE
+.PP
+\fIpointer_resize_corner_start <monitor_id> <desktop_id> <node_id>\fR
+.RS 4
+The pointer action "resize corner" has started.
+.RE
+.PP
+\fIpointer_resize_corner_end <monitor_id> <desktop_id> <node_id>\fR
+.RS 4
+The pointer action "resize corner" has ended.
+.RE
+.PP
+\fIpointer_resize_side_start <monitor_id> <desktop_id> <node_id>\fR
+.RS 4
+The pointer action "resize side" has started.
+.RE
+.PP
+\fIpointer_resize_side_end <monitor_id> <desktop_id> <node_id>\fR
+.RS 4
+The pointer action "resize side" has ended.
+.RE
 .sp
 Please note that \fBbspwm\fR initializes monitors before it reads messages on its socket, therefore the initial monitor events can\(cqt be received\&.
 .SH "REPORT FORMAT"

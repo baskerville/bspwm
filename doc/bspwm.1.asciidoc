@@ -793,6 +793,24 @@ Events
 'node_layer <monitor_id> <desktop_id> <node_id> below|normal|above'::
 	The layer of a window changed.
 
+'pointer_move_start <monitor_id> <desktop_id> <node_id>'::
+	The pointer action "move" has started.
+
+'pointer_move_end <monitor_id> <desktop_id> <node_id>'::
+	The pointer action "move" has ended.
+
+'pointer_resize_corner_start <monitor_id> <desktop_id> <node_id>'::
+	The pointer action "resize corner" has started.
+
+'pointer_resize_corner_end <monitor_id> <desktop_id> <node_id>'::
+	The pointer action "resize corner" has ended.
+
+'pointer_resize_side_start <monitor_id> <desktop_id> <node_id>'::
+	The pointer action "resize side" has started.
+
+'pointer_resize_side_end <monitor_id> <desktop_id> <node_id>'::
+	The pointer action "resize side" has ended.
+
 Please note that *bspwm* initializes monitors before it reads messages on its socket, therefore the initial monitor events can't be received.
 
 Report Format
