@@ -679,6 +679,7 @@ client_t *make_client(void)
 	c->wm_flags = 0;
 	c->icccm_props.input_hint = true;
 	c->icccm_props.take_focus = false;
+	c->icccm_props.delete_window = false;
 	c->size_hints.flags = 0;
 	return c;
 }
@@ -689,8 +690,12 @@ void initialize_client(node_t *n)
 	client_t *c = n->client;
 	xcb_icccm_get_wm_protocols_reply_t protos;
 	if (xcb_icccm_get_wm_protocols_reply(dpy, xcb_icccm_get_wm_protocols(dpy, win, ewmh->WM_PROTOCOLS), &protos, NULL) == 1) {
-		if (has_proto(WM_TAKE_FOCUS, &protos)) {
-			c->icccm_props.take_focus = true;
+		for (uint32_t i = 0; i < protos.atoms_len; i++) {
+			if (protos.atoms[i] == WM_TAKE_FOCUS) {
+				c->icccm_props.take_focus = true;
+			} else if (protos.atoms[i] == WM_DELETE_WINDOW) {
+				c->icccm_props.delete_window = true;
+			}
 		}
 		xcb_icccm_get_wm_protocols_reply_wipe(&protos);
 	}
@@ -1175,7 +1180,11 @@ void close_node(node_t *n)
 	if (n == NULL) {
 		return;
 	} else if (n->client != NULL) {
-		send_client_message(n->id, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
+		if (n->client->icccm_props.delete_window) {
+			send_client_message(n->id, ewmh->WM_PROTOCOLS, WM_DELETE_WINDOW);
+		} else {
+			xcb_kill_client(dpy, n->id);
+		}
 	} else {
 		close_node(n->first_child);
 		close_node(n->second_child);

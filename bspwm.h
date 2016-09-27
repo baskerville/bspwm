@@ -59,6 +59,7 @@ pending_rule_t *pending_rule_head;
 pending_rule_t *pending_rule_tail;
 
 xcb_window_t meta_window;
+xcb_atom_t WM_STATE;
 xcb_atom_t WM_TAKE_FOCUS;
 xcb_atom_t WM_DELETE_WINDOW;
 int exit_status;

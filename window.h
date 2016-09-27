@@ -33,6 +33,7 @@
 
 void schedule_window(xcb_window_t win);
 void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd);
+void set_window_state(xcb_window_t win, xcb_icccm_wm_state_t state);
 void unmanage_window(xcb_window_t win);
 bool is_presel_window(xcb_window_t win);
 void initialize_presel_feedback(node_t *n);
@@ -70,7 +71,6 @@ void clear_input_focus(void);
 void center_pointer(xcb_rectangle_t r);
 void get_atom(char *name, xcb_atom_t *atom);
 void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value);
-bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols);
 void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value);
 
 #endif

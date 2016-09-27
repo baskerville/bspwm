@@ -175,6 +175,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
+	set_window_state(win, XCB_ICCCM_WM_STATE_NORMAL);
 
 	if (d == m->desk) {
 		show_node(d, n);
@@ -198,12 +199,19 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	free(csq->state);
 }
 
+void set_window_state(xcb_window_t win, xcb_icccm_wm_state_t state)
+{
+	long data[] = {state, XCB_NONE};
+	xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, WM_STATE, WM_STATE, 32, 2, data);
+}
+
 void unmanage_window(xcb_window_t win)
 {
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
 		put_status(SBSC_MASK_NODE_UNMANAGE, "node_unmanage 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
+		set_window_state(win, XCB_ICCCM_WM_STATE_WITHDRAWN);
 		arrange(loc.monitor, loc.desktop);
 	} else {
 		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
@@ -859,27 +867,18 @@ void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value)
 	xcb_change_property(dpy, XCB_PROP_MODE_REPLACE, win, atom, XCB_ATOM_CARDINAL, 32, 1, &value);
 }
 
-bool has_proto(xcb_atom_t atom, xcb_icccm_get_wm_protocols_reply_t *protocols)
-{
-	for (uint32_t i = 0; i < protocols->atoms_len; i++) {
-		if (protocols->atoms[i] == atom) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value)
 {
-	xcb_client_message_event_t e;
+	xcb_client_message_event_t *e = calloc(32, 1);
 
-	e.response_type = XCB_CLIENT_MESSAGE;
-	e.window = win;
-	e.format = 32;
-	e.sequence = 0;
-	e.type = property;
-	e.data.data32[0] = value;
-	e.data.data32[1] = XCB_CURRENT_TIME;
+	e->response_type = XCB_CLIENT_MESSAGE;
+	e->window = win;
+	e->type = property;
+	e->format = 32;
+	e->data.data32[0] = value;
+	e->data.data32[1] = XCB_CURRENT_TIME;
 
-	xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) &e);
+	xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) e);
+	xcb_flush(dpy);
+	free(e);
 }

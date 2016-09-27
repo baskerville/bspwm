@@ -179,6 +179,7 @@ typedef struct icccm_props_t icccm_props_t;
 struct icccm_props_t {
 	bool take_focus;
 	bool input_hint;
+	bool delete_window;
 };
 
 typedef struct {
