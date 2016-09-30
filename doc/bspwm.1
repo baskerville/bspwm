@@ -1330,6 +1330,11 @@ One of the flags of a node changed\&.
 .RS 4
 The layer of a window changed\&.
 .RE
+.PP
+\fIpointer_action <monitor_id> <desktop_id> <node_id> move|resize_corner|resize_side begin|end\fR
+.RS 4
+A pointer action occured.
+.RE
 .sp
 Please note that \fBbspwm\fR initializes monitors before it reads messages on its socket, therefore the initial monitor events can\(cqt be received\&.
 .SH "REPORT FORMAT"
