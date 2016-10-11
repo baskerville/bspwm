@@ -1281,8 +1281,14 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 {
 	bool colors_changed = false;
 #define SET_DEF_DEFMON_DEFDESK_WIN(k, v) \
-		if (loc.node != NULL) { \
+		if (loc.node != NULL && loc.node->client != NULL) { \
 			loc.node->client->k = v; \
+		}  else if (loc.node != NULL && loc.node->client == NULL) { \
+			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.desktop->root)) { \
+				if (n->client != NULL) { \
+					n->client->k = v; \
+				} \
+			} \
 		} else if (loc.desktop != NULL) { \
 			loc.desktop->k = v; \
 			for (node_t *n = first_extrema(loc.desktop->root); n != NULL; n = next_leaf(n, loc.desktop->root)) { \
