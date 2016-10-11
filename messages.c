@@ -1282,7 +1282,11 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 	bool colors_changed = false;
 #define SET_DEF_DEFMON_DEFDESK_WIN(k, v) \
 		if (loc.node != NULL) { \
-			loc.node->client->k = v; \
+			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.node)) { \
+				if (n->client != NULL) { \
+					n->client->k = v; \
+				} \
+			} \
 		} else if (loc.desktop != NULL) { \
 			loc.desktop->k = v; \
 			for (node_t *n = first_extrema(loc.desktop->root); n != NULL; n = next_leaf(n, loc.desktop->root)) { \
@@ -1532,7 +1536,12 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%lf", split_ratio);
 	} else if (streq("border_width", name)) {
 		if (loc.node != NULL) {
-			fprintf(rsp, "%u", loc.node->client->border_width);
+			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.node)) {
+				if (n->client != NULL) {
+					fprintf(rsp, "%u", n->client->border_width);
+					break;
+				}
+			}
 		} else if (loc.desktop != NULL) {
 			fprintf(rsp, "%u", loc.desktop->border_width);
 		} else if (loc.monitor != NULL) {
