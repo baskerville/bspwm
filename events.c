@@ -232,6 +232,12 @@ void property_notify(xcb_generic_event_t *evt)
 {
 	xcb_property_notify_event_t *e = (xcb_property_notify_event_t *) evt;
 
+	if (e->atom == ewmh->_NET_WM_STRUT_PARTIAL && ewmh_handle_struts(e->window)) {
+		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+			arrange(m, m->desk);
+		}
+	}
+
 	if (e->atom != XCB_ATOM_WM_HINTS && e->atom != XCB_ATOM_WM_NORMAL_HINTS) {
 		return;
 	}

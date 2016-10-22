@@ -149,6 +149,34 @@ void ewmh_update_desktop_names(void)
 	xcb_ewmh_set_desktop_names(ewmh, default_screen, names_len, names);
 }
 
+bool ewmh_handle_struts(xcb_window_t win)
+{
+	xcb_ewmh_wm_strut_partial_t struts;
+	bool changed = false;
+	if (xcb_ewmh_get_wm_strut_partial_reply(ewmh, xcb_ewmh_get_wm_strut_partial(ewmh, win), &struts, NULL) == 1) {
+		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+			xcb_rectangle_t rect = m->rectangle;
+			if (rect.x < (int16_t) struts.left && (int16_t) struts.left_end_y >= rect.y && (int16_t) struts.left_start_y <= (rect.y + rect.height)) {
+				m->padding.left = struts.left - rect.x;
+				changed = true;
+			}
+			if ((rect.x + rect.width) > (int16_t) (screen_width - struts.right) && (int16_t) struts.right_end_y >= rect.y && (int16_t) struts.right_start_y <= (rect.y + rect.height)) {
+				m->padding.right = (rect.x + rect.width) - screen_width + struts.right;
+				changed = true;
+			}
+			if (rect.y < (int16_t) struts.top && (int16_t) struts.top_end_x >= rect.x && (int16_t) struts.top_start_x <= (rect.x + rect.width)) {
+				m->padding.top = struts.top - rect.y;
+				changed = true;
+			}
+			if ((rect.y + rect.height) > (int16_t) (screen_height - struts.bottom) && (int16_t) struts.bottom_end_x >= rect.x && (int16_t) struts.bottom_start_x <= (rect.x + rect.width)) {
+				m->padding.bottom = (rect.y + rect.height) - screen_height + struts.bottom;
+				changed = true;
+			}
+		}
+	}
+	return changed;
+}
+
 void ewmh_update_client_list(bool stacking)
 {
 	if (clients_count == 0) {

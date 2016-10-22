@@ -77,6 +77,12 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	parse_rule_consequence(fd, csq);
 
+	if (ewmh_handle_struts(win)) {
+		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+			arrange(m, m->desk);
+		}
+	}
+
 	if (!csq->manage) {
 		free(csq->layer);
 		free(csq->state);

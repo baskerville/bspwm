@@ -38,6 +38,7 @@ void ewmh_update_current_desktop(void);
 void ewmh_set_wm_desktop(node_t *n, desktop_t *d);
 void ewmh_update_wm_desktops(void);
 void ewmh_update_desktop_names(void);
+bool ewmh_handle_struts(xcb_window_t win);
 void ewmh_update_client_list(bool stacking);
 void ewmh_wm_state_update(node_t *n);
 void ewmh_set_supporting(xcb_window_t win);

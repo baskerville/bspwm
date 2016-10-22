@@ -246,6 +246,7 @@ void setup(void)
 	                          ewmh->_NET_CLIENT_LIST,
 	                          ewmh->_NET_ACTIVE_WINDOW,
 	                          ewmh->_NET_CLOSE_WINDOW,
+	                          ewmh->_NET_WM_STRUT_PARTIAL,
 	                          ewmh->_NET_WM_DESKTOP,
 	                          ewmh->_NET_WM_STATE,
 	                          ewmh->_NET_WM_STATE_HIDDEN,
