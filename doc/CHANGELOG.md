@@ -1,3 +1,39 @@
+# From 0.9.1 to 0.9.2
+
+## Changes
+
+- Monitors, desktops and nodes have unique IDs, `bspc query -{N,D,M}` returns IDs and events reference objects by ID instead of name.
+- `bspc` fails verbosely and only returns a single non-zero exit code.
+- The `DIR` descriptor is based on [right-window](https://github.com/ntrrgc/right-window).
+- The `CYCLE_DIR` descriptor isn't limited to the current desktop/monitor anymore. (You can emulate the previous behavior by appending a `.local` modifier to the selector.)
+- `bspc query -{N,D,M}` accepts an optional reference argument used by certain descriptors/modifiers.
+- Monitors are ordered visually by default.
+- The following settings: `border_width`, `window_gap` and `*_padding` behave as expected.
+- External rules also receives the monitor, desktop and node selectors computed from the built-in rules stage as subsequent arguments.
+- The `focus_follows_pointer` setting is implemented via enter notify events.
+
+## Additions
+
+- Nodes can be hidden/shown via the new `hidden` flag.
+- Node receptacles can be inserted with `node -i`. An example is given in `git show e8aa679`.
+- Non-tiled nodes can be moved/resized via `node -{v,z}`.
+- The reference of a selector can be set via the `{NODE,DESKTOP,MONITOR}_SEL#` prefix, example: `bspc node 0x0080000c#south -c` will close the node at the south of `0x0080000c`.
+- Node descriptors: `<node_id>`, `pointed`.
+- Node modifiers: `hidden`, `descendant_of`, `ancestor_of`, `window`, `active`. Example: `bspc query -N 0x00400006 -n .descendant_of` returns the descendants of `0x00400006`.
+- Desktop descriptor: `<desktop_id>`.
+- Monitor descriptor: `<monitor_id>`.
+- Settings: `pointer_motion_interval`, `pointer_modifier`, `pointer_action{1,2,3}`, `click_to_focus`, `honor_size_hints`.
+- Event: `pointer_action`.
+- ICCCM/EWMH atoms: `WM_STATE`, `_NET_WM_STRUT_PARTIAL`.
+- `bspc` shell completions for `fish`.
+
+## Removals
+
+- The `pointer` domain. Pointer actions are handled internally. You need to remove any binding that uses this domain from your `sxhkdrc`.
+- Settings: `history_aware_focus`, `focus_by_distance`. Both settings are merged into the new `DIR` implementation.
+- `monitor -r|--remove-desktops`: use `desktop -r|--remove` instead.
+- `wm -r|--remove-monitor`: use `monitor -r|--remove` instead.
+
 # From 0.9 to 0.9.1
 
 ## Overview
