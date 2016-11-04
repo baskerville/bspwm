@@ -894,6 +894,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 	desktop_select_t *desktop_sel = NULL;
 	node_select_t *node_sel = NULL;
 	domain_t dom = DOMAIN_TREE;
+	bool print_ids = true;
 	uint8_t d = 0;
 
 	if (num < 1) {
@@ -1008,6 +1009,8 @@ void cmd_query(char **args, int num, FILE *rsp)
 					goto end;
 				}
 			}
+		} else if (streq("--names", *args)) {
+			print_ids = false;
 		} else {
 			fail(rsp, "query: Unknown option: '%s'.\n", *args);
 			goto end;
@@ -1035,11 +1038,11 @@ void cmd_query(char **args, int num, FILE *rsp)
 			fail(rsp, "");
 		}
 	} else if (dom == DOMAIN_DESKTOP) {
-		if (query_desktop_ids(&ref, &trg, desktop_sel, rsp) < 1) {
+		if (query_desktop_ids(&ref, &trg, desktop_sel, print_ids ? fprint_desktop_id : fprint_desktop_name, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else if (dom == DOMAIN_MONITOR) {
-		if (query_monitor_ids(&ref, &trg, monitor_sel, rsp) < 1) {
+		if (query_monitor_ids(&ref, &trg, monitor_sel, print_ids ? fprint_monitor_id : fprint_monitor_name, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else {

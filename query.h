@@ -41,6 +41,9 @@ enum {
 	SELECTOR_BAD_DESCRIPTOR
 };
 
+typedef void (*monitor_printer_t)(monitor_t *m, FILE *rsp);
+typedef void (*desktop_printer_t)(desktop_t *m, FILE *rsp);
+
 void query_tree(FILE *rsp);
 void query_monitor(monitor_t *m, FILE *rsp);
 void query_desktop(desktop_t *d, FILE *rsp);
@@ -54,8 +57,12 @@ void query_coordinates(coordinates_t *loc, FILE *rsp);
 void query_stack(FILE *rsp);
 int query_node_ids(coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp);
 int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp);
-int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, FILE *rsp);
-int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *sel, FILE *rsp);
+int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, desktop_printer_t printer, FILE *rsp);
+int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *sel, monitor_printer_t printer, FILE *rsp);
+void fprint_monitor_id(monitor_t *m, FILE *rsp);
+void fprint_monitor_name(monitor_t *m, FILE *rsp);
+void fprint_desktop_id(desktop_t *d, FILE *rsp);
+void fprint_desktop_name(desktop_t *d, FILE *rsp);
 void print_modifier_mask(uint16_t m, FILE *rsp);
 void print_pointer_action(pointer_action_t a, FILE *rsp);
 node_select_t make_node_select(void);

@@ -492,10 +492,10 @@ The optional selectors are references.
 	List the IDs of the matching nodes.
 
 *-D*, *--desktops* ['DESKTOP_SEL']::
-	List the IDs of the matching desktops.
+	List the IDs (or names) of the matching desktops.
 
 *-M*, *--monitors* ['MONITOR_SEL']::
-	List the IDs of the matching monitors.
+	List the IDs (or names) of the matching monitors.
 
 *-T*, *--tree*::
 	Print a JSON representation of the matching item.
@@ -507,6 +507,9 @@ Options
 *-d*,*--desktop* ['DESKTOP_SEL']::
 *-n*, *--node* ['NODE_SEL']::
 	Constrain matches to the selected monitor, desktop or node. The descriptor can be omitted for '-M', '-D' and '-N'.
+
+*--names*::
+	Print names instead of IDs.
 
 Wm
 ~~

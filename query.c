@@ -247,7 +247,7 @@ int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t *ref,
 	return count;
 }
 
-int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, FILE *rsp)
+int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, desktop_printer_t printer, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
@@ -260,14 +260,14 @@ int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *
 			    (sel != NULL && !desktop_matches(&loc, ref, *sel))) {
 				continue;
 			}
-			fprintf(rsp, "0x%08X\n", d->id);
+			printer(d, rsp);
 			count++;
 		}
 	}
 	return count;
 }
 
-int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *sel, FILE *rsp)
+int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *sel, monitor_printer_t printer, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
@@ -276,10 +276,30 @@ int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *
 			(sel != NULL && !monitor_matches(&loc, ref, *sel))) {
 			continue;
 		}
-		fprintf(rsp, "0x%08X\n", m->id);
+		printer(m, rsp);
 		count++;
 	}
 	return count;
+}
+
+void fprint_monitor_id(monitor_t *m, FILE *rsp)
+{
+	fprintf(rsp, "0x%08X\n", m->id);
+}
+
+void fprint_monitor_name(monitor_t *m, FILE *rsp)
+{
+	fprintf(rsp, "%s\n", m->name);
+}
+
+void fprint_desktop_id(desktop_t *d, FILE *rsp)
+{
+	fprintf(rsp, "0x%08X\n", d->id);
+}
+
+void fprint_desktop_name(desktop_t *d, FILE *rsp)
+{
+	fprintf(rsp, "%s\n", d->name);
 }
 
 void print_modifier_mask(uint16_t m, FILE *rsp)
