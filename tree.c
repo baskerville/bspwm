@@ -473,6 +473,8 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		draw_border(n, true, (m == mon));
 	}
 
+	activate_desktop(m, d);
+
 	d->focus = n;
 	history_add(m, d, n);
 
