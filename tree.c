@@ -974,6 +974,7 @@ void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t d
 			if (f == ref->node ||
 			    f->client == NULL ||
 			    f->hidden ||
+			    is_descendant(f, ref->node) ||
 			    !node_matches(&loc, ref, sel) ||
 			    !on_dir_side(rect, r, dir)) {
 				continue;
