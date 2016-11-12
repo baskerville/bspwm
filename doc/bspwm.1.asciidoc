@@ -224,7 +224,7 @@ Modifiers
 	Only consider urgent or non urgent desktops.
 
 [!]local::
-	Only consider inside or outside of the reference monitor.
+	Only consider desktops inside or outside of the reference monitor.
 
 Monitor
 ~~~~~~~
