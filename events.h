@@ -33,6 +33,7 @@ uint8_t randr_base;
 void handle_event(xcb_generic_event_t *evt);
 void map_request(xcb_generic_event_t *evt);
 void configure_request(xcb_generic_event_t *evt);
+void configure_notify(xcb_generic_event_t *evt);
 void destroy_notify(xcb_generic_event_t *evt);
 void unmap_notify(xcb_generic_event_t *evt);
 void property_notify(xcb_generic_event_t *evt);

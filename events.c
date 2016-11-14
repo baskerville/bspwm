@@ -53,6 +53,9 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_CONFIGURE_REQUEST:
 			configure_request(evt);
 			break;
+		case XCB_CONFIGURE_NOTIFY:
+			configure_notify(evt);
+			break;
 		case XCB_PROPERTY_NOTIFY:
 			property_notify(evt);
 			break;
@@ -211,6 +214,16 @@ void configure_request(xcb_generic_event_t *evt)
 		evt.override_redirect = false;
 
 		xcb_send_event(dpy, false, e->window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &evt);
+	}
+}
+
+void configure_notify(xcb_generic_event_t *evt)
+{
+	xcb_configure_notify_event_t *e = (xcb_configure_notify_event_t *) evt;
+
+	if (e->window == root) {
+		screen_width = e->width;
+		screen_height = e->height;
 	}
 }
 
