@@ -42,7 +42,7 @@ void grab_button(uint8_t button, uint16_t modifier);
 void ungrab_buttons(void);
 int16_t modfield_from_keysym(xcb_keysym_t keysym);
 resize_handle_t get_handle(node_t *n, xcb_point_t pos, pointer_action_t pac);
-void grab_pointer(pointer_action_t pac);
+bool grab_pointer(pointer_action_t pac);
 void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos);
 
 #endif

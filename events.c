@@ -324,12 +324,11 @@ void button_press(xcb_generic_event_t *evt)
 	switch (e->detail) {
 		case XCB_BUTTON_INDEX_1:
 			if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
-				replay = true;
 				bool pff = pointer_follows_focus;
 				bool pfm = pointer_follows_monitor;
 				pointer_follows_focus = false;
 				pointer_follows_monitor = false;
-				grab_pointer(ACTION_FOCUS);
+				replay = !grab_pointer(ACTION_FOCUS);
 				pointer_follows_focus = pff;
 				pointer_follows_monitor = pfm;
 			} else {

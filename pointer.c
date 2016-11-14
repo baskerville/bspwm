@@ -177,7 +177,7 @@ resize_handle_t get_handle(node_t *n, xcb_point_t pos, pointer_action_t pac)
 	return rh;
 }
 
-void grab_pointer(pointer_action_t pac)
+bool grab_pointer(pointer_action_t pac)
 {
 	xcb_window_t win = XCB_NONE;
 	xcb_point_t pos;
@@ -191,29 +191,36 @@ void grab_pointer(pointer_action_t pac)
 			monitor_t *m = monitor_from_point(pos);
 			if (m != NULL && m != mon && (win == XCB_NONE || win == m->root)) {
 				focus_node(m, m->desk, m->desk->focus);
+				return true;
+			} else {
+				return false;
 			}
+		} else {
+			return false;
 		}
-		return;
 	}
 
 	if (pac == ACTION_FOCUS) {
 		if (loc.node != mon->desk->focus) {
 			focus_node(loc.monitor, loc.desktop, loc.node);
+			return true;
 		} else if (focus_follows_pointer) {
 			stack(loc.desktop, loc.node, true);
+			return true;
+		} else {
+			return false;
 		}
-		return;
 	}
 
 	if (loc.node->client->state == STATE_FULLSCREEN) {
-		return;
+		return true;
 	}
 
 	xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(dpy, xcb_grab_pointer(dpy, 0, root, XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME), NULL);
 
 	if (reply == NULL || reply->status != XCB_GRAB_STATUS_SUCCESS) {
 		free(reply);
-		return;
+		return true;
 	}
 	free(reply);
 
@@ -226,6 +233,8 @@ void grab_pointer(pointer_action_t pac)
 	}
 
 	track_pointer(loc, pac, pos);
+
+	return true;
 }
 
 void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
