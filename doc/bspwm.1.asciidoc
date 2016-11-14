@@ -566,8 +566,8 @@ Config
 General Syntax
 ^^^^^^^^^^^^^^
 
-config [-m 'MONITOR_SEL'|-d 'DESKTOP_SEL'|-n 'NODE_SEL'] <key> [<value>]::
-	Get or set the value of <key>.
+config [-m 'MONITOR_SEL'|-d 'DESKTOP_SEL'|-n 'NODE_SEL'] <setting> [<value>]::
+	Get or set the value of <setting>.
 
 Subscribe
 ~~~~~~~~~
