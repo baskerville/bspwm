@@ -72,6 +72,7 @@ void load_settings(void)
 	ignore_ewmh_focus = IGNORE_EWMH_FOCUS;
 	center_pseudo_tiled = CENTER_PSEUDO_TILED;
 	click_to_focus = CLICK_TO_FOCUS;
+	swallow_first_click = SWALLOW_FIRST_CLICK;
 	honor_size_hints = HONOR_SIZE_HINTS;
 	remove_disabled_monitors = REMOVE_DISABLED_MONITORS;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;

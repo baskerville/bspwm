@@ -55,6 +55,7 @@
 #define IGNORE_EWMH_FOCUS           false
 #define CENTER_PSEUDO_TILED         true
 #define CLICK_TO_FOCUS              false
+#define SWALLOW_FIRST_CLICK         false
 #define HONOR_SIZE_HINTS            false
 #define REMOVE_DISABLED_MONITORS    false
 #define REMOVE_UNPLUGGED_MONITORS   false
@@ -88,6 +89,7 @@ bool pointer_follows_monitor;
 bool ignore_ewmh_focus;
 bool center_pseudo_tiled;
 bool click_to_focus;
+bool swallow_first_click;
 bool honor_size_hints;
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;

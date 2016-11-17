@@ -341,7 +341,7 @@ void button_press(xcb_generic_event_t *evt)
 				bool pfm = pointer_follows_monitor;
 				pointer_follows_focus = false;
 				pointer_follows_monitor = false;
-				replay = !grab_pointer(ACTION_FOCUS);
+				replay = !grab_pointer(ACTION_FOCUS) || !swallow_first_click;
 				pointer_follows_focus = pff;
 				pointer_follows_monitor = pfm;
 			} else {

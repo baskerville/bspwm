@@ -650,6 +650,9 @@ Global Settings
 'click_to_focus'::
 	Focus a window (or a monitor) by clicking it.
 
+'swallow_first_click'::
+	Don't replay the click that makes a window focused when 'click_to_focus' is set.
+
 'focus_follows_pointer'::
 	Focus the window under the pointer.
 
