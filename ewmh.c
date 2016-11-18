@@ -164,11 +164,11 @@ bool ewmh_handle_struts(xcb_window_t win)
 				m->padding.right = (rect.x + rect.width) - screen_width + struts.right;
 				changed = true;
 			}
-			if (rect.y < (int16_t) struts.top && (int16_t) struts.top_end_x >= rect.x && (int16_t) struts.top_start_x < (rect.x + rect.width)) {
+			if (rect.y < (int16_t) struts.top && (rect.y + rect.height) > (int16_t) struts.top && (int16_t) struts.top_end_x >= rect.x && (int16_t) struts.top_start_x < (rect.x + rect.width)) {
 				m->padding.top = struts.top - rect.y;
 				changed = true;
 			}
-			if ((rect.y + rect.height) > (int16_t) (screen_height - struts.bottom) && (int16_t) struts.bottom_end_x >= rect.x && (int16_t) struts.bottom_start_x < (rect.x + rect.width)) {
+			if (rect.y < (int16_t) (screen_height - struts.bottom) && (rect.y + rect.height) > (int16_t) (screen_height - struts.bottom) && (int16_t) struts.bottom_end_x >= rect.x && (int16_t) struts.bottom_start_x < (rect.x + rect.width)) {
 				m->padding.bottom = (rect.y + rect.height) - screen_height + struts.bottom;
 				changed = true;
 			}
