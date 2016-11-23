@@ -212,12 +212,9 @@ bool grab_pointer(pointer_action_t pac)
 			if (m != NULL && m != mon && (win == XCB_NONE || win == m->root)) {
 				focus_node(m, m->desk, m->desk->focus);
 				return true;
-			} else {
-				return false;
 			}
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	if (pac == ACTION_FOCUS) {
@@ -226,10 +223,8 @@ bool grab_pointer(pointer_action_t pac)
 			return true;
 		} else if (focus_follows_pointer) {
 			stack(loc.desktop, loc.node, true);
-			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	if (loc.node->client->state == STATE_FULLSCREEN) {
