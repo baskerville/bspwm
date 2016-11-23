@@ -182,6 +182,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 	xcb_change_window_attributes(dpy, win, XCB_CW_EVENT_MASK, values);
 	set_window_state(win, XCB_ICCCM_WM_STATE_NORMAL);
+	window_grab_buttons(win);
 
 	if (d == m->desk) {
 		show_node(d, n);
@@ -255,6 +256,7 @@ void initialize_presel_feedback(node_t *n)
 			          XCB_COPY_FROM_PARENT, mask, values);
 
 	xcb_icccm_set_wm_class(dpy, win, sizeof(PRESEL_FEEDBACK_IC), PRESEL_FEEDBACK_IC);
+	window_grab_buttons(win);
 	stacking_list_t *s = stack_tail;
 	while (s != NULL && !IS_TILED(s->node->client)) {
 		s = s->prev;

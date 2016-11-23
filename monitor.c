@@ -31,6 +31,7 @@
 #include "desktop.h"
 #include "ewmh.h"
 #include "query.h"
+#include "pointer.h"
 #include "settings.h"
 #include "geometry.h"
 #include "tree.h"

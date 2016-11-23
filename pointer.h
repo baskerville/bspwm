@@ -37,8 +37,9 @@ bool grabbing;
 node_t *grabbed_node;
 
 void pointer_init(void);
+void window_grab_buttons(xcb_window_t win);
+void window_grab_button(xcb_window_t win, uint8_t button, uint16_t modifier);
 void grab_buttons(void);
-void grab_button(uint8_t button, uint16_t modifier);
 void ungrab_buttons(void);
 int16_t modfield_from_keysym(xcb_keysym_t keysym);
 resize_handle_t get_handle(node_t *n, xcb_point_t pos, pointer_action_t pac);

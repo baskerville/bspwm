@@ -48,23 +48,23 @@ void pointer_init(void)
 	grabbed_node = NULL;
 }
 
-void grab_buttons(void)
+void window_grab_buttons(xcb_window_t win)
 {
 	if (click_to_focus) {
-		grab_button(XCB_BUTTON_INDEX_1, XCB_NONE);
+		window_grab_button(win, XCB_BUTTON_INDEX_1, XCB_NONE);
 	}
 	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
 	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
 		if (pointer_actions[i] != ACTION_NONE) {
-			grab_button(buttons[i], pointer_modifier);
+			window_grab_button(win, buttons[i], pointer_modifier);
 		}
 	}
 }
 
-void grab_button(uint8_t button, uint16_t modifier)
+void window_grab_button(xcb_window_t win, uint8_t button, uint16_t modifier)
 {
 #define GRAB(b, m) \
-	xcb_grab_button(dpy, false, root, XCB_EVENT_MASK_BUTTON_PRESS, \
+	xcb_grab_button(dpy, false, win, XCB_EVENT_MASK_BUTTON_PRESS, \
 	                XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, b, m)
 		GRAB(button, modifier);
 		if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL) {
@@ -91,9 +91,29 @@ void grab_button(uint8_t button, uint16_t modifier)
 #undef GRAB
 }
 
+void grab_buttons(void)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				window_grab_buttons(n->id);
+				if (n->presel != NULL) {
+					window_grab_buttons(n->presel->feedback);
+				}
+			}
+		}
+	}
+}
+
 void ungrab_buttons(void)
 {
-	xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_ANY, root, XCB_MOD_MASK_ANY);
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				xcb_ungrab_button(dpy, XCB_BUTTON_INDEX_ANY, n->id, XCB_MOD_MASK_ANY);
+			}
+		}
+	}
 }
 
 int16_t modfield_from_keysym(xcb_keysym_t keysym)

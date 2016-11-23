@@ -30,6 +30,7 @@
 #include "desktop.h"
 #include "ewmh.h"
 #include "history.h"
+#include "pointer.h"
 #include "monitor.h"
 #include "query.h"
 #include "stack.h"
@@ -173,6 +174,7 @@ bool restore_tree(const char *file_path)
 				initialize_client(n);
 				uint32_t values[] = {CLIENT_EVENT_MASK | (focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0)};
 				xcb_change_window_attributes(dpy, n->id, XCB_CW_EVENT_MASK, values);
+				window_grab_buttons(n->id);
 			}
 		}
 	}

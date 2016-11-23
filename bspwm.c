@@ -229,7 +229,6 @@ void setup(void)
 
 	root = screen->root;
 	register_events();
-	grab_buttons();
 
 	screen_width = screen->width_in_pixels;
 	screen_height = screen->height_in_pixels;
