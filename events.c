@@ -247,7 +247,9 @@ void property_notify(xcb_generic_event_t *evt)
 
 	if (e->atom == ewmh->_NET_WM_STRUT_PARTIAL && ewmh_handle_struts(e->window)) {
 		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-			arrange(m, m->desk);
+			for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+				arrange(m, d);
+			}
 		}
 	}
 
