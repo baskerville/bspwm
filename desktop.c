@@ -196,6 +196,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 	ewmh_update_current_desktop();
 
 	put_status(SBSC_MASK_DESKTOP_TRANSFER, "desktop_transfer 0x%08X 0x%08X 0x%08X\n", ms->id, d->id, md->id);
@@ -253,6 +254,7 @@ void add_desktop(monitor_t *m, desktop_t *d)
 	insert_desktop(m, d);
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 	ewmh_update_wm_desktops();
 	put_status(SBSC_MASK_REPORT);
 }
@@ -312,6 +314,7 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 	ewmh_update_current_desktop();
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 
 	if (mon != NULL && m->desk == NULL) {
 		if (m == mon) {
@@ -435,6 +438,7 @@ bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 	ewmh_update_current_desktop();
 
 	put_status(SBSC_MASK_REPORT);

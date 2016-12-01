@@ -240,6 +240,7 @@ void setup(void)
 	xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
 	                          ewmh->_NET_SUPPORTING_WM_CHECK,
 	                          ewmh->_NET_DESKTOP_NAMES,
+	                          ewmh->_NET_DESKTOP_VIEWPORT,
 	                          ewmh->_NET_NUMBER_OF_DESKTOPS,
 	                          ewmh->_NET_CURRENT_DESKTOP,
 	                          ewmh->_NET_CLIENT_LIST,
@@ -313,6 +314,7 @@ void setup(void)
 
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 	ewmh_update_current_desktop();
 	xcb_get_input_focus_reply_t *ifo = xcb_get_input_focus_reply(dpy, xcb_get_input_focus(dpy), NULL);
 	if (ifo != NULL && (ifo->focus == XCB_INPUT_FOCUS_POINTER_ROOT || ifo->focus == XCB_NONE)) {

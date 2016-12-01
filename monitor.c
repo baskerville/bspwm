@@ -337,6 +337,7 @@ bool swap_monitors(monitor_t *m1, monitor_t *m2)
 
 	ewmh_update_wm_desktops();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 	ewmh_update_current_desktop();
 
 	put_status(SBSC_MASK_REPORT);
