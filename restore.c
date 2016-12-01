@@ -185,6 +185,7 @@ bool restore_tree(const char *file_path)
 	ewmh_update_number_of_desktops();
 	ewmh_update_current_desktop();
 	ewmh_update_desktop_names();
+	ewmh_update_desktop_viewport();
 
 	free(tokens);
 	free(json);

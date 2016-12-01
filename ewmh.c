@@ -149,6 +149,24 @@ void ewmh_update_desktop_names(void)
 	xcb_ewmh_set_desktop_names(ewmh, default_screen, names_len, names);
 }
 
+void ewmh_update_desktop_viewport(void)
+{
+	uint32_t desktops_count = 0;
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			desktops_count++;
+		}
+	}
+	xcb_ewmh_coordinates_t coords[desktops_count];
+	uint16_t desktop = 0;
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			coords[desktop++] = (xcb_ewmh_coordinates_t){m->rectangle.x, m->rectangle.y};
+		}
+	}
+	xcb_ewmh_set_desktop_viewport(ewmh, default_screen, desktop, coords);
+}
+
 bool ewmh_handle_struts(xcb_window_t win)
 {
 	xcb_ewmh_wm_strut_partial_t struts;
