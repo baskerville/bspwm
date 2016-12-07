@@ -198,6 +198,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		}
 	} else {
 		stack(d, n, false);
+		draw_border(n, false, (m == mon));
 	}
 
 	ewmh_set_wm_desktop(n, d);
