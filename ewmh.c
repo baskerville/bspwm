@@ -178,28 +178,48 @@ bool ewmh_handle_struts(xcb_window_t win)
 			    (int16_t) struts.left < (rect.x + rect.width - 1) &&
 			    (int16_t) struts.left_end_y >= rect.y &&
 			    (int16_t) struts.left_start_y < (rect.y + rect.height)) {
-				m->padding.left = struts.left - rect.x;
+				int dx = struts.left - rect.x;
+				if (m->padding.left < 0) {
+					m->padding.left += dx;
+				} else {
+					m->padding.left = MAX(dx, m->padding.left);
+				}
 				changed = true;
 			}
 			if ((rect.x + rect.width) > (int16_t) (screen_width - struts.right) &&
 			    (int16_t) (screen_width - struts.right) > rect.x &&
 			    (int16_t) struts.right_end_y >= rect.y &&
 			    (int16_t) struts.right_start_y < (rect.y + rect.height)) {
-				m->padding.right = (rect.x + rect.width) - screen_width + struts.right;
+				int dx = (rect.x + rect.width) - screen_width + struts.right;
+				if (m->padding.right < 0) {
+					m->padding.right += dx;
+				} else {
+					m->padding.right = MAX(dx, m->padding.right);
+				}
 				changed = true;
 			}
 			if (rect.y < (int16_t) struts.top &&
 			    (int16_t) struts.top < (rect.y + rect.height - 1) &&
 			    (int16_t) struts.top_end_x >= rect.x &&
 			    (int16_t) struts.top_start_x < (rect.x + rect.width)) {
-				m->padding.top = struts.top - rect.y;
+				int dy = struts.top - rect.y;
+				if (m->padding.top < 0) {
+					m->padding.top += dy;
+				} else {
+					m->padding.top = MAX(dy, m->padding.top);
+				}
 				changed = true;
 			}
 			if ((rect.y + rect.height) > (int16_t) (screen_height - struts.bottom) &&
 			    (int16_t) (screen_height - struts.bottom) > rect.y &&
 			    (int16_t) struts.bottom_end_x >= rect.x &&
 			    (int16_t) struts.bottom_start_x < (rect.x + rect.width)) {
-				m->padding.bottom = (rect.y + rect.height) - screen_height + struts.bottom;
+				int dy = (rect.y + rect.height) - screen_height + struts.bottom;
+				if (m->padding.bottom < 0) {
+					m->padding.bottom += dy;
+				} else {
+					m->padding.bottom = MAX(dy, m->padding.bottom);
+				}
 				changed = true;
 			}
 		}
