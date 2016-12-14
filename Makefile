@@ -50,7 +50,8 @@ install:
 	cp -p contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
 	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
 	cp -p $(MD_DOCS) "$(DESTDIR)$(DOCPREFIX)"
-	cp -pr examples "$(DESTDIR)$(DOCPREFIX)"/examples
+	mkdir -p "$(DESTDIR)$(DOCPREFIX)"/examples
+	cp -pr examples/* "$(DESTDIR)$(DOCPREFIX)"/examples
 	mkdir -p "$(DESTDIR)$(XSESSIONS)"
 	cp -p contrib/freedesktop/bspwm.desktop "$(DESTDIR)$(XSESSIONS)"
 
