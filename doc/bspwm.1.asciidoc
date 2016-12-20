@@ -143,7 +143,7 @@ Modifiers
 	Only consider focused or unfocused nodes.
 
 [!]automatic::
-	Only consider nodes in automatic or manual insertion mode.
+	Only consider nodes in automatic or manual insertion mode. See also *--presel-dir* under *Node* in the *DOMAINS* section below.
 
 [!]local::
 	Only consider nodes in or not in the reference desktop.
@@ -356,7 +356,7 @@ Commands
 	Swap the selected node with the given node.
 
 *-p*, *--presel-dir* \[~]'DIR'|cancel::
-	Preselect the splitting area of the selected node (or cancel the preselection). If *~* is prepended to 'DIR' and the current preselection direction matches 'DIR', then the argument is interpreted as *cancel*.
+	Preselect the splitting area of the selected node (or cancel the preselection). If *~* is prepended to 'DIR' and the current preselection direction matches 'DIR', then the argument is interpreted as *cancel*. A node with a preselected area is said to be in "manual insertion mode".
 
 *-o*, *--presel-ratio* 'RATIO'::
 	Set the splitting ratio of the preselection area.

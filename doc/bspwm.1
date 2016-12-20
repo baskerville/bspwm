@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 11/17/2016
+.\"      Date: 12/21/2016
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.2-9-g201f6e6
+.\"    Source: Bspwm 0.9.2-18-g0d34170
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/17/2016" "Bspwm 0\&.9\&.2\-9\-g201f6e6" "Bspwm Manual"
+.TH "BSPWM" "1" "12/21/2016" "Bspwm 0\&.9\&.2\-18\-g0d34170" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -222,7 +222,13 @@ Only consider focused or unfocused nodes\&.
 .PP
 [!]automatic
 .RS 4
-Only consider nodes in automatic or manual insertion mode\&.
+Only consider nodes in automatic or manual insertion mode\&. See also
+\fB\-\-presel\-dir\fR
+under
+\fBNode\fR
+in the
+\fBDOMAINS\fR
+section below\&.
 .RE
 .PP
 [!]local
@@ -573,7 +579,7 @@ is prepended to
 \fIDIR\fR
 and the current preselection direction matches
 \fIDIR\fR, then the argument is interpreted as
-\fBcancel\fR\&.
+\fBcancel\fR\&. A node with a preselected area is said to be in "manual insertion mode"\&.
 .RE
 .PP
 \fB\-o\fR, \fB\-\-presel\-ratio\fR \fIRATIO\fR
