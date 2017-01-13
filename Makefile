@@ -27,6 +27,8 @@ all: bspwm bspc
 debug: CFLAGS += -O0 -g
 debug: bspwm bspc
 
+VPATH=src
+
 include Sourcedeps
 
 $(WM_OBJ) $(CLI_OBJ): Makefile
