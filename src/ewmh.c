@@ -157,6 +157,10 @@ void ewmh_update_desktop_viewport(void)
 			desktops_count++;
 		}
 	}
+	if (desktops_count == 0) {
+		xcb_ewmh_set_desktop_viewport(ewmh, default_screen, 0, NULL);
+		return;
+	}
 	xcb_ewmh_coordinates_t coords[desktops_count];
 	uint16_t desktop = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
