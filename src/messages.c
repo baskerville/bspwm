@@ -1475,14 +1475,19 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			}
 			focus_follows_pointer = b;
 			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-				if (b) {
+				if (focus_follows_pointer) {
 					window_show(m->root);
 				} else {
 					window_hide(m->root);
 				}
 				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-					listen_enter_notify(d->root, b);
+					listen_enter_notify(d->root, focus_follows_pointer);
 				}
+			}
+			if (focus_follows_pointer) {
+				update_motion_recorder();
+			} else {
+				disable_motion_recorder();
 			}
 			return;
 		} else {

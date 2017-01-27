@@ -454,7 +454,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("biggest", desc)) {
 		find_biggest(ref, dst, sel);
 	} else if (streq("pointed", desc)) {
-		xcb_window_t win;
+		xcb_window_t win = XCB_NONE;
 		query_pointer(&win, NULL);
 		if (locate_window(win, dst) && node_matches(dst, ref, sel)) {
 			return SELECTOR_OK;

@@ -43,14 +43,8 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 	focus_monitor(m);
 
 	if (m->desk != d) {
-		if (focus_follows_pointer) {
-			listen_enter_notify(d->root, false);
-		}
 		show_desktop(d);
 		hide_desktop(m->desk);
-		if (focus_follows_pointer) {
-			listen_enter_notify(d->root, true);
-		}
 		m->desk = d;
 	}
 
@@ -139,16 +133,10 @@ void handle_presel_feedbacks(monitor_t *m, desktop_t *d)
 	if (m->desk != d) {
 		return;
 	}
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, false);
-	}
 	if (d->layout == LAYOUT_MONOCLE) {
 		hide_presel_feedbacks(m, d, d->root);
 	} else {
 		show_presel_feedbacks(m, d, d->root);
-	}
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, true);
 	}
 }
 

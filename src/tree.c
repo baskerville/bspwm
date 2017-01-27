@@ -67,15 +67,7 @@ void arrange(monitor_t *m, desktop_t *d)
 		rect.height -= d->window_gap;
 	}
 
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, false);
-	}
-
 	apply_layout(m, d, d->root, l, rect, rect);
-
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, true);
-	}
 }
 
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectangle_t rect, xcb_rectangle_t root_rect)
@@ -224,16 +216,8 @@ void cancel_presel(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
-	if (focus_follows_pointer) {
-		listen_enter_notify(n, false);
-	}
-
 	if (n->presel->feedback != XCB_NONE) {
 		xcb_destroy_window(dpy, n->presel->feedback);
-	}
-
-	if (focus_follows_pointer) {
-		listen_enter_notify(n, true);
 	}
 
 	free(n->presel);
@@ -594,6 +578,9 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	put_status(SBSC_MASK_REPORT);
 
 	if (n == NULL) {
+		if (focus_follows_pointer) {
+			update_motion_recorder();
+		}
 		return true;
 	}
 
@@ -604,6 +591,8 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	if (pointer_follows_focus) {
 		center_pointer(get_rectangle(d, n));
+	} else if (focus_follows_pointer) {
+		update_motion_recorder();
 	}
 
 	return true;
@@ -1725,11 +1714,6 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		return;
 	}
 
-
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, false);
-	}
-
 	bool held_focus = is_descendant(d->focus, n);
 
 	propagate_hidden_downward(m, d, n, value);
@@ -1747,10 +1731,6 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 		} else {
 			activate_node(m, d, d->focus);
 		}
-	}
-
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, true);
 	}
 }
 

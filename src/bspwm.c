@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
 	ungrab_buttons();
 	xcb_ewmh_connection_wipe(ewmh);
 	xcb_destroy_window(dpy, meta_window);
+	xcb_destroy_window(dpy, motion_recorder.id);
 	free(ewmh);
 	xcb_flush(dpy);
 	xcb_disconnect(dpy);
@@ -236,6 +237,14 @@ void setup(void)
 	meta_window = xcb_generate_id(dpy);
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, meta_window, root, -1, -1, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_NONE, NULL);
 	xcb_icccm_set_wm_class(dpy, meta_window, sizeof(META_WINDOW_IC), META_WINDOW_IC);
+
+	motion_recorder.id = xcb_generate_id(dpy);
+	motion_recorder.sequence = 0;
+	motion_recorder.enabled = false;
+	uint32_t values[] = {XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_POINTER_MOTION};
+	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, motion_recorder.id, root, 0, 0, 1, 1, 0,
+	                  XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
+	xcb_icccm_set_wm_class(dpy, motion_recorder.id, sizeof(MOTION_RECORDER_IC), MOTION_RECORDER_IC);
 
 	xcb_atom_t net_atoms[] = {ewmh->_NET_SUPPORTED,
 	                          ewmh->_NET_SUPPORTING_WM_CHECK,

@@ -274,10 +274,6 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, false);
-	}
-
 	bool exists = (n->presel->feedback != XCB_NONE);
 	if (!exists) {
 		initialize_presel_feedback(n);
@@ -313,10 +309,6 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 
 	if (!exists && m->desk == d) {
 		window_show(p->feedback);
-	}
-
-	if (focus_follows_pointer) {
-		listen_enter_notify(d->root, true);
 	}
 }
 
@@ -510,15 +502,7 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 		int16_t x = rect.x + dx;
 		int16_t y = rect.y + dy;
 
-		if (focus_follows_pointer) {
-			listen_enter_notify(loc->desktop->root, false);
-		}
-
 		window_move(n->id, x, y);
-
-		if (focus_follows_pointer) {
-			listen_enter_notify(loc->desktop->root, true);
-		}
 
 		c->floating_rectangle.x = x;
 		c->floating_rectangle.y = y;
@@ -594,15 +578,7 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy)
 		}
 		n->client->floating_rectangle = (xcb_rectangle_t) {x, y, width, height};
 		if (n->client->state == STATE_FLOATING) {
-			if (focus_follows_pointer) {
-				listen_enter_notify(loc->desktop->root, false);
-			}
-
 			window_move_resize(n->id, x, y, width, height);
-
-			if (focus_follows_pointer) {
-				listen_enter_notify(loc->desktop->root, true);
-			}
 
 			if (!grabbing) {
 				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc->monitor->id, loc->desktop->id, loc->node->id, width, height, x, y);
@@ -709,6 +685,10 @@ void apply_size_hints(client_t *c, uint16_t *width, uint16_t *height)
 
 void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 {
+	if (motion_recorder.enabled) {
+		window_hide(motion_recorder.id);
+	}
+
 	xcb_query_pointer_reply_t *qpr = xcb_query_pointer_reply(dpy, xcb_query_pointer(dpy, root), NULL);
 
 	if (qpr != NULL) {
@@ -734,6 +714,59 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 	}
 
 	free(qpr);
+
+	if (motion_recorder.enabled) {
+		window_show(motion_recorder.id);
+	}
+}
+
+void update_motion_recorder(void)
+{
+	xcb_point_t pt;
+	xcb_window_t win = XCB_NONE;
+	query_pointer(&win, &pt);
+	if (win == XCB_NONE) {
+		return;
+	}
+	monitor_t *m = monitor_from_point(pt);
+	if (m == NULL) {
+		return;
+	}
+	desktop_t *d = m->desk;
+	node_t *n = NULL;
+	for (n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+		if (n->id == win || (n->presel != NULL && n->presel->feedback == win)) {
+			break;
+		}
+	}
+	if ((n != NULL && n != mon->desk->focus) || (n == NULL && m != mon)) {
+		enable_motion_recorder(win);
+	} else {
+		disable_motion_recorder();
+	}
+}
+
+void enable_motion_recorder(xcb_window_t win)
+{
+	xcb_get_geometry_reply_t *geo = xcb_get_geometry_reply(dpy, xcb_get_geometry(dpy, win), NULL);
+	if (geo != NULL) {
+		uint16_t width = geo->width + 2 * geo->border_width;
+		uint16_t height = geo->height + 2 * geo->border_width;
+		window_move_resize(motion_recorder.id, geo->x, geo->y, width, height);
+		window_above(motion_recorder.id, win);
+		window_show(motion_recorder.id);
+		motion_recorder.enabled = true;
+	}
+	free(geo);
+}
+
+void disable_motion_recorder(void)
+{
+	if (!motion_recorder.enabled) {
+		return;
+	}
+	window_hide(motion_recorder.id);
+	motion_recorder.enabled = false;
 }
 
 void window_border_width(xcb_window_t win, uint32_t bw)
@@ -788,11 +821,13 @@ void window_stack(xcb_window_t w1, xcb_window_t w2, uint32_t mode)
 	xcb_configure_window(dpy, w1, mask, values);
 }
 
+/* Stack w1 above w2 */
 void window_above(xcb_window_t w1, xcb_window_t w2)
 {
 	window_stack(w1, w2, XCB_STACK_MODE_ABOVE);
 }
 
+/* Stack w1 below w2 */
 void window_below(xcb_window_t w1, xcb_window_t w2)
 {
 	window_stack(w1, w2, XCB_STACK_MODE_BELOW);
