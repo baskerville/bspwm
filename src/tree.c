@@ -1433,6 +1433,10 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 
 bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, node_select_t sel)
 {
+	if (ref->node == NULL) {
+		return false;
+	}
+
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;
 	node_t *n = ref->node;
