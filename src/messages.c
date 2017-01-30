@@ -438,10 +438,15 @@ void cmd_node(char **args, int num, FILE *rsp)
 				break;
 			}
 			if ((*args)[0] == '+' || (*args)[0] == '-') {
-				int pix;
-				if (sscanf(*args, "%i", &pix) == 1) {
-					int max = (trg.node->split_type == TYPE_HORIZONTAL ? trg.node->rectangle.height : trg.node->rectangle.width);
-					double rat = ((max * trg.node->split_ratio) + pix) / max;
+				float delta;
+				if (sscanf(*args, "%f", &delta) == 1) {
+					double rat = trg.node->split_ratio;
+					if (delta > -1 && delta < 1) {
+						rat += delta;
+					} else {
+						int max = (trg.node->split_type == TYPE_HORIZONTAL ? trg.node->rectangle.height : trg.node->rectangle.width);
+						rat = ((max * rat) + delta) / max;
+					}
 					if (rat > 0 && rat < 1) {
 						set_ratio(trg.node, rat);
 					} else {

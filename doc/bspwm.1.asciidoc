@@ -367,7 +367,7 @@ Commands
 *-z*, *--resize* top|left|bottom|right|top_left|top_right|bottom_right|bottom_left 'dx' 'dy'::
 	Resize the selected window by moving the given handle by 'dx' pixels horizontally and 'dy' pixels vertically.
 
-*-r*, *--ratio* 'RATIO'|(+|-)'PIXELS'::
+*-r*, *--ratio* 'RATIO'|(+|-)('PIXELS'|'FRACTION')::
 	Set the splitting ratio of the selected node (0 < 'RATIO' < 1).
 
 *-R*, *--rotate* '90|270|180'::
