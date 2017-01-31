@@ -534,7 +534,7 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy)
 		return false;
 	}
 	node_t *horizontal_fence = NULL, *vertical_fence = NULL;
-	xcb_rectangle_t rect = get_rectangle(NULL, n);
+	xcb_rectangle_t rect = get_rectangle(NULL, NULL, n);
 	uint16_t width = rect.width, height = rect.height;
 	int16_t x = rect.x, y = rect.y;
 	if (n->client->state == STATE_TILED) {
@@ -699,7 +699,7 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 				if (!s->node->client->shown || s->node->hidden) {
 					continue;
 				}
-				xcb_rectangle_t rect = get_rectangle(NULL, s->node);
+				xcb_rectangle_t rect = get_rectangle(NULL, NULL, s->node);
 				if (is_inside(pt, rect)) {
 					if (s->node->id == qpr->child || is_presel_window(qpr->child)) {
 						*win = s->node->id;

@@ -81,26 +81,26 @@ bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t di
 {
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;
-	desktop_t *f = (dir == CYCLE_PREV ? d->prev : d->next);
+	d = (dir == CYCLE_PREV ? d->prev : d->next);
 
-#define HANDLE_BOUNDARIES(f)  \
-	if (f == NULL) { \
+#define HANDLE_BOUNDARIES(m, d)  \
+	if (d == NULL) { \
 		m = (dir == CYCLE_PREV ? m->prev : m->next); \
 		if (m == NULL) { \
 			m = (dir == CYCLE_PREV ? mon_tail : mon_head); \
 		} \
-		f = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head); \
+		d = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head); \
 	}
-	HANDLE_BOUNDARIES(f)
+	HANDLE_BOUNDARIES(m, d)
 
-	while (f != d) {
-		coordinates_t loc = {m, f, NULL};
+	while (d != ref->desktop) {
+		coordinates_t loc = {m, d, NULL};
 		if (desktop_matches(&loc, ref, sel)) {
 			*dst = loc;
 			return true;
 		}
-		f = (dir == CYCLE_PREV ? f->prev : f->next);
-		HANDLE_BOUNDARIES(f)
+		d = (dir == CYCLE_PREV ? d->prev : d->next);
+		HANDLE_BOUNDARIES(m, d)
 	}
 #undef HANDLE_BOUNDARIES
 

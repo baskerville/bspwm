@@ -306,7 +306,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				p = f->parent;
 			}
 			if (f->presel == NULL && (f->private || private_count(f->parent) > 0)) {
-				xcb_rectangle_t rect = get_rectangle(d, f);
+				xcb_rectangle_t rect = get_rectangle(m, d, f);
 				presel_dir(m, d, f, (rect.width >= rect.height ? DIR_EAST : DIR_SOUTH));
 			}
 		}
@@ -590,7 +590,7 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	set_input_focus(n);
 
 	if (pointer_follows_focus) {
-		center_pointer(get_rectangle(d, n));
+		center_pointer(get_rectangle(m, d, n));
 	} else if (focus_follows_pointer) {
 		update_motion_recorder();
 	}
@@ -948,18 +948,14 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
 {
-	if (ref->node == NULL) {
-		return;
-	}
-
-	xcb_rectangle_t rect = get_rectangle(ref->desktop, ref->node);
+	xcb_rectangle_t rect = get_rectangle(ref->monitor, ref->desktop, ref->node);
 	double md = DBL_MAX, mr = UINT32_MAX;
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		desktop_t *d = m->desk;
 		for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
 			coordinates_t loc = {m, d, f};
-			xcb_rectangle_t r = get_rectangle(d, f);
+			xcb_rectangle_t r = get_rectangle(m, d, f);
 			if (f == ref->node ||
 			    f->client == NULL ||
 			    f->hidden ||
@@ -984,7 +980,7 @@ unsigned int node_area(desktop_t *d, node_t *n)
 	if (n == NULL) {
 		return 0;
 	}
-	return area(get_rectangle(d, n));
+	return area(get_rectangle(NULL, d, n));
 }
 
 int tiled_count(node_t *n)
@@ -1433,18 +1429,13 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 
 bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, node_select_t sel)
 {
-	if (ref->node == NULL) {
-		return false;
-	}
-
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;
 	node_t *n = ref->node;
+	n = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
 
-	node_t *f = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
-
-#define HANDLE_BOUNDARIES(f)  \
-	while (f == NULL) { \
+#define HANDLE_BOUNDARIES(m, d, n)  \
+	while (n == NULL) { \
 		d = (dir == CYCLE_PREV ? d->prev : d->next); \
 		if (d == NULL) { \
 			m = (dir == CYCLE_PREV ? m->prev : m->next); \
@@ -1453,18 +1444,21 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 			} \
 			d = (dir == CYCLE_PREV ? m->desk_tail : m->desk_head); \
 		} \
-		f = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root)); \
+		n = (dir == CYCLE_PREV ? second_extrema(d->root) : first_extrema(d->root)); \
+		if (ref->node == NULL && d == ref->desktop) { \
+			break; \
+		} \
 	}
-	HANDLE_BOUNDARIES(f);
+	HANDLE_BOUNDARIES(m, d, n);
 
-	while (f != n) {
-		coordinates_t loc = {m, d, f};
-		if (f->client != NULL && !f->hidden && node_matches(&loc, ref, sel)) {
+	while (n != ref->node) {
+		coordinates_t loc = {m, d, n};
+		if (n->client != NULL && !n->hidden && node_matches(&loc, ref, sel)) {
 			*dst = loc;
 			return true;
 		}
-		f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
-		HANDLE_BOUNDARIES(f);
+		n = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
+		HANDLE_BOUNDARIES(m, d, n);
 	}
 #undef HANDLE_BOUNDARIES
 	return false;
@@ -1879,8 +1873,11 @@ bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
 	        a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
 }
 
-xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n)
+xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n)
 {
+	if (n == NULL) {
+		return m->rectangle;
+	}
 	client_t *c = n->client;
 	if (c != NULL) {
 		if (IS_FLOATING(c)) {

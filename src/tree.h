@@ -102,7 +102,7 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value);
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
-xcb_rectangle_t get_rectangle(desktop_t *d, node_t *n);
+xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n);
 void listen_enter_notify(node_t *n, bool enable);
 
 unsigned int sticky_count(node_t *n);
