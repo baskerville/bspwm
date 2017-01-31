@@ -1466,7 +1466,7 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 		f = (dir == CYCLE_PREV ? prev_leaf(f, d->root) : next_leaf(f, d->root));
 		HANDLE_BOUNDARIES(f);
 	}
-#undef HANDLE_EXTREMUM
+#undef HANDLE_BOUNDARIES
 	return false;
 }
 

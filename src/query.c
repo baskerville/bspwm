@@ -904,7 +904,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	NFLAG(sticky)
 	NFLAG(private)
 	NFLAG(locked)
-#undef WFLAG
+#undef NFLAG
 
 	if (loc->node->client == NULL &&
 		(sel.same_class != OPTION_NONE ||
