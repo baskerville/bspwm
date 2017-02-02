@@ -946,10 +946,11 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 	}
 }
 
+/* Based on https://github.com/ntrrgc/right-window */
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
 {
 	xcb_rectangle_t rect = get_rectangle(ref->monitor, ref->desktop, ref->node);
-	double md = DBL_MAX, mr = UINT32_MAX;
+	double md = UINT32_MAX, mr = UINT32_MAX;
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		desktop_t *d = m->desk;
@@ -964,7 +965,7 @@ void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t d
 			    !on_dir_side(rect, r, dir)) {
 				continue;
 			}
-			double fd = distance_center(rect, r);
+			uint32_t fd = boundary_distance(rect, r, dir);
 			uint32_t fr = history_rank(f);
 			if (fd < md || (fd == md && fr < mr)) {
 				md = fd;

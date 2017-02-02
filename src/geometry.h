@@ -30,8 +30,7 @@
 
 bool is_inside(xcb_point_t p, xcb_rectangle_t r);
 unsigned int area(xcb_rectangle_t r);
-dpoint_t center(xcb_rectangle_t r);
-double distance_center(xcb_rectangle_t r1, xcb_rectangle_t r2);
+uint32_t boundary_distance(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir);
 bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir);
 bool rect_eq(xcb_rectangle_t a, xcb_rectangle_t b);
 int rect_cmp(xcb_rectangle_t r1, xcb_rectangle_t r2);
