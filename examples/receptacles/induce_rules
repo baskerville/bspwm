@@ -17,6 +17,7 @@ def print_rules(prefix, node, path):
         print('bspc rule -a {}:{} -o node={}{}'.format(client['className'],
                                                        client['instanceName'],
                                                        prefix, '/'.join(path)))
+
 for i, monitor in enumerate(state['monitors']):
     for j, desktop in enumerate(monitor['desktops']):
         print_rules('@^{}:^{}:/'.format(i+1, j+1), desktop['root'], [])

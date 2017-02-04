@@ -19,8 +19,8 @@ state['clientsCount'] = 0
 state['focusHistory'] = []
 state['stackingList'] = []
 
-for i, monitor in enumerate(state['monitors']):
-    for j, desktop in enumerate(monitor['desktops']):
+for monitor in state['monitors']:
+    for desktop in monitor['desktops']:
         desktop['focusedNodeId'] = 0
         nullify_clients(desktop['root'])
 
