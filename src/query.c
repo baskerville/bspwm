@@ -128,6 +128,9 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "\"rectangle\":");
 		query_rectangle(n->rectangle, rsp);
 		fprintf(rsp,",");
+		fprintf(rsp, "\"constraints\":");
+		query_constraints(n->constraints, rsp);
+		fprintf(rsp,",");
 		fprintf(rsp, "\"firstChild\":");
 		query_node(n->first_child, rsp);
 		fprintf(rsp,",");
@@ -176,6 +179,11 @@ void query_client(client_t *c, FILE *rsp)
 void query_rectangle(xcb_rectangle_t r, FILE *rsp)
 {
 	fprintf(rsp, "{\"x\":%i,\"y\":%i,\"width\":%u,\"height\":%u}", r.x, r.y, r.width, r.height);
+}
+
+void query_constraints(constraints_t c, FILE *rsp)
+{
+	fprintf(rsp, "{\"min_width\":%u,\"min_height\":%u}", c.min_width, c.min_height);
 }
 
 void query_padding(padding_t p, FILE *rsp)

@@ -25,6 +25,9 @@
 #ifndef BSPWM_TREE_H
 #define BSPWM_TREE_H
 
+#define MIN_WIDTH   32
+#define MIN_HEIGHT  32
+
 void arrange(monitor_t *m, desktop_t *d);
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
 presel_t *make_presel(void);
@@ -68,6 +71,7 @@ unsigned int node_area(desktop_t *d, node_t *n);
 int tiled_count(node_t *n);
 void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t sel);
 void rotate_tree(node_t *n, int deg);
+void rotate_tree_rec(node_t *n, int deg);
 void rotate_brother(node_t *n);
 void unrotate_tree(node_t *n, int rot);
 void unrotate_brother(node_t *n);
@@ -92,6 +96,8 @@ bool set_state(monitor_t *m, desktop_t *d, node_t *n, client_state_t s);
 void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void neutralize_occluding_windows(monitor_t *m, desktop_t *d, node_t *n);
+void rebuild_constraints(node_t *n);
+void update_constraints(node_t *n);
 void propagate_flags_upward(monitor_t *m, desktop_t *d, node_t *n);
 void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_hidden_local(monitor_t *m, desktop_t *d, node_t *n, bool value);

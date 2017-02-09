@@ -348,6 +348,10 @@ node_t *restore_node(jsmntok_t **t, char *json)
 				(*t)++;
 				restore_rectangle(&n->rectangle, t, json);
 				continue;
+			} else if (keyeq("constraints", *t, json)) {
+				(*t)++;
+				restore_constraints(&n->constraints, t, json);
+				continue;
 			} else if (keyeq("firstChild", *t, json)) {
 				(*t)++;
 				node_t *fc = restore_node(t, json);
@@ -466,6 +470,23 @@ void restore_rectangle(xcb_rectangle_t *r, jsmntok_t **t, char *json)
 		} else if (keyeq("height", *t, json)) {
 			(*t)++;
 			sscanf(json + (*t)->start, "%hu", &r->height);
+		}
+		(*t)++;
+	}
+}
+
+void restore_constraints(constraints_t *c, jsmntok_t **t, char *json)
+{
+	int s = (*t)->size;
+	(*t)++;
+
+	for (int i = 0; i < s; i++) {
+		if (keyeq("min_width", *t, json)) {
+			(*t)++;
+			sscanf(json + (*t)->start, "%hu", &c->min_width);
+		} else if (keyeq("min_height", *t, json)) {
+			(*t)++;
+			sscanf(json + (*t)->start, "%hu", &c->min_height);
 		}
 		(*t)++;
 	}

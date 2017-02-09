@@ -206,6 +206,12 @@ struct presel_t {
 	xcb_window_t feedback;
 };
 
+typedef struct constraints_t constraints_t;
+struct constraints_t {
+	uint16_t min_width;
+	uint16_t min_height;
+};
+
 typedef struct node_t node_t;
 struct node_t {
 	uint32_t id;
@@ -214,6 +220,7 @@ struct node_t {
 	int birth_rotation;
 	presel_t *presel;
 	xcb_rectangle_t rectangle;
+	constraints_t constraints;
 	bool vacant;
 	bool hidden;
 	bool sticky;

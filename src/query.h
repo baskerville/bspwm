@@ -51,6 +51,7 @@ void query_node(node_t *n, FILE *rsp);
 void query_presel(presel_t *p, FILE *rsp);
 void query_client(client_t *c, FILE *rsp);
 void query_rectangle(xcb_rectangle_t r, FILE *rsp);
+void query_constraints(constraints_t c, FILE *rsp);
 void query_padding(padding_t p, FILE *rsp);
 void query_history(FILE *rsp);
 void query_coordinates(coordinates_t *loc, FILE *rsp);

@@ -156,10 +156,26 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 			unsigned int fence;
 			if (n->split_type == TYPE_VERTICAL) {
 				fence = rect.width * n->split_ratio;
+				if ((n->first_child->constraints.min_width + n->second_child->constraints.min_width) <= rect.width) {
+					if (fence < n->first_child->constraints.min_width) {
+						fence = n->first_child->constraints.min_width;
+					} else if (fence > (rect.width - n->second_child->constraints.min_width)) {
+						fence = (rect.width - n->second_child->constraints.min_width);
+					}
+					n->split_ratio = (double) fence / (double) rect.width;
+				}
 				first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
 				second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
 			} else {
 				fence = rect.height * n->split_ratio;
+				if ((n->first_child->constraints.min_height + n->second_child->constraints.min_height) <= rect.height) {
+					if (fence < n->first_child->constraints.min_height) {
+						fence = n->first_child->constraints.min_height;
+					} else if (fence > (rect.height - n->second_child->constraints.min_height)) {
+						fence = (rect.height - n->second_child->constraints.min_height);
+					}
+					n->split_ratio = (double) fence / (double) rect.height;
+				}
 				first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
 				second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
 			}
@@ -652,6 +668,7 @@ node_t *make_node(uint32_t id)
 	n->split_ratio = split_ratio;
 	n->split_type = TYPE_VERTICAL;
 	n->birth_rotation = 0;
+	n->constraints = (constraints_t) {MIN_WIDTH, MIN_HEIGHT};
 	n->presel = NULL;
 	n->client = NULL;
 	return n;
@@ -1021,6 +1038,12 @@ void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t sel)
 
 void rotate_tree(node_t *n, int deg)
 {
+	rotate_tree_rec(n, deg);
+	rebuild_constraints(n);
+}
+
+void rotate_tree_rec(node_t *n, int deg)
+{
 	if (n == NULL || is_leaf(n) || deg == 0) {
 		return;
 	}
@@ -1044,8 +1067,8 @@ void rotate_tree(node_t *n, int deg)
 		}
 	}
 
-	rotate_tree(n->first_child, deg);
-	rotate_tree(n->second_child, deg);
+	rotate_tree_rec(n->first_child, deg);
+	rotate_tree_rec(n->second_child, deg);
 }
 
 void rotate_brother(node_t *n)
@@ -1687,6 +1710,31 @@ void neutralize_occluding_windows(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
+void rebuild_constraints(node_t *n)
+{
+	if (n == NULL || is_leaf(n)) {
+		return;
+	} else {
+		rebuild_constraints(n->first_child);
+		rebuild_constraints(n->second_child);
+		update_constraints(n);
+	}
+}
+
+void update_constraints(node_t *n)
+{
+	if (n == NULL || is_leaf(n)) {
+		return;
+	}
+	if (n->split_type == TYPE_VERTICAL) {
+		n->constraints.min_width = n->first_child->constraints.min_width + n->second_child->constraints.min_width;
+		n->constraints.min_height = MAX(n->first_child->constraints.min_height, n->second_child->constraints.min_height);
+	} else {
+		n->constraints.min_width = MAX(n->first_child->constraints.min_width, n->second_child->constraints.min_width);
+		n->constraints.min_height = n->first_child->constraints.min_height + n->second_child->constraints.min_height;
+	}
+}
+
 void propagate_flags_upward(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
@@ -1698,6 +1746,7 @@ void propagate_flags_upward(monitor_t *m, desktop_t *d, node_t *n)
 	if (p != NULL) {
 		set_vacant_local(m, d, p, (p->first_child->vacant && p->second_child->vacant));
 		set_hidden_local(m, d, p, (p->first_child->hidden && p->second_child->hidden));
+		update_constraints(p);
 	}
 
 	propagate_flags_upward(m, d, p);
