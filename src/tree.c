@@ -1493,7 +1493,7 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 
 void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir)
 {
-	if (n == NULL || d->focus == NULL || is_leaf(n)) {
+	if (tiled_count(n) < 2) {
 		return;
 	}
 	node_t *p = d->focus->parent;
@@ -1515,10 +1515,15 @@ void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir
 			swap_nodes(m, d, f, m, d, s);
 		}
 	}
-	if (focus_first_child) {
-		focus_node(m, d, p->first_child);
-	} else {
-		focus_node(m, d, p->second_child);
+	if (p != NULL) {
+		node_t *f = focus_first_child ? p->first_child : p->second_child;
+		if (is_leaf(f)) {
+			if (d == mon->desk) {
+				focus_node(m, d, f);
+			} else {
+				activate_node(m, d, f);
+			}
+		}
 	}
 }
 
