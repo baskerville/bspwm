@@ -1361,6 +1361,9 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		} else {
 			draw_border(n1, is_descendant(n1, d2->focus), (m2 == mon));
 		}
+	} else {
+		draw_border(n1, is_descendant(n1, d2->focus), (m2 == mon));
+		draw_border(n2, is_descendant(n2, d1->focus), (m1 == mon));
 	}
 
 	arrange(m1, d1);
