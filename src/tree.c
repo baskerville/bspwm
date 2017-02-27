@@ -96,7 +96,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 		}
 
 		unsigned int bw;
-		if ((borderless_monocle && n->client->state == STATE_TILED && l == LAYOUT_MONOCLE)
+		if ((borderless_monocle && l == LAYOUT_MONOCLE && IS_TILED(n->client))
 		    || n->client->state == STATE_FULLSCREEN) {
 			bw = 0;
 		} else {
