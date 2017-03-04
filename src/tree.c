@@ -159,10 +159,11 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 				if ((n->first_child->constraints.min_width + n->second_child->constraints.min_width) <= rect.width) {
 					if (fence < n->first_child->constraints.min_width) {
 						fence = n->first_child->constraints.min_width;
+						n->split_ratio = (double) fence / (double) rect.width;
 					} else if (fence > (uint16_t) (rect.width - n->second_child->constraints.min_width)) {
 						fence = (rect.width - n->second_child->constraints.min_width);
+						n->split_ratio = (double) fence / (double) rect.width;
 					}
-					n->split_ratio = (double) fence / (double) rect.width;
 				}
 				first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
 				second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
@@ -171,10 +172,11 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 				if ((n->first_child->constraints.min_height + n->second_child->constraints.min_height) <= rect.height) {
 					if (fence < n->first_child->constraints.min_height) {
 						fence = n->first_child->constraints.min_height;
+						n->split_ratio = (double) fence / (double) rect.height;
 					} else if (fence > (uint16_t) (rect.height - n->second_child->constraints.min_height)) {
 						fence = (rect.height - n->second_child->constraints.min_height);
+						n->split_ratio = (double) fence / (double) rect.height;
 					}
-					n->split_ratio = (double) fence / (double) rect.height;
 				}
 				first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
 				second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
