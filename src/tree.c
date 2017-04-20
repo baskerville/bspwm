@@ -1584,7 +1584,7 @@ void propagate_vacant_upward(monitor_t *m, desktop_t *d, node_t *n)
 
 bool set_layer(monitor_t *m, desktop_t *d, node_t *n, stack_layer_t l)
 {
-	if (n == NULL || n->client->layer == l) {
+	if (n == NULL || n->client == NULL || n->client->layer == l) {
 		return false;
 	}
 
