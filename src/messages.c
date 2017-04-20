@@ -118,7 +118,7 @@ void process_message(char **args, int num, FILE *rsp)
 void cmd_node(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "node: Missing commands.\n");
+		fail(rsp, "node: Missing arguments.\n");
 		return;
 	}
 
@@ -133,6 +133,11 @@ void cmd_node(char **args, int num, FILE *rsp)
 			handle_failure(ret, "node", *args, rsp);
 			return;
 		}
+	}
+
+	if (num < 1) {
+		fail(rsp, "node: Missing commands.\n");
+		return;
 	}
 
 	bool changed = false;
@@ -577,7 +582,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 void cmd_desktop(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "desktop: Missing commands.\n");
+		fail(rsp, "desktop: Missing arguments.\n");
 		return;
 	}
 
@@ -592,6 +597,11 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			handle_failure(ret, "desktop", *args, rsp);
 			return;
 		}
+	}
+
+	if (num < 1) {
+		fail(rsp, "desktop: Missing commands.\n");
+		return;
 	}
 
 	bool changed = false;
@@ -750,7 +760,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 void cmd_monitor(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "monitor: Missing commands.\n");
+		fail(rsp, "monitor: Missing arguments.\n");
 		return;
 	}
 
@@ -765,6 +775,11 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 			handle_failure(ret, "monitor", *args, rsp);
 			return;
 		}
+	}
+
+	if (num < 1) {
+		fail(rsp, "monitor: Missing commands.\n");
+		return;
 	}
 
 	while (num > 0) {
@@ -903,7 +918,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 	uint8_t d = 0;
 
 	if (num < 1) {
-		fail(rsp, "query: Not enough arguments.\n");
+		fail(rsp, "query: Missing arguments.\n");
 		return;
 	}
 
