@@ -35,7 +35,7 @@ void run_config(void)
 			close(xcb_get_file_descriptor(dpy));
 		}
 		setsid();
-		execl(config_path, config_path, NULL);
+		execl(config_path, config_path, (char *) NULL);
 		err("Couldn't execute the configuration file.\n");
 	}
 }
