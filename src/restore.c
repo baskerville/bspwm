@@ -114,6 +114,7 @@ bool restore_tree(const char *file_path)
 
 	jsmntok_t *t = tokens + 1;
 	uint32_t focused_monitor_id = 0, primary_monitor_id = 0;
+	jsmntok_t *focus_history_token = NULL, *stacking_list_token = NULL;
 
 	for (int i = 0; i < num; i++) {
 		if (keyeq("focusedMonitorId", t, json)) {
@@ -139,10 +140,16 @@ bool restore_tree(const char *file_path)
 			continue;
 		} else if (keyeq("focusHistory", t, json)) {
 			t++;
+			if (mon == NULL) {
+				focus_history_token = t;
+			}
 			restore_history(&t, json);
 			continue;
 		} else if (keyeq("stackingList", t, json)) {
 			t++;
+			if (mon == NULL) {
+				stacking_list_token = t;
+			}
 			restore_stack(&t, json);
 			continue;
 		}
@@ -161,6 +168,14 @@ bool restore_tree(const char *file_path)
 		if (monitor_from_id(primary_monitor_id, &loc)) {
 			pri_mon = loc.monitor;
 		}
+	}
+
+	if (focus_history_token != NULL) {
+		restore_history(&focus_history_token, json);
+	}
+
+	if (stacking_list_token != NULL) {
+		restore_stack(&stacking_list_token, json);
 	}
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
