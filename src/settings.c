@@ -28,6 +28,8 @@
 #include "bspwm.h"
 #include "settings.h"
 
+extern char **environ;
+
 void run_config(void)
 {
 	if (fork() == 0) {
@@ -35,7 +37,7 @@ void run_config(void)
 			close(xcb_get_file_descriptor(dpy));
 		}
 		setsid();
-		execl(config_path, config_path, (char *) NULL);
+		execle(config_path, config_path, (char *) NULL, environ);
 		err("Couldn't execute the configuration file.\n");
 	}
 }
