@@ -337,6 +337,9 @@ void register_events(void)
 	uint32_t values[] = {ROOT_EVENT_MASK};
 	xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, root, XCB_CW_EVENT_MASK, values));
 	if (e != NULL) {
+		free(e);
+		xcb_ewmh_connection_wipe(ewmh);
+		free(ewmh);
 		xcb_disconnect(dpy);
 		err("Another window manager is already running.\n");
 	}
