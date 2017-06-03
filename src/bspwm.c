@@ -338,8 +338,7 @@ void register_events(void)
 	xcb_generic_error_t *e = xcb_request_check(dpy, xcb_change_window_attributes_checked(dpy, root, XCB_CW_EVENT_MASK, values));
 	if (e != NULL) {
 		xcb_disconnect(dpy);
-		free(ewmh->screens);
-		free(ewmh->_NET_WM_CM_Sn);
+		xcb_ewmh_connection_wipe(ewmh);
 		free(ewmh);
 		free(e);
 		err("Another window manager is already running.\n");
