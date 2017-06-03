@@ -69,22 +69,22 @@ bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 	/* Eliminate rectangles on the opposite side */
 	switch (dir) {
 		case DIR_NORTH:
-			if (r2.y >= r1.y) {
+			if (r2.y > r1_max.y) {
 				return false;
 			}
 			break;
 		case DIR_WEST:
-			if (r2.x >= r1.x) {
+			if (r2.x > r1_max.x) {
 				return false;
 			}
 			break;
 		case DIR_SOUTH:
-			if (r2_max.y <= r1_max.y) {
+			if (r2_max.y < r1.y) {
 				return false;
 			}
 			break;
 		case DIR_EAST:
-			if (r2_max.x <= r1_max.x) {
+			if (r2_max.x < r1.x) {
 				return false;
 			}
 			break;
