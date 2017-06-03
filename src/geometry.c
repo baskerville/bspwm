@@ -63,6 +63,10 @@ uint32_t boundary_distance(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t d
 /* Is `r2` on the `dir` side of `r1`? */
 bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 {
+	if (rect_eq(r1, r2)) {
+		return false;
+	}
+
 	xcb_point_t r1_max = {r1.x + r1.width - 1, r1.y + r1.height - 1};
 	xcb_point_t r2_max = {r2.x + r2.width - 1, r2.y + r2.height - 1};
 
