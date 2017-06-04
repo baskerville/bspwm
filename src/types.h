@@ -139,6 +139,11 @@ typedef enum {
 	SECOND_CHILD
 } child_polarity_t;
 
+typedef enum {
+	TIGHTNESS_LOW,
+	TIGHTNESS_HIGH,
+} tightness_t;
+
 typedef struct {
 	option_bool_t automatic;
 	option_bool_t focused;

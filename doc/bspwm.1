@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/30/2017
+.\"      Date: 06/04/2017
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.2-25-g048230e
+.\"    Source: Bspwm 0.9.2-48-gfab441b
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "01/30/2017" "Bspwm 0\&.9\&.2\-25\-g048230e" "Bspwm Manual"
+.TH "BSPWM" "1" "06/04/2017" "Bspwm 0\&.9\&.2\-48\-gfab441b" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1051,6 +1051,15 @@ command)\&.
 On which child should a new window be attached when adding a window on a single window tree in automatic mode\&. Accept the following values:
 \fBfirst_child\fR,
 \fBsecond_child\fR\&.
+.RE
+.PP
+\fIdirectional_focus_tightness\fR
+.RS 4
+The tightness of the algorithm used to decide whether a window is on the
+\fIDIR\fR
+side of another window\&. Accept the following values:
+\fBhigh\fR,
+\fBlow\fR\&.
 .RE
 .PP
 \fIborderless_monocle\fR

@@ -57,6 +57,7 @@ void load_settings(void)
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
 	initial_polarity = FIRST_CHILD;
+	directional_focus_tightness = TIGHTNESS_HIGH;
 	pointer_modifier = POINTER_MODIFIER;
 	pointer_motion_interval = POINTER_MOTION_INTERVAL;
 

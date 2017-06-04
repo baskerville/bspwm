@@ -24,6 +24,7 @@ bool parse_resize_handle(char *s, resize_handle_t *h);
 bool parse_modifier_mask(char *s, uint16_t *m);
 bool parse_pointer_action(char *s, pointer_action_t *a);
 bool parse_child_polarity(char *s, child_polarity_t *p);
+bool parse_tightness(char *s, tightness_t *t);
 bool parse_degree(char *s, int *d);
 bool parse_id(char *s, uint32_t *id);
 bool parse_bool_declaration(char *s, char **key, bool *value, alter_state_t *state);

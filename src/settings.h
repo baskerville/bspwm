@@ -75,6 +75,7 @@ unsigned int border_width;
 double split_ratio;
 
 child_polarity_t initial_polarity;
+tightness_t directional_focus_tightness;
 uint16_t pointer_modifier;
 uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];

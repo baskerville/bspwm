@@ -246,6 +246,18 @@ bool parse_child_polarity(char *s, child_polarity_t *p)
 	return false;
 }
 
+bool parse_tightness(char *s, tightness_t *t)
+{
+	if (streq("high", s)) {
+		*t = TIGHTNESS_HIGH;
+		return true;
+	} else if (streq("low", s)) {
+		*t = TIGHTNESS_LOW;
+		return true;
+	}
+	return false;
+}
+
 bool parse_degree(char *s, int *d)
 {
 	int i = atoi(s);

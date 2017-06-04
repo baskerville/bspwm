@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include "types.h"
+#include "settings.h"
 #include "geometry.h"
 
 bool is_inside(xcb_point_t p, xcb_rectangle_t r)
@@ -63,33 +64,61 @@ uint32_t boundary_distance(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t d
 /* Is `r2` on the `dir` side of `r1`? */
 bool on_dir_side(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 {
-	if (rect_eq(r1, r2)) {
-		return false;
-	}
-
 	xcb_point_t r1_max = {r1.x + r1.width - 1, r1.y + r1.height - 1};
 	xcb_point_t r2_max = {r2.x + r2.width - 1, r2.y + r2.height - 1};
 
 	/* Eliminate rectangles on the opposite side */
-	switch (dir) {
-		case DIR_NORTH:
-			if (r2.y > r1_max.y) {
-				return false;
+	switch (directional_focus_tightness) {
+		case TIGHTNESS_LOW:
+			switch (dir) {
+				case DIR_NORTH:
+					if (r2.y > r1_max.y) {
+						return false;
+					}
+					break;
+				case DIR_WEST:
+					if (r2.x > r1_max.x) {
+						return false;
+					}
+					break;
+				case DIR_SOUTH:
+					if (r2_max.y < r1.y) {
+						return false;
+					}
+					break;
+				case DIR_EAST:
+					if (r2_max.x < r1.x) {
+						return false;
+					}
+					break;
+				default:
+					return false;
 			}
 			break;
-		case DIR_WEST:
-			if (r2.x > r1_max.x) {
-				return false;
-			}
-			break;
-		case DIR_SOUTH:
-			if (r2_max.y < r1.y) {
-				return false;
-			}
-			break;
-		case DIR_EAST:
-			if (r2_max.x < r1.x) {
-				return false;
+		case TIGHTNESS_HIGH:
+			switch (dir) {
+				case DIR_NORTH:
+					if (r2.y >= r1.y) {
+						return false;
+					}
+					break;
+				case DIR_WEST:
+					if (r2.x >= r1.x) {
+						return false;
+					}
+					break;
+				case DIR_SOUTH:
+					if (r2_max.y <= r1_max.y) {
+						return false;
+					}
+					break;
+				case DIR_EAST:
+					if (r2_max.x <= r1_max.x) {
+						return false;
+					}
+					break;
+				default:
+					return false;
 			}
 			break;
 		default:
