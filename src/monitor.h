@@ -29,6 +29,7 @@
 
 monitor_t *make_monitor(const char *name, xcb_rectangle_t *rect, uint32_t id);
 void update_root(monitor_t *m, xcb_rectangle_t *rect);
+void reorder_monitor(monitor_t *m);
 void rename_monitor(monitor_t *m, const char *name);
 monitor_t *find_monitor(uint32_t id);
 monitor_t *get_monitor_by_randr_id(xcb_randr_output_t id);

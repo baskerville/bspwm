@@ -93,6 +93,24 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 		}
 		arrange(m, d);
 	}
+	reorder_monitor(m);
+}
+
+void reorder_monitor(monitor_t *m)
+{
+	if (m == NULL) {
+		return;
+	}
+	monitor_t *prev = m->prev;
+	while (prev != NULL && rect_cmp(m->rectangle, prev->rectangle) < 0) {
+		swap_monitors(m, prev);
+		prev = m->prev;
+	}
+	monitor_t *next = m->next;
+	while (next != NULL && rect_cmp(m->rectangle, next->rectangle) > 0) {
+		swap_monitors(m, next);
+		next = m->next;
+	}
 }
 
 void rename_monitor(monitor_t *m, const char *name)
