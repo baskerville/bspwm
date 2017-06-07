@@ -341,6 +341,9 @@ void register_events(void)
 		xcb_ewmh_connection_wipe(ewmh);
 		free(ewmh);
 		xcb_disconnect(dpy);
+		xcb_ewmh_connection_wipe(ewmh);
+		free(ewmh);
+		free(e);
 		err("Another window manager is already running.\n");
 	}
 }
