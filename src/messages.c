@@ -1203,7 +1203,7 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				break;
 			}
 		} else {
-			fail(rsp, "wm: Unkown command: '%s'.\n", *args);
+			fail(rsp, "wm: Unknown command: '%s'.\n", *args);
 			break;
 		}
 		num--, args++;
