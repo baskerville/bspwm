@@ -164,7 +164,7 @@ int rect_cmp(xcb_rectangle_t r1, xcb_rectangle_t r2)
 		} else if (r2.x >= (r1.x + r1.width)) {
 			return -1;
 		} else {
-			return area(r1) - area(r2);
+			return area(r2) - area(r1);
 		}
 	}
 }
