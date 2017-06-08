@@ -57,18 +57,23 @@ void add_rule(rule_t *r)
 
 void remove_rule(rule_t *r)
 {
-	if (r == NULL)
+	if (r == NULL) {
 		return;
+	}
 	rule_t *prev = r->prev;
 	rule_t *next = r->next;
-	if (prev != NULL)
+	if (prev != NULL) {
 		prev->next = next;
-	if (next != NULL)
+	}
+	if (next != NULL) {
 		next->prev = prev;
-	if (r == rule_head)
+	}
+	if (r == rule_head) {
 		rule_head = next;
-	if (r == rule_tail)
+	}
+	if (r == rule_tail) {
 		rule_tail = prev;
+	}
 	free(r);
 }
 
@@ -155,10 +160,25 @@ void remove_pending_rule(pending_rule_t *pr)
 	free(pr);
 }
 
-void apply_rules(xcb_window_t win, rule_consequence_t *csq)
+#define SET_CSQ_STATE(val) \
+	do { \
+		if (csq->state == NULL) { \
+			csq->state = calloc(1, sizeof(client_state_t)); \
+		} \
+		*(csq->state) = (val); \
+	} while (0)
+
+#define SET_CSQ_LAYER(val) \
+	do { \
+		if (csq->layer == NULL) { \
+			csq->layer = calloc(1, sizeof(stack_layer_t)); \
+		} \
+		*(csq->layer) = (val); \
+	} while (0)
+
+static void _apply_window_type(xcb_window_t win, rule_consequence_t *csq)
 {
 	xcb_ewmh_get_atoms_reply_t win_type;
-
 	if (xcb_ewmh_get_wm_window_type_reply(ewmh, xcb_ewmh_get_wm_window_type(ewmh, win), &win_type, NULL) == 1) {
 		for (unsigned int i = 0; i < win_type.atoms_len; i++) {
 			xcb_atom_t a = win_type.atoms[i];
@@ -166,10 +186,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 			    a == ewmh->_NET_WM_WINDOW_TYPE_UTILITY) {
 				csq->focus = false;
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
-				if (csq->state == NULL) {
-					csq->state = calloc(1, sizeof(client_state_t));
-				}
-				*(csq->state) = STATE_FLOATING;
+				SET_CSQ_STATE(STATE_FLOATING);
 				csq->center = true;
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK ||
 			           a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP ||
@@ -182,60 +199,76 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 		}
 		xcb_ewmh_get_atoms_reply_wipe(&win_type);
 	}
+}
 
+static void _apply_window_state(xcb_window_t win, rule_consequence_t *csq)
+{
 	xcb_ewmh_get_atoms_reply_t win_state;
-
 	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &win_state, NULL) == 1) {
 		for (unsigned int i = 0; i < win_state.atoms_len; i++) {
 			xcb_atom_t a = win_state.atoms[i];
 			if (a == ewmh->_NET_WM_STATE_FULLSCREEN) {
-				if (csq->state == NULL) {
-					csq->state = calloc(1, sizeof(client_state_t));
-				}
-				*(csq->state) = STATE_FULLSCREEN;
+				SET_CSQ_STATE(STATE_FULLSCREEN);
 			} else if (a == ewmh->_NET_WM_STATE_BELOW) {
-				if (csq->layer == NULL) {
-					csq->layer = calloc(1, sizeof(stack_layer_t));
-				}
-				*(csq->layer) = LAYER_BELOW;
+				SET_CSQ_LAYER(LAYER_BELOW);
 			} else if (a == ewmh->_NET_WM_STATE_ABOVE) {
-				if (csq->layer == NULL) {
-					csq->layer = calloc(1, sizeof(stack_layer_t));
-				}
-				*(csq->layer) = LAYER_ABOVE;
+				SET_CSQ_LAYER(LAYER_BELOW);
 			} else if (a == ewmh->_NET_WM_STATE_STICKY) {
 				csq->sticky = true;
 			}
 		}
 		xcb_ewmh_get_atoms_reply_wipe(&win_state);
 	}
+}
 
+static void _apply_transient(xcb_window_t win, rule_consequence_t *csq)
+{
 	xcb_window_t transient_for = XCB_NONE;
 	xcb_icccm_get_wm_transient_for_reply(dpy, xcb_icccm_get_wm_transient_for(dpy, win), &transient_for, NULL);
 	if (transient_for != XCB_NONE) {
-		if (csq->state == NULL) {
-			csq->state = calloc(1, sizeof(client_state_t));
-		}
-		*(csq->state) = STATE_FLOATING;
+		SET_CSQ_STATE(STATE_FLOATING);
 	}
+}
 
+static void _apply_hints(xcb_window_t win, rule_consequence_t *csq)
+{
 	xcb_size_hints_t size_hints;
 	if (xcb_icccm_get_wm_normal_hints_reply(dpy, xcb_icccm_get_wm_normal_hints(dpy, win), &size_hints, NULL) == 1) {
-		if ((size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_MIN_SIZE|XCB_ICCCM_SIZE_HINT_P_MAX_SIZE)) &&
+		if ((size_hints.flags & (XCB_ICCCM_SIZE_HINT_P_MIN_SIZE | XCB_ICCCM_SIZE_HINT_P_MAX_SIZE)) &&
 		    size_hints.min_width == size_hints.max_width && size_hints.min_height == size_hints.max_height) {
-			if (csq->state == NULL) {
-				csq->state = calloc(1, sizeof(client_state_t));
-			}
-			*(csq->state) = STATE_FLOATING;
+			SET_CSQ_STATE(STATE_FLOATING);
 		}
 	}
+}
 
+static void _apply_class(xcb_window_t win, rule_consequence_t *csq)
+{
 	xcb_icccm_get_wm_class_reply_t reply;
 	if (xcb_icccm_get_wm_class_reply(dpy, xcb_icccm_get_wm_class(dpy, win), &reply, NULL) == 1) {
 		snprintf(csq->class_name, sizeof(csq->class_name), "%s", reply.class_name);
 		snprintf(csq->instance_name, sizeof(csq->instance_name), "%s", reply.instance_name);
 		xcb_icccm_get_wm_class_reply_wipe(&reply);
 	}
+}
+
+void parse_keys_values(char *buf, rule_consequence_t *csq)
+{
+	char *key = strtok(buf, CSQ_BLK);
+	char *value = strtok(NULL, CSQ_BLK);
+	while (key != NULL && value != NULL) {
+		parse_key_value(key, value, csq);
+		key = strtok(NULL, CSQ_BLK);
+		value = strtok(NULL, CSQ_BLK);
+	}
+}
+
+void apply_rules(xcb_window_t win, rule_consequence_t *csq)
+{
+	_apply_window_type(win, csq);
+	_apply_window_state(win, csq);
+	_apply_transient(win, csq);
+	_apply_hints(win, csq);
+	_apply_class(win, csq);
 
 	rule_t *rule = rule_head;
 	while (rule != NULL) {
@@ -244,13 +277,7 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 		    (streq(rule->instance_name, MATCH_ANY) || streq(rule->instance_name, csq->instance_name))) {
 			char effect[MAXLEN];
 			snprintf(effect, sizeof(effect), "%s", rule->effect);
-			char *key = strtok(effect, CSQ_BLK);
-			char *value = strtok(NULL, CSQ_BLK);
-			while (key != NULL && value != NULL) {
-				parse_key_value(key, value, csq);
-				key = strtok(NULL, CSQ_BLK);
-				value = strtok(NULL, CSQ_BLK);
-			}
+			parse_keys_values(effect, csq);
 			if (rule->one_shot) {
 				remove_rule(rule);
 				break;
@@ -299,13 +326,7 @@ void parse_rule_consequence(int fd, rule_consequence_t *csq)
 	while ((nb = read(fd, data, sizeof(data))) > 0) {
 		int end = MIN(nb, (int) sizeof(data) - 1);
 		data[end] = '\0';
-		char *key = strtok(data, CSQ_BLK);
-		char *value = strtok(NULL, CSQ_BLK);
-		while (key != NULL && value != NULL) {
-			parse_key_value(key, value, csq);
-			key = strtok(NULL, CSQ_BLK);
-			value = strtok(NULL, CSQ_BLK);
-		}
+		parse_keys_values(data, csq);
 	}
 }
 
@@ -323,18 +344,12 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 	} else if (streq("state", key)) {
 		client_state_t cst;
 		if (parse_client_state(value, &cst)) {
-			if (csq->state == NULL) {
-				csq->state = calloc(1, sizeof(client_state_t));
-			}
-			*(csq->state) = cst;
+			SET_CSQ_STATE(cst);
 		}
 	} else if (streq("layer", key)) {
 		stack_layer_t lyr;
 		if (parse_stack_layer(value, &lyr)) {
-			if (csq->layer == NULL) {
-				csq->layer = calloc(1, sizeof(stack_layer_t));
-			}
-			*(csq->layer) = lyr;
+			SET_CSQ_LAYER(lyr);
 		}
 	} else if (streq("split_ratio", key)) {
 		double rat;
@@ -342,11 +357,13 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 			csq->split_ratio = rat;
 		}
 	} else if (parse_bool(value, &v)) {
-		if (streq("hidden", key))
+		if (streq("hidden", key)) {
 			csq->hidden = true;
+		}
 #define SETCSQ(name) \
-		else if (streq(#name, key)) \
-			csq->name = v;
+		else if (streq(#name, key)) { \
+			csq->name = v; \
+		}
 		SETCSQ(sticky)
 		SETCSQ(private)
 		SETCSQ(locked)
@@ -358,6 +375,9 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 #undef SETCSQ
 	}
 }
+
+#undef SET_CSQ_LAYER
+#undef SET_CSQ_STATE
 
 void list_rules(FILE *rsp)
 {
