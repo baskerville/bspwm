@@ -140,7 +140,10 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	initialize_client(n);
 	initialize_floating_rectangle(n);
 
-	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0) {
+	if (csq->rect != NULL) {
+		c->floating_rectangle = *csq->rect;
+		free(csq->rect);
+	} else if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0) {
 		csq->center = true;
 	}
 

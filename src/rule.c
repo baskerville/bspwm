@@ -109,6 +109,7 @@ rule_consequence_t *make_rule_conquence(void)
 	rc->manage = rc->focus = rc->border = true;
 	rc->layer = NULL;
 	rc->state = NULL;
+	rc->rect = NULL;
 	return rc;
 }
 
@@ -355,6 +356,14 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		double rat;
 		if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
 			csq->split_ratio = rat;
+		}
+	} else if (streq("rectangle", key)) {
+		if (csq->rect == NULL) {
+			csq->rect = calloc(1, sizeof(xcb_rectangle_t));
+		}
+		if (!parse_rectangle(value, csq->rect)) {
+			free(csq->rect);
+			csq->rect = NULL;
 		}
 	} else if (parse_bool(value, &v)) {
 		if (streq("hidden", key)) {
