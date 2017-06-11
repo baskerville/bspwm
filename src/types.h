@@ -337,6 +337,7 @@ typedef struct {
 	bool manage;
 	bool focus;
 	bool border;
+	xcb_rectangle_t *rect;
 } rule_consequence_t;
 
 typedef struct pending_rule_t pending_rule_t;

@@ -356,6 +356,11 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		if (sscanf(value, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
 			csq->split_ratio = rat;
 		}
+	} else if (streq("rectangle", key)) {
+		csq->rect = calloc(1, sizeof(xcb_rectangle_t));
+		if (!parse_rectangle(value, csq->rect)) {
+			free(csq->rect);
+		}
 	} else if (parse_bool(value, &v)) {
 		if (streq("hidden", key)) {
 			csq->hidden = true;

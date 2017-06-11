@@ -133,6 +133,11 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		presel_ratio(m, d, f, csq->split_ratio);
 	}
 
+	if (csq->rect) {
+		window_move_resize(win, csq->rect->x, csq->rect->y, csq->rect->width, csq->rect->height);
+		free(csq->rect);
+	}
+
 	node_t *n = make_node(win);
 	client_t *c = make_client();
 	c->border_width = csq->border ? d->border_width : 0;
@@ -140,7 +145,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	initialize_client(n);
 	initialize_floating_rectangle(n);
 
-	if (c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0) {
+	if (!csq->rect && c->floating_rectangle.x == 0 && c->floating_rectangle.y == 0) {
 		csq->center = true;
 	}
 
