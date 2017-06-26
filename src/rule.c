@@ -213,7 +213,7 @@ static void _apply_window_state(xcb_window_t win, rule_consequence_t *csq)
 			} else if (a == ewmh->_NET_WM_STATE_BELOW) {
 				SET_CSQ_LAYER(LAYER_BELOW);
 			} else if (a == ewmh->_NET_WM_STATE_ABOVE) {
-				SET_CSQ_LAYER(LAYER_BELOW);
+				SET_CSQ_LAYER(LAYER_ABOVE);
 			} else if (a == ewmh->_NET_WM_STATE_STICKY) {
 				csq->sticky = true;
 			}
