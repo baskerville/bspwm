@@ -340,26 +340,22 @@ void button_press(xcb_generic_event_t *evt)
 {
 	xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
 	bool replay = false;
-	switch (e->detail) {
-		case XCB_BUTTON_INDEX_1:
-			if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
-				bool pff = pointer_follows_focus;
-				bool pfm = pointer_follows_monitor;
-				pointer_follows_focus = false;
-				pointer_follows_monitor = false;
-				replay = !grab_pointer(ACTION_FOCUS) || !swallow_first_click;
-				pointer_follows_focus = pff;
-				pointer_follows_monitor = pfm;
-			} else {
-				grab_pointer(pointer_actions[0]);
-			}
-			break;
-		case XCB_BUTTON_INDEX_2:
-			grab_pointer(pointer_actions[1]);
-			break;
-		case XCB_BUTTON_INDEX_3:
-			grab_pointer(pointer_actions[2]);
-			break;
+	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
+	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
+		if (e->detail != buttons[i]) {
+			continue;
+		}
+		if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
+			bool pff = pointer_follows_focus;
+			bool pfm = pointer_follows_monitor;
+			pointer_follows_focus = false;
+			pointer_follows_monitor = false;
+			replay = !grab_pointer(ACTION_FOCUS) || !swallow_first_click;
+			pointer_follows_focus = pff;
+			pointer_follows_monitor = pfm;
+		} else {
+			grab_pointer(pointer_actions[i]);
+		}
 	}
 	xcb_allow_events(dpy, replay ? XCB_ALLOW_REPLAY_POINTER : XCB_ALLOW_SYNC_POINTER, e->time);
 	xcb_flush(dpy);
