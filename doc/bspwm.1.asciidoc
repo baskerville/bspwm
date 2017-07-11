@@ -651,7 +651,7 @@ Global Settings
 	Action performed when pressing 'pointer_modifier' + 'button<n>'. Accept the following values: *move*, *resize_side*, *resize_corner*, *focus*, *none*.
 
 'click_to_focus'::
-	Focus a window (or a monitor) by clicking it.
+	Focus a window (or a monitor) by clicking it with the specified mouse buttons. A combination of the following values is accepted, seperated by commas: *button1*, *button2*, *button3*. For example: *button1*,*button3*.
 
 'swallow_first_click'::
 	Don't replay the click that makes a window focused when 'click_to_focus' is set.
