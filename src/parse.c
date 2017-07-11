@@ -213,6 +213,31 @@ bool parse_modifier_mask(char *s, uint16_t *m)
 	return false;
 }
 
+bool parse_focus_buttons(char *s, uint8_t *b)
+{
+	char *button = strtok(s, COM_TOK);
+	*b = 0;
+	while (button != NULL) {
+		if (streq("button1", button)) {
+			if (!(*b & 1)) {
+				*b += 1;
+			}
+		} else if (streq("button2", button)) {
+			if (!(*b & 2)) {
+				*b += 2;
+			}
+		} else if (streq("button3", button)) {
+			if (!(*b & 4)) {
+				*b += 4;
+			}
+		} else {
+			return false;
+		}
+		button = strtok(NULL, COM_TOK);
+	}
+	return true;
+}
+
 bool parse_pointer_action(char *s, pointer_action_t *a)
 {
 	if (streq("move", s)) {

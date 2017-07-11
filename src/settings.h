@@ -31,6 +31,7 @@
 #define CONFIG_NAME              WM_NAME "rc"
 #define CONFIG_HOME_ENV          "XDG_CONFIG_HOME"
 #define POINTER_MODIFIER         XCB_MOD_MASK_4
+#define CLICK_TO_FOCUS           0
 #define POINTER_MOTION_INTERVAL  17
 #define EXTERNAL_RULES_COMMAND   ""
 #define STATUS_PREFIX            "W"
@@ -54,7 +55,6 @@
 #define POINTER_FOLLOWS_MONITOR     false
 #define IGNORE_EWMH_FOCUS           false
 #define CENTER_PSEUDO_TILED         true
-#define CLICK_TO_FOCUS              false
 #define SWALLOW_FIRST_CLICK         false
 #define HONOR_SIZE_HINTS            false
 #define REMOVE_DISABLED_MONITORS    false
@@ -77,6 +77,7 @@ double split_ratio;
 child_polarity_t initial_polarity;
 tightness_t directional_focus_tightness;
 uint16_t pointer_modifier;
+uint8_t click_to_focus;
 uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];
 
@@ -89,7 +90,6 @@ bool pointer_follows_focus;
 bool pointer_follows_monitor;
 bool ignore_ewmh_focus;
 bool center_pseudo_tiled;
-bool click_to_focus;
 bool swallow_first_click;
 bool honor_size_hints;
 bool remove_disabled_monitors;

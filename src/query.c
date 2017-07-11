@@ -340,6 +340,27 @@ void print_modifier_mask(uint16_t m, FILE *rsp)
 	}
 }
 
+void print_focus_buttons(uint8_t b, FILE *rsp)
+{
+	if (b & 1) {
+		fprintf(rsp, "button1");
+		b--;
+		if (b > 0) {
+			fprintf(rsp, ",");
+		}
+	}
+	if (b & 2) {
+		fprintf(rsp, "button2");
+		b -= 2;
+		if (b > 0) {
+			fprintf(rsp, ",");
+		}
+	}
+	if (b & 4) {
+		fprintf(rsp, "button3");
+	}
+}
+
 void print_pointer_action(pointer_action_t a, FILE *rsp)
 {
 	switch (a) {
