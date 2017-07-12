@@ -213,6 +213,35 @@ bool parse_modifier_mask(char *s, uint16_t *m)
 	return false;
 }
 
+bool parse_button_index(char *s, int8_t *b)
+{
+	bool v;
+	if (strcmp(s, "any") == 0) {
+		*b = XCB_BUTTON_INDEX_ANY;
+		return true;
+	} else if (strcmp(s, "button1") == 0) {
+		*b = XCB_BUTTON_INDEX_1;
+		return true;
+	} else if (strcmp(s, "button2") == 0) {
+		*b = XCB_BUTTON_INDEX_2;
+		return true;
+	} else if (strcmp(s, "button3") == 0) {
+		*b = XCB_BUTTON_INDEX_3;
+		return true;
+	} else if (strcmp(s, "none") == 0) {
+		*b = -1;
+		return true;
+	} else if (parse_bool(s, &v)) {
+		if (v) {
+			*b = XCB_BUTTON_INDEX_1;
+		} else {
+			*b = -1;
+		}
+		return true;
+	}
+	return false;
+}
+
 bool parse_pointer_action(char *s, pointer_action_t *a)
 {
 	if (streq("move", s)) {

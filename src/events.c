@@ -340,12 +340,12 @@ void button_press(xcb_generic_event_t *evt)
 {
 	xcb_button_press_event_t *e = (xcb_button_press_event_t *) evt;
 	bool replay = false;
-	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
-	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
-		if (e->detail != buttons[i]) {
+	for (unsigned int i = 0; i < LENGTH(BUTTONS); i++) {
+		if (e->detail != BUTTONS[i]) {
 			continue;
 		}
-		if (click_to_focus && cleaned_mask(e->state) == XCB_NONE) {
+		if ((click_to_focus == XCB_BUTTON_INDEX_ANY || click_to_focus == BUTTONS[i]) &&
+			cleaned_mask(e->state) == XCB_NONE) {
 			bool pff = pointer_follows_focus;
 			bool pfm = pointer_follows_monitor;
 			pointer_follows_focus = false;

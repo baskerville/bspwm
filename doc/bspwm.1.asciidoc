@@ -651,10 +651,10 @@ Global Settings
 	Action performed when pressing 'pointer_modifier' + 'button<n>'. Accept the following values: *move*, *resize_side*, *resize_corner*, *focus*, *none*.
 
 'click_to_focus'::
-	Focus a window (or a monitor) by clicking it.
+	Button used for focusing a window (or a monitor). The possible values are: *button1*, *button2*, *button3*, *any*, *none*.
 
 'swallow_first_click'::
-	Don't replay the click that makes a window focused when 'click_to_focus' is set.
+	Don't replay the click that makes a window focused if 'click_to_focus' isn't *none*.
 
 'focus_follows_pointer'::
 	Focus the window under the pointer.
@@ -707,8 +707,8 @@ Node Settings
 Pointer Bindings
 ----------------
 
-'button1'::
-	Focus the window under the pointer if 'click_to_focus' is set.
+'click_to_focus'::
+	Focus the window (or the monitor) under the pointer if the value isn't *none*.
 
 'pointer_modifier' + 'button1'::
 	Move the window under the pointer.

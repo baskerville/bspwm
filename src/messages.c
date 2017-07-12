@@ -1487,7 +1487,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			return;
 		}
 	} else if (streq("click_to_focus", name)) {
-		if (parse_bool(value, &click_to_focus)) {
+		if (parse_button_index(value, &click_to_focus)) {
 			ungrab_buttons();
 			grab_buttons();
 		} else {
@@ -1621,6 +1621,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", TIGHTNESS_STR(directional_focus_tightness));
 	} else if (streq("pointer_modifier", name)) {
 		print_modifier_mask(pointer_modifier, rsp);
+	} else if (streq("click_to_focus", name)) {
+		print_button_index(click_to_focus, rsp);
 	} else if (streq("pointer_motion_interval", name)) {
 		fprintf(rsp, "%u", pointer_motion_interval);
 	} else if (streq("pointer_action1", name) ||
@@ -1643,7 +1645,6 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(gapless_monocle)
 	GET_BOOL(paddingless_monocle)
 	GET_BOOL(single_monocle)
-	GET_BOOL(click_to_focus)
 	GET_BOOL(swallow_first_click)
 	GET_BOOL(focus_follows_pointer)
 	GET_BOOL(pointer_follows_focus)

@@ -50,13 +50,12 @@ void pointer_init(void)
 
 void window_grab_buttons(xcb_window_t win)
 {
-	uint8_t buttons[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
-	for (unsigned int i = 0; i < LENGTH(buttons); i++) {
-		if (click_to_focus) {
-			window_grab_button(win, buttons[i], XCB_NONE);
+	for (unsigned int i = 0; i < LENGTH(BUTTONS); i++) {
+		if (click_to_focus == XCB_BUTTON_INDEX_ANY || click_to_focus == BUTTONS[i]) {
+			window_grab_button(win, BUTTONS[i], XCB_NONE);
 		}
 		if (pointer_actions[i] != ACTION_NONE) {
-			window_grab_button(win, buttons[i], pointer_modifier);
+			window_grab_button(win, BUTTONS[i], pointer_modifier);
 		}
 	}
 }

@@ -340,6 +340,27 @@ void print_modifier_mask(uint16_t m, FILE *rsp)
 	}
 }
 
+void print_button_index(int8_t b, FILE *rsp)
+{
+	switch (b) {
+		case XCB_BUTTON_INDEX_ANY:
+			fprintf(rsp, "any");
+			break;
+		case XCB_BUTTON_INDEX_1:
+			fprintf(rsp, "button1");
+			break;
+		case XCB_BUTTON_INDEX_2:
+			fprintf(rsp, "button2");
+			break;
+		case XCB_BUTTON_INDEX_3:
+			fprintf(rsp, "button3");
+			break;
+		case -1:
+			fprintf(rsp, "none");
+			break;
+	}
+}
+
 void print_pointer_action(pointer_action_t a, FILE *rsp)
 {
 	switch (a) {

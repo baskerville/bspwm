@@ -22,6 +22,7 @@ bool parse_history_direction(char *s, history_dir_t *d);
 bool parse_flip(char *s, flip_t *f);
 bool parse_resize_handle(char *s, resize_handle_t *h);
 bool parse_modifier_mask(char *s, uint16_t *m);
+bool parse_button_index(char *s, int8_t *b);
 bool parse_pointer_action(char *s, pointer_action_t *a);
 bool parse_child_polarity(char *s, child_polarity_t *p);
 bool parse_tightness(char *s, tightness_t *t);

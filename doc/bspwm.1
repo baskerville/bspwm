@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 06/04/2017
+.\"      Date: 07/12/2017
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.2-48-gfab441b
+.\"    Source: Bspwm 0.9.2-57-g61d5ca4
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "06/04/2017" "Bspwm 0\&.9\&.2\-48\-gfab441b" "Bspwm Manual"
+.TH "BSPWM" "1" "07/12/2017" "Bspwm 0\&.9\&.2\-57\-g61d5ca4" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1123,14 +1123,20 @@ Action performed when pressing
 .PP
 \fIclick_to_focus\fR
 .RS 4
-Focus a window (or a monitor) by clicking it\&.
+Button used for focusing a window (or a monitor)\&. The possible values are:
+\fBbutton1\fR,
+\fBbutton2\fR,
+\fBbutton3\fR,
+\fBany\fR,
+\fBnone\fR\&.
 .RE
 .PP
 \fIswallow_first_click\fR
 .RS 4
-Don\(cqt replay the click that makes a window focused when
+Don\(cqt replay the click that makes a window focused if
 \fIclick_to_focus\fR
-is set\&.
+isn\(cqt
+\fBnone\fR\&.
 .RE
 .PP
 \fIfocus_follows_pointer\fR
@@ -1198,11 +1204,10 @@ Window border width\&.
 .RE
 .SH "POINTER BINDINGS"
 .PP
-\fIbutton1\fR
-.RS 4
-Focus the window under the pointer if
 \fIclick_to_focus\fR
-is set\&.
+.RS 4
+Focus the window (or the monitor) under the pointer if the value isn\(cqt
+\fBnone\fR\&.
 .RE
 .PP
 \fIpointer_modifier\fR + \fIbutton1\fR
