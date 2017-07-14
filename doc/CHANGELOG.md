@@ -1,3 +1,16 @@
+# From 0.9.2 to 0.9.3
+
+## Changes
+
+- *click_to_focus* is now a button name. Specifying a boolean is deprecated but will still work (`true` is equivalent to `button1`).
+
+## Additions
+
+- `node -r` now accepts a relative fraction argument.
+- An option was added to `query -{M,D,N}` in order to output names instead of IDs: `--names`.
+- New rule consequence: `rectangle=WxH+X+Y`.
+- New settings: `swallow_first_click` and `directional_focus_tightness`.
+
 # From 0.9.1 to 0.9.2
 
 ## Changes
