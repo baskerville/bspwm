@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <sys/un.h>
 #include <unistd.h>
 #include "helpers.h"
@@ -78,15 +79,29 @@ int main(int argc, char *argv[])
 	}
 
 	int ret = EXIT_SUCCESS, nb;
-	while ((nb = recv(fd, rsp, sizeof(rsp)-1, 0)) > 0) {
-		rsp[nb] = '\0';
-		if (rsp[0] == FAILURE_MESSAGE[0]) {
-			ret = EXIT_FAILURE;
-			printf("%s", rsp + 1);
-		} else {
-			printf("%s", rsp);
+
+	struct pollfd fds[] = {
+		{fd, POLLIN, 0},
+		{STDOUT_FILENO, POLLHUP, 0},
+	};
+
+	while (poll(fds, 2, -1) > 0) {
+		if (fds[0].revents & POLLIN) {
+			if ((nb = recv(fd, rsp, sizeof(rsp)-1, 0)) > 0) {
+				rsp[nb] = '\0';
+				if (rsp[0] == FAILURE_MESSAGE[0]) {
+					ret = EXIT_FAILURE;
+					printf("%s", rsp + 1);
+				} else {
+					printf("%s", rsp);
+				}
+				fflush(stdout);
+			} else {
+				break;
+			}
+		} else if (fds[1].revents & POLLHUP) {
+			break;
 		}
-		fflush(stdout);
 	}
 
 	close(fd);
