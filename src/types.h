@@ -304,6 +304,7 @@ struct subscriber_list_t {
 	int fd;
 	FILE *stream;
 	int field;
+	int count;
 	subscriber_list_t *prev;
 	subscriber_list_t *next;
 };

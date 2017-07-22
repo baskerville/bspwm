@@ -574,8 +574,8 @@ Subscribe
 
 General Syntax
 ^^^^^^^^^^^^^^
-subscribe (all|report|monitor|desktop|node|...)*::
-	Continuously print status information. See the *EVENTS* section for the detailed description of each event.
+subscribe [-c|--count 'COUNT'] (all|report|monitor|desktop|node|...)*::
+	Continuously print status information. See the *EVENTS* section for the detailed description of each event. If a 'COUNT' argument is provided, then the subscriber will return after having received 'COUNT' events.
 
 Quit
 ~~~~

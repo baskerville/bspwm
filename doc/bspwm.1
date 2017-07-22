@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 07/14/2017
+.\"      Date: 07/22/2017
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3
+.\"    Source: Bspwm 0.9.3-1-g0ae3c57
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "07/14/2017" "Bspwm 0\&.9\&.3" "Bspwm Manual"
+.TH "BSPWM" "1" "07/22/2017" "Bspwm 0\&.9\&.3\-1\-g0ae3c57" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -973,11 +973,15 @@ Get or set the value of <setting>\&.
 \fBGeneral Syntax\fR
 .RS 4
 .PP
-subscribe (all|report|monitor|desktop|node|\&...)*
+subscribe [\-c|\-\-count \fICOUNT\fR] (all|report|monitor|desktop|node|\&...)*
 .RS 4
 Continuously print status information\&. See the
 \fBEVENTS\fR
-section for the detailed description of each event\&.
+section for the detailed description of each event\&. If a
+\fICOUNT\fR
+argument is provided, then the subscriber will return after having received
+\fICOUNT\fR
+events\&.
 .RE
 .RE
 .SS "Quit"

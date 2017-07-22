@@ -31,12 +31,13 @@
 #include "settings.h"
 #include "subscribe.h"
 
-subscriber_list_t *make_subscriber_list(FILE *stream, int field)
+subscriber_list_t *make_subscriber_list(FILE *stream, int field, int count)
 {
 	subscriber_list_t *sb = calloc(1, sizeof(subscriber_list_t));
 	sb->prev = sb->next = NULL;
 	sb->stream = stream;
 	sb->field = field;
+	sb->count = count;
 	return sb;
 }
 
@@ -63,9 +64,9 @@ void remove_subscriber(subscriber_list_t *sb)
 	free(sb);
 }
 
-void add_subscriber(FILE *stream, int field)
+void add_subscriber(FILE *stream, int field, int count)
 {
-	subscriber_list_t *sb = make_subscriber_list(stream, field);
+	subscriber_list_t *sb = make_subscriber_list(stream, field, count);
 	if (subscribe_head == NULL) {
 		subscribe_head = subscribe_tail = sb;
 	} else {
@@ -129,6 +130,9 @@ void put_status(subscriber_mask_t mask, ...)
 	while (sb != NULL) {
 		subscriber_list_t *next = sb->next;
 		if (sb->field & mask) {
+			if (sb->count > 0) {
+				sb->count--;
+			}
 			if (mask == SBSC_MASK_REPORT) {
 				ret = print_report(sb->stream);
 			} else {
@@ -140,7 +144,7 @@ void put_status(subscriber_mask_t mask, ...)
 				va_end(args);
 				ret = fflush(sb->stream);
 			}
-			if (ret != 0) {
+			if (ret != 0 || sb->count == 0) {
 				remove_subscriber(sb);
 			}
 		}

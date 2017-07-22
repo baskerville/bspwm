@@ -1213,12 +1213,24 @@ void cmd_wm(char **args, int num, FILE *rsp)
 int cmd_subscribe(char **args, int num, FILE *rsp)
 {
 	int field = 0;
+	int count = -1;
+
 	if (num < 1) {
 		field = SBSC_MASK_REPORT;
 	} else {
 		subscriber_mask_t mask;
 		while (num > 0) {
-			if (parse_subscriber_mask(*args, &mask)) {
+			if (streq("-c", *args) || streq("--count", *args)) {
+				num--, args++;
+				if (num < 1) {
+					fail(rsp, "subscribe %s: Not enough arguments.\n", *(args - 1));
+					return SUBSCRIBE_FAILURE;
+				}
+				if (sscanf(*args, "%i", &count) != 1) {
+					fail(rsp, "subscribe %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+					return SUBSCRIBE_FAILURE;
+				}
+			} else if (parse_subscriber_mask(*args, &mask)) {
 				field |= mask;
 			} else {
 				fail(rsp, "subscribe: Invalid argument: '%s'.\n", *args);
@@ -1228,7 +1240,7 @@ int cmd_subscribe(char **args, int num, FILE *rsp)
 		}
 	}
 
-	add_subscriber(rsp, field);
+	add_subscriber(rsp, field, count);
 	return SUBSCRIBE_SUCCESS;
 }
 
