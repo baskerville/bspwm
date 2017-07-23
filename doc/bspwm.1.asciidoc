@@ -574,8 +574,14 @@ Subscribe
 
 General Syntax
 ^^^^^^^^^^^^^^
-subscribe [-c|--count 'COUNT'] (all|report|monitor|desktop|node|...)*::
-	Continuously print status information. See the *EVENTS* section for the detailed description of each event. If a 'COUNT' argument is provided, then the subscriber will return after having received 'COUNT' events.
+subscribe ['OPTIONS'] (all|report|monitor|desktop|node|...)*::
+	Continuously print status information. See the *EVENTS* section for the detailed description of each event.
+
+Options
+^^^^^^^
+
+*-c*, *--count* 'COUNT'::
+	Stop the corresponding *bspc* process after having received 'COUNT' events.
 
 Quit
 ~~~~
