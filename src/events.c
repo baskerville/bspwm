@@ -344,7 +344,7 @@ void button_press(xcb_generic_event_t *evt)
 		if (e->detail != BUTTONS[i]) {
 			continue;
 		}
-		if ((click_to_focus == XCB_BUTTON_INDEX_ANY || click_to_focus == BUTTONS[i]) &&
+		if ((click_to_focus == (int8_t) XCB_BUTTON_INDEX_ANY || click_to_focus == (int8_t) BUTTONS[i]) &&
 			cleaned_mask(e->state) == XCB_NONE) {
 			bool pff = pointer_follows_focus;
 			bool pfm = pointer_follows_monitor;

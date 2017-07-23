@@ -51,7 +51,7 @@ void pointer_init(void)
 void window_grab_buttons(xcb_window_t win)
 {
 	for (unsigned int i = 0; i < LENGTH(BUTTONS); i++) {
-		if (click_to_focus == XCB_BUTTON_INDEX_ANY || click_to_focus == BUTTONS[i]) {
+		if (click_to_focus == (int8_t) XCB_BUTTON_INDEX_ANY || click_to_focus == (int8_t) BUTTONS[i]) {
 			window_grab_button(win, BUTTONS[i], XCB_NONE);
 		}
 		if (pointer_actions[i] != ACTION_NONE) {
