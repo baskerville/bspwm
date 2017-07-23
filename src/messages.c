@@ -1226,7 +1226,7 @@ int cmd_subscribe(char **args, int num, FILE *rsp)
 					fail(rsp, "subscribe %s: Not enough arguments.\n", *(args - 1));
 					return SUBSCRIBE_FAILURE;
 				}
-				if (sscanf(*args, "%i", &count) != 1) {
+				if (sscanf(*args, "%i", &count) != 1 || count < 1) {
 					fail(rsp, "subscribe %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 					return SUBSCRIBE_FAILURE;
 				}
