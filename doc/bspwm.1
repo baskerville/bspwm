@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 07/23/2017
+.\"      Date: 07/24/2017
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3-7-gc968f7a
+.\"    Source: Bspwm 0.9.3-9-g9ce48c4
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "07/23/2017" "Bspwm 0\&.9\&.3\-7\-gc968f7a" "Bspwm Manual"
+.TH "BSPWM" "1" "07/24/2017" "Bspwm 0\&.9\&.3\-9\-g9ce48c4" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -975,9 +975,9 @@ Get or set the value of <setting>\&.
 .PP
 subscribe [\fIOPTIONS\fR] (all|report|monitor|desktop|node|\&...)*
 .RS 4
-Continuously print status information\&. See the
+Continuously print events\&. See the
 \fBEVENTS\fR
-section for the detailed description of each event\&.
+section for the description of each event\&.
 .RE
 .RE
 .sp
@@ -988,6 +988,11 @@ section for the detailed description of each event\&.
 .ps +1
 \fBOptions\fR
 .RS 4
+.PP
+\fB\-f\fR, \fB\-\-fifo\fR
+.RS 4
+Print a path to a FIFO from which events can be read and return\&.
+.RE
 .PP
 \fB\-c\fR, \fB\-\-count\fR \fICOUNT\fR
 .RS 4

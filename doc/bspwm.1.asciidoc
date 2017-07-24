@@ -575,10 +575,13 @@ Subscribe
 General Syntax
 ^^^^^^^^^^^^^^
 subscribe ['OPTIONS'] (all|report|monitor|desktop|node|...)*::
-	Continuously print status information. See the *EVENTS* section for the detailed description of each event.
+	Continuously print events. See the *EVENTS* section for the description of each event.
 
 Options
 ^^^^^^^
+
+*-f*, *--fifo*::
+	Print a path to a FIFO from which events can be read and return.
 
 *-c*, *--count* 'COUNT'::
 	Stop the corresponding *bspc* process after having received 'COUNT' events.

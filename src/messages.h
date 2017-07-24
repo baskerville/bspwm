@@ -29,7 +29,8 @@
 #include "subscribe.h"
 
 enum {
-	SUBSCRIBE_SUCCESS,
+	SUBSCRIBE_SOCKET,
+	SUBSCRIBE_FIFO,
 	SUBSCRIBE_FAILURE
 };
 
