@@ -363,10 +363,10 @@ bool parse_subscriber_mask(char *s, subscriber_mask_t *mask)
 		*mask = SBSC_MASK_MONITOR;
 	} else if (streq("pointer_action", s)) {
 		*mask = SBSC_MASK_POINTER_ACTION;
-	} else if (streq("node_manage", s)) {
-		*mask = SBSC_MASK_NODE_MANAGE;
-	} else if (streq("node_unmanage", s)) {
-		*mask = SBSC_MASK_NODE_UNMANAGE;
+	} else if (streq("node_add", s)) {
+		*mask = SBSC_MASK_NODE_ADD;
+	} else if (streq("node_remove", s)) {
+		*mask = SBSC_MASK_NODE_REMOVE;
 	} else if (streq("node_swap", s)) {
 		*mask = SBSC_MASK_NODE_SWAP;
 	} else if (streq("node_transfer", s)) {

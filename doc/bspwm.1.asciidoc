@@ -778,11 +778,11 @@ Events
 'desktop_layout <monitor_id> <desktop_id> tiled|monocle'::
 	The layout of a desktop changed.
 
-'node_manage <monitor_id> <desktop_id> <node_id> <ip_id>'::
-	A window is managed.
+'node_add <monitor_id> <desktop_id> <ip_id> <node_id>'::
+	A node is added.
 
-'node_unmanage <monitor_id> <desktop_id> <node_id>'::
-	A window is unmanaged.
+'node_remove <monitor_id> <desktop_id> <node_id>'::
+	A node is removed.
 
 'node_swap <src_monitor_id> <src_desktop_id> <src_node_id> <dst_monitor_id> <dst_desktop_id> <dst_node_id>'::
 	A node is swapped.
