@@ -215,7 +215,6 @@ bool parse_modifier_mask(char *s, uint16_t *m)
 
 bool parse_button_index(char *s, int8_t *b)
 {
-	bool v;
 	if (strcmp(s, "any") == 0) {
 		*b = XCB_BUTTON_INDEX_ANY;
 		return true;
@@ -230,13 +229,6 @@ bool parse_button_index(char *s, int8_t *b)
 		return true;
 	} else if (strcmp(s, "none") == 0) {
 		*b = -1;
-		return true;
-	} else if (parse_bool(s, &v)) {
-		if (v) {
-			*b = XCB_BUTTON_INDEX_1;
-		} else {
-			*b = -1;
-		}
 		return true;
 	}
 	return false;
