@@ -25,7 +25,7 @@
 #ifndef BSPWM_SUBSCRIBE_H
 #define BSPWM_SUBSCRIBE_H
 
-#define FIFO_TEMPLATE  "/tmp/bspwm_fifo.XXXXX"
+#define FIFO_TEMPLATE  "bspwm_fifo.XXXXX"
 
 typedef enum {
 	SBSC_MASK_REPORT = 1 << 0,

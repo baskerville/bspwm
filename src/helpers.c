@@ -121,19 +121,28 @@ char *copy_string(char *str, size_t len)
 
 char *mktempfifo(const char *template)
 {
-	char *fifo_path = malloc(strlen(template)+1);
+	char *runtime_dir = getenv(RUNTIME_DIR_ENV);
+	if (runtime_dir == NULL) {
+		runtime_dir = "/tmp";
+	}
+
+	char *fifo_path = malloc(strlen(runtime_dir)+1+strlen(template)+1);
 	if (fifo_path == NULL) {
 		return NULL;
 	}
-	sprintf(fifo_path, "%s", template);
+
+	sprintf(fifo_path, "%s/%s", runtime_dir, template);
+
 	if (mktemp(fifo_path) == NULL) {
 		free(fifo_path);
 		return NULL;
 	}
+
 	if (mkfifo(fifo_path, 0666) == -1) {
 		free(fifo_path);
 		return NULL;
 	}
+
 	return fifo_path;
 }
 

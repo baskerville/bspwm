@@ -27,9 +27,6 @@
 
 #include "types.h"
 
-#define WM_NAME                  "bspwm"
-#define CONFIG_NAME              WM_NAME "rc"
-#define CONFIG_HOME_ENV          "XDG_CONFIG_HOME"
 #define POINTER_MODIFIER         XCB_MOD_MASK_4
 #define POINTER_MOTION_INTERVAL  17
 #define EXTERNAL_RULES_COMMAND   ""
