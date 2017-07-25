@@ -509,7 +509,7 @@ Options
 	Constrain matches to the selected monitor, desktop or node. The descriptor can be omitted for '-M', '-D' and '-N'.
 
 *--names*::
-	Print names instead of IDs.
+	Print names instead of IDs. Can only be used with '-M' and '-D'.
 
 Wm
 ~~

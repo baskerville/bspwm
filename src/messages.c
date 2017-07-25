@@ -1053,6 +1053,11 @@ void cmd_query(char **args, int num, FILE *rsp)
 		goto end;
 	}
 
+	if (!print_ids && (dom == DOMAIN_NODE | dom == DOMAIN_TREE)) {
+		fail(rsp, "query -%c: --names only applies to -M and -D.\n", dom == DOMAIN_NODE ? 'N' : 'T');
+		goto end;
+	}
+
 	if (dom == DOMAIN_NODE) {
 		if (query_node_ids(&ref, &trg, node_sel, rsp) < 1) {
 			fail(rsp, "");
