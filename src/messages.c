@@ -859,7 +859,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 			}
 			remove_monitor(trg.monitor);
 			return;
-		} else if (streq("-o", *args) || streq("--order-desktops", *args)) {
+		} else if (streq("-o", *args) || streq("--reorder-desktops", *args)) {
 			num--, args++;
 			if (num < 1) {
 				fail(rsp, "monitor %s: Not enough arguments.\n", *(args - 1));
