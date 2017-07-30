@@ -1190,6 +1190,25 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-O", *args) || streq("--reorder-monitors", *args)) {
+			num--, args++;
+			if (num < 1) {
+				fail(rsp, "wm %s: Not enough arguments.\n", *(args - 1));
+				return;
+			}
+			monitor_t *m = mon_head;
+			while (m != NULL && num > 0) {
+				monitor_t *next = m->next;
+				coordinates_t dst;
+				if (locate_monitor(*args, &dst)) {
+					swap_monitors(m, dst.monitor);
+					if (next == dst.monitor) {
+						next = m;
+					}
+				}
+				m = next;
+				num--, args++;
+			}
 		} else if (streq("-o", *args) || streq("--adopt-orphans", *args)) {
 			adopt_orphans();
 		} else if (streq("-g", *args) || streq("--get-status", *args)) {

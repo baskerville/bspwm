@@ -531,6 +531,9 @@ Commands
 *-a*, *--add-monitor* <name> WxH+X+Y::
 	Add a monitor for the given name and rectangle.
 
+*-O*, *--reorder-monitors* <name>...::
+	Reorder the list of monitors to match the given order.
+
 *-o*, *--adopt-orphans*::
 	Manage all the unmanaged windows remaining from a previous session.
 
