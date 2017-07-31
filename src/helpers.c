@@ -121,6 +121,7 @@ char *copy_string(char *str, size_t len)
 
 char *mktempfifo(const char *template)
 {
+	int tempfd;
 	char *runtime_dir = getenv(RUNTIME_DIR_ENV);
 	if (runtime_dir == NULL) {
 		runtime_dir = "/tmp";
@@ -133,10 +134,13 @@ char *mktempfifo(const char *template)
 
 	sprintf(fifo_path, "%s/%s", runtime_dir, template);
 
-	if (mktemp(fifo_path) == NULL) {
+	if ((tempfd = mkstemp(fifo_path)) == -1) {
 		free(fifo_path);
 		return NULL;
 	}
+
+	close(tempfd);
+	unlink(fifo_path);
 
 	if (mkfifo(fifo_path, 0666) == -1) {
 		free(fifo_path);
