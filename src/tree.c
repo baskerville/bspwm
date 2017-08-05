@@ -666,7 +666,7 @@ node_t *make_node(uint32_t id)
 	node_t *n = calloc(1, sizeof(node_t));
 	n->id = id;
 	n->parent = n->first_child = n->second_child = NULL;
-	n->vacant = n->hidden = n->sticky = n->private = n->locked = false;
+	n->vacant = n->hidden = n->sticky = n->private = n->locked = n->overlay = false;
 	n->split_ratio = split_ratio;
 	n->split_type = TYPE_VERTICAL;
 	n->birth_rotation = 0;
@@ -1906,6 +1906,27 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	}
 }
 
+void set_overlay(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL || n->overlay == value) {
+		return;
+	}
+
+	n->overlay = value;
+
+	if (value) {
+		set_overlay_shape(n->id);
+	} else {
+		unset_overlay_shape(n->id);
+	}
+
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%08X 0x%08X 0x%08X overlay %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
+
+	if (n == m->desk->focus) {
+		put_status(SBSC_MASK_REPORT);
+	}
+}
+
 void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
 	if (value && mon->desk->focus == n) {
@@ -1982,4 +2003,5 @@ void listen_enter_notify(node_t *n, bool enable)
 	DEF_FLAG_COUNT(sticky)
 	DEF_FLAG_COUNT(private)
 	DEF_FLAG_COUNT(locked)
+	DEF_FLAG_COUNT(overlay)
 #undef DEF_FLAG_COUNT

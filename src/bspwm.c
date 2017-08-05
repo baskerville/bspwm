@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <xcb/xinerama.h>
+#include <xcb/shape.h>
 #include "types.h"
 #include "desktop.h"
 #include "monitor.h"
@@ -319,6 +320,21 @@ void setup(void)
 			add_monitor(m);
 			add_desktop(m, make_desktop(NULL, XCB_NONE));
 		}
+	}
+
+	const xcb_query_extension_reply_t *shape_reply = xcb_get_extension_data(dpy, &xcb_shape_id);
+	if (shape_reply != NULL && shape_reply->present) {
+		xcb_shape_query_version_reply_t *shape_query =
+			xcb_shape_query_version_reply(dpy,
+			xcb_shape_query_version(dpy), NULL);
+		if (shape_query != NULL && (shape_query->major_version > 1 || (shape_query->major_version == 1 && shape_query->minor_version >= 1))) {
+			input_shape = true;
+		} else {
+			warn("No XShape with input shape support.\n");
+		}
+		free(shape_query);
+	} else {
+		warn("XShape is inactive.\n");
 	}
 
 	ewmh_update_number_of_desktops();

@@ -81,6 +81,7 @@ bool sticky_still;
 bool record_history;
 bool running;
 bool randr;
+bool input_shape;
 
 void init(void);
 void setup(void);

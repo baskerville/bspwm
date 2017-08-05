@@ -74,7 +74,7 @@ NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|bigg
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
-FLAG := hidden|sticky|private|locked|urgent
+FLAG := hidden|sticky|private|locked|overlay|urgent
 
 LAYER := below|normal|above
 
@@ -169,7 +169,7 @@ Modifiers
 [!]ancestor_of::
 	Only consider nodes that are or aren't ancestors of the reference node.
 
-[!](hidden|sticky|private|locked|urgent)::
+[!](hidden|sticky|private|locked|overlay|urgent)::
 	Only consider windows that have or don't have the given flag set.
 
 [!](below|normal|above)::
@@ -310,6 +310,9 @@ private::
 locked::
 	Ignores the *node --close* message.
 
+overlay::
+	Pass input to the window below.
+
 urgent::
 	Has its urgency hint set. This flag is set externally.
 
@@ -388,7 +391,7 @@ Commands
 *-t*, *--state* [~](tiled|pseudo_tiled|floating|fullscreen)::
 	Set the state of the selected window. If *~* is present and the current state matches the given state, then the argument is interpreted as the last state.
 
-*-g*, *--flag* hidden|sticky|private|locked[=on|off]::
+*-g*, *--flag* hidden|sticky|private|locked|overlay[=on|off]::
 	Set or toggle the given flag for the selected node.
 
 *-l*, *--layer* below|normal|above::
@@ -554,7 +557,7 @@ rule 'COMMANDS'
 Commands
 ^^^^^^^^
 
-*-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
+*-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|overlay|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
 	Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|(<class_name>|\*)[:(<instance_name>|*)]...::
@@ -811,7 +814,7 @@ Events
 'node_state <monitor_id> <desktop_id> <node_id> tiled|pseudo_tiled|floating|fullscreen on|off'::
 	The state of a window changed.
 
-'node_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|urgent on|off'::
+'node_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|overlay|urgent on|off'::
 	One of the flags of a node changed.
 
 'node_layer <monitor_id> <desktop_id> <node_id> below|normal|above'::
