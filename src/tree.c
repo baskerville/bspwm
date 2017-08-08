@@ -1968,6 +1968,16 @@ void listen_enter_notify(node_t *n, bool enable)
 	}
 }
 
+void regenerate_ids_in(node_t *n)
+{
+	if (n == NULL || n->client != NULL) {
+		return;
+	}
+	n->id = xcb_generate_id(dpy);
+	regenerate_ids_in(n->first_child);
+	regenerate_ids_in(n->second_child);
+}
+
 #define DEF_FLAG_COUNT(flag) \
 	unsigned int flag##_count(node_t *n) \
 	{ \
