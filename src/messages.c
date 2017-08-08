@@ -326,6 +326,8 @@ void cmd_node(char **args, int num, FILE *rsp)
 				set_private(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->private));
 			} else if (streq("locked", key)) {
 				set_locked(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->locked));
+			} else if (streq("overlay", key)) {
+				set_overlay(trg.monitor, trg.desktop, trg.node, (a == ALTER_SET ? b : !trg.node->overlay));
 			} else {
 				fail(rsp, "node %s: Invalid key: '%s'.\n", *(args - 1), key);
 				break;

@@ -106,6 +106,7 @@ void propagate_hidden_upward(monitor_t *m, desktop_t *d, node_t *n);
 void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value);
+void set_overlay(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value);
 bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
 xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n);
@@ -115,5 +116,6 @@ void regenerate_ids_in(node_t *n);
 unsigned int sticky_count(node_t *n);
 unsigned int private_count(node_t *n);
 unsigned int locked_count(node_t *n);
+unsigned int overlay_count(node_t *n);
 
 #endif

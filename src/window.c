@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <xcb/shape.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "monitor.h"
@@ -179,6 +180,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
 	set_locked(m, d, n, csq->locked);
+	set_overlay(m, d, n, csq->overlay);
 
 	arrange(m, d);
 
@@ -928,4 +930,24 @@ void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value
 	xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) e);
 	xcb_flush(dpy);
 	free(e);
+}
+
+void set_overlay_shape(xcb_window_t win) {
+	xcb_rectangle_t r;
+	r.x = 0;
+	r.y = 0;
+	r.width = screen_width;
+	r.height = screen_height;
+	xcb_shape_rectangles(dpy, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED, win, 0, 0, 1, &r);
+	xcb_shape_rectangles(dpy, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, XCB_CLIP_ORDERING_UNSORTED, win, 0, 0, 0, NULL);
+}
+
+void unset_overlay_shape(xcb_window_t win) {
+	xcb_rectangle_t r;
+	r.x = 0;
+	r.y = 0;
+	r.width = screen_width;
+	r.height = screen_height;
+	xcb_shape_rectangles(dpy, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED, win, 0, 0, 1, &r);
+	xcb_shape_rectangles(dpy, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, XCB_CLIP_ORDERING_UNSORTED, win, 0, 0, 1, &r);
 }

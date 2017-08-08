@@ -115,6 +115,9 @@ int print_report(FILE *stream)
 				if (n->locked) {
 					flags[i++] = 'L';
 				}
+				if (n->overlay) {
+					flags[i++] = 'O';
+				}
 				flags[i] = '\0';
 				fprintf(stream, ":G%s", flags);
 			}

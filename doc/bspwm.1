@@ -100,7 +100,7 @@ NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|bigg
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
-FLAG := hidden|sticky|private|locked|urgent
+FLAG := hidden|sticky|private|locked|overlay|urgent
 
 LAYER := below|normal|above
 
@@ -271,7 +271,7 @@ Only consider nodes that are or aren\(cqt descendants of the reference node\&.
 Only consider nodes that are or aren\(cqt ancestors of the reference node\&.
 .RE
 .PP
-[!](hidden|sticky|private|locked|urgent)
+[!](hidden|sticky|private|locked|overlay|urgent)
 .RS 4
 Only consider windows that have or don\(cqt have the given flag set\&.
 .RE
@@ -508,6 +508,11 @@ Ignores the
 message\&.
 .RE
 .PP
+overlay
+.RS 4
+Pass input to the window below\&.
+.RE
+.PP
 urgent
 .RS 4
 Has its urgency hint set\&. This flag is set externally\&.
@@ -644,7 +649,7 @@ Set the state of the selected window\&. If
 is present and the current state matches the given state, then the argument is interpreted as the last state\&.
 .RE
 .PP
-\fB\-g\fR, \fB\-\-flag\fR hidden|sticky|private|locked[=on|off]
+\fB\-g\fR, \fB\-\-flag\fR hidden|sticky|private|locked|overlay[=on|off]
 .RS 4
 Set or toggle the given flag for the selected node\&.
 .RE
@@ -941,7 +946,7 @@ rule \fICOMMANDS\fR
 \fBCommands\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
+\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|overlay|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
 .RS 4
 Create a new rule\&.
 .RE
@@ -1384,7 +1389,7 @@ The geometry of a window changed\&.
 The state of a window changed\&.
 .RE
 .PP
-\fInode_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|urgent on|off\fR
+\fInode_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|overlay|urgent on|off\fR
 .RS 4
 One of the flags of a node changed\&.
 .RE

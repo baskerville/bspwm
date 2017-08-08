@@ -122,6 +122,7 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "\"sticky\":%s,", BOOL_STR(n->sticky));
 		fprintf(rsp, "\"private\":%s,", BOOL_STR(n->private));
 		fprintf(rsp, "\"locked\":%s,", BOOL_STR(n->locked));
+		fprintf(rsp, "\"overlay\":%s,", BOOL_STR(n->overlay));
 		fprintf(rsp, "\"presel\":");
 		query_presel(n->presel, rsp);
 		fprintf(rsp,",");
@@ -399,6 +400,7 @@ node_select_t make_node_select(void)
 		.sticky = OPTION_NONE,
 		.private = OPTION_NONE,
 		.locked = OPTION_NONE,
+		.overlay = OPTION_NONE,
 		.urgent = OPTION_NONE,
 		.same_class = OPTION_NONE,
 		.descendant_of = OPTION_NONE,
@@ -933,6 +935,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	NFLAG(sticky)
 	NFLAG(private)
 	NFLAG(locked)
+	NFLAG(overlay)
 #undef NFLAG
 
 	if (loc->node->client == NULL &&
