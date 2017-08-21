@@ -203,7 +203,7 @@ focused::
 	Selects the currently focused desktop.
 
 ^<n>::
-	Selects the nth desktop.
+	Selects the nth desktop. If *MONITOR_SEL* is given, selects the nth desktop on the selected monitor.
 
 <desktop_id>::
 	Selects the desktop with the given ID.
