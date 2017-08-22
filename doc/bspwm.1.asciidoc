@@ -64,6 +64,8 @@ default reference value is *focused*).
 An exclamation mark can be prepended to any modifier in order to reverse its
 meaning.
 
+The following characters cannot be used in monitor or desktop names: *#*, *:*, *.*.
+
 Node
 ~~~~
 
