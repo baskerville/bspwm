@@ -77,6 +77,7 @@ bool locate_window(xcb_window_t win, coordinates_t *loc);
 bool locate_desktop(char *name, coordinates_t *loc);
 bool locate_monitor(char *name, coordinates_t *loc);
 bool desktop_from_id(uint32_t id, coordinates_t *loc, monitor_t *mm);
+bool desktop_from_name(char *name, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel, int *hits);
 bool desktop_from_index(uint16_t idx, coordinates_t *loc, monitor_t *mm);
 bool monitor_from_id(uint32_t id, coordinates_t *loc);
 bool monitor_from_index(int idx, coordinates_t *loc);

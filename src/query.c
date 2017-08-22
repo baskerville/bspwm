@@ -653,16 +653,17 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			return SELECTOR_INVALID;
 		}
 	} else {
-		if (locate_desktop(desc, dst)) {
+		int hits = 0;
+		if (desktop_from_name(desc, ref, dst, sel, &hits)) {
 			free(desc_copy);
-			if (desktop_matches(dst, ref, sel)) {
-				return SELECTOR_OK;
-			} else {
-				return SELECTOR_INVALID;
-			}
+			return SELECTOR_OK;
 		} else {
 			free(desc_copy);
-			return SELECTOR_BAD_DESCRIPTOR;
+			if (hits > 0) {
+				return SELECTOR_INVALID;
+			} else {
+				return SELECTOR_BAD_DESCRIPTOR;
+			}
 		}
 	}
 
@@ -824,6 +825,26 @@ bool desktop_from_id(uint32_t id, coordinates_t *loc, monitor_t *mm)
 				loc->desktop = d;
 				loc->node = NULL;
 				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool desktop_from_name(char *name, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel, int *hits)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (streq(d->name, name)) {
+				if (hits != NULL) {
+					(*hits)++;
+				}
+				coordinates_t loc = {m, d, NULL};
+				if (desktop_matches(&loc, ref, sel)) {
+					dst->monitor = m;
+					dst->desktop = d;
+					return true;
+				}
 			}
 		}
 	}
