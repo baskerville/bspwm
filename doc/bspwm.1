@@ -384,7 +384,7 @@ Select a monitor\&.
 .RS 4
 .\}
 .nf
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|pointed|primary|^<n>|<monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
 .fi
 .if n \{\
 .RE
@@ -426,6 +426,11 @@ Selects the monitor newer than the reference monitor in the history\&.
 focused
 .RS 4
 Selects the currently focused monitor\&.
+.RE
+.PP
+pointed
+.RS 4
+Selects the monitor under the pointer\&.
 .RE
 .PP
 primary

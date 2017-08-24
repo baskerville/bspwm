@@ -33,6 +33,7 @@
 #include "window.h"
 #include "tree.h"
 #include "query.h"
+#include "geometry.h"
 
 void query_tree(FILE *rsp)
 {
@@ -730,6 +731,15 @@ int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		coordinates_t loc = {mon, NULL, NULL};
 		if (monitor_matches(&loc, ref, sel)) {
 			dst->monitor = mon;
+		}
+	} else if (streq("pointed", desc)) {
+		xcb_point_t pointer;
+		query_pointer(NULL, &pointer);
+		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+			if (is_inside(pointer, m->rectangle)) {
+				dst->monitor = m;
+				break;
+			}
 		}
 	} else if (parse_index(desc, &idx) && monitor_from_index(idx, dst)) {
 		free(desc_copy);

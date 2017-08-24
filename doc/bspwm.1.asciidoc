@@ -234,7 +234,7 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|primary|^<n>|<monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|pointed|primary|^<n>|<monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
 ----
 
 Descriptors
@@ -257,6 +257,9 @@ newer::
 
 focused::
 	Selects the currently focused monitor.
+
+pointed::
+	Selects the monitor under the pointer.
 
 primary::
 	Selects the primary monitor.
