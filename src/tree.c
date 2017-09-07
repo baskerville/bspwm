@@ -438,17 +438,6 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (d == NULL) {
-		d = history_last_desktop(m, NULL);
-		if (d == NULL) {
-			d = m->desk_head;
-		}
-	}
-
-	if (d == NULL) {
-		return false;
-	}
-
 	if (n == NULL && d->root != NULL) {
 		n = history_last_node(d, NULL);
 		if (n == NULL) {
@@ -474,8 +463,6 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 		draw_border(n, true, (m == mon));
 	}
-
-	activate_desktop(m, d);
 
 	d->focus = n;
 	history_add(m, d, n);
@@ -1344,9 +1331,12 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 			show_node(d1, n2);
 		}
 
+		bool d1_was_focused = (d1 == mon->desk);
+		bool d2_was_focused = (d2 == mon->desk);
+
 		if (n1_held_focus) {
-			if (d1 == mon->desk) {
-				focus_node(m1, d1, d1->focus);
+			if (d1_was_focused) {
+				focus_node(m2, d2, last_d1_focus);
 			} else {
 				activate_node(m1, d1, d1->focus);
 			}
@@ -1355,8 +1345,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		}
 
 		if (n2_held_focus) {
-			if (d2 == mon->desk) {
-				focus_node(m2, d2, d2->focus);
+			if (d2_was_focused) {
+				focus_node(m1, d1, last_d2_focus);
 			} else {
 				activate_node(m2, d2, d2->focus);
 			}
@@ -1431,16 +1421,15 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	} else {
 		if (held_focus) {
 			if (ds == mon->desk) {
-				focus_node(ms, ds, ds->focus);
-			} else {
-				activate_node(ms, ds, ds->focus);
+				focus_node(md, dd, last_ds_focus);
 			}
+			activate_node(ms, ds, ds->focus);
 		}
 		if (dd->focus == ns) {
 			if (dd == mon->desk) {
-				focus_node(md, dd, held_focus ? last_ds_focus : dd->focus);
+				focus_node(md, dd, held_focus ? last_ds_focus : ns);
 			} else {
-				activate_node(md, dd, held_focus ? last_ds_focus : dd->focus);
+				activate_node(md, dd, held_focus ? last_ds_focus : ns);
 			}
 		} else {
 			draw_border(ns, is_descendant(ns, dd->focus), (md == mon));

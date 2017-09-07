@@ -56,6 +56,17 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 
 bool activate_desktop(monitor_t *m, desktop_t *d)
 {
+	if (d == NULL) {
+		d = history_last_desktop(m, NULL);
+		if (d == NULL) {
+			d = m->desk_head;
+		}
+	}
+
+	if (d == NULL) {
+		return false;
+	}
+
 	if (m == mon || d == m->desk) {
 		return false;
 	}
@@ -159,9 +170,12 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
 	if (was_active) {
 		if (mon == ms) {
-			focus_node(ms, NULL, NULL);
+			focus_node(md, d, d->focus);
 		} else {
-			activate_node(ms, NULL, NULL);
+			activate_desktop(ms, NULL);
+			if (ms->desk != NULL) {
+				activate_node(ms, ms->desk, NULL);
+			}
 		}
 	}
 
@@ -174,12 +188,8 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);
 	arrange(md, d);
 
-	if (md->desk == d) {
-		if (mon == md) {
-			focus_node(md, d, d->focus);
-		} else {
-			activate_node(md, d, d->focus);
-		}
+	if (md->desk == d && mon != md) {
+		activate_node(md, d, d->focus);
 	}
 
 	ewmh_update_wm_desktops();
@@ -308,7 +318,10 @@ void remove_desktop(monitor_t *m, desktop_t *d)
 		if (m == mon) {
 			focus_node(m, NULL, NULL);
 		} else {
-			activate_node(m, NULL, NULL);
+			activate_desktop(m, NULL);
+			if (m->desk != NULL) {
+				activate_node(m, m->desk, m->desk->focus);
+			}
 		}
 	}
 
@@ -333,8 +346,10 @@ bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 
 	put_status(SBSC_MASK_DESKTOP_SWAP, "desktop_swap 0x%08X 0x%08X 0x%08X 0x%08X\n", m1->id, d1->id, m2->id, d2->id);
 
-	bool d1_focused = (m1->desk == d1);
-	bool d2_focused = (m2->desk == d2);
+	bool d1_was_active = (m1->desk == d1);
+	bool d2_was_active = (m2->desk == d2);
+	bool d1_was_focused = (mon->desk == d1);
+	bool d2_was_focused = (mon->desk == d2);
 
 	if (m1 != m2) {
 		if (m1->desk == d1) {
@@ -404,21 +419,21 @@ bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 		arrange(m2, d1);
 	}
 
-	if (d1_focused && !d2_focused) {
+	if (d1_was_active && !d2_was_active) {
 		hide_desktop(d1);
 		show_desktop(d2);
-	} else if (!d1_focused && d2_focused) {
+	} else if (!d1_was_active && d2_was_active) {
 		show_desktop(d1);
 		hide_desktop(d2);
 	}
 
-	if (d1 == mon->desk) {
+	if (d1_was_focused) {
 		focus_node(m2, d1, d1->focus);
 	} else if (d1 == m2->desk) {
 		activate_node(m2, d1, d1->focus);
 	}
 
-	if (d2 == mon->desk) {
+	if (d2_was_focused) {
 		focus_node(m1, d2, d2->focus);
 	} else if (d2 == m1->desk) {
 		activate_node(m1, d2, d2->focus);

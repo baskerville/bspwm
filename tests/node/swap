@@ -17,10 +17,10 @@ bspc node @/2 -s @test-swap-b:/1
 
 [ "$(bspc query -N -n @test-swap-b:)" = "$next_focus_b" ] || fail "Invalid focus after swap."
 
-window remove 2
-bspc desktop -f "test-swap-b"
 window remove 1 2
 window remove 4
+bspc desktop -f "test-swap-a"
+window remove 2
 
 bspc desktop "test-swap-a" -r
 bspc desktop "test-swap-b" -r
