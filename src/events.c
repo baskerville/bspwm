@@ -240,9 +240,21 @@ void unmap_notify(xcb_generic_event_t *evt)
 		 * related unmap notify event. This is a technique used by i3-wm to
 		 * filter enter notify events. */
 		motion_recorder.sequence = e->sequence;
+		return;
 	}
 
-	unmanage_window(e->window);
+	/* Filter out destroyed windows */
+	if (!window_exists(e->window)) {
+		return;
+	}
+
+	coordinates_t loc;
+	if (!locate_window(e->window, &loc)) {
+		return;
+	}
+
+	set_hidden(loc.monitor, loc.desktop, loc.node, true);
+	arrange(loc.monitor, loc.desktop);
 }
 
 void property_notify(xcb_generic_event_t *evt)
@@ -515,5 +527,9 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 void process_error(xcb_generic_event_t *evt)
 {
 	xcb_request_error_t *e = (xcb_request_error_t *) evt;
+	/* Ignore unavoidable failed requests */
+	if (e->error_code == ERROR_CODE_BAD_WINDOW) {
+		return;
+	}
 	warn("Failed request: %s, %s: 0x%08X.\n", xcb_event_get_request_label(e->major_opcode), xcb_event_get_error_label(e->error_code), e->bad_value);
 }

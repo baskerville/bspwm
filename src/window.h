@@ -75,5 +75,6 @@ void center_pointer(xcb_rectangle_t r);
 void get_atom(char *name, xcb_atom_t *atom);
 void set_atom(xcb_window_t win, xcb_atom_t atom, uint32_t value);
 void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value);
+bool window_exists(xcb_window_t win);
 
 #endif

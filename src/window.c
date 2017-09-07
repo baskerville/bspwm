@@ -50,7 +50,13 @@ void schedule_window(xcb_window_t win)
 		free(wa);
 	}
 
-	if (override_redirect || locate_window(win, &loc)) {
+	if (override_redirect) {
+		return;
+	}
+
+	if (locate_window(win, &loc)) {
+		set_hidden(loc.monitor, loc.desktop, loc.node, false);
+		arrange(loc.monitor, loc.desktop);
 		return;
 	}
 
@@ -222,7 +228,6 @@ void unmanage_window(xcb_window_t win)
 	if (locate_window(win, &loc)) {
 		put_status(SBSC_MASK_NODE_REMOVE, "node_remove 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, win);
 		remove_node(loc.monitor, loc.desktop, loc.node);
-		set_window_state(win, XCB_ICCCM_WM_STATE_WITHDRAWN);
 		arrange(loc.monitor, loc.desktop);
 	} else {
 		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
@@ -848,9 +853,11 @@ void window_set_visibility(xcb_window_t win, bool visible)
 	uint32_t values_on[] = {ROOT_EVENT_MASK};
 	xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_off);
 	if (visible) {
+		set_window_state(win, XCB_ICCCM_WM_STATE_NORMAL);
 		xcb_map_window(dpy, win);
 	} else {
 		xcb_unmap_window(dpy, win);
+		set_window_state(win, XCB_ICCCM_WM_STATE_ICONIC);
 	}
 	xcb_change_window_attributes(dpy, root, XCB_CW_EVENT_MASK, values_on);
 }
@@ -928,4 +935,17 @@ void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value
 	xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) e);
 	xcb_flush(dpy);
 	free(e);
+}
+
+bool window_exists(xcb_window_t win)
+{
+	xcb_generic_error_t *err;
+	free(xcb_query_tree_reply(dpy, xcb_query_tree(dpy, win), &err));
+
+	if (err != NULL) {
+		free(err);
+		return false;
+	}
+
+	return true;
 }

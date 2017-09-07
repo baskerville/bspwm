@@ -28,6 +28,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
 
+#define ERROR_CODE_BAD_WINDOW  3
+
 uint8_t randr_base;
 static const xcb_button_index_t BUTTONS[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
 
