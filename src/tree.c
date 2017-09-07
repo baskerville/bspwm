@@ -436,7 +436,7 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 	insert_node(m, d, r, n);
 }
 
-bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
+static bool _activate_node(monitor_t *m, desktop_t *d, node_t *n, bool activate_d)
 {
 	if (d == NULL) {
 		d = history_last_desktop(m, NULL);
@@ -475,7 +475,9 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		draw_border(n, true, (m == mon));
 	}
 
-	activate_desktop(m, d);
+	if (activate_d) {
+		activate_desktop(m, d);
+	}
 
 	d->focus = n;
 	history_add(m, d, n);
@@ -489,6 +491,21 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 	put_status(SBSC_MASK_NODE_ACTIVATE, "node_activate 0x%08X 0x%08X 0x%08X\n", m->id, d->id, n->id);
 
 	return true;
+}
+
+bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
+{
+	return _activate_node(m, d, n, true);
+}
+
+/**
+ * Activate a node but does not activate the desktop d.
+ * Useful when we don't want to change the current desktop, but still activate the node.
+ * Fix issue #701.
+ */
+static bool activate_node_remote(monitor_t *m, desktop_t *d, node_t *n)
+{
+	return _activate_node(m, d, n, false);
 }
 
 void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n)
@@ -1440,7 +1457,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 			if (dd == mon->desk) {
 				focus_node(md, dd, held_focus ? last_ds_focus : dd->focus);
 			} else {
-				activate_node(md, dd, held_focus ? last_ds_focus : dd->focus);
+				activate_node_remote(md, dd, held_focus ? last_ds_focus : dd->focus);
 			}
 		} else {
 			draw_border(ns, is_descendant(ns, dd->focus), (md == mon));
