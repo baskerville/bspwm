@@ -66,13 +66,19 @@ meaning.
 
 The following characters cannot be used in monitor or desktop names: *#*, *:*, *.*.
 
+The special selector *%<name>* can be used to select a monitor or a desktop with an invalid name.
+
 Node
 ~~~~
 
 Select a node.
 
 ----
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active][.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|
+                        older|newer|focused|pointed|
+                        biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
+                                          [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
+                                          [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -183,7 +189,9 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|
+                              [MONITOR_SEL:](focused|^<n>)|
+                              <desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
 
 Descriptors
@@ -234,7 +242,9 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|pointed|primary|^<n>|<monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|
+                              focused|pointed|primary|^<n>|
+                              <monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
 ----
 
 Descriptors

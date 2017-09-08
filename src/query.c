@@ -571,6 +571,11 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	if (*desc == '%') {
+		locate_desktop(desc + 1, dst);
+		goto end;
+	}
+
 	coordinates_t ref_copy = *ref;
 	ref = &ref_copy;
 	char *desc_copy = copy_string(desc, strlen(desc));
@@ -670,6 +675,7 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 	free(desc_copy);
 
+end:
 	if (dst->desktop == NULL) {
 		return SELECTOR_INVALID;
 	}
@@ -679,6 +685,11 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	if (*desc == '%') {
+		locate_monitor(desc + 1, dst);
+		goto end;
+	}
+
 	coordinates_t ref_copy = *ref;
 	ref = &ref_copy;
 	char *desc_copy = copy_string(desc, strlen(desc));
@@ -771,6 +782,7 @@ int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 	free(desc_copy);
 
+end:
 	if (dst->monitor == NULL) {
 		return SELECTOR_INVALID;
 	}

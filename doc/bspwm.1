@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/22/2017
+.\"      Date: 09/08/2017
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3-22-g7091d65
+.\"    Source: Bspwm 0.9.3-26-g412da35
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "08/22/2017" "Bspwm 0\&.9\&.3\-22\-g7091d65" "Bspwm Manual"
+.TH "BSPWM" "1" "09/08/2017" "Bspwm 0\&.9\&.3\-26\-g412da35" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -90,6 +90,8 @@ The relative targets are computed in relation to the given reference (the defaul
 An exclamation mark can be prepended to any modifier in order to reverse its meaning\&.
 .sp
 The following characters cannot be used in monitor or desktop names: \fB#\fR, \fB:\fR, \fB\&.\fR\&.
+.sp
+The special selector \fB%<name>\fR can be used to select a monitor or a desktop with an invalid name\&.
 .SS "Node"
 .sp
 Select a node\&.
@@ -98,7 +100,11 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|older|newer|focused|pointed|biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]active][\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|
+                        older|newer|focused|pointed|
+                        biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]active]
+                                          [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
+                                          [\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -291,7 +297,9 @@ Select a desktop\&.
 .RS 4
 .\}
 .nf
-DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|[MONITOR_SEL:](focused|^<n>)|<desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|
+                              [MONITOR_SEL:](focused|^<n>)|
+                              <desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
 .fi
 .if n \{\
 .RE
@@ -384,7 +392,9 @@ Select a monitor\&.
 .RS 4
 .\}
 .nf
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|focused|pointed|primary|^<n>|<monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|
+                              focused|pointed|primary|^<n>|
+                              <monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
 .fi
 .if n \{\
 .RE
