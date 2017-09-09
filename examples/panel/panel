@@ -17,13 +17,7 @@ clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
 
 panel_bar < "$PANEL_FIFO" | lemonbar -a 32 -n "$PANEL_WM_NAME" -g x$PANEL_HEIGHT -f "$PANEL_FONT" -F "$COLOR_DEFAULT_FG" -B "$COLOR_DEFAULT_BG" | sh &
 
-wid=$(xdo id -a "$PANEL_WM_NAME")
-tries_left=20
-while [ -z "$wid" -a "$tries_left" -gt 0 ] ; do
-	sleep 0.05
-	wid=$(xdo id -a "$PANEL_WM_NAME")
-	tries_left=$((tries_left - 1))
-done
-[ -n "$wid" ] && xdo above -t "$(xdo id -N Bspwm -n root | sort | head -n 1)" "$wid"
+wid=$(xdo id -m -a "$PANEL_WM_NAME")
+xdo above -t "$(xdo id -N Bspwm -n root | sort | head -n 1)" "$wid"
 
 wait
