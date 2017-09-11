@@ -737,8 +737,11 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 				fail(rsp, "desktop %s: Trailing commands.\n", *args);
 				break;
 			}
-			if (trg.desktop->root == NULL &&
-			    trg.monitor->desk_head != trg.monitor->desk_tail) {
+			if (trg.monitor->desk_head != trg.monitor->desk_tail) {
+				desktop_t *fallback = trg.desktop->prev == NULL ?
+				                      trg.desktop->next :
+				                      trg.desktop->prev;
+				merge_desktops(trg.monitor, trg.desktop, trg.monitor, fallback);
 				remove_desktop(trg.monitor, trg.desktop);
 				return;
 			} else {
