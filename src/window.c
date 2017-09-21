@@ -50,13 +50,7 @@ void schedule_window(xcb_window_t win)
 		free(wa);
 	}
 
-	if (override_redirect) {
-		return;
-	}
-
-	if (locate_window(win, &loc)) {
-		set_hidden(loc.monitor, loc.desktop, loc.node, false);
-		arrange(loc.monitor, loc.desktop);
+	if (override_redirect || locate_window(win, &loc)) {
 		return;
 	}
 

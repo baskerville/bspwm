@@ -248,13 +248,8 @@ void unmap_notify(xcb_generic_event_t *evt)
 		return;
 	}
 
-	coordinates_t loc;
-	if (!locate_window(e->window, &loc)) {
-		return;
-	}
-
-	set_hidden(loc.monitor, loc.desktop, loc.node, true);
-	arrange(loc.monitor, loc.desktop);
+	set_window_state(e->window, XCB_ICCCM_WM_STATE_WITHDRAWN);
+	unmanage_window(e->window);
 }
 
 void property_notify(xcb_generic_event_t *evt)
