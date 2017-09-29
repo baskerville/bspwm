@@ -150,6 +150,39 @@ char *mktempfifo(const char *template)
 	return fifo_path;
 }
 
+int asprintf(char **buf, const char *fmt, ...)
+{
+	int size = 0;
+	va_list args;
+	va_start(args, fmt);
+	size = vasprintf(buf, fmt, args);
+	va_end(args);
+	return size;
+}
+
+int vasprintf(char **buf, const char *fmt, va_list args)
+{
+	int size = 0;
+
+	va_list tmp;
+	va_copy(tmp, args);
+	size = vsnprintf(NULL, size, fmt, tmp);
+	va_end(tmp);
+
+	if (size < 0) {
+		return -1;
+	}
+
+	*buf = malloc(size + 1);
+
+	if (*buf == NULL) {
+		return -1;
+	}
+
+	size = vsprintf(*buf, fmt, args);
+	return size;
+}
+
 /* Adapted from i3wm */
 uint32_t get_color_pixel(const char *color)
 {

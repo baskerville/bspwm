@@ -31,6 +31,7 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "window.h"
+#include "query.h"
 #include "parse.h"
 #include "settings.h"
 #include "rule.h"
@@ -305,9 +306,12 @@ bool schedule_rules(xcb_window_t win, rule_consequence_t *csq)
 		dup2(fds[1], 1);
 		close(fds[0]);
 		char wid[SMALEN];
+		char *csq_buf;
+		print_rule_consequence(&csq_buf, csq);
 		snprintf(wid, sizeof(wid), "%i", win);
 		setsid();
-		execl(external_rules_command, external_rules_command, wid, csq->class_name, csq->instance_name, csq->monitor_desc, csq->desktop_desc, csq->node_desc, NULL);
+		execl(external_rules_command, external_rules_command, wid, csq->class_name, csq->instance_name, csq_buf, NULL);
+		free(csq_buf);
 		err("Couldn't spawn rule command.\n");
 	} else if (pid > 0) {
 		close(fds[1]);

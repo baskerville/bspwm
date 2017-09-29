@@ -383,6 +383,32 @@ void print_pointer_action(pointer_action_t a, FILE *rsp)
 	}
 }
 
+void print_rule_consequence(char **buf, rule_consequence_t *csq)
+{
+	char *rect_buf = NULL;
+	print_rectangle(&rect_buf, csq->rect);
+	if (rect_buf == NULL) {
+		rect_buf = malloc(1);
+		*rect_buf = '\0';
+	}
+	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
+	        csq->monitor_desc, csq->desktop_desc, csq->node_desc,
+	        csq->state == NULL ? "" : STATE_STR(*csq->state),
+	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
+	        csq->split_dir, csq->split_ratio,
+	        ON_OFF_STR(csq->hidden), ON_OFF_STR(csq->sticky), ON_OFF_STR(csq->private),
+	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
+	        ON_OFF_STR(csq->manage), ON_OFF_STR(csq->focus), ON_OFF_STR(csq->border), rect_buf);
+	free(rect_buf);
+}
+
+void print_rectangle(char **buf, xcb_rectangle_t *rect)
+{
+	if (rect != NULL) {
+		asprintf(buf, "%hux%hu+%hi+%hi", rect->width, rect->height, rect->x, rect->y);
+	}
+}
+
 node_select_t make_node_select(void)
 {
 	node_select_t sel = {

@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 09/08/2017
+.\"      Date: 09/29/2017
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3-26-g412da35
+.\"    Source: Bspwm 0.9.3-30-gd953f6f
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "09/08/2017" "Bspwm 0\&.9\&.3\-26\-g412da35" "Bspwm Manual"
+.TH "BSPWM" "1" "09/29/2017" "Bspwm 0\&.9\&.3\-30\-gd953f6f" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1089,7 +1089,7 @@ Prefix prepended to each of the status lines\&.
 .PP
 \fIexternal_rules_command\fR
 .RS 4
-External command used to retrieve rule consequences\&. The command will receive the following arguments: window ID, class and instance names, monitor, desktop and node selectors\&. The output of that command must have the following format:
+External command used to retrieve rule consequences\&. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences\&. The output of that command must have the following format:
 \fBkey1=value1 key2=value2 \&...\fR
 (the valid key/value pairs are given in the description of the
 \fIrule\fR

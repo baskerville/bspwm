@@ -67,6 +67,8 @@ void fprint_desktop_name(desktop_t *d, FILE *rsp);
 void print_modifier_mask(uint16_t m, FILE *rsp);
 void print_button_index(int8_t b, FILE *rsp);
 void print_pointer_action(pointer_action_t a, FILE *rsp);
+void print_rule_consequence(char **buf, rule_consequence_t *csq);
+void print_rectangle(char **buf, xcb_rectangle_t *rect);
 node_select_t make_node_select(void);
 desktop_select_t make_desktop_select(void);
 monitor_select_t make_monitor_select(void);

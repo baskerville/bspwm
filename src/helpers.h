@@ -79,7 +79,9 @@ void warn(char *fmt, ...);
 void err(char *fmt, ...);
 char *read_string(const char *file_path, size_t *tlen);
 char *copy_string(char *str, size_t len);
-char *mktempfifo(const char *template) ;
+char *mktempfifo(const char *template);
+int asprintf(char **buf, const char *fmt, ...);
+int vasprintf(char **buf, const char *fmt, va_list args);
 uint32_t get_color_pixel(const char *color);
 bool is_hex_color(const char *color);
 
