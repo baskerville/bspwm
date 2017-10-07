@@ -171,11 +171,10 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	if (was_active) {
 		if (mon == ms) {
 			focus_node(md, d, d->focus);
-		} else {
-			activate_desktop(ms, NULL);
-			if (ms->desk != NULL) {
-				activate_node(ms, ms->desk, NULL);
-			}
+		}
+		activate_desktop(ms, NULL);
+		if (ms->desk != NULL) {
+			activate_node(ms, ms->desk, NULL);
 		}
 	}
 
