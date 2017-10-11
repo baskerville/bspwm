@@ -162,11 +162,9 @@ int asprintf(char **buf, const char *fmt, ...)
 
 int vasprintf(char **buf, const char *fmt, va_list args)
 {
-	int size = 0;
-
 	va_list tmp;
 	va_copy(tmp, args);
-	size = vsnprintf(NULL, size, fmt, tmp);
+	int size = vsnprintf(NULL, 0, fmt, tmp);
 	va_end(tmp);
 
 	if (size < 0) {
