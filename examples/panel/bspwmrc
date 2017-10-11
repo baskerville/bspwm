@@ -1,5 +1,4 @@
 #! /bin/sh
 
-panel &
-bspc subscribe report > "$PANEL_FIFO" &
-bspc config top_padding $PANEL_HEIGHT
+[ -e "$PANEL_FIFO" ] && bspc subscribe report > "$PANEL_FIFO" &
+pgrep -x panel > /dev/null || panel &

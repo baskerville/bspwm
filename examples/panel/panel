@@ -12,6 +12,7 @@ mkfifo "$PANEL_FIFO"
 
 xtitle -sf 'T%s\n' > "$PANEL_FIFO" &
 clock -sf 'S%a %H:%M' > "$PANEL_FIFO" &
+bspc subscribe report > "$PANEL_FIFO" &
 
 . panel_colors
 
