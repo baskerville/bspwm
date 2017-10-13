@@ -56,6 +56,10 @@ void focus_desktop(monitor_t *m, desktop_t *d)
 
 bool activate_desktop(monitor_t *m, desktop_t *d)
 {
+	if (d != NULL && m == mon) {
+		return false;
+	}
+
 	if (d == NULL) {
 		d = history_last_desktop(m, NULL);
 		if (d == NULL) {
@@ -64,10 +68,6 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 	}
 
 	if (d == NULL) {
-		return false;
-	}
-
-	if (m == mon || d == m->desk) {
 		return false;
 	}
 
@@ -157,7 +157,8 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 		return false;
 	}
 
-	bool was_active = (d == ms->desk);
+	bool d_was_active = (d == ms->desk);
+	bool ms_was_focused = (ms == mon);
 
 	unlink_desktop(ms, d);
 
@@ -168,17 +169,16 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	insert_desktop(md, d);
 	history_transfer_desktop(md, d);
 
-	if (was_active) {
-		if (mon == ms) {
-			focus_node(md, d, d->focus);
-		}
-		activate_desktop(ms, NULL);
-		if (ms->desk != NULL) {
+	if (d_was_active) {
+		if (activate_desktop(ms, NULL)) {
 			activate_node(ms, ms->desk, NULL);
+		}
+		if (ms_was_focused) {
+			focus_node(md, d, d->focus);
 		}
 	}
 
-	if (ms->sticky_count > 0 && was_active) {
+	if (ms->sticky_count > 0 && d_was_active) {
 		sticky_still = false;
 		transfer_sticky_nodes(ms, d, ms->desk, d->root);
 		sticky_still = true;
