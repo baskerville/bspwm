@@ -215,15 +215,15 @@ _bspc() {
 				'*'{-g,--get-status}'[Print the current status information]'
 			;;
 		(subscribe)
-			[[ "$words[CURRENT-1]" == (-c|--count) ]] ||
-			_values -S "_" events all report pointer_action \
-				"monitor:: :(add rename remove swap focus geometry)"\
-				"desktop:: :(add rename remove swap transfer focus activate layout)"\
-				"node:: :(add remove swap transfer focus activate presel stack geometry state flag layer)"
-			_arguments \
-				'*: :'\
-				'(-f --fifo)'{-f,--fifo}'[Print a path to a FIFO from which events can be read and return]'\
-				'(-c --count)'{-c,--count}'[Stop the corresponding bspc process after having received specified count of events]: :'
+			if [[ "$words[CURRENT-1]" != (-c|--count) ]] ;then
+				_values -w "options" \
+					'(-f --fifo)'{-f,--fifo}'[Print a path to a FIFO from which events can be read and return]'\
+					'(-c --count)'{-c,--count}'[Stop the corresponding bspc process after having received specified count of events]'
+				_values -w -S "_" events all report pointer_action \
+					"monitor:: :(add rename remove swap focus geometry)"\
+					"desktop:: :(add rename remove swap transfer focus activate layout)"\
+					"node:: :(add remove swap transfer focus activate presel stack geometry state flag layer)"
+			fi
 			;;
 		(rule)
 			local -a completions by_index
