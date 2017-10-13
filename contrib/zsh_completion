@@ -192,15 +192,17 @@ _bspc() {
 				'*'{-s,--swap}'[Swap the selected monitor with the given monitor]: :_bspc_selector -- monitor'
 			;;
 		(query)
+			local -a cmds_no_names=('-T' '--tree' '-N' '--nodes')
+			local -a cmds=($cmds_no_names '-D' '--desktops' '-M' '--monitors')
 			_arguments \
 				'*'{-d,--desktop}'[Constrain matches to the selected desktop]: :_bspc_selector -- desktop'\
 				'*'{-m,--monitor}'[Constrain matches to the selected monitor]: :_bspc_selector -- monitor'\
 				'*'{-n,--node}'[Constrain matches to the selected node]: :_bspc_selector -- node'\
-				+ '(names)' '(cmd)--names[Print names instead of IDs. Can only be used with -M and -D]'\
-				+ '(cmd)' '(cmdn names)'{-N,--nodes}'[List the IDs of the matching nodes]'\
-				+ '(cmd)' '(cmdn names)'{-T,--tree}'[Print a JSON representation of the matching item]'\
-				+ '(cmdn)' '(cmd)'{-D,--desktops}'[List the IDs (or names) of the matching desktops]'\
-				+ '(cmdn)' '(cmd)'{-M,--monitors}'[List the IDs (or names) of the matching monitors]'
+				"($cmds_no_names --names)--names[Print names instead of IDs. Can only be used with -M and -D]"\
+				"($cmds --names)"{-N,--nodes}'[List the IDs of the matching nodes]'\
+				"($cmds --names)"{-T,--tree}'[Print a JSON representation of the matching item]'\
+				"($cmds)"{-D,--desktops}'[List the IDs (or names) of the matching desktops]'\
+				"($cmds)"{-M,--monitors}'[List the IDs (or names) of the matching monitors]'
 			;;
 		(wm)
 			_arguments \
@@ -220,8 +222,8 @@ _bspc() {
 				"node:: :(add remove swap transfer focus activate presel stack geometry state flag layer)"
 			_arguments \
 				'*: :'\
-				+ '(fifo)' {-f,--fifo}'[Print a path to a FIFO from which events can be read and return]'\
-				+ '(count)' {-c,--count}'[Stop the corresponding bspc process after having received specified count of events]: :'
+				'(-f --fifo)'{-f,--fifo}'[Print a path to a FIFO from which events can be read and return]'\
+				'(-c --count)'{-c,--count}'[Stop the corresponding bspc process after having received specified count of events]: :'
 			;;
 		(rule)
 			local -a completions by_index
@@ -229,7 +231,7 @@ _bspc() {
 			_arguments -C \
 				{-a,--add}'[Create a new rule]:*: :->add'\
 				{-r,--remove}'[Remove the given rules]:*: :->remove'\
-				+ '(list)' {-l,--list}'[List the rules]'
+				'(-l --list)'{-l,--list}'[List the rules]'
 			compset -N "-([ar]|-add|-remove)"
 			case $state$CURRENT in
 				(add1)
