@@ -2,7 +2,7 @@
 
 _bspc_selector() {
 	[[ ${@[(r)--]} = '--' ]] && shift ${@[(i)--]}
-	local -a completions
+	local -a completions=() completions_display=()
 	local index=0 name id sel_type="$1"
 	shift 1
 	case $sel_type in
@@ -30,8 +30,55 @@ _bspc_selector() {
 				fi
 			done
 			;|
-		(node*'@'*'/'*':')
-			;;
+		(node*[^@/:.])
+			bspc query -N -n .window 2> /dev/null |
+				while read id ;do
+					id=${id//:/\\:}
+					if which xdotool &> /dev/null ;then
+						name=$(xdotool getwindowname $id 2> /dev/null)
+					elif which xprop &> /dev/null ;then
+						name=$(xprop -id $id -notype WM_NAME 2> /dev/null) &&
+							[[ "$name" = 'WM_NAME ='* ]] &&
+							name="${${name#*\"}%\"*}" ||
+							name=""
+					else
+						name="install xdotool or xprop to see window titles here"
+					fi
+					completions+="$id:$name"
+				done
+			;|
+		((desktop|monitor)*[^:.])
+			local max_name_len=0 max_index_len i
+			local -a snames names ids
+			bspc query -${(U)sel_type[1]} 2> /dev/null |
+				while read id ;do
+					((index++))
+					name=$(bspc query --names -${(U)sel_type[1]} -${sel_type[1]} $id 2> /dev/null)
+					[[ "$name" == *[:.!]* ]] &&
+						sel_name="%${name//:/\\:}" ||
+						sel_name="$name"
+					((max_name_len = $#sel_name > max_name_len ? $#sel_name : max_name_len))
+					ids+="${id}"
+					snames+="${sel_name}"
+					names+="${name}"
+				done
+				max_index_len=$(($#index + 1))
+				((max_name_len >= max_name_len)) && ((max_name_len=max_name_len + 1))
+				for ((i = 1 ; i <= $#ids ; i++)) ;do
+					(($#ids[i] <= max_name_len)) &&
+						completions_display+="${(r($max_name_len+1))ids[i]}:${names[i]}" ||
+						completions_display+="${ids[i]}:${names[i]}"
+					completions+="${ids[i]}:${names[i]}"
+				done
+				for ((i = 1 ; i <= $#ids ; i++)) ;do
+					completions+="${snames[i]}:${names[i]}"
+					completions_display+="${(r($max_name_len))snames[i]}:${names[i]}"
+				done
+				for ((i = 1 ; i <= $#ids ; i++)) ;do
+					completions+="^${i}:${names[i]}"
+					completions_display+="^${i}:${names[i]}"
+				done
+			;|
 		(node*('@'(*':'|*'/'|)))
 			_describe 'node path' jump -S '/' -r "#. ${quote}" -J nodes
 			;|
@@ -40,41 +87,17 @@ _bspc_selector() {
 		(*'.')
 			_bspc_prefix '!' "${sel_type} modifiers" ${sel_type}_mod $@ -J ${sel_type}_mod
 			;|
-		(node*[^:.])
-			bspc query -N -n .window 2> /dev/null |
-				while read id ;do
-					id=${id//:/\\:}
-					if which xdotool &> /dev/null ;then
-						name=$(xprop -id $id -notype WM_NAME 2> /dev/null) &&
-							[[ "$name" = 'WM_NAME ='* ]] &&
-							name="${${name#*\"}%\"*}" ||
-							name=""
-					elif which xprop &> /dev/null ;then
-						name=$(xdotool getwindowname $id 2> /dev/null)
-					else
-						name="install xdotool or xprop to see window titles here"
-					fi
-					completions+="$id:$name"
-				done
-			;|
-		((desktop|monitor)*[^:.])
-			bspc query -${(U)sel_type[1]} 2> /dev/null |
-				while read id ;do
-					((index++))
-					name=$(bspc query --names -${(U)sel_type[1]} -${sel_type[1]} $id 2> /dev/null)
-					completions+="${id}:${name}"
-					completions+="^${index}:${name}"
-					[[ "$name" == *[:.!]* ]] &&
-						completions+="%${name//:/\\:}:${name}" ||
-						completions+="${name}:${name}" ||
-				done
-			;|
-		(*[^:.])
+		((desktop|monitor)*@)
+			;&
+		(*[^:.@/])
+			if (( $#completions_display)) ;then
+			_describe "${sel_type} selector" ${sel_type}_desc $@ -S '.' -r ". \n:#${quote}\-" -J ${sel_type} \
+				-- completions_display completions $@ -S '.' -r ". \n:#${quote}\-" -J ${sel_type}
+			else
 			_describe "${sel_type} selector" ${sel_type}_desc $@ -S '.' -r ". \n:#${quote}\-" -J ${sel_type} \
 				-- completions $@ -S '.' -r ". \n:#${quote}\-" -J ${sel_type}
+			fi
 			;|
-		(node*@*(/|:([^f\^]|(f[^o]))|:*:)*)
-			;;
 		(node*@*)
 			_bspc_selector desktop -S ':' -qr ".#\-\n ${quote}"
 			;;
@@ -119,7 +142,8 @@ _bspc() {
 		monitor_desc=($dir $cycle_dir primary last older newer focused pointed) \
 		monitor_mod=(focused occupied) \
 		presel_dir=($dir cancel)
-	local quote=$compstate[quote]
+	local quote="${compstate[quote]}" context state state_descr line
+	typeset -A opt_args
 
 	compset -n 2
 	compset -S "${quote}"
