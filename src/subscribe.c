@@ -80,6 +80,9 @@ void add_subscriber(FILE *stream, char* fifo_path, int field, int count)
 	}
 	if (sb->field & SBSC_MASK_REPORT) {
 		print_report(sb->stream);
+		if (sb->count-- == 1) {
+			remove_subscriber(sb);
+		}
 	}
 }
 
@@ -136,9 +139,6 @@ void put_status(subscriber_mask_t mask, ...)
 		if (sb->field & mask) {
 			if (sb->count > 0) {
 				sb->count--;
-			}
-			if (sb->stream == NULL) {
-				sb->stream = fopen(sb->fifo_path, "w");
 			}
 			if (mask == SBSC_MASK_REPORT) {
 				ret = print_report(sb->stream);
