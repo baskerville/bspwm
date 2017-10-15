@@ -28,12 +28,6 @@
 #include "types.h"
 #include "subscribe.h"
 
-enum {
-	SUBSCRIBE_SOCKET,
-	SUBSCRIBE_FIFO,
-	SUBSCRIBE_FAILURE
-};
-
 void handle_message(char *msg, int msg_len, FILE *rsp);
 void process_message(char **args, int num, FILE *rsp);
 void cmd_node(char **args, int num, FILE *rsp);
@@ -42,7 +36,7 @@ void cmd_monitor(char **args, int num, FILE *rsp);
 void cmd_query(char **args, int num, FILE *rsp);
 void cmd_rule(char **args, int num, FILE *rsp);
 void cmd_wm(char **args, int num, FILE *rsp);
-int cmd_subscribe(char **args, int num, FILE *rsp);
+void cmd_subscribe(char **args, int num, FILE *rsp);
 void cmd_quit(char **args, int num, FILE *rsp);
 void cmd_config(char **args, int num, FILE *rsp);
 void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp);
