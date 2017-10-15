@@ -84,8 +84,6 @@ void handle_message(char *msg, int msg_len, FILE *rsp)
 
 void process_message(char **args, int num, FILE *rsp)
 {
-	int ret = SUBSCRIBE_FAILURE;
-
 	if (streq("node", *args)) {
 		cmd_node(++args, --num, rsp);
 	} else if (streq("desktop", *args)) {
@@ -95,7 +93,8 @@ void process_message(char **args, int num, FILE *rsp)
 	} else if (streq("query", *args)) {
 		cmd_query(++args, --num, rsp);
 	} else if (streq("subscribe", *args)) {
-		ret = cmd_subscribe(++args, --num, rsp);
+		cmd_subscribe(++args, --num, rsp);
+		return;
 	} else if (streq("wm", *args)) {
 		cmd_wm(++args, --num, rsp);
 	} else if (streq("rule", *args)) {
@@ -109,10 +108,7 @@ void process_message(char **args, int num, FILE *rsp)
 	}
 
 	fflush(rsp);
-
-	if (ret != SUBSCRIBE_SOCKET) {
-		fclose(rsp);
-	}
+	fclose(rsp);
 }
 
 void cmd_node(char **args, int num, FILE *rsp)
@@ -1237,52 +1233,64 @@ void cmd_wm(char **args, int num, FILE *rsp)
 	}
 }
 
-int cmd_subscribe(char **args, int num, FILE *rsp)
+void cmd_subscribe(char **args, int num, FILE *rsp)
 {
 	int field = 0;
 	int count = -1;
 	FILE *stream = rsp;
 	char *fifo_path = NULL;
 
-	if (num < 1) {
-		field = SBSC_MASK_REPORT;
-	} else {
-		subscriber_mask_t mask;
-		while (num > 0) {
-			if (streq("-c", *args) || streq("--count", *args)) {
-				num--, args++;
-				if (num < 1) {
-					fail(rsp, "subscribe %s: Not enough arguments.\n", *(args - 1));
-					return SUBSCRIBE_FAILURE;
-				}
-				if (sscanf(*args, "%i", &count) != 1 || count < 1) {
-					fail(rsp, "subscribe %s: Invalid argument: '%s'.\n", *(args - 1), *args);
-					return SUBSCRIBE_FAILURE;
-				}
-			} else if (streq("-f", *args) || streq("--fifo", *args)) {
-				fifo_path = mktempfifo(FIFO_TEMPLATE);
-				if (fifo_path == NULL) {
-					fail(rsp, "subscribe %s: Can't create FIFO.\n", *(args - 1));
-					return SUBSCRIBE_FAILURE;
-				}
-				stream = NULL;
-				fprintf(rsp, "%s\n", fifo_path);
-			} else if (parse_subscriber_mask(*args, &mask)) {
-				field |= mask;
-			} else {
-				fail(rsp, "subscribe: Invalid argument: '%s'.\n", *args);
-				return SUBSCRIBE_FAILURE;
-			}
+	subscriber_mask_t mask;
+	while (num > 0) {
+		if (streq("-c", *args) || streq("--count", *args)) {
 			num--, args++;
+			if (num < 1) {
+				fail(rsp, "subscribe %s: Not enough arguments.\n", *(args - 1));
+				goto failed;
+			}
+			if (sscanf(*args, "%i", &count) != 1 || count < 1) {
+				fail(rsp, "subscribe %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+				goto failed;
+			}
+		} else if (streq("-f", *args) || streq("--fifo", *args)) {
+			fifo_path = mktempfifo(FIFO_TEMPLATE);
+			if (fifo_path == NULL) {
+				fail(rsp, "subscribe %s: Can't create FIFO.\n", *(args - 1));
+				goto failed;
+			}
+		} else if (parse_subscriber_mask(*args, &mask)) {
+			field |= mask;
+		} else {
+			fail(rsp, "subscribe: Invalid argument: '%s'.\n", *args);
+			goto failed;
+		}
+		num--, args++;
+	}
+	if (field == 0) {
+		field = SBSC_MASK_REPORT;
+	}
+	if (fifo_path) {
+		fprintf(rsp, "%s\n", fifo_path);
+		fflush(rsp);
+		fclose(rsp);
+		stream = fopen(fifo_path, "w");
+		if (stream == NULL) {
+			perror("Subscribe: open");
+			goto free_fifo_path;
 		}
 	}
 
 	add_subscriber(stream, fifo_path, field, count);
+	return;
 
-	if (stream != NULL) {
-		return SUBSCRIBE_SOCKET;
-	} else {
-		return SUBSCRIBE_FIFO;
+failed:
+	fflush(rsp);
+	fclose(rsp);
+
+free_fifo_path:
+	if (fifo_path) {
+		unlink(fifo_path);
+		free(fifo_path);
 	}
 }
 
