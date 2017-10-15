@@ -1276,9 +1276,7 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 		stream = fopen(fifo_path, "w");
 		if (stream == NULL) {
 			perror("Subscribe: open");
-			unlink(fifo_path);
-			free(fifo_path);
-			return;
+			goto free_fifo_path;
 		}
 	}
 
@@ -1288,6 +1286,12 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 failed:
 	fflush(rsp);
 	fclose(rsp);
+
+free_fifo_path:
+	if (fifo_path) {
+		unlink(fifo_path);
+		free(fifo_path);
+	}
 }
 
 void cmd_quit(char **args, int num, FILE *rsp)
