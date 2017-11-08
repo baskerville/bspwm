@@ -22,3 +22,7 @@ I follow the [Linux Coding Style][4] with the following variations:
 [3]: http://git-scm.com/documentation
 [4]: https://www.kernel.org/doc/Documentation/process/coding-style.rst
 [5]: http://lea.verou.me/2012/01/why-tabs-are-clearly-superior/
+
+## Donations
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RHTYMMB9SHP68)
