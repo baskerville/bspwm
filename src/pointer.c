@@ -282,7 +282,7 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 			if (pac == ACTION_MOVE) {
 				move_client(&loc, dx, dy);
 			} else {
-				resize_client(&loc, rh, dx, dy);
+				resize_client(&loc, rh, e->root_x, e->root_y, false);
 			}
 			last_motion_x = e->root_x;
 			last_motion_y = e->root_y;
