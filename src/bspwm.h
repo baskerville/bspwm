@@ -67,9 +67,9 @@ pending_rule_t *pending_rule_tail;
 
 xcb_window_t meta_window;
 struct {
-	xcb_window_t id;
-	uint16_t sequence;
-	bool enabled;
+    xcb_window_t id;
+    uint16_t sequence;
+    bool enabled;
 } motion_recorder;
 xcb_atom_t WM_STATE;
 xcb_atom_t WM_TAKE_FOCUS;

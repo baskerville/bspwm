@@ -66,13 +66,13 @@
 #define cleaned_mask(m)   (m & ~(num_lock | scroll_lock | caps_lock))
 #define streq(s1, s2)     (strcmp((s1), (s2)) == 0)
 #define unsigned_subtract(a, b)  \
-	do {                         \
-		if (b > a) {             \
-			a = 0;               \
-		} else {                 \
-			a -= b;              \
-		}                        \
-	} while (false)
+    do {                         \
+        if (b > a) {             \
+            a = 0;               \
+        } else {                 \
+            a -= b;              \
+        }                        \
+    } while (false)
 
 
 void warn(char *fmt, ...);
