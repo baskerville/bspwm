@@ -35,76 +35,76 @@
 
 int main(int argc, char *argv[])
 {
-	int sock_fd;
-	struct sockaddr_un sock_address;
-	char msg[BUFSIZ], rsp[BUFSIZ];
+    int sock_fd;
+    struct sockaddr_un sock_address;
+    char msg[BUFSIZ], rsp[BUFSIZ];
 
-	if (argc < 2) {
-		err("No arguments given.\n");
-	}
+    if (argc < 2) {
+        err("No arguments given.\n");
+    }
 
-	sock_address.sun_family = AF_UNIX;
-	char *sp;
+    sock_address.sun_family = AF_UNIX;
+    char *sp;
 
-	if ((sock_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		err("Failed to create the socket.\n");
-	}
+    if ((sock_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        err("Failed to create the socket.\n");
+    }
 
-	sp = getenv(SOCKET_ENV_VAR);
-	if (sp != NULL) {
-		snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", sp);
-	} else {
-		char *host = NULL;
-		int dn = 0, sn = 0;
-		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0) {
-			snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, host, dn, sn);
-		}
-		free(host);
-	}
+    sp = getenv(SOCKET_ENV_VAR);
+    if (sp != NULL) {
+        snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", sp);
+    } else {
+        char *host = NULL;
+        int dn = 0, sn = 0;
+        if (xcb_parse_display(NULL, &host, &dn, &sn) != 0) {
+            snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, host, dn, sn);
+        }
+        free(host);
+    }
 
-	if (connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1) {
-		err("Failed to connect to the socket.\n");
-	}
+    if (connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1) {
+        err("Failed to connect to the socket.\n");
+    }
 
-	argc--, argv++;
-	int msg_len = 0;
+    argc--, argv++;
+    int msg_len = 0;
 
-	for (int offset = 0, rem = sizeof(msg), n = 0; argc > 0 && rem > 0; offset += n, rem -= n, argc--, argv++) {
-		n = snprintf(msg + offset, rem, "%s%c", *argv, 0);
-		msg_len += n;
-	}
+    for (int offset = 0, rem = sizeof(msg), n = 0; argc > 0 && rem > 0; offset += n, rem -= n, argc--, argv++) {
+        n = snprintf(msg + offset, rem, "%s%c", *argv, 0);
+        msg_len += n;
+    }
 
-	if (send(sock_fd, msg, msg_len, 0) == -1) {
-		err("Failed to send the data.\n");
-	}
+    if (send(sock_fd, msg, msg_len, 0) == -1) {
+        err("Failed to send the data.\n");
+    }
 
-	int ret = EXIT_SUCCESS, nb;
+    int ret = EXIT_SUCCESS, nb;
 
-	struct pollfd fds[] = {
-		{sock_fd, POLLIN, 0},
-		{STDOUT_FILENO, POLLHUP, 0},
-	};
+    struct pollfd fds[] = {
+        {sock_fd, POLLIN, 0},
+        {STDOUT_FILENO, POLLHUP, 0},
+    };
 
-	while (poll(fds, 2, -1) > 0) {
-		if (fds[1].revents & (POLLERR | POLLHUP)) {
-			break;
-		}
-		if (fds[0].revents & POLLIN) {
-			if ((nb = recv(sock_fd, rsp, sizeof(rsp)-1, 0)) > 0) {
-				rsp[nb] = '\0';
-				if (rsp[0] == FAILURE_MESSAGE[0]) {
-					ret = EXIT_FAILURE;
-					printf("%s", rsp + 1);
-				} else {
-					printf("%s", rsp);
-				}
-				fflush(stdout);
-			} else {
-				break;
-			}
-		}
-	}
+    while (poll(fds, 2, -1) > 0) {
+        if (fds[1].revents & (POLLERR | POLLHUP)) {
+            break;
+        }
+        if (fds[0].revents & POLLIN) {
+            if ((nb = recv(sock_fd, rsp, sizeof(rsp)-1, 0)) > 0) {
+                rsp[nb] = '\0';
+                if (rsp[0] == FAILURE_MESSAGE[0]) {
+                    ret = EXIT_FAILURE;
+                    printf("%s", rsp + 1);
+                } else {
+                    printf("%s", rsp);
+                }
+                fflush(stdout);
+            } else {
+                break;
+            }
+        }
+    }
 
-	close(sock_fd);
-	return ret;
+    close(sock_fd);
+    return ret;
 }
