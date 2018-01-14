@@ -306,7 +306,7 @@ void merge_monitors(monitor_t *ms, monitor_t *md)
 	desktop_t *d = ms->desk_head;
 	while (d != NULL) {
 		desktop_t *next = d->next;
-		transfer_desktop(ms, md, d);
+		transfer_desktop(ms, md, d, false);
 		d = next;
 	}
 }

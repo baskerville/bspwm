@@ -487,7 +487,7 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 		coordinates_t dst;
 		bool is_managed = (pwin != XCB_NONE && locate_window(pwin, &dst));
 		if (is_managed && dst.monitor == loc->monitor && IS_TILED(dst.node->client)) {
-			swap_nodes(loc->monitor, loc->desktop, n, loc->monitor, loc->desktop, dst.node);
+			swap_nodes(loc->monitor, loc->desktop, n, loc->monitor, loc->desktop, dst.node, false);
 			return true;
 		} else {
 			if (is_managed && dst.monitor == loc->monitor) {
@@ -518,13 +518,9 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 		return true;
 	}
 
-	bool focused = (n == mon->desk->focus);
-	transfer_node(loc->monitor, loc->desktop, n, pm, pm->desk, pm->desk->focus);
+	transfer_node(loc->monitor, loc->desktop, n, pm, pm->desk, pm->desk->focus, true);
 	loc->monitor = pm;
 	loc->desktop = pm->desk;
-	if (focused) {
-		focus_node(pm, pm->desk, n);
-	}
 
 	return true;
 }

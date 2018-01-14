@@ -176,7 +176,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 			coordinates_t dst;
 			int ret;
 			if ((ret = desktop_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
-				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus)) {
+				bool follow = false;
+				if (num > 1 && streq("--follow", *(args+1))) {
+					follow = true;
+					num--, args++;
+				}
+				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.desktop->focus, follow)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.desktop;
 				} else {
@@ -196,7 +201,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 			coordinates_t dst;
 			int ret;
 			if ((ret = monitor_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
-				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus)) {
+				bool follow = false;
+				if (num > 1 && streq("--follow", *(args+1))) {
+					follow = true;
+					num--, args++;
+				}
+				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.monitor->desk, dst.monitor->desk->focus, follow)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.monitor->desk;
 				} else {
@@ -216,7 +226,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 			coordinates_t dst;
 			int ret;
 			if ((ret = node_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
-				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
+				bool follow = false;
+				if (num > 1 && streq("--follow", *(args+1))) {
+					follow = true;
+					num--, args++;
+				}
+				if (transfer_node(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node, follow)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.desktop;
 				} else {
@@ -236,7 +251,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 			coordinates_t dst;
 			int ret;
 			if ((ret = node_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
-				if (swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node)) {
+				bool follow = false;
+				if (num > 1 && streq("--follow", *(args+1))) {
+					follow = true;
+					num--, args++;
+				}
+				if (swap_nodes(trg.monitor, trg.desktop, trg.node, dst.monitor, dst.desktop, dst.node, follow)) {
 					trg.monitor = dst.monitor;
 					trg.desktop = dst.desktop;
 				} else {
@@ -641,7 +661,12 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			coordinates_t dst;
 			int ret;
 			if ((ret = monitor_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
-				if (transfer_desktop(trg.monitor, dst.monitor, trg.desktop)) {
+				bool follow = false;
+				if (num > 1 && streq("--follow", *(args+1))) {
+					follow = true;
+					num--, args++;
+				}
+				if (transfer_desktop(trg.monitor, dst.monitor, trg.desktop, follow)) {
 					trg.monitor = dst.monitor;
 				} else {
 					fail(rsp, "");
@@ -660,7 +685,12 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			coordinates_t dst;
 			int ret;
 			if ((ret = desktop_from_desc(*args, &ref, &dst)) == SELECTOR_OK) {
-				if (swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop)) {
+				bool follow = false;
+				if (num > 1 && streq("--follow", *(args+1))) {
+					follow = true;
+					num--, args++;
+				}
+				if (swap_desktops(trg.monitor, trg.desktop, dst.monitor, dst.desktop, follow)) {
 					trg.monitor = dst.monitor;
 				} else {
 					fail(rsp, "");
@@ -682,18 +712,18 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 				if (cyc == CYCLE_PREV) {
 					if (d->prev == NULL) {
 						while (d->next != NULL) {
-							swap_desktops(trg.monitor, d, trg.monitor, d->next);
+							swap_desktops(trg.monitor, d, trg.monitor, d->next, false);
 						}
 					} else {
-						swap_desktops(trg.monitor, d, trg.monitor, d->prev);
+						swap_desktops(trg.monitor, d, trg.monitor, d->prev, false);
 					}
 				} else {
 					if (d->next == NULL) {
 						while (d->prev != NULL) {
-							swap_desktops(trg.monitor, d, trg.monitor, d->prev);
+							swap_desktops(trg.monitor, d, trg.monitor, d->prev, false);
 						}
 					} else {
-						swap_desktops(trg.monitor, d, trg.monitor, d->next);
+						swap_desktops(trg.monitor, d, trg.monitor, d->next, false);
 					}
 				}
 			} else {
@@ -869,7 +899,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				desktop_t *next = d->next;
 				coordinates_t dst;
 				if (locate_desktop(*args, &dst) && dst.monitor == trg.monitor) {
-					swap_desktops(trg.monitor, d, dst.monitor, dst.desktop);
+					swap_desktops(trg.monitor, d, dst.monitor, dst.desktop, false);
 					if (next == dst.desktop) {
 						next = d;
 					}

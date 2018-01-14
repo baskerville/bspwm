@@ -483,7 +483,7 @@ void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n
 	if (n == NULL) {
 		return;
 	} else if (n->sticky) {
-		transfer_node(m, ds, n, m, dd, dd->focus);
+		transfer_node(m, ds, n, m, dd, dd->focus, false);
 	} else {
 		/* we need references to the children because n might be freed after
 		 * the first recursive call */
@@ -1251,7 +1251,7 @@ void free_node(node_t *n)
 	free_node(second_child);
 }
 
-bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
+bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2, bool follow)
 {
 	if (n1 == NULL || n2 == NULL || n1 == n2 || is_descendant(n1, n2) || is_descendant(n2, n1) ||
 	    (d1 != d2 && ((m1->sticky_count > 0 && sticky_count(n1) > 0) ||
@@ -1323,20 +1323,28 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 		history_swap_nodes(m1, d1, n1, m2, d2, n2);
 
-		if (m1->desk != d1 && m2->desk == d2) {
-			show_node(d2, n1);
-			hide_node(d2, n2);
-		} else if (m1->desk == d1 && m2->desk != d2) {
-			hide_node(d1, n1);
-			show_node(d1, n2);
-		}
-
 		bool d1_was_focused = (d1 == mon->desk);
 		bool d2_was_focused = (d2 == mon->desk);
 
+		if (m1->desk != d1 && m2->desk == d2) {
+			show_node(d2, n1);
+			if (!follow || !d2_was_focused || !n2_held_focus) {
+				hide_node(d2, n2);
+			}
+		} else if (m1->desk == d1 && m2->desk != d2) {
+			if (!follow || !d1_was_focused || !n1_held_focus) {
+				hide_node(d1, n1);
+			}
+			show_node(d1, n2);
+		}
+
 		if (n1_held_focus) {
 			if (d1_was_focused) {
-				focus_node(m2, d2, last_d1_focus);
+				if (follow) {
+					focus_node(m2, d2, last_d1_focus);
+				} else {
+					focus_node(m1, d1, d1->focus);
+				}
 			} else {
 				activate_node(m1, d1, d1->focus);
 			}
@@ -1346,7 +1354,11 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 		if (n2_held_focus) {
 			if (d2_was_focused) {
-				focus_node(m1, d1, last_d2_focus);
+				if (follow) {
+					focus_node(m1, d1, last_d2_focus);
+				} else {
+					focus_node(m2, d2, d2->focus);
+				}
 			} else {
 				activate_node(m2, d2, d2->focus);
 			}
@@ -1367,7 +1379,7 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 	return true;
 }
 
-bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd)
+bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desktop_t *dd, node_t *nd, bool follow)
 {
 	if (ns == NULL || ns == nd || is_child(ns, nd) || is_descendant(nd, ns)) {
 		return false;
@@ -1382,8 +1394,9 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	bool held_focus = is_descendant(ds->focus, ns);
 	/* avoid ending up with a dangling pointer (because of unlink_node) */
 	node_t *last_ds_focus = is_child(ns, ds->focus) ? NULL : ds->focus;
+	bool ds_was_focused = (ds == mon->desk);
 
-	if (held_focus && ds == mon->desk) {
+	if (held_focus && ds_was_focused) {
 		clear_input_focus();
 	}
 
@@ -1410,7 +1423,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 
 	if (ds == dd) {
 		if (held_focus) {
-			if (ds == mon->desk) {
+			if (ds_was_focused) {
 				focus_node(ms, ds, last_ds_focus);
 			} else {
 				activate_node(ms, ds, last_ds_focus);
@@ -1420,19 +1433,29 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		}
 	} else {
 		if (held_focus) {
-			if (ds == mon->desk) {
-				focus_node(md, dd, last_ds_focus);
-			}
-			activate_node(ms, ds, ds->focus);
-		}
-		if (dd->focus == ns) {
-			if (dd == mon->desk) {
-				focus_node(md, dd, held_focus ? last_ds_focus : ns);
+			if (follow) {
+				if (ds_was_focused) {
+					focus_node(md, dd, last_ds_focus);
+				}
+				activate_node(ms, ds, ds->focus);
 			} else {
-				activate_node(md, dd, held_focus ? last_ds_focus : ns);
+				if (ds_was_focused) {
+					focus_node(ms, ds, ds->focus);
+				} else {
+					activate_node(ms, ds, ds->focus);
+				}
 			}
-		} else {
-			draw_border(ns, is_descendant(ns, dd->focus), (md == mon));
+		}
+		if (!held_focus || !follow || !ds_was_focused) {
+			if (dd->focus == ns) {
+				if (dd == mon->desk) {
+					focus_node(md, dd, held_focus ? last_ds_focus : ns);
+				} else {
+					activate_node(md, dd, held_focus ? last_ds_focus : ns);
+				}
+			} else {
+				draw_border(ns, is_descendant(ns, dd->focus), (md == mon));
+			}
 		}
 	}
 
@@ -1495,7 +1518,7 @@ void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir
 			e = prev_leaf(e, n);
 		}
 		for (node_t *s = e, *f = prev_tiled_leaf(s, n); f != NULL; s = prev_tiled_leaf(f, n), f = prev_tiled_leaf(s, n)) {
-			swap_nodes(m, d, f, m, d, s);
+			swap_nodes(m, d, f, m, d, s, false);
 		}
 	} else {
 		node_t *e = first_extrema(n);
@@ -1503,7 +1526,7 @@ void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir
 			e = next_leaf(e, n);
 		}
 		for (node_t *f = e, *s = next_tiled_leaf(f, n); s != NULL; f = next_tiled_leaf(s, n), s = next_tiled_leaf(f, n)) {
-			swap_nodes(m, d, f, m, d, s);
+			swap_nodes(m, d, f, m, d, s, false);
 		}
 	}
 	if (p != NULL) {
@@ -1838,7 +1861,7 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	}
 
 	if (d != m->desk) {
-		transfer_node(m, d, n, m, m->desk, m->desk->focus);
+		transfer_node(m, d, n, m, m->desk, m->desk->focus, false);
 	}
 
 	n->sticky = value;

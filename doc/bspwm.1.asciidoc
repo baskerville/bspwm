@@ -358,17 +358,17 @@ Commands
 *-a*, *--activate* ['NODE_SEL']::
 	Activate the selected or given node.
 
-*-d*, *--to-desktop* 'DESKTOP_SEL'::
-	Send the selected node to the given desktop.
+*-d*, *--to-desktop* 'DESKTOP_SEL' [*--follow*]::
+	Send the selected node to the given desktop. If *--follow* is passed, the focused node will stay focused.
 
-*-m*, *--to-monitor* 'MONITOR_SEL'::
-	Send the selected node to the given monitor.
+*-m*, *--to-monitor* 'MONITOR_SEL' [*--follow*]::
+	Send the selected node to the given monitor. If *--follow* is passed, the focused node will stay focused.
 
-*-n*, *--to-node* 'NODE_SEL'::
-	Transplant the selected node to the given node.
+*-n*, *--to-node* 'NODE_SEL' [*--follow*]::
+	Send the selected node on the given node. If *--follow* is passed, the focused node will stay focused.
 
-*-s*, *--swap* 'NODE_SEL'::
-	Swap the selected node with the given node.
+*-s*, *--swap* 'NODE_SEL' [*--follow*]::
+	Swap the selected node with the given node. If *--follow* is passed, the focused node will stay focused.
 
 *-p*, *--presel-dir* \[~]'DIR'|cancel::
 	Preselect the splitting area of the selected node (or cancel the preselection). If *~* is prepended to 'DIR' and the current preselection direction matches 'DIR', then the argument is interpreted as *cancel*. A node with a preselected area is said to be in "manual insertion mode".
@@ -436,17 +436,17 @@ COMMANDS
 *-a*, *--activate* ['DESKTOP_SEL']::
 	Activate the selected or given desktop.
 
-*-m*, *--to-monitor* 'MONITOR_SEL'::
-	Send the selected desktop to the given monitor.
+*-m*, *--to-monitor* 'MONITOR_SEL' [*--follow*]::
+	Send the selected desktop to the given monitor. If *--follow* is passed, the focused desktop will stay focused.
+
+*-s*, *--swap* 'DESKTOP_SEL' [*--follow*]::
+	Swap the selected desktop with the given desktop. If *--follow* is passed, the focused desktop will stay focused.
 
 *-l*, *--layout* 'CYCLE_DIR'|monocle|tiled::
 	Set or cycle the layout of the selected desktop.
 
 *-n*, *--rename* <new_name>::
 	Rename the selected desktop.
-
-*-s*, *--swap* 'DESKTOP_SEL'::
-	Swap the selected desktop with the given desktop.
 
 *-b*, *--bubble* 'CYCLE_DIR'::
 	Bubble the selected desktop in the given direction.

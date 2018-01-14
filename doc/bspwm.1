@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 09/29/2017
+.\"      Date: 01/14/2018
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3-30-gd953f6f
+.\"    Source: Bspwm 0.9.3-42-g0ba0ca3
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "09/29/2017" "Bspwm 0\&.9\&.3\-30\-gd953f6f" "Bspwm Manual"
+.TH "BSPWM" "1" "01/14/2018" "Bspwm 0\&.9\&.3\-42\-g0ba0ca3" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -570,24 +570,32 @@ Focus the selected or given node\&.
 Activate the selected or given node\&.
 .RE
 .PP
-\fB\-d\fR, \fB\-\-to\-desktop\fR \fIDESKTOP_SEL\fR
+\fB\-d\fR, \fB\-\-to\-desktop\fR \fIDESKTOP_SEL\fR [\fB\-\-follow\fR]
 .RS 4
-Send the selected node to the given desktop\&.
+Send the selected node to the given desktop\&. If
+\fB\-\-follow\fR
+is passed, the focused node will stay focused\&.
 .RE
 .PP
-\fB\-m\fR, \fB\-\-to\-monitor\fR \fIMONITOR_SEL\fR
+\fB\-m\fR, \fB\-\-to\-monitor\fR \fIMONITOR_SEL\fR [\fB\-\-follow\fR]
 .RS 4
-Send the selected node to the given monitor\&.
+Send the selected node to the given monitor\&. If
+\fB\-\-follow\fR
+is passed, the focused node will stay focused\&.
 .RE
 .PP
-\fB\-n\fR, \fB\-\-to\-node\fR \fINODE_SEL\fR
+\fB\-n\fR, \fB\-\-to\-node\fR \fINODE_SEL\fR [\fB\-\-follow\fR]
 .RS 4
-Transplant the selected node to the given node\&.
+Send the selected node on the given node\&. If
+\fB\-\-follow\fR
+is passed, the focused node will stay focused\&.
 .RE
 .PP
-\fB\-s\fR, \fB\-\-swap\fR \fINODE_SEL\fR
+\fB\-s\fR, \fB\-\-swap\fR \fINODE_SEL\fR [\fB\-\-follow\fR]
 .RS 4
-Swap the selected node with the given node\&.
+Swap the selected node with the given node\&. If
+\fB\-\-follow\fR
+is passed, the focused node will stay focused\&.
 .RE
 .PP
 \fB\-p\fR, \fB\-\-presel\-dir\fR [~]\fIDIR\fR|cancel
@@ -721,9 +729,18 @@ Focus the selected or given desktop\&.
 Activate the selected or given desktop\&.
 .RE
 .PP
-\fB\-m\fR, \fB\-\-to\-monitor\fR \fIMONITOR_SEL\fR
+\fB\-m\fR, \fB\-\-to\-monitor\fR \fIMONITOR_SEL\fR [\fB\-\-follow\fR]
 .RS 4
-Send the selected desktop to the given monitor\&.
+Send the selected desktop to the given monitor\&. If
+\fB\-\-follow\fR
+is passed, the focused desktop will stay focused\&.
+.RE
+.PP
+\fB\-s\fR, \fB\-\-swap\fR \fIDESKTOP_SEL\fR [\fB\-\-follow\fR]
+.RS 4
+Swap the selected desktop with the given desktop\&. If
+\fB\-\-follow\fR
+is passed, the focused desktop will stay focused\&.
 .RE
 .PP
 \fB\-l\fR, \fB\-\-layout\fR \fICYCLE_DIR\fR|monocle|tiled
@@ -734,11 +751,6 @@ Set or cycle the layout of the selected desktop\&.
 \fB\-n\fR, \fB\-\-rename\fR <new_name>
 .RS 4
 Rename the selected desktop\&.
-.RE
-.PP
-\fB\-s\fR, \fB\-\-swap\fR \fIDESKTOP_SEL\fR
-.RS 4
-Swap the selected desktop with the given desktop\&.
 .RE
 .PP
 \fB\-b\fR, \fB\-\-bubble\fR \fICYCLE_DIR\fR

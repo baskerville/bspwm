@@ -151,7 +151,7 @@ void handle_presel_feedbacks(monitor_t *m, desktop_t *d)
 	}
 }
 
-bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
+bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 {
 	if (ms == NULL || md == NULL || d == NULL || ms == md) {
 		return false;
@@ -162,7 +162,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 
 	unlink_desktop(ms, d);
 
-	if (md->desk != NULL) {
+	if ((!follow || !d_was_active || !ms_was_focused) && md->desk != NULL) {
 		hide_desktop(d);
 	}
 
@@ -170,11 +170,19 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	history_transfer_desktop(md, d);
 
 	if (d_was_active) {
-		if (activate_desktop(ms, NULL)) {
-			activate_node(ms, ms->desk, NULL);
-		}
-		if (ms_was_focused) {
-			focus_node(md, d, d->focus);
+		if (follow) {
+			if (activate_desktop(ms, NULL)) {
+				activate_node(ms, ms->desk, NULL);
+			}
+			if (ms_was_focused) {
+				focus_node(md, d, d->focus);
+			}
+		} else {
+			if (ms_was_focused) {
+				focus_node(ms, ms->desk, NULL);
+			} else if (activate_desktop(ms, NULL)) {
+				activate_node(ms, ms->desk, NULL);
+			}
 		}
 	}
 
@@ -187,8 +195,12 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d)
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);
 	arrange(md, d);
 
-	if (md->desk == d && mon != md) {
-		activate_node(md, d, d->focus);
+	if ((!follow || !d_was_active || !ms_was_focused) && md->desk == d) {
+		if (md == mon) {
+			focus_node(md, d, d->focus);
+		} else {
+			activate_node(md, d, d->focus);
+		}
 	}
 
 	ewmh_update_wm_desktops();
@@ -332,10 +344,10 @@ void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
 	if (ds == NULL || dd == NULL || ds == dd) {
 		return;
 	}
-	transfer_node(ms, ds, ds->root, md, dd, dd->focus);
+	transfer_node(ms, ds, ds->root, md, dd, dd->focus, false);
 }
 
-bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
+bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2, bool follow)
 {
 	if (d1 == NULL || d2 == NULL || d1 == d2 ||
 	    (m1->desk == d1 && m1->sticky_count > 0) ||
@@ -419,23 +431,41 @@ bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
 	}
 
 	if (d1_was_active && !d2_was_active) {
-		hide_desktop(d1);
+		if ((!follow && m1 != m2) || !d1_was_focused) {
+			hide_desktop(d1);
+		}
 		show_desktop(d2);
 	} else if (!d1_was_active && d2_was_active) {
 		show_desktop(d1);
-		hide_desktop(d2);
+		if ((!follow && m1 != m2) || !d2_was_focused) {
+			hide_desktop(d2);
+		}
 	}
 
-	if (d1_was_focused) {
-		focus_node(m2, d1, d1->focus);
-	} else if (d1 == m2->desk) {
-		activate_node(m2, d1, d1->focus);
-	}
+	if (follow || m1 == m2) {
+		if (d1_was_focused) {
+			focus_node(m2, d1, d1->focus);
+		} else if (d1_was_active) {
+			activate_node(m2, d1, d1->focus);
+		}
 
-	if (d2_was_focused) {
-		focus_node(m1, d2, d2->focus);
-	} else if (d2 == m1->desk) {
-		activate_node(m1, d2, d2->focus);
+		if (d2_was_focused) {
+			focus_node(m1, d2, d2->focus);
+		} else if (d2_was_active) {
+			activate_node(m1, d2, d2->focus);
+		}
+	} else {
+		if (d1_was_focused) {
+			focus_node(m1, d2, d2->focus);
+		} else if (d1_was_active) {
+			activate_node(m1, d2, d2->focus);
+		}
+
+		if (d2_was_focused) {
+			focus_node(m2, d1, d1->focus);
+		} else if (d2_was_active) {
+			activate_node(m2, d1, d1->focus);
+		}
 	}
 
 	ewmh_update_wm_desktops();

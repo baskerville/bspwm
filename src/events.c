@@ -171,7 +171,7 @@ void configure_request(xcb_generic_event_t *evt)
 
 		monitor_t *m = monitor_from_client(c);
 		if (m != loc.monitor) {
-			transfer_node(loc.monitor, loc.desktop, loc.node, m, m->desk, m->desk->focus);
+			transfer_node(loc.monitor, loc.desktop, loc.node, m, m->desk, m->desk->focus, false);
 		}
 	} else {
 		if (c->state == STATE_PSEUDO_TILED) {
@@ -315,7 +315,7 @@ void client_message(xcb_generic_event_t *evt)
 	} else if (e->type == ewmh->_NET_WM_DESKTOP) {
 		coordinates_t dloc;
 		if (ewmh_locate_desktop(e->data.data32[0], &dloc)) {
-			transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus);
+			transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus, false);
 		}
 	} else if (e->type == ewmh->_NET_CLOSE_WINDOW) {
 		close_node(loc.node);

@@ -19,9 +19,9 @@ bspc desktop "TEST-SWAP-A:^1" -s "TEST-SWAP-B:^1"
 [ "$(bspc query -N -m 'TEST-SWAP-A')" = "$nodes_b" ] || fail "Wrong nodes in first monitor"
 [ "$(bspc query -N -m 'TEST-SWAP-B')" = "$nodes_a" ] || fail "Wrong nodes in second monitor"
 
-window remove 2
-bspc monitor -f "TEST-SWAP-B"
 window remove 3
+bspc monitor -f "TEST-SWAP-A"
+window remove 2
 
 bspc monitor "TEST-SWAP-A" -r
 bspc monitor "TEST-SWAP-B" -r

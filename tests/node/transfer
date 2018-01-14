@@ -16,10 +16,10 @@ bspc node @/2 -d "test-transfer-b"
 [ "$next_focus_a" = "$(bspc query -N -n @test-transfer-a:)" ] || fail "Invalid focus after transfer from source."
 [ "$next_focus_b" = "$(bspc query -N -n @test-transfer-b:)" ] || fail "Invalid focus after transfer in destination."
 
+window remove
+bspc desktop -f "test-transfer-b"
 window remove 1 2
 window remove 2
-bspc desktop -f "test-transfer-a"
-window remove
 
 bspc desktop "test-transfer-a" -r
 bspc desktop "test-transfer-b" -r

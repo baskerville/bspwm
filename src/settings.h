@@ -46,14 +46,17 @@
 #define GAPLESS_MONOCLE             false
 #define PADDINGLESS_MONOCLE         false
 #define SINGLE_MONOCLE              false
+
 #define FOCUS_FOLLOWS_POINTER       false
 #define POINTER_FOLLOWS_FOCUS       false
 #define POINTER_FOLLOWS_MONITOR     false
-#define IGNORE_EWMH_FOCUS           false
-#define CENTER_PSEUDO_TILED         true
 #define CLICK_TO_FOCUS              -1
 #define SWALLOW_FIRST_CLICK         false
+#define IGNORE_EWMH_FOCUS           false
+
+#define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
+
 #define REMOVE_DISABLED_MONITORS    false
 #define REMOVE_UNPLUGGED_MONITORS   false
 #define MERGE_OVERLAPPING_MONITORS  false
@@ -81,14 +84,17 @@ bool borderless_monocle;
 bool gapless_monocle;
 bool paddingless_monocle;
 bool single_monocle;
+
 bool focus_follows_pointer;
 bool pointer_follows_focus;
 bool pointer_follows_monitor;
-bool ignore_ewmh_focus;
-bool center_pseudo_tiled;
 int8_t click_to_focus;
 bool swallow_first_click;
+bool ignore_ewmh_focus;
+
+bool center_pseudo_tiled;
 bool honor_size_hints;
+
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;
 bool merge_overlapping_monitors;
