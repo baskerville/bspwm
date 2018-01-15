@@ -126,8 +126,8 @@ _bspc_query_names() {
 }
 
 _bspc() {
-	local -a commands \
-		commands=(node desktop monitor query rule wm subscribe config quit) \
+	local -a commands=(node desktop monitor query rule wm subscribe config quit) \
+		resize_handle=(top bottom top_left top_right bottom_left bottom_right left right) \
 		node_state=(tiled pseudo_tiled floating fullscreen) \
 		flag=(hidden sticky private locked urgent) \
 		layer=(below normal above) \
@@ -157,41 +157,38 @@ _bspc() {
 		(node)
 			((CURRENT==2)) && _bspc_selector node
 			((CURRENT>2)) && [[ "$words[2]" != '-'* ]] && compset -n 2
-			while do
-				_arguments -C \
-					'*'{-a,--activate}'[Activate the selected or given node]::node selector:_bspc_selector -- node'\
-					'*'{-B,--balance}'[Adjust the split ratios of the tree rooted at the selected node so that all windows occupy the same area]'\
-					'*'{-C,--circulate}'[Circulate the windows of the tree rooted at the selected node]:direction:(forward backward)'\
-					'*'{-c,--close}'[Close the windows rooted at the selected node]'\
-					'*'{-d,--to-desktop}'[Send the selected node to the given desktop]:desktop selector:_bspc_selector -- desktop'\
-					'*'{-E,--equalize}'[Reset the split ratios of the tree rooted at the selected node to their default value]'\
-					'*'{-F,--flip}'[Flip the the tree rooted at selected node]: :(horizontal vertical)'\
-					'*'{-f,--focus}'[Focus the selected or given node]::node selector:_bspc_selector -- node'\
-					'*'{-g,--flag}'[Set or toggle the given flag for the selected node]: :->flag'\
-					'*'{-i,--insert-receptacle}'[Insert a receptacle node at the selected node]'\
-					'*'{-k,--kill}'[Kill the windows rooted at the selected node]'\
-					'*'{-l,--layer}"[Set the stacking layer of the selected window]:stacking layer:($layer)"\
-					'*'{-m,--to-monitor}'[Send the selected node to the given monitor]:monitor selector:_bspc_selector -- monitor'\
-					'*'{-n,--to-node}'[Transplant the selected node to the given node]:node selector:_bspc_selector -- node'\
-					'*'{-o,--presel-ratio}'[Set the splitting ratio of the preselection area]:preselect ratio: ( )'\
-					'*'{-p,--presel-dir}'[Preselect the splitting area of the selected node or cancel the preselection]: :_bspc_prefix -- "~" preselect presel_dir'\
-					'*'{-r,--ratio}'[Set the splitting ratio of the selected node (0 < ratio < 1)]: :( )'\
-					'*'{-R,--rotate}'[Rotate the tree rooted at the selected node]:angle:(90 270 180)'\
-					'*'{-s,--swap}'[Swap the selected node with the given node]:node selector:_bspc_selector -- node'\
-					'*'{-t,--state}'[Set the state of the selected window]: :_bspc_prefix -- "~" "node state" node_state '\
-					'*'{-v,--move}'[Move the selected window by dx pixels horizontally and dy pixels vertically]:dx dy:'\
-					'*'{-z,--resize}'[Resize the selected window by moving the given handle by dx pixels horizontally and dy pixels vertically]:*::: :->resize'
-				[ "$state" = flag ] && _values 'flag' "${flag[@]:#urgent}::set flag:(on off)"
-				[ "$state" = resize ] || break
-				((CURRENT == 1)) &&
-					_values 'handle' resize_handle {top,bottom}{,_left,_right} left right
-				((CURRENT <= 3)) && break
-				compset -n 3
-			done
+			((CURRENT>2)) && [[ "$words[CURRENT-2]" =~ "^-(m|d|n|s|-to-(monitor|desktop|node)|-swap)$" ]] &&
+				_values 'option' '--follow[If passed, the focused node will stay focused]'
+			_arguments -C \
+				'*'{-a,--activate}'[Activate the selected or given node]::node selector:_bspc_selector -- node'\
+				'*'{-B,--balance}'[Adjust the split ratios of the tree rooted at the selected node so that all windows occupy the same area]'\
+				'*'{-C,--circulate}'[Circulate the windows of the tree rooted at the selected node]:direction:(forward backward)'\
+				'*'{-c,--close}'[Close the windows rooted at the selected node]'\
+				'*'{-d,--to-desktop}'[Send the selected node to the given desktop]:desktop selector:_bspc_selector -- desktop'\
+				'*'{-E,--equalize}'[Reset the split ratios of the tree rooted at the selected node to their default value]'\
+				'*'{-F,--flip}'[Flip the the tree rooted at selected node]: :(horizontal vertical)'\
+				'*'{-f,--focus}'[Focus the selected or given node]::node selector:_bspc_selector -- node'\
+				'*'{-g,--flag}'[Set or toggle the given flag for the selected node]: :-> flag'\
+				'*'{-i,--insert-receptacle}'[Insert a receptacle node at the selected node]'\
+				'*'{-k,--kill}'[Kill the windows rooted at the selected node]'\
+				'*'{-l,--layer}"[Set the stacking layer of the selected window]:stacking layer:($layer)"\
+				'*'{-m,--to-monitor}'[Send the selected node to the given monitor]:monitor selector:_bspc_selector -- monitor'\
+				'*'{-n,--to-node}'[Transplant the selected node to the given node]:node selector:_bspc_selector -- node'\
+				'*'{-o,--presel-ratio}'[Set the splitting ratio of the preselection area]:preselect ratio: ( )'\
+				'*'{-p,--presel-dir}'[Preselect the splitting area of the selected node or cancel the preselection]: :_bspc_prefix -- "~" preselect presel_dir'\
+				'*'{-r,--ratio}'[Set the splitting ratio of the selected node (0 < ratio < 1)]: :( )'\
+				'*'{-R,--rotate}'[Rotate the tree rooted at the selected node]:angle:(90 270 180)'\
+				'*'{-s,--swap}'[Swap the selected node with the given node]:node selector:_bspc_selector -- node'\
+				'*'{-t,--state}'[Set the state of the selected window]: :_bspc_prefix -- "~" "node state" node_state '\
+				'*'{-v,--move}'[Move the selected window by dx pixels horizontally and dy pixels vertically]:dx:( ):dy:( )'\
+				'*'{-z,--resize}"[Resize the selected window by moving the given handle by dx pixels horizontally and dy pixels vertically]:handle:($resize_handle):dx:( ):dy:( )"
+			[ "$state" = flag ] && _values 'flag' "${flag[@]:#urgent}::set flag:(on off)"
 			;;
 		(desktop)
 			((CURRENT==2)) && _bspc_selector desktop
 			((CURRENT>2)) && [[ "$words[2]" != '-'* ]] && compset -n 2
+			((CURRENT>2)) && [[ "$words[CURRENT-2]" =~ "^-m|-s|--monitor|--swap$" ]] &&
+				_values 'option' '--follow[If passed, the focused desktop will stay focused]'
 			_arguments \
 				'*'{-a,--activate}'[Activate the selected or given desktop]:: :_bspc_selector -- desktop'\
 				'*'{-b,--bubble}"[Bubble the selected desktop in the given direction]:direction:($cycle_dir)"\
