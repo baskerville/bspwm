@@ -534,6 +534,9 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (m->sticky_count > 0 && d != m->desk) {
+		if (m->desk->focus != NULL && m->desk->focus->sticky) {
+			n = m->desk->focus;
+		}
 		sticky_still = false;
 		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
 		sticky_still = true;
