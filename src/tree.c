@@ -518,6 +518,8 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		return false;
 	}
 
+	bool guess = (n == NULL);
+
 	if (n == NULL && d->root != NULL) {
 		n = history_last_node(d, NULL);
 		if (n == NULL) {
@@ -534,7 +536,7 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (m->sticky_count > 0 && d != m->desk) {
-		if (m->desk->focus != NULL && m->desk->focus->sticky) {
+		if (guess && m->desk->focus != NULL && m->desk->focus->sticky) {
 			n = m->desk->focus;
 		}
 		sticky_still = false;

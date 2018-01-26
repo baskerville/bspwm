@@ -633,7 +633,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			focus_node(dst.monitor, dst.desktop, dst.desktop->focus);
+			focus_node(dst.monitor, dst.desktop, NULL);
 		} else if (streq("-a", *args) || streq("--activate", *args)) {
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
@@ -823,7 +823,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 					return;
 				}
 			}
-			focus_node(dst.monitor, dst.monitor->desk, dst.monitor->desk->focus);
+			focus_node(dst.monitor, NULL, NULL);
 		} else if (streq("-s", *args) || streq("--swap", *args)) {
 			num--, args++;
 			if (num < 1) {
