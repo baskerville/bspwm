@@ -328,7 +328,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				presel_dir(m, d, f, (rect.width >= rect.height ? DIR_EAST : DIR_SOUTH));
 			}
 		}
-		if (f->presel == NULL && p != NULL && p->vacant) {
+		while (f->presel == NULL && p != NULL && (f->vacant || brother_tree(f)->vacant)) {
 			f = p;
 			p = f->parent;
 		}
