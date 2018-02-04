@@ -336,6 +336,11 @@ There's three stacking layers: BELOW, NORMAL and ABOVE.
 
 In each layer, the window are orderered as follow: tiled & pseudo-tiled < fullscreen < floating.
 
+Receptacles
+-----------
+
+A leaf node that doesn't hold any window is called a receptacle. When a node is inserted on a receptacle in automatic mode, it will replace the receptacle. A receptacle can be inserted on a node and preselected. Receptacles can therefore be used to build a tree whose leaves are receptacles. Using the appropriate rules, one can then send windows on the leaves of this tree. This feature is used in 'examples/receptacles' to store and recreate layouts.
+
 
 Domains
 -------
