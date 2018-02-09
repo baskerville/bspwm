@@ -1391,7 +1391,9 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	}
 
 	if (sticky_still && ds != dd && ms->sticky_count > 0 && sticky_count(ns) > 0) {
-		return false;
+		if (ns->client->state != STATE_FLOATING) {
+			return false;
+		}
 	}
 
 	put_status(SBSC_MASK_NODE_TRANSFER, "node_transfer 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", ms->id, ds->id, ns->id, md->id, dd->id, nd!=NULL?nd->id:0);
