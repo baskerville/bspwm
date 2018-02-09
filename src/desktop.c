@@ -72,9 +72,7 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 	}
 
 	if (m->sticky_count > 0) {
-		sticky_still = false;
 		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
-		sticky_still = true;
 	}
 
 	show_desktop(d);
@@ -187,9 +185,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	}
 
 	if (ms->sticky_count > 0 && d_was_active) {
-		sticky_still = false;
 		transfer_sticky_nodes(ms, d, ms->desk, d->root);
-		sticky_still = true;
 	}
 
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);

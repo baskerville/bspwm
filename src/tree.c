@@ -483,7 +483,9 @@ void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n
 	if (n == NULL) {
 		return;
 	} else if (n->sticky) {
+		sticky_still = false;
 		transfer_node(m, ds, n, m, dd, dd->focus, false);
+		sticky_still = true;
 	} else {
 		/* we need references to the children because n might be freed after
 		 * the first recursive call */
@@ -539,9 +541,9 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		if (guess && m->desk->focus != NULL && m->desk->focus->sticky) {
 			n = m->desk->focus;
 		}
-		sticky_still = false;
+
 		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
-		sticky_still = true;
+
 		if (n == NULL && d->focus != NULL) {
 			n = d->focus;
 		}
@@ -1390,7 +1392,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		return false;
 	}
 
-	if (sticky_still && ds != dd && ms->sticky_count > 0 && sticky_count(ns) > 0) {
+	if (sticky_still && ms->sticky_count > 0 && sticky_count(ns) > 0 && dd != md->desk) {
 		return false;
 	}
 
@@ -1408,8 +1410,15 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	unlink_node(ms, ds, ns);
 	insert_node(md, dd, ns, nd);
 
-	if (md != ms && (ns->client == NULL || monitor_from_client(ns->client) != md)) {
-		adapt_geometry(&ms->rectangle, &md->rectangle, ns);
+	if (md != ms) {
+		if (ns->client == NULL || monitor_from_client(ns->client) != md) {
+			adapt_geometry(&ms->rectangle, &md->rectangle, ns);
+		}
+
+		if (ms->sticky_count > 0 && sticky_count(ns) > 0) {
+			ms->sticky_count -= sticky_count(ns);
+			md->sticky_count += sticky_count(ns);
+		}
 	}
 
 	if (ds != dd) {
