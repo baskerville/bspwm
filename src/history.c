@@ -60,49 +60,6 @@ void history_add(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
-void history_transfer_node(monitor_t *m, desktop_t *d, node_t *n)
-{
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if (is_descendant(h->loc.node, n)) {
-			h->loc.monitor = m;
-			h->loc.desktop = d;
-		}
-	}
-}
-
-void history_transfer_desktop(monitor_t *m, desktop_t *d)
-{
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if (h->loc.desktop == d) {
-			h->loc.monitor = m;
-		}
-	}
-}
-
-void history_swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop_t *d2, node_t *n2)
-{
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if (is_descendant(h->loc.node, n1)) {
-			h->loc.monitor = m2;
-			h->loc.desktop = d2;
-		} else if (is_descendant(h->loc.node, n2)) {
-			h->loc.monitor = m1;
-			h->loc.desktop = d1;
-		}
-	}
-}
-
-void history_swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2)
-{
-	for (history_t *h = history_head; h != NULL; h = h->next) {
-		if (h->loc.desktop == d1) {
-			h->loc.monitor = m2;
-		} else if (h->loc.desktop == d2) {
-			h->loc.monitor = m1;
-		}
-	}
-}
-
 void history_remove(desktop_t *d, node_t *n, bool deep)
 {
 	/* removing from the newest to the oldest is required */

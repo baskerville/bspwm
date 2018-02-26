@@ -1328,7 +1328,8 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		ewmh_set_wm_desktop(n1, d2);
 		ewmh_set_wm_desktop(n2, d1);
 
-		history_swap_nodes(m1, d1, n1, m2, d2, n2);
+		history_remove(d1, n1, true);
+		history_remove(d2, n2, true);
 
 		bool d1_was_focused = (d1 == mon->desk);
 		bool d2_was_focused = (d2 == mon->desk);
@@ -1432,7 +1433,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		}
 	}
 
-	history_transfer_node(md, dd, ns);
+	history_remove(ds, ns, true);
 	stack(dd, ns, false);
 
 	if (ds == dd) {

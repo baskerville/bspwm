@@ -165,7 +165,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	}
 
 	insert_desktop(md, d);
-	history_transfer_desktop(md, d);
+	history_remove(d, NULL, false);
 
 	if (d_was_active) {
 		if (follow) {
@@ -421,7 +421,8 @@ bool swap_desktops(monitor_t *m1, desktop_t *d1, monitor_t *m2, desktop_t *d2, b
 	if (m1 != m2) {
 		adapt_geometry(&m1->rectangle, &m2->rectangle, d1->root);
 		adapt_geometry(&m2->rectangle, &m1->rectangle, d2->root);
-		history_swap_desktops(m1, d1, m2, d2);
+		history_remove(d1, NULL, false);
+		history_remove(d2, NULL, false);
 		arrange(m1, d2);
 		arrange(m2, d1);
 	}
