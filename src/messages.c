@@ -644,7 +644,9 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
-			if (!activate_desktop(dst.monitor, dst.desktop)) {
+			if (activate_desktop(dst.monitor, dst.desktop)) {
+				activate_node(dst.monitor, dst.desktop, NULL);
+			} else {
 				fail(rsp, "");
 				break;
 			}
