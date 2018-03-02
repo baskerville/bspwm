@@ -252,7 +252,7 @@ void insert_desktop(monitor_t *m, desktop_t *d)
 
 void add_desktop(monitor_t *m, desktop_t *d)
 {
-	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add 0x%08X %s 0x%08X\n", d->id, d->name, m->id);
+	put_status(SBSC_MASK_DESKTOP_ADD, "desktop_add 0x%08X 0x%08X %s\n", m->id, d->id, d->name);
 
 	d->border_width = m->border_width;
 	d->window_gap = m->window_gap;
