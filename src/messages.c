@@ -38,9 +38,9 @@
 #include "settings.h"
 #include "tree.h"
 #include "window.h"
-#include "common.h"
 #include "parse.h"
 #include "messages.h"
+#include "help.h"
 
 void handle_message(char *msg, int msg_len, FILE *rsp)
 {
@@ -73,7 +73,7 @@ void handle_message(char *msg, int msg_len, FILE *rsp)
 
 	if (num < 1) {
 		free(args);
-		fail(rsp, "No arguments given.\n");
+		show_bspc_help();
 		return;
 	}
 
@@ -114,7 +114,7 @@ void process_message(char **args, int num, FILE *rsp)
 void cmd_node(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "node: Missing arguments.\n");
+		show_node_help(rsp);
 		return;
 	}
 
@@ -131,8 +131,8 @@ void cmd_node(char **args, int num, FILE *rsp)
 		}
 	}
 
-	if (num < 1) {
-		fail(rsp, "node: Missing commands.\n");
+if (num < 1) {
+		show_node_help(rsp);
 		return;
 	}
 
@@ -582,6 +582,8 @@ void cmd_node(char **args, int num, FILE *rsp)
 			kill_node(trg.monitor, trg.desktop, trg.node);
 			changed = true;
 			break;
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_node_help(rsp);
 		} else {
 			fail(rsp, "node: Unknown command: '%s'.\n", *args);
 			break;
@@ -598,7 +600,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 void cmd_desktop(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "desktop: Missing arguments.\n");
+		show_desktop_help(rsp);
 		return;
 	}
 
@@ -616,7 +618,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 	}
 
 	if (num < 1) {
-		fail(rsp, "desktop: Missing commands.\n");
+		show_desktop_help(rsp);
 		return;
 	}
 
@@ -774,6 +776,8 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 				fail(rsp, "");
 				break;
 			}
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_desktop_help(rsp);
 		} else {
 			fail(rsp, "desktop: Unknown command: '%s'.\n", *args);
 			break;
@@ -789,7 +793,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 void cmd_monitor(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "monitor: Missing arguments.\n");
+		show_monitor_help(rsp);
 		return;
 	}
 
@@ -807,7 +811,7 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 	}
 
 	if (num < 1) {
-		fail(rsp, "monitor: Missing commands.\n");
+		show_monitor_help(rsp);
 		return;
 	}
 
@@ -927,6 +931,8 @@ void cmd_monitor(char **args, int num, FILE *rsp)
 				return;
 			}
 			rename_monitor(trg.monitor, *args);
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_monitor_help(rsp);
 		} else {
 			fail(rsp, "monitor: Unknown command: '%s'.\n", *args);
 			return;
@@ -947,7 +953,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 	uint8_t d = 0;
 
 	if (num < 1) {
-		fail(rsp, "query: Missing arguments.\n");
+		show_query_help(rsp);
 		return;
 	}
 
@@ -1060,6 +1066,8 @@ void cmd_query(char **args, int num, FILE *rsp)
 			}
 		} else if (streq("--names", *args)) {
 			print_ids = false;
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_query_help(rsp);
 		} else {
 			fail(rsp, "query: Unknown option: '%s'.\n", *args);
 			goto end;
@@ -1119,7 +1127,7 @@ end:
 void cmd_rule(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "rule: Missing commands.\n");
+		show_rule_help(rsp);
 		return;
 	}
 
@@ -1173,6 +1181,8 @@ void cmd_rule(char **args, int num, FILE *rsp)
 			}
 		} else if (streq("-l", *args) || streq("--list", *args)) {
 			list_rules(rsp);
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_rule_help(rsp);
 		} else {
 			fail(rsp, "rule: Unknown command: '%s'.\n", *args);
 			return;
@@ -1184,7 +1194,7 @@ void cmd_rule(char **args, int num, FILE *rsp)
 void cmd_wm(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "wm: Missing commands.\n");
+		show_wm_help(rsp);
 		return;
 	}
 
@@ -1255,6 +1265,8 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-e", *args) || streq("--help", *args)) {
+			show_wm_help(rsp);
 		} else {
 			fail(rsp, "wm: Unknown command: '%s'.\n", *args);
 			break;
@@ -1290,6 +1302,8 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 			}
 		} else if (parse_subscriber_mask(*args, &mask)) {
 			field |= mask;
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_subscribe_help(rsp);
 		} else {
 			fail(rsp, "subscribe: Invalid argument: '%s'.\n", *args);
 			goto failed;
@@ -1340,7 +1354,7 @@ void cmd_quit(char **args, int num, FILE *rsp)
 void cmd_config(char **args, int num, FILE *rsp)
 {
 	if (num < 1) {
-		fail(rsp, "config: Missing arguments.\n");
+		show_config_help(rsp);
 		return;
 	}
 
@@ -1381,6 +1395,8 @@ void cmd_config(char **args, int num, FILE *rsp)
 				handle_failure(ret, "config -n", *args, rsp);
 				return;
 			}
+		} else if (streq("-h", *args) || streq("--help", *args)) {
+			show_config_help(rsp);
 		} else {
 			fail(rsp, "config: Unknown option: '%s'.\n", *args);
 			return;
@@ -1772,13 +1788,4 @@ void handle_failure(int code, char *src, char *val, FILE *rsp)
 			fail(rsp, "");
 			break;
 	}
-}
-
-void fail(FILE *rsp, char *fmt, ...)
-{
-	fprintf(rsp, FAILURE_MESSAGE);
-	va_list ap;
-	va_start(ap, fmt);
-	vfprintf(rsp, fmt, ap);
-	va_end(ap);
 }

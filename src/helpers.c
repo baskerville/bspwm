@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include "common.h"
 #include "bspwm.h"
 
 void warn(char *fmt, ...)
@@ -49,6 +50,15 @@ void err(char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 	exit(EXIT_FAILURE);
+}
+
+void fail(FILE *rsp, char *fmt, ...)
+{
+	fprintf(rsp, FAILURE_MESSAGE);
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(rsp, fmt, ap);
+	va_end(ap);
 }
 
 char *read_string(const char *file_path, size_t *tlen)
