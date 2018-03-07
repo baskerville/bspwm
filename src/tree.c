@@ -961,7 +961,7 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 }
 
 /* Based on https://github.com/ntrrgc/right-window */
-void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
+void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t *sel)
 {
 	xcb_rectangle_t rect = get_rectangle(ref->monitor, ref->desktop, ref->node);
 	uint32_t md = UINT32_MAX, mr = UINT32_MAX;
@@ -1012,7 +1012,7 @@ int tiled_count(node_t *n)
 	return cnt;
 }
 
-void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t sel)
+void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
 {
 	unsigned int b_area = 0;
 
@@ -1484,7 +1484,7 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 	return true;
 }
 
-bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, node_select_t sel)
+bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, node_select_t *sel)
 {
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;

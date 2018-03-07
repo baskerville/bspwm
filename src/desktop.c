@@ -86,7 +86,7 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 	return true;
 }
 
-bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, desktop_select_t sel)
+bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, desktop_select_t *sel)
 {
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;

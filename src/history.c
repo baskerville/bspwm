@@ -148,7 +148,7 @@ monitor_t *history_last_monitor(monitor_t *m)
 	return NULL;
 }
 
-bool history_find_newest_node(coordinates_t *ref, coordinates_t *dst, node_select_t sel)
+bool history_find_newest_node(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
 {
 	for (history_t *h = history_tail; h != NULL; h = h->prev) {
 		if (h->loc.node == NULL ||
@@ -163,7 +163,7 @@ bool history_find_newest_node(coordinates_t *ref, coordinates_t *dst, node_selec
 	return false;
 }
 
-bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, node_select_t sel)
+bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
 {
 	if (history_needle == NULL || record_history) {
 		history_needle = history_tail;
@@ -187,7 +187,7 @@ bool history_find_node(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst
 	return false;
 }
 
-bool history_find_newest_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t sel)
+bool history_find_newest_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t *sel)
 {
 	for (history_t *h = history_tail; h != NULL; h = h->prev) {
 		if (desktop_matches(&h->loc, ref, sel)) {
@@ -199,7 +199,7 @@ bool history_find_newest_desktop(coordinates_t *ref, coordinates_t *dst, desktop
 	return false;
 }
 
-bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel)
+bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, desktop_select_t *sel)
 {
 	if (history_needle == NULL || record_history) {
 		history_needle = history_tail;
@@ -221,7 +221,7 @@ bool history_find_desktop(history_dir_t hdi, coordinates_t *ref, coordinates_t *
 	return false;
 }
 
-bool history_find_newest_monitor(coordinates_t *ref, coordinates_t *dst, monitor_select_t sel)
+bool history_find_newest_monitor(coordinates_t *ref, coordinates_t *dst, monitor_select_t *sel)
 {
 	for (history_t *h = history_tail; h != NULL; h = h->prev) {
 		if (monitor_matches(&h->loc, ref, sel)) {
@@ -233,7 +233,7 @@ bool history_find_newest_monitor(coordinates_t *ref, coordinates_t *dst, monitor
 	return false;
 }
 
-bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, monitor_select_t sel)
+bool history_find_monitor(history_dir_t hdi, coordinates_t *ref, coordinates_t *dst, monitor_select_t *sel)
 {
 	if (history_needle == NULL || record_history) {
 		history_needle = history_tail;

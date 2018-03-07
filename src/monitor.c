@@ -362,7 +362,7 @@ bool swap_monitors(monitor_t *m1, monitor_t *m2)
 	return true;
 }
 
-monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, monitor_select_t sel)
+monitor_t *closest_monitor(monitor_t *m, cycle_dir_t dir, monitor_select_t *sel)
 {
 	monitor_t *f = (dir == CYCLE_PREV ? m->prev : m->next);
 
@@ -419,7 +419,7 @@ monitor_t *monitor_from_client(client_t *c)
 	return nearest;
 }
 
-monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t sel)
+monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t *sel)
 {
 	uint32_t dmin = UINT32_MAX;
 	monitor_t *nearest = NULL;

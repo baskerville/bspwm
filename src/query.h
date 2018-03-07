@@ -79,12 +79,12 @@ bool locate_window(xcb_window_t win, coordinates_t *loc);
 bool locate_desktop(char *name, coordinates_t *loc);
 bool locate_monitor(char *name, coordinates_t *loc);
 bool desktop_from_id(uint32_t id, coordinates_t *loc, monitor_t *mm);
-bool desktop_from_name(char *name, coordinates_t *ref, coordinates_t *dst, desktop_select_t sel, int *hits);
+bool desktop_from_name(char *name, coordinates_t *ref, coordinates_t *dst, desktop_select_t *sel, int *hits);
 bool desktop_from_index(uint16_t idx, coordinates_t *loc, monitor_t *mm);
 bool monitor_from_id(uint32_t id, coordinates_t *loc);
 bool monitor_from_index(int idx, coordinates_t *loc);
-bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel);
-bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t sel);
-bool monitor_matches(coordinates_t *loc, __attribute__((unused)) coordinates_t *ref, monitor_select_t sel);
+bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t *sel);
+bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t *sel);
+bool monitor_matches(coordinates_t *loc, __attribute__((unused)) coordinates_t *ref, monitor_select_t *sel);
 
 #endif
