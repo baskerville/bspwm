@@ -344,7 +344,7 @@ locked::
 	Ignores the *node --close* message.
 
 marked::
-	Is marked (useful for deferred operations).
+	Is marked (useful for deferred actions). A marked node becomes unmarked after being sent on a preselected node.
 
 urgent::
 	Has its urgency hint set. This flag is set externally.
