@@ -74,7 +74,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|newest|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
                         older|newer|focused|pointed|
                         biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
                                           [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
@@ -102,6 +102,9 @@ Descriptors
 
 'PATH'::
 	Selects the node at the given path.
+
+any::
+	Selects the first node that matches the given selectors.
 
 last::
 	Selects the previously focused node relative to the reference node.
@@ -192,7 +195,7 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|newest|older|newer|
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
                               <desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
@@ -202,6 +205,9 @@ Descriptors
 
 'CYCLE_DIR'::
 	Selects the desktop in the given direction relative to the reference desktop.
+
+any::
+	Selects the first desktop that matches the given selectors.
 
 last::
 	Selects the previously focused desktop relative to the reference desktop.
@@ -248,7 +254,7 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|newest|older|newer|
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|any|last|newest|older|newer|
                               focused|pointed|primary|^<n>|
                               <monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
 ----
@@ -261,6 +267,9 @@ Descriptors
 
 'CYCLE_DIR'::
 	Selects the monitor in the given (cyclic) direction relative to the reference monitor.
+
+any::
+	Selects the first monitor that matches the given selectors.
 
 last::
 	Selects the previously focused monitor relative to the reference monitor.

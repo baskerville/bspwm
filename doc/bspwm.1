@@ -4,10 +4,10 @@
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 03/07/2018
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3-52-gf83f7ef
+.\"    Source: Bspwm 0.9.3-55-g7d639d1
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/07/2018" "Bspwm 0\&.9\&.3\-52\-gf83f7ef" "Bspwm Manual"
+.TH "BSPWM" "1" "03/07/2018" "Bspwm 0\&.9\&.3\-55\-g7d639d1" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -100,7 +100,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|newest|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
                         older|newer|focused|pointed|
                         biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]active]
                                           [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
@@ -141,6 +141,11 @@ Selects the window in the given (cyclic) direction relative to the reference nod
 \fIPATH\fR
 .RS 4
 Selects the node at the given path\&.
+.RE
+.PP
+any
+.RS 4
+Selects the first node that matches the given selectors\&.
 .RE
 .PP
 last
@@ -302,7 +307,7 @@ Select a desktop\&.
 .RS 4
 .\}
 .nf
-DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|newest|older|newer|
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
                               <desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
 .fi
@@ -321,6 +326,11 @@ DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|newest|older|newer|
 \fICYCLE_DIR\fR
 .RS 4
 Selects the desktop in the given direction relative to the reference desktop\&.
+.RE
+.PP
+any
+.RS 4
+Selects the first desktop that matches the given selectors\&.
 .RE
 .PP
 last
@@ -402,7 +412,7 @@ Select a monitor\&.
 .RS 4
 .\}
 .nf
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|newest|older|newer|
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|any|last|newest|older|newer|
                               focused|pointed|primary|^<n>|
                               <monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
 .fi
@@ -426,6 +436,11 @@ Selects the monitor in the given (spacial) direction relative to the reference m
 \fICYCLE_DIR\fR
 .RS 4
 Selects the monitor in the given (cyclic) direction relative to the reference monitor\&.
+.RE
+.PP
+any
+.RS 4
+Selects the first monitor that matches the given selectors\&.
 .RE
 .PP
 last

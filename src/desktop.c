@@ -116,6 +116,20 @@ bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t di
 	return false;
 }
 
+bool find_any_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t *sel)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			coordinates_t loc = {m, d, NULL};
+			if (desktop_matches(&loc, ref, sel)) {
+				*dst = loc;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool set_layout(monitor_t *m, desktop_t *d, layout_t l)
 {
 	if (d->layout == l) {

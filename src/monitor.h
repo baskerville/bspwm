@@ -46,6 +46,7 @@ bool is_inside_monitor(monitor_t *m, xcb_point_t pt);
 monitor_t *monitor_from_point(xcb_point_t pt);
 monitor_t *monitor_from_client(client_t *c);
 monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t *sel);
+bool find_any_monitor(coordinates_t *ref, coordinates_t *dst, monitor_select_t *sel);
 bool update_monitors(void);
 
 #endif

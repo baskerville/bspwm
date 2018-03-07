@@ -134,12 +134,12 @@ _bspc() {
 		dir=(north west south east) \
 		cycle_dir=(next prev)
 	local -a jump=($dir first second brother parent 1 2) \
-		node_desc=($dir $cycle_dir last newest older newer focused pointed biggest) \
+		node_desc=($dir $cycle_dir any last newest older newer focused pointed biggest) \
 		node_mod=($node_state $flag $layer focused automatic local \
 		active leaf window same_class descendant_of ancestor_of) \
-		desktop_desc=($cycle_dir last newest older newer focused) \
+		desktop_desc=($cycle_dir any last newest older newer focused) \
 		desktop_mod=(focused occupied local urgent) \
-		monitor_desc=($dir $cycle_dir primary last newest older newer focused pointed) \
+		monitor_desc=($dir $cycle_dir any last newest older newer focused pointed primary) \
 		monitor_mod=(focused occupied) \
 		presel_dir=($dir cancel)
 	local quote="${compstate[quote]}" context state state_descr line

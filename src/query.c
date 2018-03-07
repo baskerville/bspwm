@@ -507,6 +507,8 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		find_closest_node(ref, dst, cyc, &sel);
 	} else if (parse_history_direction(desc, &hdi)) {
 		history_find_node(hdi, ref, dst, &sel);
+	} else if (streq("any", desc)) {
+		find_any_node(ref, dst, &sel);
 	} else if (streq("last", desc)) {
 		history_find_node(HISTORY_OLDER, ref, dst, &sel);
 	} else if (streq("newest", desc)) {
@@ -643,6 +645,8 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		find_closest_desktop(ref, dst, cyc, &sel);
 	} else if (parse_history_direction(desc, &hdi)) {
 		history_find_desktop(hdi, ref, dst, &sel);
+	} else if (streq("any", desc)) {
+		find_any_desktop(ref, dst, &sel);
 	} else if (streq("last", desc)) {
 		history_find_desktop(HISTORY_OLDER, ref, dst, &sel);
 	} else if (streq("newest", desc)) {
@@ -761,6 +765,8 @@ int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		dst->monitor = closest_monitor(ref->monitor, cyc, &sel);
 	} else if (parse_history_direction(desc, &hdi)) {
 		history_find_monitor(hdi, ref, dst, &sel);
+	} else if (streq("any", desc)) {
+		find_any_monitor(ref, dst, &sel);
 	} else if (streq("last", desc)) {
 		history_find_monitor(HISTORY_OLDER, ref, dst, &sel);
 	} else if (streq("newest", desc)) {

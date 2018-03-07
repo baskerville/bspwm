@@ -441,6 +441,18 @@ monitor_t *nearest_monitor(monitor_t *m, direction_t dir, monitor_select_t *sel)
 	return nearest;
 }
 
+bool find_any_monitor(coordinates_t *ref, coordinates_t *dst, monitor_select_t *sel)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		coordinates_t loc = {m, NULL, NULL};
+		if (monitor_matches(&loc, ref, sel)) {
+			*dst = loc;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool update_monitors(void)
 {
 	xcb_randr_get_screen_resources_reply_t *sres = xcb_randr_get_screen_resources_reply(dpy, xcb_randr_get_screen_resources(dpy, root), NULL);

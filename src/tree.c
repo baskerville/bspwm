@@ -960,6 +960,36 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 	}
 }
 
+void find_any_node(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			if (find_any_node_in(m, d, d->root, ref, dst, sel)) {
+				return;
+			}
+		}
+	}
+}
+
+bool find_any_node_in(monitor_t *m, desktop_t *d, node_t *n, coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
+{
+	if (n == NULL) {
+		return false;
+	} else {
+		coordinates_t loc = {m, d, n};
+		if (node_matches(&loc, ref, sel)) {
+			*dst = loc;
+			return true;
+		} else {
+			if (find_any_node_in(m, d, n->first_child, ref, dst, sel)) {
+				return true;
+			} else {
+				return find_any_node_in(m, d, n->second_child, ref, dst, sel);
+			}
+		}
+	}
+}
+
 /* Based on https://github.com/ntrrgc/right-window */
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t *sel)
 {
