@@ -964,7 +964,7 @@ node_t *find_by_id_in(node_t *r, uint32_t id)
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t sel)
 {
 	xcb_rectangle_t rect = get_rectangle(ref->monitor, ref->desktop, ref->node);
-	double md = UINT32_MAX, mr = UINT32_MAX;
+	uint32_t md = UINT32_MAX, mr = UINT32_MAX;
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		desktop_t *d = m->desk;
