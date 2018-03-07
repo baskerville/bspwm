@@ -129,17 +129,17 @@ _bspc() {
 	local -a commands=(node desktop monitor query rule wm subscribe config quit) \
 		resize_handle=(top bottom top_left top_right bottom_left bottom_right left right) \
 		node_state=(tiled pseudo_tiled floating fullscreen) \
-		flag=(hidden sticky private locked urgent) \
+		flag=(hidden sticky private locked marked urgent) \
 		layer=(below normal above) \
 		dir=(north west south east) \
 		cycle_dir=(next prev)
 	local -a jump=($dir first second brother parent 1 2) \
-		node_desc=($dir $cycle_dir last older newer focused pointed biggest) \
+		node_desc=($dir $cycle_dir last newest older newer focused pointed biggest) \
 		node_mod=($node_state $flag $layer focused automatic local \
 		active leaf window same_class descendant_of ancestor_of) \
-		desktop_desc=($cycle_dir last older newer focused) \
+		desktop_desc=($cycle_dir last newest older newer focused) \
 		desktop_mod=(focused occupied local urgent) \
-		monitor_desc=($dir $cycle_dir primary last older newer focused pointed) \
+		monitor_desc=($dir $cycle_dir primary last newest older newer focused pointed) \
 		monitor_mod=(focused occupied) \
 		presel_dir=($dir cancel)
 	local quote="${compstate[quote]}" context state state_descr line

@@ -418,6 +418,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				d->root = c;
 			}
 			cancel_presel(m, d, f);
+			set_marked(m, d, n, false);
 		}
 	}
 
@@ -660,7 +661,7 @@ node_t *make_node(uint32_t id)
 	node_t *n = calloc(1, sizeof(node_t));
 	n->id = id;
 	n->parent = n->first_child = n->second_child = NULL;
-	n->vacant = n->hidden = n->sticky = n->private = n->locked = false;
+	n->vacant = n->hidden = n->sticky = n->private = n->locked = n->marked = false;
 	n->split_ratio = split_ratio;
 	n->split_type = TYPE_VERTICAL;
 	n->birth_rotation = 0;
@@ -1927,6 +1928,21 @@ void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->locked = value;
 
 	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%08X 0x%08X 0x%08X locked %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
+
+	if (n == m->desk->focus) {
+		put_status(SBSC_MASK_REPORT);
+	}
+}
+
+void set_marked(monitor_t *m, desktop_t *d, node_t *n, bool value)
+{
+	if (n == NULL || n->marked == value) {
+		return;
+	}
+
+	n->marked = value;
+
+	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%08X 0x%08X 0x%08X marked %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 
 	if (n == m->desk->focus) {
 		put_status(SBSC_MASK_REPORT);

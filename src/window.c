@@ -179,6 +179,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
 	set_locked(m, d, n, csq->locked);
+	set_marked(m, d, n, csq->marked);
 
 	arrange(m, d);
 

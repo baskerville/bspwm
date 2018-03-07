@@ -159,6 +159,7 @@ typedef struct {
 	option_bool_t sticky;
 	option_bool_t private;
 	option_bool_t locked;
+	option_bool_t marked;
 	option_bool_t urgent;
 	option_bool_t same_class;
 	option_bool_t descendant_of;
@@ -231,6 +232,7 @@ struct node_t {
 	bool sticky;
 	bool private;
 	bool locked;
+	bool marked;
 	node_t *first_child;
 	node_t *second_child;
 	node_t *parent;
@@ -334,6 +336,7 @@ typedef struct {
 	bool sticky;
 	bool private;
 	bool locked;
+	bool marked;
 	bool center;
 	bool follow;
 	bool manage;

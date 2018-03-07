@@ -108,7 +108,7 @@ int print_report(FILE *stream)
 					fprintf(stream, ":T@");
 				}
 				int i = 0;
-				char flags[4];
+				char flags[5];
 				if (n->sticky) {
 					flags[i++] = 'S';
 				}
@@ -117,6 +117,9 @@ int print_report(FILE *stream)
 				}
 				if (n->locked) {
 					flags[i++] = 'L';
+				}
+				if (n->marked) {
+					flags[i++] = 'M';
 				}
 				flags[i] = '\0';
 				fprintf(stream, ":G%s", flags);

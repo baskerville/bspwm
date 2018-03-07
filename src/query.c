@@ -123,6 +123,7 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "\"sticky\":%s,", BOOL_STR(n->sticky));
 		fprintf(rsp, "\"private\":%s,", BOOL_STR(n->private));
 		fprintf(rsp, "\"locked\":%s,", BOOL_STR(n->locked));
+		fprintf(rsp, "\"marked\":%s,", BOOL_STR(n->marked));
 		fprintf(rsp, "\"presel\":");
 		query_presel(n->presel, rsp);
 		fprintf(rsp,",");
@@ -391,13 +392,13 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 		rect_buf = malloc(1);
 		*rect_buf = '\0';
 	}
-	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
+	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s marked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
 	        csq->monitor_desc, csq->desktop_desc, csq->node_desc,
 	        csq->state == NULL ? "" : STATE_STR(*csq->state),
 	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
 	        csq->split_dir, csq->split_ratio,
 	        ON_OFF_STR(csq->hidden), ON_OFF_STR(csq->sticky), ON_OFF_STR(csq->private),
-	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
+	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->marked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
 	        ON_OFF_STR(csq->manage), ON_OFF_STR(csq->focus), ON_OFF_STR(csq->border), rect_buf);
 	free(rect_buf);
 }
@@ -426,6 +427,7 @@ node_select_t make_node_select(void)
 		.sticky = OPTION_NONE,
 		.private = OPTION_NONE,
 		.locked = OPTION_NONE,
+		.marked = OPTION_NONE,
 		.urgent = OPTION_NONE,
 		.same_class = OPTION_NONE,
 		.descendant_of = OPTION_NONE,
@@ -507,6 +509,8 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		history_find_node(hdi, ref, dst, sel);
 	} else if (streq("last", desc)) {
 		history_find_node(HISTORY_OLDER, ref, dst, sel);
+	} else if (streq("newest", desc)) {
+		history_find_newest_node(ref, dst, sel);
 	} else if (streq("biggest", desc)) {
 		find_biggest(ref, dst, sel);
 	} else if (streq("pointed", desc)) {
@@ -641,6 +645,8 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		history_find_desktop(hdi, ref, dst, sel);
 	} else if (streq("last", desc)) {
 		history_find_desktop(HISTORY_OLDER, ref, dst, sel);
+	} else if (streq("newest", desc)) {
+		history_find_newest_desktop(ref, dst, sel);
 	} else if (streq("focused", desc)) {
 		coordinates_t loc = {mon, mon->desk, NULL};
 		if (desktop_matches(&loc, ref, sel)) {
@@ -757,6 +763,8 @@ int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		history_find_monitor(hdi, ref, dst, sel);
 	} else if (streq("last", desc)) {
 		history_find_monitor(HISTORY_OLDER, ref, dst, sel);
+	} else if (streq("newest", desc)) {
+		history_find_newest_monitor(ref, dst, sel);
 	} else if (streq("primary", desc)) {
 		if (pri_mon != NULL) {
 			coordinates_t loc = {pri_mon, NULL, NULL};
@@ -1002,6 +1010,7 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t sel)
 	NFLAG(sticky)
 	NFLAG(private)
 	NFLAG(locked)
+	NFLAG(marked)
 #undef NFLAG
 
 	if (loc->node->client == NULL &&

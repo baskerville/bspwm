@@ -74,7 +74,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|newest|
                         older|newer|focused|pointed|
                         biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
                                           [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
@@ -82,7 +82,7 @@ NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|last|
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
-FLAG := hidden|sticky|private|locked|urgent
+FLAG := hidden|sticky|private|locked|marked|urgent
 
 LAYER := below|normal|above
 
@@ -105,6 +105,9 @@ Descriptors
 
 last::
 	Selects the previously focused node relative to the reference node.
+
+newest::
+	Selects the newest node in the history of the focused node.
 
 older::
 	Selects the node older than the reference node in the history.
@@ -177,7 +180,7 @@ Modifiers
 [!]ancestor_of::
 	Only consider nodes that are or aren't ancestors of the reference node.
 
-[!](hidden|sticky|private|locked|urgent)::
+[!](hidden|sticky|private|locked|marked|urgent)::
 	Only consider windows that have or don't have the given flag set.
 
 [!](below|normal|above)::
@@ -189,7 +192,7 @@ Desktop
 Select a desktop.
 
 ----
-DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|older|newer|
+DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
                               <desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
 ----
@@ -202,6 +205,9 @@ Descriptors
 
 last::
 	Selects the previously focused desktop relative to the reference desktop.
+
+newest::
+	Selects the newest desktop in the history of the focused desktops.
 
 older::
 	Selects the desktop older than the reference desktop in the history.
@@ -242,7 +248,7 @@ Monitor
 Select a monitor.
 
 ----
-MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|older|newer|
+MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|last|newest|older|newer|
                               focused|pointed|primary|^<n>|
                               <monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
 ----
@@ -258,6 +264,9 @@ Descriptors
 
 last::
 	Selects the previously focused monitor relative to the reference monitor.
+
+newest::
+	Selects the newest monitor in the history of the focused monitors.
 
 older::
 	Selects the monitor older than the reference monitor in the history.
@@ -324,6 +333,9 @@ private::
 
 locked::
 	Ignores the *node --close* message.
+
+marked::
+	Is marked (useful for deferred operations).
 
 urgent::
 	Has its urgency hint set. This flag is set externally.
@@ -408,7 +420,7 @@ Commands
 *-t*, *--state* [~](tiled|pseudo_tiled|floating|fullscreen)::
 	Set the state of the selected window. If *~* is present and the current state matches the given state, then the argument is interpreted as the last state.
 
-*-g*, *--flag* hidden|sticky|private|locked[=on|off]::
+*-g*, *--flag* hidden|sticky|private|locked|marked[=on|off]::
 	Set or toggle the given flag for the selected node.
 
 *-l*, *--layer* below|normal|above::
@@ -574,7 +586,7 @@ rule 'COMMANDS'
 Commands
 ^^^^^^^^
 
-*-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
+*-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
 	Create a new rule.
 
 *-r*, *--remove* ^<n>|head|tail|(<class_name>|\*)[:(<instance_name>|*)]...::
@@ -831,7 +843,7 @@ Events
 'node_state <monitor_id> <desktop_id> <node_id> tiled|pseudo_tiled|floating|fullscreen on|off'::
 	The state of a window changed.
 
-'node_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|urgent on|off'::
+'node_flag <monitor_id> <desktop_id> <node_id> hidden|sticky|private|locked|marked|urgent on|off'::
 	One of the flags of a node changed.
 
 'node_layer <monitor_id> <desktop_id> <node_id> below|normal|above'::
