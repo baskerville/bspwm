@@ -71,6 +71,9 @@ void handle_event(xcb_generic_event_t *evt)
 		case XCB_FOCUS_IN:
 			focus_in(evt);
 			break;
+		case XCB_MAPPING_NOTIFY:
+			mapping_notify(evt);
+			break;
 		case 0:
 			process_error(evt);
 			break;
@@ -517,6 +520,26 @@ void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsig
 	HANDLE_WM_STATE(SKIP_PAGER)
 	}
 #undef HANDLE_WM_STATE
+}
+
+void mapping_notify(xcb_generic_event_t *evt)
+{
+	if (mapping_events_count == 0) {
+		return;
+	}
+
+	xcb_mapping_notify_event_t *e = (xcb_mapping_notify_event_t *) evt;
+
+	if (e->request == XCB_MAPPING_POINTER) {
+		return;
+	}
+
+	if (mapping_events_count > 0) {
+		mapping_events_count--;
+	}
+
+	ungrab_buttons();
+	grab_buttons();
 }
 
 void process_error(xcb_generic_event_t *evt)

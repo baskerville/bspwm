@@ -718,6 +718,9 @@ Global Settings
 'pointer_follows_monitor'::
 	When focusing a monitor, put the pointer at its center.
 
+'mapping_events_count'::
+	Handle the next *mapping_events_count* mapping notify events. A negative value implies that every event needs to be handled.
+
 'ignore_ewmh_focus'::
 	Ignore EWMH focus requests coming from applications.
 

@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include "bspwm.h"
 #include "desktop.h"
@@ -1554,6 +1555,11 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("mapping_events_count", name)) {
+		if (sscanf(value, "%" SCNi8, &mapping_events_count) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("directional_focus_tightness", name)) {
 		tightness_t p;
 		if (parse_tightness(value, &p)) {
@@ -1717,6 +1723,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", status_prefix);
 	} else if (streq("initial_polarity", name)) {
 		fprintf(rsp, "%s", CHILD_POL_STR(initial_polarity));
+	} else if (streq("mapping_events_count", name)) {
+		fprintf(rsp, "%" PRIi8, mapping_events_count);
 	} else if (streq("directional_focus_tightness", name)) {
 		fprintf(rsp, "%s", TIGHTNESS_STR(directional_focus_tightness));
 	} else if (streq("pointer_modifier", name)) {

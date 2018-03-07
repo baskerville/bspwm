@@ -56,6 +56,7 @@
 
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
+#define MAPPING_EVENTS_COUNT        1
 
 #define REMOVE_DISABLED_MONITORS    false
 #define REMOVE_UNPLUGGED_MONITORS   false
@@ -79,6 +80,7 @@ tightness_t directional_focus_tightness;
 uint16_t pointer_modifier;
 uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];
+int8_t mapping_events_count;
 
 bool borderless_monocle;
 bool gapless_monocle;

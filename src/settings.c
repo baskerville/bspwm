@@ -60,6 +60,7 @@ void load_settings(void)
 	directional_focus_tightness = TIGHTNESS_HIGH;
 	pointer_modifier = POINTER_MODIFIER;
 	pointer_motion_interval = POINTER_MOTION_INTERVAL;
+	mapping_events_count = MAPPING_EVENTS_COUNT;
 
 	pointer_actions[0] = ACTION_MOVE;
 	pointer_actions[1] = ACTION_RESIZE_SIDE;
