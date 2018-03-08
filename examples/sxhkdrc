@@ -32,7 +32,7 @@ super + m
 
 # send the newest marked node to the newest preselected node
 super + y
-	bspc newest.marked.local -n newest.!automatic.local
+	bspc node newest.marked.local -n newest.!automatic.local
 
 # swap the current node and the biggest node
 super + g
