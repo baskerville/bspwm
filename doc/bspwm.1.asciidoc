@@ -724,6 +724,9 @@ Global Settings
 'ignore_ewmh_focus'::
 	Ignore EWMH focus requests coming from applications.
 
+'ignore_ewmh_fullscreen'::
+	Block the fullscreen state transitions that originate from an EWMH request. The possible values are: *none*, *all*, or a comma separated list of the following values: *enter*, *exit*.
+
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
 

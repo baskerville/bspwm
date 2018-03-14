@@ -77,6 +77,7 @@ void load_settings(void)
 	click_to_focus = CLICK_TO_FOCUS;
 	swallow_first_click = SWALLOW_FIRST_CLICK;
 	ignore_ewmh_focus = IGNORE_EWMH_FOCUS;
+	ignore_ewmh_fullscreen = IGNORE_EWMH_FULLSCREEN;
 
 	center_pseudo_tiled = CENTER_PSEUDO_TILED;
 	honor_size_hints = HONOR_SIZE_HINTS;

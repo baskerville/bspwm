@@ -1568,6 +1568,14 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("ignore_ewmh_fullscreen", name)) {
+		state_transition_t m;
+		if (parse_state_transition(value, &m)) {
+			ignore_ewmh_fullscreen = m;
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("pointer_modifier", name)) {
 		if (parse_modifier_mask(value, &pointer_modifier)) {
 			ungrab_buttons();
@@ -1727,6 +1735,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%" PRIi8, mapping_events_count);
 	} else if (streq("directional_focus_tightness", name)) {
 		fprintf(rsp, "%s", TIGHTNESS_STR(directional_focus_tightness));
+	} else if (streq("ignore_ewmh_fullscreen", name)) {
+		print_ignore_request(ignore_ewmh_fullscreen, rsp);
 	} else if (streq("pointer_modifier", name)) {
 		print_modifier_mask(pointer_modifier, rsp);
 	} else if (streq("click_to_focus", name)) {

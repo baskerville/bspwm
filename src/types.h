@@ -144,6 +144,11 @@ typedef enum {
 	TIGHTNESS_HIGH,
 } tightness_t;
 
+typedef enum {
+	STATE_TRANSITION_ENTER = 1 << 0,
+	STATE_TRANSITION_EXIT = 1 << 1,
+} state_transition_t;
+
 typedef struct {
 	option_bool_t automatic;
 	option_bool_t focused;

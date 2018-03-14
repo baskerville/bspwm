@@ -315,7 +315,7 @@ _bspc() {
 			local -a look behaviour input
 			# Boolean settings are identified by index!
 			look=(borderless_monocle gapless_monocle {normal,active,focused}_border_color {top,right,bottom,left}_padding presel_feedback_color border_width window_gap)
-			behaviour=(single_monocle mapping_events_count ignore_ewmh_focus center_pseudo_tiled honor_size_hints remove_disabled_monitors remove_unplugged_monitors merge_overlapping_monitors status_prefix external_rules_command split_ratio initial_polarity directional_focus_tightness status_prefix)
+			behaviour=(single_monocle mapping_events_count ignore_ewmh_focus ignore_ewmh_fullscreen center_pseudo_tiled honor_size_hints remove_disabled_monitors remove_unplugged_monitors merge_overlapping_monitors status_prefix external_rules_command split_ratio initial_polarity directional_focus_tightness status_prefix)
 			input=({swallow_first_click,focus_follows_pointer,pointer_follows_{focus,monitor}} click_to_focus pointer_motion_interval pointer_modifier pointer_action{1,2,3} )
 			if [[ "$CURRENT" == (2|3) ]];then
 				_arguments \

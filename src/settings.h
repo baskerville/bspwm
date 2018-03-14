@@ -53,6 +53,7 @@
 #define CLICK_TO_FOCUS              -1
 #define SWALLOW_FIRST_CLICK         false
 #define IGNORE_EWMH_FOCUS           false
+#define IGNORE_EWMH_FULLSCREEN      0
 
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
@@ -93,6 +94,7 @@ bool pointer_follows_monitor;
 int8_t click_to_focus;
 bool swallow_first_click;
 bool ignore_ewmh_focus;
+state_transition_t ignore_ewmh_fullscreen;
 
 bool center_pseudo_tiled;
 bool honor_size_hints;

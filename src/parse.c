@@ -267,6 +267,40 @@ bool parse_child_polarity(char *s, child_polarity_t *p)
 	return false;
 }
 
+bool parse_state_transition(char *s, state_transition_t *m)
+{
+	if (streq("none", s)) {
+		*m = 0;
+		return true;
+	} else if (streq("all", s)) {
+		*m = STATE_TRANSITION_ENTER | STATE_TRANSITION_EXIT;
+		return true;
+	} else {
+		state_transition_t w = 0;
+		char *x = copy_string(s, strlen(s));
+		char *key = strtok(x, ",");
+		while (key != NULL) {
+			if (streq("enter", key)) {
+				w |= STATE_TRANSITION_ENTER;
+			} else if (streq("exit", key)) {
+				w |= STATE_TRANSITION_EXIT;
+			} else {
+				free(x);
+				return false;
+			}
+			key = strtok(NULL, ",");
+		}
+		free(x);
+		if (w != 0) {
+			*m = w;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return false;
+}
+
 bool parse_tightness(char *s, tightness_t *t)
 {
 	if (streq("high", s)) {

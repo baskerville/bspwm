@@ -64,6 +64,7 @@ void fprint_monitor_id(monitor_t *m, FILE *rsp);
 void fprint_monitor_name(monitor_t *m, FILE *rsp);
 void fprint_desktop_id(desktop_t *d, FILE *rsp);
 void fprint_desktop_name(desktop_t *d, FILE *rsp);
+void print_ignore_request(state_transition_t st, FILE *rsp);
 void print_modifier_mask(uint16_t m, FILE *rsp);
 void print_button_index(int8_t b, FILE *rsp);
 void print_pointer_action(pointer_action_t a, FILE *rsp);

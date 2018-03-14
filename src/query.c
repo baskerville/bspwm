@@ -312,6 +312,22 @@ void fprint_desktop_name(desktop_t *d, FILE *rsp)
 	fprintf(rsp, "%s\n", d->name);
 }
 
+void print_ignore_request(state_transition_t st, FILE *rsp)
+{
+	if (st == 0) {
+		fprintf(rsp, "none");
+	} else {
+		unsigned int cnt = 0;
+		if (st & STATE_TRANSITION_ENTER) {
+			fprintf(rsp, "enter");
+			cnt++;
+		}
+		if (st & STATE_TRANSITION_EXIT) {
+			fprintf(rsp, "%sexit", cnt > 0 ? "," : "");
+		}
+	}
+}
+
 void print_modifier_mask(uint16_t m, FILE *rsp)
 {
 	switch (m) {

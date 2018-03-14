@@ -448,14 +448,18 @@ void motion_notify(xcb_generic_event_t *evt)
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action)
 {
 	if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-		if (action == XCB_EWMH_WM_STATE_ADD) {
+		if (action == XCB_EWMH_WM_STATE_ADD && (ignore_ewmh_fullscreen & STATE_TRANSITION_ENTER) == 0) {
 			set_state(m, d, n, STATE_FULLSCREEN);
-		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE && (ignore_ewmh_fullscreen & STATE_TRANSITION_EXIT) == 0) {
 			if (n->client->state == STATE_FULLSCREEN) {
 				set_state(m, d, n, n->client->last_state);
 			}
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
-			set_state(m, d, n, IS_FULLSCREEN(n->client) ? n->client->last_state : STATE_FULLSCREEN);
+			client_state_t next_state = IS_FULLSCREEN(n->client) ? n->client->last_state : STATE_FULLSCREEN;
+			if ((next_state == STATE_FULLSCREEN && (ignore_ewmh_fullscreen & STATE_TRANSITION_ENTER) == 0) ||
+			    (next_state != STATE_FULLSCREEN && (ignore_ewmh_fullscreen & STATE_TRANSITION_EXIT) == 0)) {
+				set_state(m, d, n, next_state);
+			}
 		}
 		arrange(m, d);
 	} else if (state == ewmh->_NET_WM_STATE_BELOW) {
