@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 03/14/2018
+.\"      Date: 03/28/2018
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.3-59-g14d575a
+.\"    Source: Bspwm 0.9.3-60-g59a9785
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/14/2018" "Bspwm 0\&.9\&.3\-59\-g14d575a" "Bspwm Manual"
+.TH "BSPWM" "1" "03/28/2018" "Bspwm 0\&.9\&.3\-60\-g59a9785" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1228,7 +1228,8 @@ Button used for focusing a window (or a monitor)\&. The possible values are:
 \fBbutton2\fR,
 \fBbutton3\fR,
 \fBany\fR,
-\fBnone\fR\&.
+\fBnone\fR\&. Defaults to
+\fBbutton1\fR\&.
 .RE
 .PP
 \fIswallow_first_click\fR
@@ -1263,7 +1264,8 @@ mapping notify events\&. A negative value implies that every event needs to be h
 .PP
 \fIignore_ewmh_focus\fR
 .RS 4
-Ignore EWMH focus requests coming from applications\&.
+Ignore EWMH focus requests coming from applications\&. Defaults to
+\fItrue\fR\&.
 .RE
 .PP
 \fIignore_ewmh_fullscreen\fR
@@ -1288,17 +1290,20 @@ Apply ICCCM window size hints\&.
 .PP
 \fIremove_disabled_monitors\fR
 .RS 4
-Consider disabled monitors as disconnected\&.
+Consider disabled monitors as disconnected\&. Defaults to
+\fItrue\fR\&.
 .RE
 .PP
 \fIremove_unplugged_monitors\fR
 .RS 4
-Remove unplugged monitors\&.
+Remove unplugged monitors\&. Defaults to
+\fItrue\fR\&.
 .RE
 .PP
 \fImerge_overlapping_monitors\fR
 .RS 4
-Merge overlapping monitors (the bigger remains)\&.
+Merge overlapping monitors (the bigger remains)\&. Defaults to
+\fItrue\fR\&.
 .RE
 .SS "Monitor and Desktop Settings"
 .PP

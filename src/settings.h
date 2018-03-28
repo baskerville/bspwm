@@ -50,18 +50,18 @@
 #define FOCUS_FOLLOWS_POINTER       false
 #define POINTER_FOLLOWS_FOCUS       false
 #define POINTER_FOLLOWS_MONITOR     false
-#define CLICK_TO_FOCUS              -1
+#define CLICK_TO_FOCUS              XCB_BUTTON_INDEX_1
 #define SWALLOW_FIRST_CLICK         false
-#define IGNORE_EWMH_FOCUS           false
+#define IGNORE_EWMH_FOCUS           true
 #define IGNORE_EWMH_FULLSCREEN      0
 
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
 #define MAPPING_EVENTS_COUNT        1
 
-#define REMOVE_DISABLED_MONITORS    false
-#define REMOVE_UNPLUGGED_MONITORS   false
-#define MERGE_OVERLAPPING_MONITORS  false
+#define REMOVE_DISABLED_MONITORS    true
+#define REMOVE_UNPLUGGED_MONITORS   true
+#define MERGE_OVERLAPPING_MONITORS  true
 
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
