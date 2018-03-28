@@ -1,3 +1,20 @@
+# From 0.9.3 to 0.9.4
+
+## Changes
+
+- The following events: `node_{manage,unmanage}` are now `node_{add,remove}`.
+
+## Additions
+
+- New monitor/desktop/node descriptors: `any`, `newest`.
+- New node flag: `marked`.
+- New monitor descriptor: `pointed`.
+- New *wm* command: `--reorder-monitors`.
+- Receptacles are now described in the manual.
+- New `--follow` option added to `node -{m,d,n,s}` and `desktop -{m,s}`.
+- The *subscribe* command now has the following options: `--fifo`, `--count`.
+- New settings: `ignore_ewmh_fullscreen`, `mapping_events_count`.
+
 # From 0.9.2 to 0.9.3
 
 ## Changes
