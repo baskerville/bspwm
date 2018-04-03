@@ -722,7 +722,7 @@ Global Settings
 	Handle the next *mapping_events_count* mapping notify events. A negative value implies that every event needs to be handled.
 
 'ignore_ewmh_focus'::
-	Ignore EWMH focus requests coming from applications. Defaults to 'true'.
+	Ignore EWMH focus requests coming from applications.
 
 'ignore_ewmh_fullscreen'::
 	Block the fullscreen state transitions that originate from an EWMH request. The possible values are: *none*, *all*, or a comma separated list of the following values: *enter*, *exit*.
@@ -734,13 +734,13 @@ Global Settings
 	Apply ICCCM window size hints.
 
 'remove_disabled_monitors'::
-	Consider disabled monitors as disconnected. Defaults to 'true'.
+	Consider disabled monitors as disconnected.
 
 'remove_unplugged_monitors'::
-	Remove unplugged monitors. Defaults to 'true'.
+	Remove unplugged monitors.
 
 'merge_overlapping_monitors'::
-	Merge overlapping monitors (the bigger remains). Defaults to 'true'.
+	Merge overlapping monitors (the bigger remains).
 
 Monitor and Desktop Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
