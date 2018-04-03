@@ -460,7 +460,7 @@ bool update_monitors(void)
 		return false;
 	}
 
-	monitor_t *m, *mm = NULL;
+	monitor_t *last_wired = NULL;
 
 	int len = xcb_randr_get_screen_resources_outputs_length(sres);
 	xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_outputs(sres);
@@ -470,7 +470,7 @@ bool update_monitors(void)
 		cookies[i] = xcb_randr_get_output_info(dpy, outputs[i], XCB_CURRENT_TIME);
 	}
 
-	for (m = mon_head; m != NULL; m = m->next) {
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		m->wired = false;
 	}
 
@@ -481,23 +481,23 @@ bool update_monitors(void)
 				xcb_randr_get_crtc_info_reply_t *cir = xcb_randr_get_crtc_info_reply(dpy, xcb_randr_get_crtc_info(dpy, info->crtc, XCB_CURRENT_TIME), NULL);
 				if (cir != NULL) {
 					xcb_rectangle_t rect = (xcb_rectangle_t) {cir->x, cir->y, cir->width, cir->height};
-					mm = get_monitor_by_randr_id(outputs[i]);
-					if (mm != NULL) {
-						update_root(mm, &rect);
-						mm->wired = true;
+					last_wired = get_monitor_by_randr_id(outputs[i]);
+					if (last_wired != NULL) {
+						update_root(last_wired, &rect);
+						last_wired->wired = true;
 					} else {
 						char *name = (char *) xcb_randr_get_output_info_name(info);
 						size_t len = (size_t) xcb_randr_get_output_info_name_length(info);
 						char *name_copy = copy_string(name, len);
-						mm = make_monitor(name_copy, &rect, XCB_NONE);
+						last_wired = make_monitor(name_copy, &rect, XCB_NONE);
 						free(name_copy);
-						mm->randr_id = outputs[i];
-						add_monitor(mm);
+						last_wired->randr_id = outputs[i];
+						add_monitor(last_wired);
 					}
 				}
 				free(cir);
 			} else if (!remove_disabled_monitors && info->connection != XCB_RANDR_CONNECTION_DISCONNECTED) {
-				m = get_monitor_by_randr_id(outputs[i]);
+				monitor_t *m = get_monitor_by_randr_id(outputs[i]);
 				if (m != NULL) {
 					m->wired = true;
 				}
@@ -514,7 +514,7 @@ bool update_monitors(void)
 
 	/* handle overlapping monitors */
 	if (merge_overlapping_monitors) {
-		m = mon_head;
+		monitor_t *m = mon_head;
 		while (m != NULL) {
 			monitor_t *next = m->next;
 			if (m->wired) {
@@ -522,8 +522,8 @@ bool update_monitors(void)
 				while (mb != NULL) {
 					monitor_t *mb_next = mb->next;
 					if (m != mb && mb->wired && contains(m->rectangle, mb->rectangle)) {
-						if (mm == mb) {
-							mm = m;
+						if (last_wired == mb) {
+							last_wired = m;
 						}
 						if (next == mb) {
 							next = mb_next;
@@ -540,11 +540,11 @@ bool update_monitors(void)
 
 	/* merge and remove disconnected monitors */
 	if (remove_unplugged_monitors) {
-		m = mon_head;
+		monitor_t *m = mon_head;
 		while (m != NULL) {
 			monitor_t *next = m->next;
 			if (!m->wired) {
-				merge_monitors(m, mm);
+				merge_monitors(m, last_wired);
 				remove_monitor(m);
 			}
 			m = next;
@@ -552,7 +552,7 @@ bool update_monitors(void)
 	}
 
 	/* add one desktop to each new monitor */
-	for (m = mon_head; m != NULL; m = m->next) {
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		if (m->desk == NULL) {
 			add_desktop(m, make_desktop(NULL, XCB_NONE));
 		}
