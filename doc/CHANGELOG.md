@@ -1,3 +1,10 @@
+# From 0.9.4 to 0.9.5
+
+## Changes
+
+- Fix unintended resize by mouse behavioral change
+- Disable 4 default options (`IGNORE_EWMH_FOCUS`, `REMOVE_DISABLED_MONITORS`, `REMOVE_UNPLUGGED_MONITORS` and  `MERGE_OVERLAPPING_MONITORS`)
+
 # From 0.9.3 to 0.9.4
 
 ## Changes
