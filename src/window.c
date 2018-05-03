@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <xcb/shape.h>
 #include "bspwm.h"
 #include "ewmh.h"
 #include "monitor.h"
@@ -262,13 +263,14 @@ void initialize_presel_feedback(node_t *n)
 	}
 
 	xcb_window_t win = xcb_generate_id(dpy);
-	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_SAVE_UNDER | XCB_CW_EVENT_MASK;
-	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1, focus_follows_pointer ? XCB_EVENT_MASK_ENTER_WINDOW : 0};
+	uint32_t mask = XCB_CW_BACK_PIXEL | XCB_CW_SAVE_UNDER;
+	uint32_t values[] = {get_color_pixel(presel_feedback_color), 1};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, win, root, 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			          XCB_COPY_FROM_PARENT, mask, values);
 
 	xcb_icccm_set_wm_class(dpy, win, sizeof(PRESEL_FEEDBACK_IC), PRESEL_FEEDBACK_IC);
-	window_grab_buttons(win);
+	/* Make presel window's input shape NULL to pass any input to window below */
+	xcb_shape_rectangles(dpy, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, XCB_CLIP_ORDERING_UNSORTED, win, 0, 0, 0, NULL);
 	stacking_list_t *s = stack_tail;
 	while (s != NULL && !IS_TILED(s->node->client)) {
 		s = s->prev;
