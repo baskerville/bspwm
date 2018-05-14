@@ -482,15 +482,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	char *desc_copy = copy_string(desc, strlen(desc));
 	desc = desc_copy;
 
-	char *hash = NULL;
-	char *path = strrchr(desc, '@');
-	if (path == NULL) {
-		hash = strrchr(desc, '#');
-	} else {
-		if (path != desc && *(path - 1) == '#') {
-			hash = path - 1;
-		}
-	}
+	char *hash = strrchr(desc, '#');
 
 	if (hash != NULL) {
 		*hash = '\0';
