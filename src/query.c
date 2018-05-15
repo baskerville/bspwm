@@ -483,6 +483,18 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	desc = desc_copy;
 
 	char *hash = strrchr(desc, '#');
+	char *path = strrchr(desc, '@');
+	char *colon = strrchr(desc, ':');
+
+	/* Discard hashes inside a DESKTOP_SEL */
+	if (hash != NULL && colon != NULL && path != NULL &&
+	    path < hash && hash < colon) {
+		if (path > desc && *(path - 1) == '#') {
+			hash = path - 1;
+		} else {
+			hash = NULL;
+		}
+	}
 
 	if (hash != NULL) {
 		*hash = '\0';
@@ -497,7 +509,6 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	}
 
 	node_select_t sel = make_node_select();
-	char *colon = strrchr(desc, ':');
 
 	if (!parse_node_modifiers(colon != NULL ? colon : desc, &sel)) {
 		free(desc_copy);
