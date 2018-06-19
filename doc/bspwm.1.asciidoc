@@ -75,10 +75,10 @@ Select a node.
 
 ----
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
-                        older|newer|focused|pointed|
-                        biggest|<node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
-                                          [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
-                                          [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
+                        older|newer|focused|pointed|biggest|smallest
+                        <node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
+                                  [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
+                                  [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -126,6 +126,9 @@ pointed::
 
 biggest::
 	Selects the biggest window.
+
+smallest::
+	Selects the smallest window.
 
 <node_id>::
 	Selects the node with the given ID.

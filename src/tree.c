@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "ewmh.h"
@@ -1042,9 +1043,14 @@ int tiled_count(node_t *n)
 	return cnt;
 }
 
-void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
+void find_by_area(area_peak_t ap, coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
 {
-	unsigned int b_area = 0;
+	unsigned int p_area;
+	if (ap == AREA_BIGGEST) {
+		p_area = 0;
+	} else {
+		p_area = UINT_MAX;
+	}
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
@@ -1054,9 +1060,9 @@ void find_biggest(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
 					continue;
 				}
 				unsigned int f_area = node_area(d, f);
-				if (f_area > b_area) {
+				if ((ap == AREA_BIGGEST && f_area > p_area) || (ap == AREA_SMALLEST && f_area < p_area)) {
 					*dst = loc;
-					b_area = f_area;
+					p_area = f_area;
 				}
 			}
 		}

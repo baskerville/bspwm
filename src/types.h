@@ -145,6 +145,11 @@ typedef enum {
 } tightness_t;
 
 typedef enum {
+	AREA_BIGGEST,
+	AREA_SMALLEST,
+} area_peak_t;
+
+typedef enum {
 	STATE_TRANSITION_ENTER = 1 << 0,
 	STATE_TRANSITION_EXIT = 1 << 1,
 } state_transition_t;

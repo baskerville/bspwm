@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 04/25/2018
+.\"      Date: 06/19/2018
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.5
+.\"    Source: Bspwm 0.9.5-3-gdb5b0cd
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/25/2018" "Bspwm 0\&.9\&.5" "Bspwm Manual"
+.TH "BSPWM" "1" "06/19/2018" "Bspwm 0\&.9\&.5\-3\-gdb5b0cd" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,10 +101,10 @@ Select a node\&.
 .\}
 .nf
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
-                        older|newer|focused|pointed|
-                        biggest|<node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]active]
-                                          [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
-                                          [\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
+                        older|newer|focused|pointed|biggest|smallest
+                        <node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]active]
+                                  [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
+                                  [\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
 
@@ -181,6 +181,11 @@ Selects the window under the pointer\&.
 biggest
 .RS 4
 Selects the biggest window\&.
+.RE
+.PP
+smallest
+.RS 4
+Selects the smallest window\&.
 .RE
 .PP
 <node_id>

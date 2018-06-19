@@ -134,7 +134,7 @@ _bspc() {
 		dir=(north west south east) \
 		cycle_dir=(next prev)
 	local -a jump=($dir first second brother parent 1 2) \
-		node_desc=($dir $cycle_dir any last newest older newer focused pointed biggest) \
+		node_desc=($dir $cycle_dir any last newest older newer focused pointed biggest smallest) \
 		node_mod=($node_state $flag $layer focused automatic local \
 		active leaf window same_class descendant_of ancestor_of) \
 		desktop_desc=($cycle_dir any last newest older newer focused) \

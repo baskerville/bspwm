@@ -533,7 +533,9 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("newest", desc)) {
 		history_find_newest_node(ref, dst, &sel);
 	} else if (streq("biggest", desc)) {
-		find_biggest(ref, dst, &sel);
+		find_by_area(AREA_BIGGEST, ref, dst, &sel);
+	} else if (streq("smallest", desc)) {
+		find_by_area(AREA_SMALLEST, ref, dst, &sel);
 	} else if (streq("pointed", desc)) {
 		xcb_window_t win = XCB_NONE;
 		query_pointer(&win, NULL);
