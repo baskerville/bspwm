@@ -75,7 +75,7 @@ Select a node.
 
 ----
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
-                        older|newer|focused|pointed|biggest|smallest
+                        older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
                                   [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
                                   [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
