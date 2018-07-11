@@ -467,7 +467,7 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	d->focus = n;
-	history_add(m, d, n);
+	history_add(m, d, n, false);
 
 	put_status(SBSC_MASK_REPORT);
 
@@ -587,7 +587,7 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	d->focus = n;
 	ewmh_update_active_window();
-	history_add(m, d, n);
+	history_add(m, d, n, true);
 
 	put_status(SBSC_MASK_REPORT);
 

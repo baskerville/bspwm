@@ -544,7 +544,7 @@ void restore_history(jsmntok_t **t, char *json)
 		coordinates_t loc = {NULL, NULL, NULL};
 		restore_coordinates(&loc, t, json);
 		if (loc.monitor != NULL && loc.desktop != NULL) {
-			history_add(loc.monitor, loc.desktop, loc.node);
+			history_add(loc.monitor, loc.desktop, loc.node, true);
 		}
 	}
 }

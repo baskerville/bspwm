@@ -27,6 +27,7 @@
 #include "bspwm.h"
 #include "tree.h"
 #include "query.h"
+#include "history.h"
 
 history_t *make_history(monitor_t *m, desktop_t *d, node_t *n)
 {
@@ -37,26 +38,76 @@ history_t *make_history(monitor_t *m, desktop_t *d, node_t *n)
 	return h;
 }
 
-void history_add(monitor_t *m, desktop_t *d, node_t *n)
+void history_add(monitor_t *m, desktop_t *d, node_t *n, bool focused)
 {
 	if (!record_history) {
 		return;
 	}
-	history_needle = NULL;
+
+	if (focused) {
+		history_needle = NULL;
+	}
+
 	history_t *h = make_history(m, d, n);
+
 	if (history_head == NULL) {
 		history_head = history_tail = h;
 	} else if ((n != NULL && history_tail->loc.node != n) || (n == NULL && d != history_tail->loc.desktop)) {
+		history_t *ip = focused ? history_tail : NULL;
+
 		for (history_t *hh = history_tail; hh != NULL; hh = hh->prev) {
 			if ((n != NULL && hh->loc.node == n) || (n == NULL && d == hh->loc.desktop)) {
 				hh->latest = false;
 			}
+			if (ip == NULL && ((n != NULL && hh->loc.desktop == d) || (n == NULL && hh->loc.monitor == m))) {
+				ip = hh;
+			}
 		}
-		history_tail->next = h;
-		h->prev = history_tail;
-		history_tail = h;
+
+		if (ip != NULL) {
+			history_insert_after(h, ip);
+		} else {
+			ip = history_head;
+			if (n != NULL) {
+				for (history_t *hh = history_head; hh != NULL; hh = hh->next) {
+					if (hh->latest && hh->loc.monitor == m) {
+						ip = hh;
+						break;
+					}
+				}
+			}
+			history_insert_before(h, ip);
+		}
 	} else {
 		free(h);
+	}
+}
+
+// Inserts `a` after `b`.
+void history_insert_after(history_t *a, history_t *b)
+{
+	a->next = b->next;
+	if (b->next != NULL) {
+		b->next->prev = a;
+	}
+	b->next = a;
+	a->prev = b;
+	if (history_tail == b) {
+		history_tail = a;
+	}
+}
+
+// Inserts `a` before `b`.
+void history_insert_before(history_t *a, history_t *b)
+{
+	a->prev = b->prev;
+	if (b->prev != NULL) {
+		b->prev->next = a;
+	}
+	b->prev = a;
+	a->next = b;
+	if (history_head == b) {
+		history_head = a;
 	}
 }
 

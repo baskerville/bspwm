@@ -28,7 +28,9 @@
 #include "types.h"
 
 history_t *make_history(monitor_t *m, desktop_t *d, node_t *n);
-void history_add(monitor_t *m, desktop_t *d, node_t *n);
+void history_add(monitor_t *m, desktop_t *d, node_t *n, bool focused);
+void history_insert_after(history_t *a, history_t *b);
+void history_insert_before(history_t *a, history_t *b);
 void history_remove(desktop_t *d, node_t *n, bool deep);
 void empty_history(void);
 node_t *history_last_node(desktop_t *d, node_t *n);

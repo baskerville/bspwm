@@ -80,6 +80,8 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 
 	m->desk = d;
 
+	history_add(m, d, NULL, false);
+
 	put_status(SBSC_MASK_DESKTOP_ACTIVATE, "desktop_activate 0x%08X 0x%08X\n", m->id, d->id);
 	put_status(SBSC_MASK_REPORT);
 
