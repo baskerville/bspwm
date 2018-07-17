@@ -441,7 +441,10 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n == NULL && d->root != NULL) {
-		n = history_last_node(d, NULL);
+		n = d->focus;
+		if (n == NULL) {
+			n = history_last_node(d, NULL);
+		}
 		if (n == NULL) {
 			n = first_focusable_leaf(d->root);
 		}
@@ -501,7 +504,10 @@ void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (m == NULL) {
-		m = history_last_monitor(NULL);
+		m = mon;
+		if (m == NULL) {
+			m = history_last_monitor(NULL);
+		}
 		if (m == NULL) {
 			m = mon_head;
 		}
@@ -512,7 +518,10 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	}
 
 	if (d == NULL) {
-		d = history_last_desktop(m, NULL);
+		d = m->desk;
+		if (d == NULL) {
+			d = history_last_desktop(m, NULL);
+		}
 		if (d == NULL) {
 			d = m->desk_head;
 		}
@@ -525,7 +534,10 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	bool guess = (n == NULL);
 
 	if (n == NULL && d->root != NULL) {
-		n = history_last_node(d, NULL);
+		n = d->focus;
+		if (n == NULL) {
+			n = history_last_node(d, NULL);
+		}
 		if (n == NULL) {
 			n = first_focusable_leaf(d->root);
 		}

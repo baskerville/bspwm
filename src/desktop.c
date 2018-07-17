@@ -61,7 +61,10 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 	}
 
 	if (d == NULL) {
-		d = history_last_desktop(m, NULL);
+		d = m->desk;
+		if (d == NULL) {
+			d = history_last_desktop(m, NULL);
+		}
 		if (d == NULL) {
 			d = m->desk_head;
 		}
