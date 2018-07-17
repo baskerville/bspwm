@@ -70,7 +70,7 @@ void find_any_node(coordinates_t *ref, coordinates_t *dst, node_select_t *sel);
 bool find_any_node_in(monitor_t *m, desktop_t *d, node_t *n, coordinates_t *ref, coordinates_t *dst, node_select_t *sel);
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t *sel);
 unsigned int node_area(desktop_t *d, node_t *n);
-int tiled_count(node_t *n);
+int tiled_count(node_t *n, bool include_receptacles);
 void find_by_area(area_peak_t ap, coordinates_t *ref, coordinates_t *dst, node_select_t *sel);
 void rotate_tree(node_t *n, int deg);
 void rotate_tree_rec(node_t *n, int deg);

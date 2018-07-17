@@ -48,7 +48,7 @@ void arrange(monitor_t *m, desktop_t *d)
 
 	layout_t l = d->layout;
 
-	if (single_monocle && tiled_count(d->root) <= 1) {
+	if (single_monocle && tiled_count(d->root, true) <= 1) {
 		l = LAYOUT_MONOCLE;
 	}
 
@@ -1029,14 +1029,15 @@ unsigned int node_area(desktop_t *d, node_t *n)
 	return area(get_rectangle(NULL, d, n));
 }
 
-int tiled_count(node_t *n)
+int tiled_count(node_t *n, bool include_receptacles)
 {
 	if (n == NULL) {
 		return 0;
 	}
 	int cnt = 0;
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (!f->hidden && f->client != NULL && IS_TILED(f->client)) {
+		if (!f->hidden && ((include_receptacles && f->client == NULL) ||
+		                   (f->client != NULL && IS_TILED(f->client)))) {
 			cnt++;
 		}
 	}
@@ -1559,7 +1560,7 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 
 void circulate_leaves(monitor_t *m, desktop_t *d, node_t *n, circulate_dir_t dir)
 {
-	if (tiled_count(n) < 2) {
+	if (tiled_count(n, false) < 2) {
 		return;
 	}
 	node_t *p = d->focus->parent;
