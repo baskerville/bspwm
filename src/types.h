@@ -311,6 +311,13 @@ struct stacking_list_t {
 	stacking_list_t *next;
 };
 
+typedef struct event_queue_t event_queue_t;
+struct event_queue_t {
+	xcb_generic_event_t event;
+	event_queue_t *prev;
+	event_queue_t *next;
+};
+
 typedef struct subscriber_list_t subscriber_list_t;
 struct subscriber_list_t {
 	int fd;
@@ -360,6 +367,8 @@ struct pending_rule_t {
 	int fd;
 	xcb_window_t win;
 	rule_consequence_t *csq;
+	event_queue_t *event_head;
+	event_queue_t *event_tail;
 	pending_rule_t *prev;
 	pending_rule_t *next;
 };

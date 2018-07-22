@@ -69,7 +69,7 @@ void schedule_window(xcb_window_t win)
 	}
 }
 
-void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
+bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 {
 	monitor_t *m = mon;
 	desktop_t *d = mon->desk;
@@ -87,7 +87,7 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		free(csq->layer);
 		free(csq->state);
 		window_show(win);
-		return;
+		return false;
 	}
 
 	if (csq->node_desc[0] != '\0') {
@@ -209,6 +209,8 @@ void manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	ewmh_update_client_list(false);
 	free(csq->layer);
 	free(csq->state);
+
+	return true;
 }
 
 void set_window_state(xcb_window_t win, xcb_icccm_wm_state_t state)

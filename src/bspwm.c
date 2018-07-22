@@ -155,7 +155,11 @@ int main(int argc, char *argv[])
 			while (pr != NULL) {
 				pending_rule_t *next = pr->next;
 				if (FD_ISSET(pr->fd, &descriptors)) {
-					manage_window(pr->win, pr->csq, pr->fd);
+					if (manage_window(pr->win, pr->csq, pr->fd)) {
+						for (event_queue_t *eq = pr->event_head; eq != NULL; eq = eq->next) {
+							handle_event(&eq->event);
+						}
+					}
 					remove_pending_rule(pr);
 				}
 				pr = next;

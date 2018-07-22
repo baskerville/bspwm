@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "window.h"
 #include "pointer.h"
+#include "rule.h"
 #include "events.h"
 
 void handle_event(xcb_generic_event_t *evt)
@@ -273,7 +274,13 @@ void property_notify(xcb_generic_event_t *evt)
 
 	coordinates_t loc;
 	if (!locate_window(e->window, &loc)) {
-			return;
+		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
+			if (pr->win == e->window) {
+				postpone_event(pr, evt);
+				break;
+			}
+		}
+		return;
 	}
 
 	if (e->atom == XCB_ATOM_WM_HINTS) {
@@ -303,6 +310,12 @@ void client_message(xcb_generic_event_t *evt)
 
 	coordinates_t loc;
 	if (!locate_window(e->window, &loc)) {
+		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
+			if (pr->win == e->window) {
+				postpone_event(pr, evt);
+				break;
+			}
+		}
 		return;
 	}
 
