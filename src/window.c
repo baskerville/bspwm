@@ -158,8 +158,14 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 	snprintf(c->class_name, sizeof(c->class_name), "%s", csq->class_name);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", csq->instance_name);
 
+	if ((csq->state != NULL && (*(csq->state) == STATE_FLOATING || *(csq->state) == STATE_FULLSCREEN)) || csq->hidden) {
+		n->vacant = true;
+	}
+
 	f = insert_node(m, d, n, f);
 	clients_count++;
+
+	n->vacant = false;
 
 	put_status(SBSC_MASK_NODE_ADD, "node_add 0x%08X 0x%08X 0x%08X 0x%08X\n", m->id, d->id, f!=NULL?f->id:0, win);
 

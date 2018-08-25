@@ -376,8 +376,8 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					c->second_child = n;
 					rot = 270;
 				}
-				n->birth_rotation = rot;
 				if (!n->vacant) {
+					n->birth_rotation = rot;
 					rotate_tree(p, rot);
 				}
 			}
@@ -1208,7 +1208,7 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		node_t *b = brother_tree(n);
 		node_t *g = p->parent;
 
-		if (!n->vacant) {
+		if (!n->vacant && cancel_birth_rotation) {
 			unrotate_tree(b, n->birth_rotation);
 		}
 
@@ -1625,10 +1625,7 @@ void set_vacant_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	n->vacant = value;
 
 	if (value) {
-		unrotate_brother(n);
 		cancel_presel(m, d, n);
-	} else {
-		rotate_brother(n);
 	}
 }
 

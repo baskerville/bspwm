@@ -736,6 +736,9 @@ Global Settings
 'honor_size_hints'::
 	Apply ICCCM window size hints.
 
+'cancel_birth_rotation'::
+	When a node is unlinked from a tree, cancel the tree rotation that was applied during its insertion.
+
 'remove_disabled_monitors'::
 	Consider disabled monitors as disconnected.
 

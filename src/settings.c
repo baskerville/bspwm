@@ -81,6 +81,7 @@ void load_settings(void)
 
 	center_pseudo_tiled = CENTER_PSEUDO_TILED;
 	honor_size_hints = HONOR_SIZE_HINTS;
+	cancel_birth_rotation = CANCEL_BIRTH_ROTATION;
 
 	remove_disabled_monitors = REMOVE_DISABLED_MONITORS;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;
