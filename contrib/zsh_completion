@@ -98,6 +98,8 @@ _bspc_selector() {
 				-- completions $@ -S '.' -r ". \n:#${quote}\-" -J ${sel_type}
 			fi
 			;|
+		(node*@*'#'*)
+			;;
 		(node*@*)
 			_bspc_selector desktop -S ':' -qr ".#\-\n ${quote}"
 			;;
@@ -312,11 +314,13 @@ _bspc() {
 				_describe 'match window class' completions -q -S ':'
 			;;
 		(config)
-			local -a look behaviour input
-			# Boolean settings are identified by index!
-			look=(borderless_monocle gapless_monocle {normal,active,focused}_border_color {top,right,bottom,left}_padding presel_feedback_color border_width window_gap)
-			behaviour=(single_monocle mapping_events_count ignore_ewmh_focus ignore_ewmh_fullscreen center_pseudo_tiled honor_size_hints cancel_birth_rotation remove_disabled_monitors remove_unplugged_monitors merge_overlapping_monitors status_prefix external_rules_command split_ratio initial_polarity directional_focus_tightness status_prefix)
-			input=({swallow_first_click,focus_follows_pointer,pointer_follows_{focus,monitor}} click_to_focus pointer_motion_interval pointer_modifier pointer_action{1,2,3} )
+			local -a {look,behaviour,input}{_bool,}
+			look_bool=(borderless_monocle gapless_monocle)
+			look=({normal,active,focused}_border_color {top,right,bottom,left}_padding presel_feedback_color border_width window_gap)
+			behaviour_bool=(single_monocle ignore_ewmh_focus center_pseudo_tiled honor_size_hints cancel_birth_rotation remove_disabled_monitors remove_unplugged_monitors merge_overlapping_monitors)
+			behaviour=(mapping_events_count ignore_ewmh_fullscreen external_rules_command split_ratio initial_polarity directional_focus_tightness status_prefix)
+			input_bool=(swallow_first_click focus_follows_pointer pointer_follows_{focus,monitor})
+			input=(click_to_focus pointer_motion_interval pointer_modifier pointer_action{1,2,3})
 			if [[ "$CURRENT" == (2|3) ]];then
 				_arguments \
 					'-d[Set settings for the selected desktop]: :_bspc_selector -- desktop'\
@@ -326,18 +330,19 @@ _bspc() {
 			if [[ "${words[2]}" == -* ]] ;then
 				(( CURRENT == 3 )) && return
 				if (( CURRENT > 3 )) ;then
-					((CURRENT-=$#words))
-					words=('config' "${(@)words[4,-1]}")
-					((CURRENT+=$#words))
+					compset -n 3
 				fi
 			fi
 			if ((CURRENT==2)) ;then
-				_describe 'look' look -J look
-				_describe 'input' input -J input
-				_describe 'behaviour' behaviour -J behaviour
+				_describe 'look' look -J look -- look_bool -J look
+				_describe 'input' input -J input -- input_bool -J input
+				_describe 'behaviour' behaviour -J behaviour -- behaviour_bool -J behaviour
 			elif ((CURRENT==3)) ;then
 				setting=$words[2]
 				case $setting in
+					(ignore_ewmh_fullscreen)
+						_values -S "," "set $setting" all none "enter:: :(exit)" "exit:: :(enter)"
+						;;
 					(initial_polarity)
 						_values "set $setting" first_child second_child
 						;;
@@ -354,9 +359,9 @@ _bspc() {
 						_values "set $setting" any button1 button2 button3 none
 						;;
 					(*)
-						((look[(i)$setting] <= 2)) ||
-							((behaviour[(i)$setting] <= 7)) ||
-							((input[(i)$setting] <= 4)) &&
+						[[ -n $look_bool[(r)$setting] ]] ||
+							[[ -n $behaviour_bool[(r)$setting] ]] ||
+							[[ -n $input_bool[(r)$setting] ]] &&
 							_values "set $setting" true false
 						;;
 				esac
