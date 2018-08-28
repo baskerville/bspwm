@@ -1652,7 +1652,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(ignore_ewmh_focus)
 		SET_BOOL(center_pseudo_tiled)
 		SET_BOOL(honor_size_hints)
-		SET_BOOL(cancel_birth_rotation)
 #undef SET_BOOL
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1771,7 +1770,6 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(ignore_ewmh_focus)
 	GET_BOOL(center_pseudo_tiled)
 	GET_BOOL(honor_size_hints)
-	GET_BOOL(cancel_birth_rotation)
 	GET_BOOL(remove_disabled_monitors)
 	GET_BOOL(remove_unplugged_monitors)
 	GET_BOOL(merge_overlapping_monitors)

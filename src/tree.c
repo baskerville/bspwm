@@ -334,7 +334,6 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 			p = f->parent;
 		}
 		n->parent = c;
-		c->birth_rotation = f->birth_rotation;
 		if (f->presel == NULL) {
 			if (p == NULL) {
 				if (initial_polarity == FIRST_CHILD) {
@@ -377,7 +376,6 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					rot = 270;
 				}
 				if (!n->vacant) {
-					n->birth_rotation = rot;
 					rotate_tree(p, rot);
 				}
 			}
@@ -392,7 +390,6 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 			c->split_ratio = f->presel->split_ratio;
 			c->parent = p;
 			f->parent = c;
-			f->birth_rotation = 0;
 			switch (f->presel->split_dir) {
 				case DIR_WEST:
 					c->split_type = TYPE_VERTICAL;
@@ -677,7 +674,6 @@ node_t *make_node(uint32_t id)
 	n->vacant = n->hidden = n->sticky = n->private = n->locked = n->marked = false;
 	n->split_ratio = split_ratio;
 	n->split_type = TYPE_VERTICAL;
-	n->birth_rotation = 0;
 	n->constraints = (constraints_t) {MIN_WIDTH, MIN_HEIGHT};
 	n->presel = NULL;
 	n->client = NULL;
@@ -1117,24 +1113,6 @@ void rotate_tree_rec(node_t *n, int deg)
 	rotate_tree_rec(n->second_child, deg);
 }
 
-void rotate_brother(node_t *n)
-{
-	rotate_tree(brother_tree(n), n->birth_rotation);
-}
-
-void unrotate_tree(node_t *n, int rot)
-{
-	if (rot == 0) {
-		return;
-	}
-	rotate_tree(n, 360 - rot);
-}
-
-void unrotate_brother(node_t *n)
-{
-	unrotate_tree(brother_tree(n), n->birth_rotation);
-}
-
 void flip_tree(node_t *n, flip_t flp)
 {
 	if (n == NULL || is_leaf(n)) {
@@ -1208,10 +1186,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		node_t *b = brother_tree(n);
 		node_t *g = p->parent;
 
-		if (!n->vacant && cancel_birth_rotation) {
-			unrotate_tree(b, n->birth_rotation);
-		}
-
 		b->parent = g;
 
 		if (g != NULL) {
@@ -1223,8 +1197,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		} else {
 			d->root = b;
 		}
-
-		b->birth_rotation = p->birth_rotation;
 
 		free(p);
 		n->parent = NULL;
@@ -1322,8 +1294,6 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 	node_t *pn2 = n2->parent;
 	bool n1_first_child = is_first_child(n1);
 	bool n2_first_child = is_first_child(n2);
-	int br1 = n1->birth_rotation;
-	int br2 = n2->birth_rotation;
 	bool n1_held_focus = is_descendant(d1->focus, n1);
 	bool n2_held_focus = is_descendant(d2->focus, n2);
 	node_t *last_d1_focus = d1->focus;
@@ -1347,8 +1317,6 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 	n1->parent = pn2;
 	n2->parent = pn1;
-	n1->birth_rotation = br2;
-	n2->birth_rotation = br1;
 
 	propagate_flags_upward(m2, d2, n1);
 	propagate_flags_upward(m1, d1, n2);

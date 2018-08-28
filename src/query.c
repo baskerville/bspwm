@@ -117,7 +117,6 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "\"id\":%u,", n->id);
 		fprintf(rsp, "\"splitType\":\"%s\",", SPLIT_TYPE_STR(n->split_type));
 		fprintf(rsp, "\"splitRatio\":%lf,", n->split_ratio);
-		fprintf(rsp, "\"birthRotation\":%i,", n->birth_rotation);
 		fprintf(rsp, "\"vacant\":%s,", BOOL_STR(n->vacant));
 		fprintf(rsp, "\"hidden\":%s,", BOOL_STR(n->hidden));
 		fprintf(rsp, "\"sticky\":%s,", BOOL_STR(n->sticky));

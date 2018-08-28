@@ -233,7 +233,6 @@ struct node_t {
 	uint32_t id;
 	split_type_t split_type;
 	double split_ratio;
-	int birth_rotation;
 	presel_t *presel;
 	xcb_rectangle_t rectangle;
 	constraints_t constraints;

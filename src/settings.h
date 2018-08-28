@@ -57,7 +57,6 @@
 
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
-#define CANCEL_BIRTH_ROTATION       false
 #define MAPPING_EVENTS_COUNT        1
 
 #define REMOVE_DISABLED_MONITORS    false
@@ -99,7 +98,6 @@ state_transition_t ignore_ewmh_fullscreen;
 
 bool center_pseudo_tiled;
 bool honor_size_hints;
-bool cancel_birth_rotation;
 
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;

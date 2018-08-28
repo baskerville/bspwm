@@ -353,7 +353,6 @@ node_t *restore_node(jsmntok_t **t, char *json)
 				sscanf(json + (*t)->start, "%u", &n->id);
 			RESTORE_ANY(splitType, &n->split_type, parse_split_type)
 			RESTORE_DOUBLE(splitRatio, &n->split_ratio)
-			RESTORE_INT(birthRotation, &n->birth_rotation)
 			RESTORE_BOOL(vacant, &n->vacant)
 			RESTORE_BOOL(hidden, &n->hidden)
 			RESTORE_BOOL(sticky, &n->sticky)
