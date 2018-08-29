@@ -329,13 +329,20 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				presel_dir(m, d, f, (rect.width >= rect.height ? DIR_EAST : DIR_SOUTH));
 			}
 		}
-		while (f->presel == NULL && p != NULL && (f->vacant || brother_tree(f)->vacant)) {
-			f = p;
-			p = f->parent;
-		}
 		n->parent = c;
 		if (f->presel == NULL) {
-			if (p == NULL) {
+			if (p == NULL || (f->client != NULL && IS_TILED(f->client) && tiled_count(d->root, true) == 1)) {
+				if (p != NULL) {
+					if (is_first_child(f)) {
+						p->first_child = c;
+					} else {
+						p->second_child = c;
+					}
+				} else {
+					d->root = c;
+				}
+				c->parent = p;
+				f->parent = c;
 				if (initial_polarity == FIRST_CHILD) {
 					c->first_child = n;
 					c->second_child = f;
@@ -348,8 +355,6 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 				} else {
 					c->split_type = TYPE_HORIZONTAL;
 				}
-				f->parent = c;
-				d->root = c;
 			} else {
 				node_t *g = p->parent;
 				c->parent = g;
