@@ -86,6 +86,10 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 		center_pointer(r);
 	}
 
+	if (n->hidden) {
+		return;
+	}
+
 	if (n->presel != NULL) {
 		draw_presel_feedback(m, d, n);
 	}
@@ -139,7 +143,12 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 		apply_size_hints(n->client, &r.width, &r.height);
 
 		if (!rect_eq(r, cr)) {
-			window_move_resize(n->id, r.x, r.y, r.width, r.height);
+			if (m->desk == d || !hide_by_moving) {
+				window_move_resize(n->id, r.x, r.y, r.width, r.height);
+			} else {
+				int16_t x = -(r.x + (int16_t) r.width + (int16_t) (2 * bw));
+				window_move_resize(n->id, x, r.y, r.width, r.height);
+			}
 			if (!grabbing) {
 				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", m->id, d->id, n->id, r.width, r.height, r.x, r.y);
 			}
@@ -626,45 +635,45 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	return true;
 }
 
-void hide_node(desktop_t *d, node_t *n)
+void hide_node(desktop_t *d, node_t *n, bool move)
 {
 	if (n == NULL) {
 		return;
 	} else {
 		if (!n->hidden) {
 			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
-				window_hide(n->presel->feedback);
+				window_hide(n->presel->feedback, false);
 			}
 			if (n->client != NULL) {
-				window_hide(n->id);
+				window_hide(n->id, move);
 			}
 		}
 		if (n->client != NULL) {
 			n->client->shown = false;
 		}
-		hide_node(d, n->first_child);
-		hide_node(d, n->second_child);
+		hide_node(d, n->first_child, move);
+		hide_node(d, n->second_child, move);
 	}
 }
 
-void show_node(desktop_t *d, node_t *n)
+void show_node(desktop_t *d, node_t *n, bool move)
 {
 	if (n == NULL) {
 		return;
 	} else {
 		if (!n->hidden) {
 			if (n->client != NULL) {
-				window_show(n->id);
+				window_show(n->id, move);
 			}
 			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
-				window_show(n->presel->feedback);
+				window_show(n->presel->feedback, false);
 			}
 		}
 		if (n->client != NULL) {
 			n->client->shown = true;
 		}
-		show_node(d, n->first_child);
-		show_node(d, n->second_child);
+		show_node(d, n->first_child, move);
+		show_node(d, n->second_child, move);
 	}
 }
 
@@ -1358,15 +1367,15 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 		bool d2_was_focused = (d2 == mon->desk);
 
 		if (m1->desk != d1 && m2->desk == d2) {
-			show_node(d2, n1);
+			show_node(d2, n1, hide_by_moving);
 			if (!follow || !d2_was_focused || !n2_held_focus) {
-				hide_node(d2, n2);
+				hide_node(d2, n2, hide_by_moving);
 			}
 		} else if (m1->desk == d1 && m2->desk != d2) {
 			if (!follow || !d1_was_focused || !n1_held_focus) {
-				hide_node(d1, n1);
+				hide_node(d1, n1, hide_by_moving);
 			}
-			show_node(d1, n2);
+			show_node(d1, n2, hide_by_moving);
 		}
 
 		if (n1_held_focus) {
@@ -1449,9 +1458,9 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		ewmh_set_wm_desktop(ns, dd);
 		if (sticky_still) {
 			if (ds == ms->desk && dd != md->desk) {
-				hide_node(ds, ns);
+				hide_node(ds, ns, hide_by_moving);
 			} else if (ds != ms->desk && dd == md->desk) {
-				show_node(dd, ns);
+				show_node(dd, ns, hide_by_moving);
 			}
 		}
 	}
@@ -1845,7 +1854,7 @@ void set_hidden_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	if (n->client != NULL) {
 		if (n->client->shown) {
-			window_set_visibility(n->id, !value);
+			window_set_visibility(n->id, !value, hide_by_moving);
 		}
 
 		if (IS_TILED(n->client)) {

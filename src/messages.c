@@ -1618,9 +1618,9 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			focus_follows_pointer = b;
 			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 				if (focus_follows_pointer) {
-					window_show(m->root);
+					window_show(m->root, false);
 				} else {
-					window_hide(m->root);
+					window_hide(m->root, false);
 				}
 				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 					listen_enter_notify(d->root, focus_follows_pointer);
@@ -1650,6 +1650,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
 		SET_BOOL(ignore_ewmh_focus)
+		SET_BOOL(hide_by_moving)
 		SET_BOOL(center_pseudo_tiled)
 		SET_BOOL(honor_size_hints)
 #undef SET_BOOL
@@ -1768,6 +1769,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(pointer_follows_focus)
 	GET_BOOL(pointer_follows_monitor)
 	GET_BOOL(ignore_ewmh_focus)
+	GET_BOOL(hide_by_moving)
 	GET_BOOL(center_pseudo_tiled)
 	GET_BOOL(honor_size_hints)
 	GET_BOOL(remove_disabled_monitors)

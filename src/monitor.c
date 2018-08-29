@@ -77,7 +77,7 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 		xcb_icccm_set_wm_name(dpy, m->root, XCB_ATOM_STRING, 8, strlen(m->name), m->name);
 		window_lower(m->root);
 		if (focus_follows_pointer) {
-			window_show(m->root);
+			window_show(m->root, false);
 		}
 	} else {
 		window_move_resize(m->root, rect->x, rect->y, rect->width, rect->height);

@@ -499,7 +499,7 @@ void show_desktop(desktop_t *d)
 	if (d == NULL) {
 		return;
 	}
-	show_node(d, d->root);
+	show_node(d, d->root, hide_by_moving);
 }
 
 void hide_desktop(desktop_t *d)
@@ -507,7 +507,7 @@ void hide_desktop(desktop_t *d)
 	if (d == NULL) {
 		return;
 	}
-	hide_node(d, d->root);
+	hide_node(d, d->root, hide_by_moving);
 }
 
 bool is_urgent(desktop_t *d)

@@ -55,6 +55,7 @@
 #define IGNORE_EWMH_FOCUS           false
 #define IGNORE_EWMH_FULLSCREEN      0
 
+#define HIDE_BY_MOVING              false
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
 #define MAPPING_EVENTS_COUNT        1
@@ -96,6 +97,7 @@ bool swallow_first_click;
 bool ignore_ewmh_focus;
 state_transition_t ignore_ewmh_fullscreen;
 
+bool hide_by_moving;
 bool center_pseudo_tiled;
 bool honor_size_hints;
 
