@@ -41,6 +41,7 @@
 #define WINDOW_GAP           6
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
+#define AUTOMATIC_SCHEME     SCHEME_LONGEST_SIDE
 
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
@@ -75,9 +76,10 @@ padding_t padding;
 int window_gap;
 unsigned int border_width;
 double split_ratio;
-
 child_polarity_t initial_polarity;
+automatic_scheme_t automatic_scheme;
 tightness_t directional_focus_tightness;
+
 uint16_t pointer_modifier;
 uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];

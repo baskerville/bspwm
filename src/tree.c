@@ -331,7 +331,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 		n->parent = c;
 		if (f->presel == NULL) {
-			if (p == NULL || (f->client != NULL && IS_TILED(f->client) && tiled_count(d->root, true) == 1)) {
+			if (p == NULL || automatic_scheme == SCHEME_LONGEST_SIDE || (f->client != NULL && IS_TILED(f->client) && tiled_count(d->root, true) == 1)) {
 				if (p != NULL) {
 					if (is_first_child(f)) {
 						p->first_child = c;
@@ -350,7 +350,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					c->first_child = f;
 					c->second_child = n;
 				}
-				if (m->rectangle.width > m->rectangle.height) {
+				if (f->rectangle.width > f->rectangle.height) {
 					c->split_type = TYPE_VERTICAL;
 				} else {
 					c->split_type = TYPE_HORIZONTAL;

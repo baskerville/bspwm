@@ -56,15 +56,16 @@ void load_settings(void)
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
-	initial_polarity = FIRST_CHILD;
+	initial_polarity = SECOND_CHILD;
+	automatic_scheme = SCHEME_LONGEST_SIDE;
 	directional_focus_tightness = TIGHTNESS_HIGH;
+
 	pointer_modifier = POINTER_MODIFIER;
 	pointer_motion_interval = POINTER_MOTION_INTERVAL;
-	mapping_events_count = MAPPING_EVENTS_COUNT;
-
 	pointer_actions[0] = ACTION_MOVE;
 	pointer_actions[1] = ACTION_RESIZE_SIDE;
 	pointer_actions[2] = ACTION_RESIZE_CORNER;
+	mapping_events_count = MAPPING_EVENTS_COUNT;
 
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;

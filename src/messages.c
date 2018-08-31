@@ -1555,6 +1555,14 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("automatic_scheme", name)) {
+		automatic_scheme_t a;
+		if (parse_automatic_scheme(value, &a)) {
+			automatic_scheme = a;
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("mapping_events_count", name)) {
 		if (sscanf(value, "%" SCNi8, &mapping_events_count) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
@@ -1731,6 +1739,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", status_prefix);
 	} else if (streq("initial_polarity", name)) {
 		fprintf(rsp, "%s", CHILD_POL_STR(initial_polarity));
+	} else if (streq("automatic_scheme", name)) {
+		fprintf(rsp, "%s", AUTO_SCM_STR(automatic_scheme));
 	} else if (streq("mapping_events_count", name)) {
 		fprintf(rsp, "%" PRIi8, mapping_events_count);
 	} else if (streq("directional_focus_tightness", name)) {

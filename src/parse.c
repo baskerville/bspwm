@@ -267,6 +267,18 @@ bool parse_child_polarity(char *s, child_polarity_t *p)
 	return false;
 }
 
+bool parse_automatic_scheme(char *s, automatic_scheme_t *a)
+{
+	if (streq("longest_side", s)) {
+		*a = SCHEME_LONGEST_SIDE;
+		return true;
+	} else if (streq("spiral", s)) {
+		*a = SCHEME_SPIRAL;
+		return true;
+	}
+	return false;
+}
+
 bool parse_state_transition(char *s, state_transition_t *m)
 {
 	if (streq("none", s)) {

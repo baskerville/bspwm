@@ -2,10 +2,13 @@
 
 focus_follows_pointer=$(bspc config focus_follows_pointer)
 initial_polarity=$(bspc config initial_polarity)
+automatic_scheme=$(bspc config automatic_scheme)
+bspc config automatic_scheme spiral
 bspc config initial_polarity first_child
 bspc config focus_follows_pointer false
 
 cleanup () {
+	bspc config automatic_scheme "$automatic_scheme"
 	bspc config initial_polarity "$initial_polarity"
 	bspc config focus_follows_pointer "$focus_follows_pointer"
 }

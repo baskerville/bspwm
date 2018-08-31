@@ -25,6 +25,7 @@ bool parse_modifier_mask(char *s, uint16_t *m);
 bool parse_button_index(char *s, int8_t *b);
 bool parse_pointer_action(char *s, pointer_action_t *a);
 bool parse_child_polarity(char *s, child_polarity_t *p);
+bool parse_automatic_scheme(char *s, automatic_scheme_t *a);
 bool parse_state_transition(char *s, state_transition_t *m);
 bool parse_tightness(char *s, tightness_t *t);
 bool parse_degree(char *s, int *d);

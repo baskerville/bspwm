@@ -45,6 +45,11 @@ typedef enum {
 } split_mode_t;
 
 typedef enum {
+	SCHEME_LONGEST_SIDE,
+	SCHEME_SPIRAL
+} automatic_scheme_t;
+
+typedef enum {
 	STATE_TILED,
 	STATE_PSEUDO_TILED,
 	STATE_FLOATING,
