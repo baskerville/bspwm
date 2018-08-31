@@ -43,9 +43,7 @@ A split is defined by two parameters: the type (horizontal or vertical) and the 
 
 Each leaf node holds exactly one window.
 
-## Insertion Modes
-
-### Prelude
+## Insertion modes
 
 When *bspwm* receives a new window, it inserts it into a window tree at the specified insertion point (a leaf) using the insertion mode specified for that insertion point.
 
@@ -53,7 +51,7 @@ The insertion mode tells *bspwm* how it should alter the tree in order to insert
 
 By default the insertion point is the focused window and its insertion mode is *automatic*.
 
-### Manual Mode
+### Manual mode
 
 The user can specify a region in the insertion point where the next new window should appear by sending a *node -p|--presel-dir DIR* message to *bspwm*.
 
@@ -96,11 +94,11 @@ Finally we send another message: *node -p west* and add window *5*.
 
 The ratio of the preselection (that ends up being the ratio of the split of the new internal node) can be changed with the *node -o|--presel-ratio* message.
 
-### Automatic Mode
+### Automatic mode
 
 The *automatic* mode, as opposed to the *manual* mode, doesn't require any user choice. The way the new window is inserted is determined by the value of the automatic scheme and the initial polarity settings.
 
-#### Longest side
+#### Longest side scheme
 
 When the value of the automatic scheme is `longest_side`, the window will be attached as if the insertion point was in manual mode and the split direction was choosen based on the dimensions of the tiling rectangle and the initial polarity.
 
@@ -133,7 +131,7 @@ Since *1* is wide, it gets split vertically and *2* is added as *a*'s second chi
 
 This leads to *Y* where we insert window *3*. *2* is tall and is therefore split horizontally. *3* is once again added as *b*'s second child.
 
-#### Spiral
+#### Spiral scheme
 
 When the value of the automatic scheme is `spiral`, the window will *take the space* of the insertion point.
 
