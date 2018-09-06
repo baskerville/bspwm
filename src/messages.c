@@ -1599,8 +1599,13 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
-	           streq("pointer_action3", name)) {
+	           streq("pointer_action3", name) ||
+	           streq("pointer_action8", name) ||
+	           streq("pointer_action9", name)) {
 		int index = name[14] - '1';
+		if (index > 2) {
+			index -= 4;
+		}
 		if (parse_pointer_action(value, &pointer_actions[index])) {
 			ungrab_buttons();
 			grab_buttons();
@@ -1755,8 +1760,13 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%u", pointer_motion_interval);
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
-	           streq("pointer_action3", name)) {
+	           streq("pointer_action3", name) ||
+	           streq("pointer_action8", name) ||
+	           streq("pointer_action9", name)) {
 		int index = name[14] - '1';
+		if (index > 2) {
+			index -= 4;
+		}
 		print_pointer_action(pointer_actions[index], rsp);
 #define GET_COLOR(s) \
 	} else if (streq(#s, name)) { \

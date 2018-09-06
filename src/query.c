@@ -372,6 +372,12 @@ void print_button_index(int8_t b, FILE *rsp)
 		case XCB_BUTTON_INDEX_3:
 			fprintf(rsp, "button3");
 			break;
+		case 8:
+			fprintf(rsp, "button8");
+			break;
+		case 9:
+			fprintf(rsp, "button9");
+			break;
 		case -1:
 			fprintf(rsp, "none");
 			break;

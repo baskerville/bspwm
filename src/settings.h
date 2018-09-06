@@ -82,7 +82,7 @@ tightness_t directional_focus_tightness;
 
 uint16_t pointer_modifier;
 uint32_t pointer_motion_interval;
-pointer_action_t pointer_actions[3];
+pointer_action_t pointer_actions[5];
 int8_t mapping_events_count;
 
 bool borderless_monocle;

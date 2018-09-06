@@ -65,6 +65,8 @@ void load_settings(void)
 	pointer_actions[0] = ACTION_MOVE;
 	pointer_actions[1] = ACTION_RESIZE_SIDE;
 	pointer_actions[2] = ACTION_RESIZE_CORNER;
+	pointer_actions[3] = ACTION_NONE;
+	pointer_actions[4] = ACTION_NONE;
 	mapping_events_count = MAPPING_EVENTS_COUNT;
 
 	borderless_monocle = BORDERLESS_MONOCLE;

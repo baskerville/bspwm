@@ -227,6 +227,12 @@ bool parse_button_index(char *s, int8_t *b)
 	} else if (strcmp(s, "button3") == 0) {
 		*b = XCB_BUTTON_INDEX_3;
 		return true;
+	} else if (strcmp(s, "button8") == 0) {
+		*b = 8;
+		return true;
+	} else if (strcmp(s, "button9") == 0) {
+		*b = 9;
+		return true;
 	} else if (strcmp(s, "none") == 0) {
 		*b = -1;
 		return true;
