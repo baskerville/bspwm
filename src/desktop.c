@@ -70,7 +70,7 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 		}
 	}
 
-	if (d == NULL) {
+	if (d == NULL || d == m->desk) {
 		return false;
 	}
 
