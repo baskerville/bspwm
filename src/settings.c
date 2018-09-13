@@ -56,6 +56,7 @@ void load_settings(void)
 	monocle_padding = (padding_t) MONOCLE_PADDING;
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
+	border_radius = BORDER_RADIUS;
 	split_ratio = SPLIT_RATIO;
 	initial_polarity = SECOND_CHILD;
 	automatic_scheme = SCHEME_LONGEST_SIDE;

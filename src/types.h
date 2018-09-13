@@ -207,8 +207,11 @@ typedef struct {
 	char class_name[3 * SMALEN / 2];
 	char instance_name[3 * SMALEN / 2];
 	unsigned int border_width;
+	unsigned int border_radius;
+	unsigned int drawn_border_radius;
 	bool urgent;
 	bool shown;
+	bool sets_own_shape;
 	client_state_t state;
 	client_state_t last_state;
 	stack_layer_t layer;
@@ -273,6 +276,7 @@ struct desktop_t {
 	padding_t padding;
 	int window_gap;
 	unsigned int border_width;
+	unsigned int border_radius;
 };
 
 typedef struct monitor_t monitor_t;
@@ -286,6 +290,7 @@ struct monitor_t {
 	unsigned int sticky_count;
 	int window_gap;
 	unsigned int border_width;
+	unsigned int border_radius;
 	xcb_rectangle_t rectangle;
 	desktop_t *desk;
 	desktop_t *desk_head;

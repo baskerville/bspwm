@@ -44,6 +44,7 @@ void hide_presel_feedbacks(monitor_t *m, desktop_t *d, node_t *n);
 void update_colors(void);
 void update_colors_in(node_t *n, desktop_t *d, monitor_t *m);
 void draw_border(node_t *n, bool focused_node, bool focused_monitor);
+void window_rounded_border(node_t *n);
 void window_draw_border(xcb_window_t win, uint32_t border_color_pxl);
 void adopt_orphans(void);
 uint32_t get_border_color(bool focused_node, bool focused_monitor);

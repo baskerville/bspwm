@@ -96,6 +96,7 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 	}
 
 	if (is_leaf(n)) {
+		unsigned int br = 0;
 
 		if (n->client == NULL) {
 			return;
@@ -132,9 +133,12 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 				}
 			}
 			n->client->tiled_rectangle = r;
+			if (!gapless_monocle || l != LAYOUT_MONOCLE)
+				br = n->client->border_radius;
 		/* floating clients */
 		} else if (s == STATE_FLOATING) {
 			r = n->client->floating_rectangle;
+			br = n->client->border_radius;
 		/* fullscreen clients */
 		} else {
 			r = m->rectangle;
@@ -145,12 +149,16 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 
 		if (!rect_eq(r, cr)) {
 			window_move_resize(n->id, r.x, r.y, r.width, r.height);
+			window_rounded_border(n);
 			if (!grabbing) {
 				put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", m->id, d->id, n->id, r.width, r.height, r.x, r.y);
 			}
 		}
 
 		window_border_width(n->id, bw);
+
+		n->client->drawn_border_radius = br;
+		window_rounded_border(n);
 
 	} else {
 		xcb_rectangle_t first_rect;
@@ -698,8 +706,10 @@ client_t *make_client(void)
 	snprintf(c->class_name, sizeof(c->class_name), "%s", MISSING_VALUE);
 	snprintf(c->instance_name, sizeof(c->instance_name), "%s", MISSING_VALUE);
 	c->border_width = border_width;
+	c->border_radius = border_radius;
 	c->urgent = false;
 	c->shown = false;
+	c->sets_own_shape = false;
 	c->wm_flags = 0;
 	c->icccm_props.input_hint = true;
 	c->icccm_props.take_focus = false;
