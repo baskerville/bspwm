@@ -553,7 +553,7 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 		clear_input_focus();
 	}
 
-	if (m->sticky_count > 0 && d != m->desk) {
+	if (m->sticky_count > 0 && m->desk && d != m->desk) {
 		if (guess && m->desk->focus != NULL && m->desk->focus->sticky) {
 			n = m->desk->focus;
 		}
