@@ -53,6 +53,7 @@ void load_settings(void)
 	snprintf(presel_feedback_color, sizeof(presel_feedback_color), "%s", PRESEL_FEEDBACK_COLOR);
 
 	padding = (padding_t) PADDING;
+	monocle_padding = (padding_t) MONOCLE_PADDING;
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
@@ -69,7 +70,6 @@ void load_settings(void)
 
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
-	paddingless_monocle = PADDINGLESS_MONOCLE;
 	single_monocle = SINGLE_MONOCLE;
 
 	focus_follows_pointer = FOCUS_FOLLOWS_POINTER;

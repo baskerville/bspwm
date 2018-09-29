@@ -1515,6 +1515,22 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 		SET_DEF_MON_DESK(padding.left, lp)
 #undef SET_DEF_MON_DESK
+	} else if (streq("top_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.top) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
+	} else if (streq("right_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.right) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
+	} else if (streq("bottom_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.bottom) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
+	} else if (streq("left_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.left) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
 #define SET_STR(s) \
 	} else if (streq(#s, name)) { \
 		if (snprintf(s, sizeof(s), "%s", value) < 0) { \
@@ -1652,7 +1668,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
-		SET_BOOL(paddingless_monocle)
 		SET_BOOL(single_monocle)
 		SET_BOOL(swallow_first_click)
 		SET_BOOL(pointer_follows_focus)
@@ -1733,6 +1748,14 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	} else if (streq("left_padding", name)) {
 		GET_DEF_MON_DESK(padding.left)
 #undef GET_DEF_MON_DESK
+	} else if (streq("top_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.top);
+	} else if (streq("right_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.right);
+	} else if (streq("bottom_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.bottom);
+	} else if (streq("left_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.left);
 	} else if (streq("external_rules_command", name)) {
 		fprintf(rsp, "%s", external_rules_command);
 	} else if (streq("status_prefix", name)) {
@@ -1771,7 +1794,6 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", BOOL_STR(s));
 	GET_BOOL(borderless_monocle)
 	GET_BOOL(gapless_monocle)
-	GET_BOOL(paddingless_monocle)
 	GET_BOOL(single_monocle)
 	GET_BOOL(swallow_first_click)
 	GET_BOOL(focus_follows_pointer)

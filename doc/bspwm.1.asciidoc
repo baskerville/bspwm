@@ -692,8 +692,11 @@ Global Settings
 'gapless_monocle'::
 	Remove gaps of tiled windows for the *monocle* desktop layout.
 
-'paddingless_monocle'::
-	Remove padding space for the *monocle* desktop layout.
+'top_monocle_padding'::
+'right_monocle_padding'::
+'bottom_monocle_padding'::
+'left_monocle_padding'::
+	Padding space added at the sides of the screen for the *monocle* desktop layout.
 
 'single_monocle'::
 	Set the desktop layout to *monocle* if there's only one tiled window in the tree.

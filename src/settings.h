@@ -38,6 +38,7 @@
 #define PRESEL_FEEDBACK_COLOR         "#f4d775"
 
 #define PADDING              {0, 0, 0, 0}
+#define MONOCLE_PADDING      {0, 0, 0, 0}
 #define WINDOW_GAP           6
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
@@ -45,7 +46,6 @@
 
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
-#define PADDINGLESS_MONOCLE         false
 #define SINGLE_MONOCLE              false
 
 #define FOCUS_FOLLOWS_POINTER       false
@@ -73,6 +73,7 @@ char focused_border_color[MAXLEN];
 char presel_feedback_color[MAXLEN];
 
 padding_t padding;
+padding_t monocle_padding;
 int window_gap;
 unsigned int border_width;
 double split_ratio;
@@ -87,7 +88,6 @@ int8_t mapping_events_count;
 
 bool borderless_monocle;
 bool gapless_monocle;
-bool paddingless_monocle;
 bool single_monocle;
 
 bool focus_follows_pointer;

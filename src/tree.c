@@ -54,11 +54,16 @@ void arrange(monitor_t *m, desktop_t *d)
 
 	xcb_rectangle_t rect = m->rectangle;
 
-	if (!paddingless_monocle || l != LAYOUT_MONOCLE) {
-		rect.x += m->padding.left + d->padding.left;
-		rect.y += m->padding.top + d->padding.top;
-		rect.width -= m->padding.left + d->padding.left + d->padding.right + m->padding.right;
-		rect.height -= m->padding.top + d->padding.top + d->padding.bottom + m->padding.bottom;
+	rect.x += m->padding.left + d->padding.left;
+	rect.y += m->padding.top + d->padding.top;
+	rect.width -= m->padding.left + d->padding.left + d->padding.right + m->padding.right;
+	rect.height -= m->padding.top + d->padding.top + d->padding.bottom + m->padding.bottom;
+
+	if (l == LAYOUT_MONOCLE) {
+		rect.x += monocle_padding.left;
+		rect.y += monocle_padding.top;
+		rect.width -= monocle_padding.left + monocle_padding.right;
+		rect.height -= monocle_padding.top + monocle_padding.bottom;
 	}
 
 	if (!gapless_monocle || l != LAYOUT_MONOCLE) {
