@@ -1584,8 +1584,11 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
-	} else if (streq("pointer_modifier", name)) {
-		if (parse_modifier_mask(value, &pointer_modifier)) {
+	} else if (streq("pointer_modifier1", name) ||
+	           streq("pointer_modifier2", name) ||
+	           streq("pointer_modifier3", name)) {
+		int index = name[16] - '1';
+		if (parse_modifier_mask(value, &pointer_modifiers[index])) {
 			ungrab_buttons();
 			grab_buttons();
 		} else {
@@ -1747,8 +1750,11 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", TIGHTNESS_STR(directional_focus_tightness));
 	} else if (streq("ignore_ewmh_fullscreen", name)) {
 		print_ignore_request(ignore_ewmh_fullscreen, rsp);
-	} else if (streq("pointer_modifier", name)) {
-		print_modifier_mask(pointer_modifier, rsp);
+	} else if (streq("pointer_modifier1", name) ||
+	           streq("pointer_modifier2", name) ||
+	           streq("pointer_modifier3", name)) {
+		int index = name[16] - '1';
+		print_modifier_mask(pointer_modifiers[index], rsp);
 	} else if (streq("click_to_focus", name)) {
 		print_button_index(click_to_focus, rsp);
 	} else if (streq("pointer_motion_interval", name)) {

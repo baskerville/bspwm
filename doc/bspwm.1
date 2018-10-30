@@ -1207,7 +1207,7 @@ if there\(cqs only one tiled window in the tree\&.
 The minimum interval, in milliseconds, between two motion notify events\&.
 .RE
 .PP
-\fIpointer_modifier\fR
+\fIpointer_modifier1\fR, \fIpointer_modifier2\fR, \fIpointer_modifier3\fR
 .RS 4
 Keyboard modifier used for moving or resizing windows\&. Accept the following values:
 \fBshift\fR,
@@ -1223,7 +1223,7 @@ Keyboard modifier used for moving or resizing windows\&. Accept the following va
 \fIpointer_action1\fR, \fIpointer_action2\fR, \fIpointer_action3\fR
 .RS 4
 Action performed when pressing
-\fIpointer_modifier\fR
+\fIpointer_modifier<n>\fR
 +
 \fIbutton<n>\fR\&. Accept the following values:
 \fBmove\fR,
@@ -1339,22 +1339,22 @@ Focus the window (or the monitor) under the pointer if the value isn\(cqt
 \fBnone\fR\&.
 .RE
 .PP
-\fIpointer_modifier\fR + \fIbutton1\fR
+\fIpointer_modifier1\fR + \fIbutton1\fR
 .RS 4
 Move the window under the pointer\&.
 .RE
 .PP
-\fIpointer_modifier\fR + \fIbutton2\fR
+\fIpointer_modifier2\fR + \fIbutton2\fR
 .RS 4
 Resize the window under the pointer by dragging the nearest side\&.
 .RE
 .PP
-\fIpointer_modifier\fR + \fIbutton3\fR
+\fIpointer_modifier3\fR + \fIbutton3\fR
 .RS 4
 Resize the window under the pointer by dragging the nearest corner\&.
 .RE
 .sp
-The behavior of \fIpointer_modifier\fR + \fIbutton<n>\fR can be modified through the \fIpointer_action<n>\fR setting\&.
+The behavior of \fIpointer_modifier<n>\fR + \fIbutton<n>\fR can be modified through the \fIpointer_action<n>\fR setting\&.
 .SH "EVENTS"
 .PP
 \fIreport\fR

@@ -60,7 +60,9 @@ void load_settings(void)
 	automatic_scheme = SCHEME_LONGEST_SIDE;
 	directional_focus_tightness = TIGHTNESS_HIGH;
 
-	pointer_modifier = POINTER_MODIFIER;
+	pointer_modifiers[0] = POINTER_MODIFIER;
+	pointer_modifiers[1] = POINTER_MODIFIER;
+	pointer_modifiers[2] = POINTER_MODIFIER;
 	pointer_motion_interval = POINTER_MOTION_INTERVAL;
 	pointer_actions[0] = ACTION_MOVE;
 	pointer_actions[1] = ACTION_RESIZE_SIDE;

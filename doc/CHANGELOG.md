@@ -52,7 +52,7 @@
 - Node modifiers: `hidden`, `descendant_of`, `ancestor_of`, `window`, `active`. Example: `bspc query -N 0x00400006 -n .descendant_of` returns the descendants of `0x00400006`.
 - Desktop descriptor: `<desktop_id>`.
 - Monitor descriptor: `<monitor_id>`.
-- Settings: `pointer_motion_interval`, `pointer_modifier`, `pointer_action{1,2,3}`, `click_to_focus`, `honor_size_hints`.
+- Settings: `pointer_motion_interval`, `pointer_modifier{1,2,3}`, `pointer_action{1,2,3}`, `click_to_focus`, `honor_size_hints`.
 - Event: `pointer_action`.
 - ICCCM/EWMH atoms: `WM_STATE`, `_NET_WM_STRUT_PARTIAL`.
 - `bspc` shell completions for `fish`.

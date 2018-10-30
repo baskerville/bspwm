@@ -320,7 +320,7 @@ _bspc() {
 			behaviour_bool=(single_monocle ignore_ewmh_focus center_pseudo_tiled honor_size_hints remove_disabled_monitors remove_unplugged_monitors merge_overlapping_monitors)
 			behaviour=(mapping_events_count ignore_ewmh_fullscreen external_rules_command split_ratio automatic_scheme initial_polarity directional_focus_tightness status_prefix)
 			input_bool=(swallow_first_click focus_follows_pointer pointer_follows_{focus,monitor})
-			input=(click_to_focus pointer_motion_interval pointer_modifier pointer_action{1,2,3})
+			input=(click_to_focus pointer_motion_interval pointer_modifier{1,2,3} pointer_action{1,2,3})
 			if [[ "$CURRENT" == (2|3) ]];then
 				_arguments \
 					'-d[Set settings for the selected desktop]: :_bspc_selector -- desktop'\
@@ -349,7 +349,7 @@ _bspc() {
 					(pointer_action(1|2|3))
 						_values "set $setting" move resize_side resize_corner focus none
 						;;
-					(pointer_modifier)
+					(pointer_modifier(1|2|3))
 						_values "set $setting" shift control lock mod1 mod2 mod3 mod4 mod5
 						;;
 					(directional_focus_tightness)

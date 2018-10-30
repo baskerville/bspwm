@@ -80,7 +80,7 @@ child_polarity_t initial_polarity;
 automatic_scheme_t automatic_scheme;
 tightness_t directional_focus_tightness;
 
-uint16_t pointer_modifier;
+uint16_t pointer_modifiers[3];
 uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];
 int8_t mapping_events_count;

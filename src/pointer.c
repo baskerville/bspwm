@@ -50,12 +50,16 @@ void pointer_init(void)
 
 void window_grab_buttons(xcb_window_t win)
 {
+	coordinates_t loc;
+	bool grab = false;
+	if (locate_window(win, &loc))
+		grab = loc.node->client->state == STATE_FLOATING;
 	for (unsigned int i = 0; i < LENGTH(BUTTONS); i++) {
 		if (click_to_focus == (int8_t) XCB_BUTTON_INDEX_ANY || click_to_focus == (int8_t) BUTTONS[i]) {
 			window_grab_button(win, BUTTONS[i], XCB_NONE);
 		}
-		if (pointer_actions[i] != ACTION_NONE) {
-			window_grab_button(win, BUTTONS[i], pointer_modifier);
+		if (grab && pointer_actions[i] != ACTION_NONE) {
+			window_grab_button(win, BUTTONS[i], pointer_modifiers[i]);
 		}
 	}
 }
@@ -226,8 +230,8 @@ bool grab_pointer(pointer_action_t pac)
 		return false;
 	}
 
-	if (loc.node->client->state == STATE_FULLSCREEN) {
-		return true;
+	if (loc.node->client->state != STATE_FLOATING) {
+		return false;
 	}
 
 	xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(dpy, xcb_grab_pointer(dpy, 0, root, XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME), NULL);
