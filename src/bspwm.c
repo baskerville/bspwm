@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
 			if (FD_ISSET(sock_fd, &descriptors)) {
 				cli_fd = accept(sock_fd, NULL, 0);
-				if (cli_fd > 0 && (n = recv(cli_fd, msg, sizeof(msg), 0)) > 0) {
+				if (cli_fd > 0 && (n = recv(cli_fd, msg, sizeof(msg)-1, 0)) > 0) {
 					msg[n] = '\0';
 					FILE *rsp = fdopen(cli_fd, "w");
 					if (rsp != NULL) {
