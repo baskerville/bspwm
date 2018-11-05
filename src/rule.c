@@ -85,7 +85,7 @@ void remove_rule_by_cause(char *cause)
 	char *instance_name = strtok(NULL, COL_TOK);
 	while (r != NULL) {
 		rule_t *next = r->next;
-		if ((streq(class_name, MATCH_ANY) || streq(r->class_name, class_name)) &&
+		if ((class_name != NULL && (streq(class_name, MATCH_ANY) || streq(r->class_name, class_name))) &&
 		    (instance_name == NULL || streq(instance_name, MATCH_ANY) || streq(r->instance_name, instance_name))) {
 			remove_rule(r);
 		}
