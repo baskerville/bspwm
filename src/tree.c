@@ -160,6 +160,9 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 			first_rect = second_rect = rect;
 		} else {
 			unsigned int fence;
+			if (auto_split_type) {
+				n->split_type = n->rectangle.width > n->rectangle.height ? TYPE_VERTICAL : TYPE_HORIZONTAL;
+			}
 			if (n->split_type == TYPE_VERTICAL) {
 				fence = rect.width * n->split_ratio;
 				if ((n->first_child->constraints.min_width + n->second_child->constraints.min_width) <= rect.width) {

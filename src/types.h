@@ -50,6 +50,11 @@ typedef enum {
 } automatic_scheme_t;
 
 typedef enum {
+	ADJUSTMENT_LONGEST_SIDE,
+	ADJUSTMENT_NONE
+} removal_adjustment_t;
+
+typedef enum {
 	STATE_TILED,
 	STATE_PSEUDO_TILED,
 	STATE_FLOATING,

@@ -680,6 +680,9 @@ Global Settings
 'automatic_scheme'::
 	The insertion scheme used when the insertion point is in automatic mode. Accept the following values: *longest_side*, *spiral*.
 
+'removal_adjustment'::
+	The adjustment applied on the split types of a tree, after removing one of its nodes. Accept the following values: *longest_side*, *none*.
+
 'initial_polarity'::
 	On which child should a new window be attached when adding a window on a single window tree in automatic mode. Accept the following values: *first_child*, *second_child*.
 

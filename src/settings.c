@@ -58,7 +58,8 @@ void load_settings(void)
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
 	initial_polarity = SECOND_CHILD;
-	automatic_scheme = SCHEME_LONGEST_SIDE;
+	automatic_scheme = AUTOMATIC_SCHEME;
+	removal_adjustment = REMOVAL_ADJUSTMENT;
 	directional_focus_tightness = TIGHTNESS_HIGH;
 
 	pointer_modifier = POINTER_MODIFIER;
