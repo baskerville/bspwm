@@ -79,6 +79,7 @@ int exit_status;
 bool auto_raise;
 bool auto_split_type;
 bool sticky_still;
+bool hide_sticky;
 bool record_history;
 bool running;
 bool randr;

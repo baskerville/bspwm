@@ -215,7 +215,7 @@ void init(void)
 	stack_head = stack_tail = NULL;
 	subscribe_head = subscribe_tail = NULL;
 	pending_rule_head = pending_rule_tail = NULL;
-	auto_raise = sticky_still = record_history = true;
+	auto_raise = sticky_still = hide_sticky = record_history = true;
 	auto_split_type = false;
 	randr_base = 0;
 	exit_status = 0;

@@ -40,7 +40,7 @@ node_t *find_public(desktop_t *d);
 node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f);
 void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n);
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n);
-void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n);
+void transfer_sticky_nodes(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n);
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n);
 void hide_node(desktop_t *d, node_t *n);
 void show_node(desktop_t *d, node_t *n);

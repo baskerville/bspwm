@@ -74,8 +74,8 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 		return false;
 	}
 
-	if (m->sticky_count > 0) {
-		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
+	if (m->sticky_count > 0 && m->desk != NULL) {
+		transfer_sticky_nodes(m, m->desk, m, d, m->desk->root);
 	}
 
 	show_desktop(d);
@@ -180,7 +180,9 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	unlink_desktop(ms, d);
 
 	if ((!follow || !d_was_active || !ms_was_focused) && md->desk != NULL) {
+		hide_sticky = false;
 		hide_desktop(d);
+		hide_sticky = true;
 	}
 
 	insert_desktop(md, d);
@@ -204,7 +206,15 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	}
 
 	if (ms->sticky_count > 0 && d_was_active) {
-		transfer_sticky_nodes(ms, d, ms->desk, d->root);
+		if (ms->desk != NULL) {
+			transfer_sticky_nodes(md, d, ms, ms->desk, d->root);
+		} else {
+			ms->sticky_count -= sticky_count(d->root);
+			md->sticky_count += sticky_count(d->root);
+			if (d != md->desk) {
+				transfer_sticky_nodes(md, d, md, md->desk, d->root);
+			}
+		}
 	}
 
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);
@@ -359,6 +369,7 @@ void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
 	if (ds == NULL || dd == NULL || ds == dd) {
 		return;
 	}
+	/* TODO: Handle sticky nodes. */
 	transfer_node(ms, ds, ds->root, md, dd, dd->focus, false);
 }
 
