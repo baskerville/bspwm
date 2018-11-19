@@ -57,11 +57,15 @@ void pointer_init(void)
 
 void window_grab_buttons(xcb_window_t win)
 {
+	coordinates_t loc;
+	bool grab = false;
+	if (locate_window(win, &loc))
+		grab = loc.node->client->state == STATE_FLOATING;
 	for (unsigned int i = 0; i < LENGTH(BUTTONS); i++) {
 		if (click_to_focus == (int8_t) XCB_BUTTON_INDEX_ANY || click_to_focus == (int8_t) BUTTONS[i]) {
 			window_grab_button(win, BUTTONS[i], XCB_NONE);
 		}
-		if (pointer_actions[i] != ACTION_NONE) {
+		if (grab && pointer_actions[i] != ACTION_NONE) {
 			window_grab_button(win, BUTTONS[i], pointer_modifier);
 		}
 	}
