@@ -696,6 +696,9 @@ Global Settings
 'removal_adjustment'::
 	Adjust the brother when unlinking a node from the tree in accordance with the automatic insertion scheme.
 
+'presel_feedback'::
+	Draw the preselection feedback area. Defaults to 'true'.
+
 'borderless_monocle'::
 	Remove borders of tiled windows for the *monocle* desktop layout.
 

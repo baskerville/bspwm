@@ -45,6 +45,7 @@
 #define AUTOMATIC_SCHEME     SCHEME_LONGEST_SIDE
 #define REMOVAL_ADJUSTMENT   true
 
+#define PRESEL_FEEDBACK             true
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
 #define SINGLE_MONOCLE              false
@@ -88,6 +89,7 @@ uint32_t pointer_motion_interval;
 pointer_action_t pointer_actions[3];
 int8_t mapping_events_count;
 
+bool presel_feedback;
 bool borderless_monocle;
 bool gapless_monocle;
 bool single_monocle;
