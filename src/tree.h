@@ -107,7 +107,6 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_marked(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value);
-bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
 xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n);
 void listen_enter_notify(node_t *n, bool enable);
 void regenerate_ids_in(node_t *n);

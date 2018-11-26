@@ -84,13 +84,6 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 
 	n->rectangle = rect;
 
-	if (pointer_follows_focus && mon->desk->focus == n) {
-		xcb_rectangle_t r = rect;
-		r.width -= d->window_gap;
-		r.height -= d->window_gap;
-		center_pointer(r);
-	}
-
 	if (n->presel != NULL) {
 		draw_presel_feedback(m, d, n);
 	}
@@ -1989,13 +1982,6 @@ void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	put_status(SBSC_MASK_NODE_FLAG, "node_flag 0x%08X 0x%08X 0x%08X urgent %s\n", m->id, d->id, n->id, ON_OFF_STR(value));
 	put_status(SBSC_MASK_REPORT);
-}
-
-/* Returns true if a contains b */
-bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
-{
-	return (a.x <= b.x && (a.x + a.width) >= (b.x + b.width) &&
-	        a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
 }
 
 xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n)
