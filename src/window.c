@@ -410,7 +410,7 @@ void draw_border(node_t *n, bool focused_node, bool focused_monitor)
 
 	uint32_t border_color_pxl = get_border_color(focused_node, focused_monitor);
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (f->client != NULL && f->client->border_width > 0) {
+		if (f->client != NULL) {
 			window_draw_border(f->id, border_color_pxl);
 		}
 	}
