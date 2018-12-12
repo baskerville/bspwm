@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 11/14/2018
+.\"      Date: 12/12/2018
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.5-20-gdb27b84
+.\"    Source: Bspwm 0.9.5-24-g0f5a69b
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "11/14/2018" "Bspwm 0\&.9\&.5\-20\-gdb27b84" "Bspwm Manual"
+.TH "BSPWM" "1" "12/12/2018" "Bspwm 0\&.9\&.5\-24\-g0f5a69b" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1155,14 +1155,8 @@ command)\&.
 .RS 4
 The insertion scheme used when the insertion point is in automatic mode\&. Accept the following values:
 \fBlongest_side\fR,
+\fBalternate\fR,
 \fBspiral\fR\&.
-.RE
-.PP
-\fIremoval_adjustment\fR
-.RS 4
-The adjustment applied on the split types of a tree, after removing one of its nodes\&. Accept the following values:
-\fBlongest_side\fR,
-\fBnone\fR\&.
 .RE
 .PP
 \fIinitial_polarity\fR
@@ -1179,6 +1173,11 @@ The tightness of the algorithm used to decide whether a window is on the
 side of another window\&. Accept the following values:
 \fBhigh\fR,
 \fBlow\fR\&.
+.RE
+.PP
+\fIremoval_adjustment\fR
+.RS 4
+Adjust the brother when unlinking a node from the tree in accordance with the automatic insertion scheme\&.
 .RE
 .PP
 \fIborderless_monocle\fR

@@ -100,7 +100,7 @@ The *automatic* mode, as opposed to the *manual* mode, doesn't require any user 
 
 #### Longest side scheme
 
-When the value of the automatic scheme is `longest_side`, the window will be attached as if the insertion point was in manual mode and the split direction was choosen based on the dimensions of the tiling rectangle and the initial polarity.
+When the value of the automatic scheme is `longest_side`, the window will be attached as if the insertion point was in manual mode and the split direction was chosen based on the dimensions of the tiling rectangle and the initial polarity.
 
 Let's consider the following scenario, where the initial polarity is set to `second_child`:
 
@@ -130,6 +130,10 @@ In state *X*, a new window is added.
 Since *1* is wide, it gets split vertically and *2* is added as *a*'s second child given the initial polarity.
 
 This leads to *Y* where we insert window *3*. *2* is tall and is therefore split horizontally. *3* is once again added as *b*'s second child.
+
+#### Alternate scheme
+
+When the value of the automatic scheme is `alternate`, the window will be attached as if the insertion point was in manual mode and the split direction was chosen based on the split type of the insertion point's parent and the initial polarity. If the parent is split horizontally, the insertion point will be split vertically and vice versa.
 
 #### Spiral scheme
 

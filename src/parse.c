@@ -272,20 +272,11 @@ bool parse_automatic_scheme(char *s, automatic_scheme_t *a)
 	if (streq("longest_side", s)) {
 		*a = SCHEME_LONGEST_SIDE;
 		return true;
+	} else if (streq("alternate", s)) {
+		*a = SCHEME_ALTERNATE;
+		return true;
 	} else if (streq("spiral", s)) {
 		*a = SCHEME_SPIRAL;
-		return true;
-	}
-	return false;
-}
-
-bool parse_removal_adjustment(char *s, removal_adjustment_t *r)
-{
-	if (streq("longest_side", s)) {
-		*r = ADJUSTMENT_LONGEST_SIDE;
-		return true;
-	} else if (streq("none", s)) {
-		*r = ADJUSTMENT_NONE;
 		return true;
 	}
 	return false;

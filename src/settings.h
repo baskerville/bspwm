@@ -43,7 +43,7 @@
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
 #define AUTOMATIC_SCHEME     SCHEME_LONGEST_SIDE
-#define REMOVAL_ADJUSTMENT   ADJUSTMENT_LONGEST_SIDE
+#define REMOVAL_ADJUSTMENT   true
 
 #define BORDERLESS_MONOCLE          false
 #define GAPLESS_MONOCLE             false
@@ -80,7 +80,7 @@ unsigned int border_width;
 double split_ratio;
 child_polarity_t initial_polarity;
 automatic_scheme_t automatic_scheme;
-removal_adjustment_t removal_adjustment;
+bool removal_adjustment;
 tightness_t directional_focus_tightness;
 
 uint16_t pointer_modifier;

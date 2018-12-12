@@ -153,9 +153,6 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 			first_rect = second_rect = rect;
 		} else {
 			unsigned int fence;
-			if (auto_split_type) {
-				n->split_type = n->rectangle.width > n->rectangle.height ? TYPE_VERTICAL : TYPE_HORIZONTAL;
-			}
 			if (n->split_type == TYPE_VERTICAL) {
 				fence = rect.width * n->split_ratio;
 				if ((n->first_child->constraints.min_width + n->second_child->constraints.min_width) <= rect.width) {
@@ -332,7 +329,8 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 		n->parent = c;
 		if (f->presel == NULL) {
-			if (p == NULL || automatic_scheme == SCHEME_LONGEST_SIDE || (f->client != NULL && IS_TILED(f->client) && tiled_count(d->root, true) == 1)) {
+			bool single_tiled = f->client != NULL && IS_TILED(f->client) && tiled_count(d->root, true) == 1;
+			if (p == NULL || automatic_scheme != SCHEME_SPIRAL || single_tiled) {
 				if (p != NULL) {
 					if (is_first_child(f)) {
 						p->first_child = c;
@@ -351,10 +349,18 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					c->first_child = f;
 					c->second_child = n;
 				}
-				if (f->rectangle.width > f->rectangle.height) {
-					c->split_type = TYPE_VERTICAL;
+				if (p == NULL || automatic_scheme == SCHEME_LONGEST_SIDE || single_tiled) {
+					if (f->rectangle.width > f->rectangle.height) {
+						c->split_type = TYPE_VERTICAL;
+					} else {
+						c->split_type = TYPE_HORIZONTAL;
+					}
 				} else {
-					c->split_type = TYPE_HORIZONTAL;
+					if (p->split_type == TYPE_HORIZONTAL) {
+						c->split_type = TYPE_VERTICAL;
+					} else {
+						c->split_type = TYPE_HORIZONTAL;
+					}
 				}
 			} else {
 				node_t *g = p->parent;
@@ -1202,6 +1208,24 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 			}
 		} else {
 			d->root = b;
+		}
+
+		if (!n->vacant && removal_adjustment) {
+			if (automatic_scheme == SCHEME_LONGEST_SIDE || g == NULL) {
+				if (p != NULL) {
+					if (p->rectangle.width > p->rectangle.height) {
+						b->split_type = TYPE_VERTICAL;
+					} else {
+						b->split_type = TYPE_HORIZONTAL;
+					}
+				}
+			} else if (automatic_scheme == SCHEME_ALTERNATE) {
+				if (g->split_type == TYPE_HORIZONTAL) {
+					b->split_type = TYPE_VERTICAL;
+				} else {
+					b->split_type = TYPE_HORIZONTAL;
+				}
+			}
 		}
 
 		free(p);

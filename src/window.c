@@ -231,12 +231,8 @@ void unmanage_window(xcb_window_t win)
 	coordinates_t loc;
 	if (locate_window(win, &loc)) {
 		put_status(SBSC_MASK_NODE_REMOVE, "node_remove 0x%08X 0x%08X 0x%08X\n", loc.monitor->id, loc.desktop->id, win);
-		if (removal_adjustment == ADJUSTMENT_LONGEST_SIDE) {
-			auto_split_type = true;
-		}
 		remove_node(loc.monitor, loc.desktop, loc.node);
 		arrange(loc.monitor, loc.desktop);
-		auto_split_type = false;
 	} else {
 		for (pending_rule_t *pr = pending_rule_head; pr != NULL; pr = pr->next) {
 			if (pr->win == win) {

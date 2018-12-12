@@ -46,13 +46,9 @@ typedef enum {
 
 typedef enum {
 	SCHEME_LONGEST_SIDE,
+	SCHEME_ALTERNATE,
 	SCHEME_SPIRAL
 } automatic_scheme_t;
-
-typedef enum {
-	ADJUSTMENT_LONGEST_SIDE,
-	ADJUSTMENT_NONE
-} removal_adjustment_t;
 
 typedef enum {
 	STATE_TILED,

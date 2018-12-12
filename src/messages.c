@@ -1579,14 +1579,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
-	} else if (streq("removal_adjustment", name)) {
-		removal_adjustment_t r;
-		if (parse_removal_adjustment(value, &r)) {
-			removal_adjustment = r;
-		} else {
-			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
-			return;
-		}
 	} else if (streq("mapping_events_count", name)) {
 		if (sscanf(value, "%" SCNi8, &mapping_events_count) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
@@ -1683,6 +1675,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(ignore_ewmh_focus)
 		SET_BOOL(center_pseudo_tiled)
 		SET_BOOL(honor_size_hints)
+		SET_BOOL(removal_adjustment)
 #undef SET_BOOL
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1772,8 +1765,6 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%s", CHILD_POL_STR(initial_polarity));
 	} else if (streq("automatic_scheme", name)) {
 		fprintf(rsp, "%s", AUTO_SCM_STR(automatic_scheme));
-	} else if (streq("removal_adjustment", name)) {
-		fprintf(rsp, "%s", REM_ADJ_STR(removal_adjustment));
 	} else if (streq("mapping_events_count", name)) {
 		fprintf(rsp, "%" PRIi8, mapping_events_count);
 	} else if (streq("directional_focus_tightness", name)) {
@@ -1812,6 +1803,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(ignore_ewmh_focus)
 	GET_BOOL(center_pseudo_tiled)
 	GET_BOOL(honor_size_hints)
+	GET_BOOL(removal_adjustment)
 	GET_BOOL(remove_disabled_monitors)
 	GET_BOOL(remove_unplugged_monitors)
 	GET_BOOL(merge_overlapping_monitors)
