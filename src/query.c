@@ -430,8 +430,8 @@ node_select_t make_node_select(void)
 	node_select_t sel = {
 		.automatic = OPTION_NONE,
 		.focused = OPTION_NONE,
-		.local = OPTION_NONE,
 		.active = OPTION_NONE,
+		.local = OPTION_NONE,
 		.leaf = OPTION_NONE,
 		.window = OPTION_NONE,
 		.tiled = OPTION_NONE,
@@ -459,6 +459,7 @@ desktop_select_t make_desktop_select(void)
 	desktop_select_t sel = {
 		.occupied = OPTION_NONE,
 		.focused = OPTION_NONE,
+		.active = OPTION_NONE,
 		.urgent = OPTION_NONE,
 		.local = OPTION_NONE
 	};
@@ -984,9 +985,16 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t *sel)
 	}
 
 	if (sel->focused != OPTION_NONE &&
-	    loc->node != loc->desktop->focus
+	    loc->node != mon->desk->focus
 	    ? sel->focused == OPTION_TRUE
 	    : sel->focused == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel->active != OPTION_NONE &&
+	    loc->node != loc->desktop->focus
+	    ? sel->active == OPTION_TRUE
+	    : sel->active == OPTION_FALSE) {
 		return false;
 	}
 
@@ -1122,9 +1130,16 @@ bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t *s
 	}
 
 	if (sel->focused != OPTION_NONE &&
-	    loc->desktop != loc->monitor->desk
+	    loc->desktop != mon->desk
 	    ? sel->focused == OPTION_TRUE
 	    : sel->focused == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel->active != OPTION_NONE &&
+	    loc->desktop != loc->monitor->desk
+	    ? sel->active == OPTION_TRUE
+	    : sel->active == OPTION_FALSE) {
 		return false;
 	}
 
@@ -1155,7 +1170,7 @@ bool monitor_matches(coordinates_t *loc, __attribute__((unused)) coordinates_t *
 	}
 
 	if (sel->focused != OPTION_NONE &&
-	    mon != loc->monitor
+	    loc->monitor != mon
 	    ? sel->focused == OPTION_TRUE
 	    : sel->focused == OPTION_FALSE) {
 		return false;

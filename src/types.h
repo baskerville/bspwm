@@ -163,8 +163,8 @@ typedef enum {
 typedef struct {
 	option_bool_t automatic;
 	option_bool_t focused;
-	option_bool_t local;
 	option_bool_t active;
+	option_bool_t local;
 	option_bool_t leaf;
 	option_bool_t window;
 	option_bool_t tiled;
@@ -188,6 +188,7 @@ typedef struct {
 typedef struct {
 	option_bool_t occupied;
 	option_bool_t focused;
+	option_bool_t active;
 	option_bool_t urgent;
 	option_bool_t local;
 } desktop_select_t;

@@ -76,7 +76,7 @@ Select a node.
 ----
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
-                        <node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
+                        <node_id>)[.[!]focused][.[!]active][.[!]automatic][.[!]local]
                                   [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
                                   [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
@@ -156,41 +156,43 @@ parent::
 Modifiers
 ^^^^^^^^^
 
+
+
 [!]focused::
-	Only consider focused or unfocused nodes.
-
-[!]automatic::
-	Only consider nodes in automatic or manual insertion mode. See also *--presel-dir* under *Node* in the *DOMAINS* section below.
-
-[!]local::
-	Only consider nodes in or not in the reference desktop.
+	Only consider the focused node.
 
 [!]active::
-	Only consider nodes in or not in the active desktop of their monitor.
+	Only consider nodes that are the focused node of their desktop.
+
+[!]automatic::
+	Only consider nodes in automatic insertion mode. See also *--presel-dir* under *Node* in the *DOMAINS* section below.
+
+[!]local::
+	Only consider nodes in the reference desktop.
 
 [!]leaf::
-	Only consider leaves or internal nodes.
+	Only consider leaf nodes.
 
 [!]window::
-	Only consider nodes that hold or don't hold a window.
+	Only consider nodes that hold a window.
 
 [!](tiled|pseudo_tiled|floating|fullscreen)::
-	Only consider windows in or not in the given state.
+	Only consider windows in the given state.
 
 [!]same_class::
-	Only consider windows that have or don't have the same class as the reference window.
+	Only consider windows that have the same class as the reference window.
 
 [!]descendant_of::
-	Only consider nodes that are or aren't descendants of the reference node.
+	Only consider nodes that are descendants of the reference node.
 
 [!]ancestor_of::
-	Only consider nodes that are or aren't ancestors of the reference node.
+	Only consider nodes that are ancestors of the reference node.
 
 [!](hidden|sticky|private|locked|marked|urgent)::
-	Only consider windows that have or don't have the given flag set.
+	Only consider windows that have the given flag set.
 
 [!](below|normal|above)::
-	Only consider windows in or not in the given layer.
+	Only consider windows in the given layer.
 
 Desktop
 ~~~~~~~
@@ -200,7 +202,8 @@ Select a desktop.
 ----
 DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
-                              <desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
+                              <desktop_id>|<desktop_name>)[.[!]focused][.[!]active]
+                                                          [.[!]occupied][.[!]urgent][.[!]local]
 ----
 
 Descriptors
@@ -239,17 +242,20 @@ focused::
 Modifiers
 ^^^^^^^^^
 
-[!]occupied::
-	Only consider occupied or free desktops.
-
 [!]focused::
-	Only consider focused or unfocused desktops.
+	Only consider the focused desktop.
+
+[!]active::
+	Only consider desktops that are the focused desktop of their monitor.
+
+[!]occupied::
+	Only consider occupied desktops.
 
 [!]urgent::
-	Only consider urgent or non urgent desktops.
+	Only consider urgent desktops.
 
 [!]local::
-	Only consider desktops inside or outside of the reference monitor.
+	Only consider desktops inside the reference monitor.
 
 Monitor
 ~~~~~~~
@@ -259,7 +265,7 @@ Select a monitor.
 ----
 MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|any|last|newest|older|newer|
                               focused|pointed|primary|^<n>|
-                              <monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
+                              <monitor_id>|<monitor_name>)[.[!]focused][.[!]occupied]
 ----
 
 Descriptors
@@ -308,11 +314,12 @@ primary::
 Modifiers
 ^^^^^^^^^
 
-[!]occupied::
-	Only consider monitors where the focused desktop is occupied or free.
-
 [!]focused::
-	Only consider focused or unfocused monitors.
+	Only consider the focused monitor.
+
+[!]occupied::
+	Only consider monitors where the focused desktop is occupied.
+
 
 
 Window States

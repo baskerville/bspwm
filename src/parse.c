@@ -500,6 +500,7 @@ bool parse_desktop_modifiers(char *desc, desktop_select_t *sel)
 		} else if (streq("!occupied", tok)) {
 			sel->occupied = OPTION_FALSE;
 		GET_MOD(focused)
+		GET_MOD(active)
 		GET_MOD(urgent)
 		GET_MOD(local)
 		} else {
@@ -522,8 +523,8 @@ bool parse_node_modifiers(char *desc, node_select_t *sel)
 			sel->tiled = OPTION_FALSE;
 		GET_MOD(automatic)
 		GET_MOD(focused)
-		GET_MOD(local)
 		GET_MOD(active)
+		GET_MOD(local)
 		GET_MOD(leaf)
 		GET_MOD(window)
 		GET_MOD(pseudo_tiled)
