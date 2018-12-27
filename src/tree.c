@@ -119,6 +119,9 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 				if (center_pseudo_tiled) {
 					r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
 					r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
+					// try and keep window from overflowing root_rect
+					r.x += -MIN(r.x - root_rect.x, 0) - MAX((int)(r.x + r.width + 2*bw) - (root_rect.x + root_rect.width), 0);
+					r.y += -MIN(r.y - root_rect.y, 0) - MAX((int)(r.y + r.height + 2*bw) - (root_rect.y + root_rect.height), 0);
 				} else {
 					r.x = rect.x;
 					r.y = rect.y;
