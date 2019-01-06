@@ -1756,11 +1756,8 @@ void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
 
 	if (value) {
 		c->wm_flags |= WM_FLAG_FULLSCREEN;
-		c->last_layer = c->layer;
-		c->layer = LAYER_ABOVE;
 	} else {
 		c->wm_flags &= ~WM_FLAG_FULLSCREEN;
-		c->layer = c->last_layer;
 		if (d->focus == n) {
 			neutralize_occluding_windows(m, d, n);
 		}

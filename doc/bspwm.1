@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 12/14/2018
+.\"      Date: 01/06/2019
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.5-25-g93c6de1
+.\"    Source: Bspwm 0.9.5-27-g2c2faeb
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "12/14/2018" "Bspwm 0\&.9\&.5\-25\-g93c6de1" "Bspwm Manual"
+.TH "BSPWM" "1" "01/06/2019" "Bspwm 0\&.9\&.5\-27\-g2c2faeb" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -581,7 +581,7 @@ Has its urgency hint set\&. This flag is set externally\&.
 .sp
 There\(cqs three stacking layers: BELOW, NORMAL and ABOVE\&.
 .sp
-In each layer, the window are orderered as follow: tiled & pseudo\-tiled < fullscreen < floating\&.
+In each layer, the window are orderered as follow: tiled & pseudo\-tiled < floating < fullscreen\&.
 .SH "RECEPTACLES"
 .sp
 A leaf node that doesn\(cqt hold any window is called a receptacle\&. When a node is inserted on a receptacle in automatic mode, it will replace the receptacle\&. A receptacle can be inserted on a node, preselected and killed\&. Receptacles can therefore be used to build a tree whose leaves are receptacles\&. Using the appropriate rules, one can then send windows on the leaves of this tree\&. This feature is used in \fIexamples/receptacles\fR to store and recreate layouts\&.

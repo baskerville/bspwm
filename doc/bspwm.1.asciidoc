@@ -365,7 +365,7 @@ Stacking Layers
 
 There's three stacking layers: BELOW, NORMAL and ABOVE.
 
-In each layer, the window are orderered as follow: tiled & pseudo-tiled < fullscreen < floating.
+In each layer, the window are orderered as follow: tiled & pseudo-tiled < floating < fullscreen.
 
 Receptacles
 -----------
