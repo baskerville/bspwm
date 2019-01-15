@@ -577,7 +577,7 @@ Commands
 	Dump the current world state on standard output.
 
 *-l*, *--load-state* <file_path>::
-	Load a world state from the given file.
+	Load a world state from the given file. The path must be absolute.
 
 *-a*, *--add-monitor* <name> WxH+X+Y::
 	Add a monitor for the given name and rectangle.
@@ -682,7 +682,7 @@ Global Settings
 	Prefix prepended to each of the status lines.
 
 'external_rules_command'::
-	External command used to retrieve rule consequences. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
+	Absolute path to the command used to retrieve rule consequences. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
 
 'automatic_scheme'::
 	The insertion scheme used when the insertion point is in automatic mode. Accept the following values: *longest_side*, *alternate*, *spiral*.
