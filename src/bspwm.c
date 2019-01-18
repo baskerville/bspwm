@@ -33,6 +33,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <string.h>
 #include <xcb/xinerama.h>
 #include "types.h"
 #include "desktop.h"
@@ -46,6 +47,8 @@
 #include "history.h"
 #include "ewmh.h"
 #include "rule.h"
+#include "restore.h"
+#include "query.h"
 #include "bspwm.h"
 
 int main(int argc, char *argv[])
@@ -92,6 +95,23 @@ int main(int argc, char *argv[])
 
 	load_settings();
 	setup();
+
+	char restart_state_path[MAXLEN];
+	char *rsp = getenv(RESTART_STATE_ENV_VAR);
+	if (rsp != NULL) {
+		snprintf(restart_state_path, sizeof(restart_state_path), "%s", rsp);
+	} else {
+		char *host = NULL;
+		int dn = 0, sn = 0;
+		if (xcb_parse_display(NULL, &host, &dn, &sn) != 0) {
+			snprintf(restart_state_path, sizeof(restart_state_path), RESTART_STATE_PATH_TPL, host, dn, sn);
+		}
+		free(host);
+	}
+	if (access(restart_state_path, F_OK | R_OK) == 0) {
+		restore_tree(restart_state_path);
+		remove(restart_state_path);
+	}
 
 	dpy_fd = xcb_get_file_descriptor(dpy);
 
@@ -193,6 +213,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
+
+	if (restart) {
+		FILE *f = fopen(restart_state_path, "w");
+		query_tree(f);
+		fclose(f);
+	}
+
 	cleanup();
 	close(sock_fd);
 	unlink(socket_path);
@@ -205,7 +232,24 @@ int main(int argc, char *argv[])
 	xcb_disconnect(dpy);
 
 	if (restart) {
-		execvp(*argv, argv + 1);
+		char **rargv = malloc(sizeof(char *) * (argc + 3));
+
+		int rargc = 0;
+		for (int i = 0; i < argc; i++) {
+			if (streq("-s", argv[i])) {
+			    i++;
+			    continue;
+			}
+			rargv[rargc++] = argv[i];
+		}
+
+		rargv[rargc] = "-s";
+		rargv[rargc + 1] = restart_state_path;
+		rargv[rargc + 2] = 0;
+
+		execvp(*argv, rargv);
+
+		free(rargv);
 	}
 
 	return exit_status;
