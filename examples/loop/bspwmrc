@@ -1,6 +1,0 @@
-#! /bin/sh
-
-if [ -e "$BSPWM_STATE" ] ; then
-	bspc wm -l "$BSPWM_STATE"
-	rm "$BSPWM_STATE"
-fi

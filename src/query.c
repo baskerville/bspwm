@@ -35,7 +35,7 @@
 #include "query.h"
 #include "geometry.h"
 
-void query_tree(FILE *rsp)
+void query_state(FILE *rsp)
 {
 	fprintf(rsp, "{");
 	fprintf(rsp, "\"focusedMonitorId\":%u,", mon->id);
@@ -58,8 +58,12 @@ void query_tree(FILE *rsp)
 	fprintf(rsp,",");
 	fprintf(rsp, "\"stackingList\":");
 	query_stack(rsp);
+	if (restart) {
+		fprintf(rsp,",");
+		fprintf(rsp, "\"eventSubscribers\":");
+		query_subscribers(rsp);
+	}
 	fprintf(rsp, "}");
-
 }
 
 void query_monitor(monitor_t *m, FILE *rsp)
@@ -214,6 +218,22 @@ void query_stack(FILE *rsp)
 	fprintf(rsp, "[");
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
 		fprintf(rsp, "%u", s->node->id);
+		if (s->next != NULL) {
+			fprintf(rsp, ",");
+		}
+	}
+	fprintf(rsp, "]");
+}
+
+void query_subscribers(FILE *rsp)
+{
+	fprintf(rsp, "[");
+	for (subscriber_list_t *s = subscribe_head; s != NULL; s = s->next) {
+		fprintf(rsp, "{\"fileDescriptor\": %i", fileno(s->stream));
+		if (s->fifo_path != NULL) {
+			fprintf(rsp, ",\"fifoPath\":\"%s\"", s->fifo_path);
+		}
+		fprintf(rsp, ",\"field\":%i,\"count\":%i}", s->field, s->count);
 		if (s->next != NULL) {
 			fprintf(rsp, ",");
 		}

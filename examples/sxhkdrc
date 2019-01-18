@@ -18,9 +18,9 @@ super + Escape
 # bspwm hotkeys
 #
 
-# quit bspwm normally
-super + alt + Escape
-	bspc quit
+# quit/restart bspwm
+super + alt + {q,r}
+	bspc {quit,wm -r}
 
 # close and kill
 super + {_,shift + }w

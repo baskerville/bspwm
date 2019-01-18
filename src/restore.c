@@ -36,11 +36,12 @@
 #include "stack.h"
 #include "tree.h"
 #include "settings.h"
+#include "subscribe.h"
 #include "restore.h"
 #include "window.h"
 #include "parse.h"
 
-bool restore_tree(const char *file_path)
+bool restore_state(const char *file_path)
 {
 	size_t jslen;
 	char *json = read_string(file_path, &jslen);
@@ -151,6 +152,10 @@ bool restore_tree(const char *file_path)
 				stacking_list_token = t;
 			}
 			restore_stack(&t, json);
+			continue;
+		} else if (keyeq("eventSubscribers", t, json)) {
+			t++;
+			restore_subscribers(&t, json);
 			continue;
 		}
 		t++;
@@ -545,6 +550,40 @@ void restore_history(jsmntok_t **t, char *json)
 		if (loc.monitor != NULL && loc.desktop != NULL) {
 			history_add(loc.monitor, loc.desktop, loc.node, true);
 		}
+	}
+}
+
+void restore_subscribers(jsmntok_t **t, char *json)
+{
+	int s = (*t)->size;
+	(*t)++;
+
+	for (int i = 0; i < s; i++) {
+		subscriber_list_t *s = make_subscriber(NULL, NULL, 0, 0);
+		restore_subscriber(s, t, json);
+		add_subscriber(s);
+	}
+}
+
+void restore_subscriber(subscriber_list_t *s, jsmntok_t **t, char *json)
+{
+	int n = (*t)->size;
+	(*t)++;
+
+	for (int i = 0; i < n; i++) {
+		if (keyeq("fileDescriptor", *t, json)) {
+			(*t)++;
+			int fd;
+			sscanf(json + (*t)->start, "%i", &fd);
+			s->stream = fdopen(fd, "w");
+		} else if (keyeq("fifoPath", *t, json)) {
+			(*t)++;
+			free(s->fifo_path);
+			s->fifo_path = copy_string(json + (*t)->start, (*t)->end - (*t)->start);
+		RESTORE_INT(field, &s->field)
+		RESTORE_INT(count, &s->count)
+		}
+		(*t)++;
 	}
 }
 

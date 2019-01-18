@@ -1195,7 +1195,7 @@ void cmd_wm(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (streq("-d", *args) || streq("--dump-state", *args)) {
-			query_tree(rsp);
+			query_state(rsp);
 			fprintf(rsp, "\n");
 		} else if (streq("-l", *args) || streq("--load-state", *args)) {
 			num--, args++;
@@ -1203,7 +1203,7 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (!restore_tree(*args)) {
+			if (!restore_state(*args)) {
 				fail(rsp, "");
 				break;
 			}
@@ -1260,6 +1260,10 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-r", *args) || streq("--restart", *args)) {
+			running = false;
+			restart = true;
+			break;
 		} else {
 			fail(rsp, "wm: Unknown command: '%s'.\n", *args);
 			break;
@@ -1319,7 +1323,8 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 		}
 	}
 
-	add_subscriber(stream, fifo_path, field, count);
+	subscriber_list_t *sb = make_subscriber(stream, fifo_path, field, count);
+	add_subscriber(sb);
 	return;
 
 failed:
