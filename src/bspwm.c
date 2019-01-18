@@ -203,6 +203,11 @@ int main(int argc, char *argv[])
 	free(ewmh);
 	xcb_flush(dpy);
 	xcb_disconnect(dpy);
+
+	if (restart) {
+		execvp(*argv, argv + 1);
+	}
+
 	return exit_status;
 }
 
@@ -218,6 +223,7 @@ void init(void)
 	auto_raise = sticky_still = hide_sticky = record_history = true;
 	randr_base = 0;
 	exit_status = 0;
+	restart = false;
 }
 
 void setup(void)

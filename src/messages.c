@@ -1260,6 +1260,10 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-r", *args) || streq("--restart", *args)) {
+			running = false;
+			restart = true;
+			break;
 		} else {
 			fail(rsp, "wm: Unknown command: '%s'.\n", *args);
 			break;

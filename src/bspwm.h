@@ -81,6 +81,7 @@ bool sticky_still;
 bool hide_sticky;
 bool record_history;
 bool running;
+bool restart;
 bool randr;
 
 void init(void);

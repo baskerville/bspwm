@@ -235,7 +235,8 @@ _bspc() {
 				'*'{-O,--reorder-monitors}'[Reorder the list of monitors to match the given order]:*: :_bspc_query_names -- monitors -M'\
 				'*'{-o,--adopt-orphans}'[Manage all the unmanaged windows remaining from a previous session]'\
 				'*'{-h,--record-history}'[Enable or disable the recording of node focus history]:history:(on off)'\
-				'*'{-g,--get-status}'[Print the current status information]'
+				'*'{-g,--get-status}'[Print the current status information]'\
+				'*'{-r,--restart}'[Restart the window manager]'
 			;;
 		(subscribe)
 			if [[ "$words[CURRENT-1]" != (-c|--count) ]] ;then
