@@ -77,6 +77,7 @@ void rotate_tree_rec(node_t *n, int deg);
 void flip_tree(node_t *n, flip_t flp);
 void equalize_tree(node_t *n);
 int balance_tree(node_t *n);
+void adjust_ratios(node_t *n, xcb_rectangle_t rect);
 void unlink_node(monitor_t *m, desktop_t *d, node_t *n);
 void close_node(node_t *n);
 void kill_node(monitor_t *m, desktop_t *d, node_t *n);

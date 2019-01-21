@@ -1173,6 +1173,46 @@ int balance_tree(node_t *n)
 	}
 }
 
+/* Adjust the split ratios so that they keep their position
+ * despite the potential alteration of their rectangle. */
+void adjust_ratios(node_t *n, xcb_rectangle_t rect)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	double ratio;
+
+	if (n->split_type == TYPE_VERTICAL) {
+		double position = (double) n->rectangle.x + n->split_ratio * (double) n->rectangle.width;
+		ratio = (position - (double) rect.x) / (double) rect.width;
+	} else {
+		double position = (double) n->rectangle.y + n->split_ratio * (double) n->rectangle.height;
+		ratio = (position - (double) rect.y) / (double) rect.height;
+	}
+
+	ratio = MAX(0.0, ratio);
+	ratio = MIN(1.0, ratio);
+	n->split_ratio = ratio;
+
+	xcb_rectangle_t first_rect;
+	xcb_rectangle_t second_rect;
+	unsigned int fence;
+
+	if (n->split_type == TYPE_VERTICAL) {
+		fence = rect.width * n->split_ratio;
+		first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+		second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+	} else {
+		fence = rect.height * n->split_ratio;
+		first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+		second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+	}
+
+	adjust_ratios(n->first_child, first_rect);
+	adjust_ratios(n->second_child, second_rect);
+}
+
 void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (d == NULL || n == NULL) {
