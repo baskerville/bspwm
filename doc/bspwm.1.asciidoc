@@ -594,6 +594,9 @@ Commands
 *-g*, *--get-status*::
 	Print the current status information.
 
+*-r*, *--restart*::
+	Restart the window manager
+
 Rule
 ~~~~
 
