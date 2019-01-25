@@ -746,6 +746,9 @@ Global Settings
 'ignore_ewmh_fullscreen'::
 	Block the fullscreen state transitions that originate from an EWMH request. The possible values are: *none*, *all*, or a comma separated list of the following values: *enter*, *exit*.
 
+'ignore_ewmh_struts'::
+	BIgnore strut hinting from clients requesting to reserve space (i.e. task bars).
+
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
 

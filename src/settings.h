@@ -98,6 +98,7 @@ bool pointer_follows_monitor;
 int8_t click_to_focus;
 bool swallow_first_click;
 bool ignore_ewmh_focus;
+bool ignore_ewmh_struts;
 state_transition_t ignore_ewmh_fullscreen;
 
 bool center_pseudo_tiled;
