@@ -1666,7 +1666,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
 			return; \
 		}
-		SET_BOOL(no_presel_feedback)
+		SET_BOOL(presel_feedback)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
 		SET_BOOL(single_monocle)
@@ -1795,7 +1795,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 #define GET_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		fprintf(rsp, "%s", BOOL_STR(s));
-	GET_BOOL(no_presel_feedback)
+	GET_BOOL(presel_feedback)
 	GET_BOOL(borderless_monocle)
 	GET_BOOL(gapless_monocle)
 	GET_BOOL(single_monocle)

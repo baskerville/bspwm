@@ -69,7 +69,7 @@ void load_settings(void)
 	pointer_actions[2] = ACTION_RESIZE_CORNER;
 	mapping_events_count = MAPPING_EVENTS_COUNT;
 
-	no_presel_feedback = NO_PRESEL_FEEDBACK;
+	presel_feedback = PRESEL_FEEDBACK;
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
 	single_monocle = SINGLE_MONOCLE;
