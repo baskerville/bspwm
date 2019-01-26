@@ -201,6 +201,9 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		hide_node(d, n);
 	}
 
+	ewmh_update_client_list(false);
+	ewmh_set_wm_desktop(n, d);
+
 	if (!csq->hidden && csq->focus) {
 		if (d == mon->desk || csq->follow) {
 			focus_node(m, d, n);
@@ -212,8 +215,6 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		draw_border(n, false, (m == mon));
 	}
 
-	ewmh_set_wm_desktop(n, d);
-	ewmh_update_client_list(false);
 	free(csq->layer);
 	free(csq->state);
 
