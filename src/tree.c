@@ -46,11 +46,7 @@ void arrange(monitor_t *m, desktop_t *d)
 		return;
 	}
 
-	layout_t l = d->layout;
-
-	if (single_monocle && tiled_count(d->root, true) <= 1) {
-		l = LAYOUT_MONOCLE;
-	}
+	layout_t l = ACTUAL_LAYOUT(d);
 
 	xcb_rectangle_t rect = m->rectangle;
 
@@ -445,6 +441,8 @@ void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 {
 	node_t *r = make_node(XCB_NONE);
 	insert_node(m, d, r, n);
+
+	put_status(SBSC_MASK_REPORT);
 }
 
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
