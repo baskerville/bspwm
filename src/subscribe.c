@@ -31,6 +31,7 @@
 #include "desktop.h"
 #include "settings.h"
 #include "subscribe.h"
+#include "tree.h"
 
 subscriber_list_t *make_subscriber_list(FILE *stream, char *fifo_path, int field, int count)
 {
@@ -99,7 +100,7 @@ int print_report(FILE *stream)
 			fprintf(stream, ":%c%s", c, d->name);
 		}
 		if (m->desk != NULL) {
-			fprintf(stream, ":L%c", LAYOUT_CHR(m->desk->layout));
+			fprintf(stream, ":L%c", LAYOUT_CHR(ACTUAL_LAYOUT(m->desk)));
 			if (m->desk->focus != NULL) {
 				node_t *n = m->desk->focus;
 				if (n->client != NULL) {

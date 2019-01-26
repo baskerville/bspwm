@@ -1669,6 +1669,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
 		SET_BOOL(single_monocle)
+		put_status(SBSC_MASK_REPORT);
 		SET_BOOL(swallow_first_click)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
