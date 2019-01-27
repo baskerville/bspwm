@@ -30,6 +30,7 @@
 #include <poll.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include "help.h"
 #include "helpers.h"
 #include "common.h"
 
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
 	char msg[BUFSIZ], rsp[BUFSIZ];
 
 	if (argc < 2) {
-		err("No arguments given.\n");
+		show_bspc_help();
 	}
 
 	sock_address.sun_family = AF_UNIX;

@@ -81,6 +81,7 @@
 
 void warn(char *fmt, ...);
 void err(char *fmt, ...);
+void fail(FILE *rsp, char *fmt, ...);
 char *read_string(const char *file_path, size_t *tlen);
 char *copy_string(char *str, size_t len);
 char *mktempfifo(const char *template);

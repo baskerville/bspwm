@@ -22,25 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BSPWM_MESSAGES_H
-#define BSPWM_MESSAGES_H
+#ifndef BSPWM_HELP_H
+#define BSPWM_HELP_H
 
-#include "types.h"
-#include "subscribe.h"
-
-void handle_message(char *msg, int msg_len, FILE *rsp);
-void process_message(char **args, int num, FILE *rsp);
-void cmd_node(char **args, int num, FILE *rsp);
-void cmd_desktop(char **args, int num, FILE *rsp);
-void cmd_monitor(char **args, int num, FILE *rsp);
-void cmd_query(char **args, int num, FILE *rsp);
-void cmd_rule(char **args, int num, FILE *rsp);
-void cmd_wm(char **args, int num, FILE *rsp);
-void cmd_subscribe(char **args, int num, FILE *rsp);
-void cmd_quit(char **args, int num, FILE *rsp);
-void cmd_config(char **args, int num, FILE *rsp);
-void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp);
-void get_setting(coordinates_t loc, char *name, FILE* rsp);
-void handle_failure(int code, char *src, char *val, FILE *rsp);
+void show_bspc_help(void);
+void show_node_help(FILE *rsp);
+void show_desktop_help(FILE *rsp);
+void show_monitor_help(FILE *rsp);
+void show_query_help(FILE *rsp);
+void show_wm_help(FILE *rsp);
+void show_rule_help(FILE *rsp);
+void show_subscribe_help(FILE *rsp);
+void show_config_help(FILE *rsp);
 
 #endif
