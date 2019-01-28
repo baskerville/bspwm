@@ -37,6 +37,7 @@ void presel_ratio(monitor_t *m, desktop_t *d, node_t *n, double ratio);
 void cancel_presel(monitor_t *m, desktop_t *d, node_t *n);
 void cancel_presel_in(monitor_t *m, desktop_t *d, node_t *n);
 node_t *find_public(desktop_t *d);
+node_t *insert_node_notify_layout(monitor_t *m, desktop_t *d, node_t *n, node_t *f);
 node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f);
 void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n);
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n);

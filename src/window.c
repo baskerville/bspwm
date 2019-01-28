@@ -163,7 +163,7 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		n->vacant = true;
 	}
 
-	f = insert_node(m, d, n, f);
+	f = insert_node_notify_layout(m, d, n, f);
 	clients_count++;
 
 	n->vacant = false;

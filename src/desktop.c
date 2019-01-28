@@ -135,10 +135,18 @@ bool find_any_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t *
 	return false;
 }
 
+void notify_layout(monitor_t *m, desktop_t *d, layout_t l)
+{
+	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(l));
+
+	if (m == mon && d == m->desk) {
+		put_status(SBSC_MASK_REPORT);
+	}
+}
+
 bool set_layout(monitor_t *m, desktop_t *d, layout_t l)
 {
-	layout_t actual_layout = IS_SINGLE_MONOCLE(d) ? LAYOUT_MONOCLE : l;
-	bool actual_layout_changed = (d->layout != actual_layout);
+	bool is_single_monocle = IS_SINGLE_MONOCLE(d);
 
 	if (d->layout == l) {
 		return false;
@@ -148,16 +156,10 @@ bool set_layout(monitor_t *m, desktop_t *d, layout_t l)
 
 	handle_presel_feedbacks(m, d);
 
-	if (!actual_layout_changed) {
-		return true;
-	}
+	if (!is_single_monocle) {
+		arrange(m, d);
 
-	arrange(m, d);
-
-	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(actual_layout));
-
-	if (d == m->desk) {
-		put_status(SBSC_MASK_REPORT);
+		notify_layout(m, d, l);
 	}
 
 	return true;

@@ -1660,6 +1660,25 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("single_monocle", name)) { \
+		bool old_single_monocle = single_monocle;
+
+		if (!parse_bool(value, &single_monocle)) {		\
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
+			return; \
+		}
+
+		if (old_single_monocle != single_monocle) {
+			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+					if (tiled_count(d->root, true) <= 1) {
+						notify_layout(m, d, single_monocle ? LAYOUT_MONOCLE : d->layout);
+					}
+				}
+			}
+			put_status(SBSC_MASK_REPORT);
+		}
+
 #define SET_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		if (!parse_bool(value, &s)) { \
@@ -1668,8 +1687,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
-		SET_BOOL(single_monocle)
-		put_status(SBSC_MASK_REPORT);
 		SET_BOOL(swallow_first_click)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)

@@ -437,12 +437,23 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 	return f;
 }
 
+node_t *insert_node_notify_layout(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
+{
+	bool is_single_monocle = IS_SINGLE_MONOCLE(d);
+
+	f = insert_node(m, d, n, f);
+
+	if (single_monocle && is_single_monocle && !IS_SINGLE_MONOCLE(d)) {
+		notify_layout(m, d, d->layout);
+	}
+
+	return f;
+}
+
 void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 {
 	node_t *r = make_node(XCB_NONE);
-	insert_node(m, d, r, n);
-
-	put_status(SBSC_MASK_REPORT);
+	insert_node_notify_layout(m, d, r, n);
 }
 
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
@@ -1310,6 +1321,8 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
+	bool is_single_monocle = IS_SINGLE_MONOCLE(d);
+
 	unlink_node(m, d, n);
 	history_remove(d, n, true);
 	remove_stack_node(n);
@@ -1325,6 +1338,10 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	ewmh_update_client_list(false);
 	ewmh_update_client_list(true);
+
+	if (single_monocle && !is_single_monocle && IS_SINGLE_MONOCLE(d)) {
+		notify_layout(m, d, LAYOUT_MONOCLE);
+	}
 
 	if (mon != NULL && d->focus == NULL) {
 		if (d == mon->desk) {
@@ -1494,6 +1511,9 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		clear_input_focus();
 	}
 
+	bool ds_is_single_monocle = IS_SINGLE_MONOCLE(ds);
+	bool dd_is_single_monocle = (ds != dd) ? IS_SINGLE_MONOCLE(dd) : ds_is_single_monocle;
+
 	unlink_node(ms, ds, ns);
 	insert_node(md, dd, ns, nd);
 
@@ -1510,6 +1530,14 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 				hide_node(ds, ns);
 			} else if (ds != ms->desk && dd == md->desk) {
 				show_node(dd, ns);
+			}
+		}
+		if (single_monocle) {
+			if (!ds_is_single_monocle && IS_SINGLE_MONOCLE(ds)) {
+				notify_layout(ms, ds, LAYOUT_MONOCLE);
+			}
+			if (dd_is_single_monocle && !IS_SINGLE_MONOCLE(dd)) {
+				notify_layout(md, dd, dd->layout);
 			}
 		}
 	}
