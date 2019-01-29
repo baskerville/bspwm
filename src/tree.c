@@ -101,23 +101,21 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectang
 		xcb_rectangle_t r;
 		xcb_rectangle_t cr = get_window_rectangle(n);
 		client_state_t s = n->client->state;
+		/* tiled and pseudo-tiled clients */
 		if (s == STATE_TILED || s == STATE_PSEUDO_TILED) {
 			int wg = (gapless_monocle && l == LAYOUT_MONOCLE ? 0 : d->window_gap);
-			/* tiled clients */
-			if (s == STATE_TILED) {
-				r = rect;
-				int bleed = wg + 2 * bw;
-				r.width = (bleed < r.width ? r.width - bleed : 1);
-				r.height = (bleed < r.height ? r.height - bleed : 1);
+			r = rect;
+			int bleed = wg + 2 * bw;
+			r.width = (bleed < r.width ? r.width - bleed : 1);
+			r.height = (bleed < r.height ? r.height - bleed : 1);
 			/* pseudo-tiled clients */
-			} else {
-				r = n->client->floating_rectangle;
+			if (s == STATE_PSEUDO_TILED) {
+				xcb_rectangle_t f = n->client->floating_rectangle;
+				r.width = MIN(r.width, f.width);
+				r.height = MIN(r.height, f.height);
 				if (center_pseudo_tiled) {
 					r.x = rect.x - bw + (rect.width - wg - r.width) / 2;
 					r.y = rect.y - bw + (rect.height - wg - r.height) / 2;
-				} else {
-					r.x = rect.x;
-					r.y = rect.y;
 				}
 			}
 			n->client->tiled_rectangle = r;

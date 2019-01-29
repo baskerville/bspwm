@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/24/2019
+.\"      Date: 01/29/2019
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.5-31-ga8b40f5
+.\"    Source: Bspwm 0.9.5-35-g32ff624
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "01/24/2019" "Bspwm 0\&.9\&.5\-31\-ga8b40f5" "Bspwm Manual"
+.TH "BSPWM" "1" "01/29/2019" "Bspwm 0\&.9\&.5\-35\-g32ff624" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -527,22 +527,22 @@ Only consider monitors where the focused desktop is occupied\&.
 .PP
 tiled
 .RS 4
-Its size and position are determined by the splitting type and ratio of each node of its path in the window tree\&.
+Its size and position are determined by the window tree\&.
 .RE
 .PP
 pseudo_tiled
 .RS 4
-Has an unrestricted size while being centered in its tiling space\&.
+A tiled window that automatically shrinks but doesn\(cqt stretch beyond its floating size\&.
 .RE
 .PP
 floating
 .RS 4
-Can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
+Can be moved/resized freely\&. Although it doesn\(cqt use any tiling space, it is still part of the window tree\&.
 .RE
 .PP
 fullscreen
 .RS 4
-Fills its monitor rectangle and has no borders\&. It is send in the ABOVE layer by default\&.
+Fills its monitor rectangle and has no borders\&.
 .RE
 .SH "NODE FLAGS"
 .PP

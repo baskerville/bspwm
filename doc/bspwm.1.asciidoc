@@ -156,8 +156,6 @@ parent::
 Modifiers
 ^^^^^^^^^
 
-
-
 [!]focused::
 	Only consider the focused node.
 
@@ -326,16 +324,16 @@ Window States
 -------------
 
 tiled::
-	Its size and position are determined by the splitting type and ratio of each node of its path in the window tree.
+	Its size and position are determined by the window tree.
 
 pseudo_tiled::
-	Has an unrestricted size while being centered in its tiling space.
+	A tiled window that automatically shrinks but doesn't stretch beyond its floating size.
 
 floating::
-	Can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+	Can be moved/resized freely. Although it doesn't use any tiling space, it is still part of the window tree.
 
 fullscreen::
-	Fills its monitor rectangle and has no borders. It is send in the ABOVE layer by default.
+	Fills its monitor rectangle and has no borders.
 
 
 Node Flags
