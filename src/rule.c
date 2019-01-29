@@ -104,7 +104,7 @@ bool remove_rule_by_index(int idx)
 	return false;
 }
 
-rule_consequence_t *make_rule_conquence(void)
+rule_consequence_t *make_rule_consequence(void)
 {
 	rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
 	rc->manage = rc->focus = rc->border = true;

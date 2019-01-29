@@ -62,7 +62,7 @@ void schedule_window(xcb_window_t win)
 		}
 	}
 
-	rule_consequence_t *csq = make_rule_conquence();
+	rule_consequence_t *csq = make_rule_consequence();
 	apply_rules(win, csq);
 	if (!schedule_rules(win, csq)) {
 		manage_window(win, csq, -1);

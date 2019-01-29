@@ -33,7 +33,7 @@ void add_rule(rule_t *r);
 void remove_rule(rule_t *r);
 void remove_rule_by_cause(char *cause);
 bool remove_rule_by_index(int idx);
-rule_consequence_t *make_rule_conquence(void);
+rule_consequence_t *make_rule_consequence(void);
 pending_rule_t *make_pending_rule(int fd, xcb_window_t win, rule_consequence_t *csq);
 void add_pending_rule(pending_rule_t *pr);
 void remove_pending_rule(pending_rule_t *pr);
