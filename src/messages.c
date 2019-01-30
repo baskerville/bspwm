@@ -1193,6 +1193,8 @@ void cmd_wm(char **args, int num, FILE *rsp)
 		return;
 	}
 
+	coordinates_t trg = {NULL, NULL, NULL};
+
 	while (num > 0) {
 		if (streq("-d", *args) || streq("--dump-state", *args)) {
 			query_tree(rsp);
@@ -1252,10 +1254,8 @@ void cmd_wm(char **args, int num, FILE *rsp)
 			if (num < 1) {
 				fail(rsp, "wm %s: Not enough arguments.\n", *(args - 1));
 				break;
-			}
-			bool b;
-			if (parse_bool(*args, &b)) {
-				record_history = b;
+			} else if (num == 1) {
+				set_setting(trg, "record_history", *args, rsp);
 			} else {
 				fail(rsp, "wm %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
@@ -1679,6 +1679,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(center_pseudo_tiled)
 		SET_BOOL(honor_size_hints)
 		SET_BOOL(removal_adjustment)
+		SET_BOOL(record_history)
 #undef SET_BOOL
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1812,6 +1813,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(remove_disabled_monitors)
 	GET_BOOL(remove_unplugged_monitors)
 	GET_BOOL(merge_overlapping_monitors)
+    GET_BOOL(record_history)
 #undef GET_BOOL
 	} else {
 		fail(rsp, "config: Unknown setting: '%s'.\n", name);
