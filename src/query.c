@@ -58,6 +58,9 @@ void query_tree(FILE *rsp)
 	fprintf(rsp,",");
 	fprintf(rsp, "\"stackingList\":");
 	query_stack(rsp);
+	fprintf(rsp,",");
+	fprintf(rsp, "\"rules\":");
+	query_rules(rsp);
 	fprintf(rsp, "}");
 
 }
@@ -215,6 +218,23 @@ void query_stack(FILE *rsp)
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
 		fprintf(rsp, "%u", s->node->id);
 		if (s->next != NULL) {
+			fprintf(rsp, ",");
+		}
+	}
+	fprintf(rsp, "]");
+}
+
+void query_rules(FILE *rsp)
+{
+	fprintf(rsp, "[");
+	for (rule_t *r = rule_head; r != NULL; r = r->next) {
+		fprintf(rsp, "{");
+		fprintf(rsp, "\"className\":\"%s\",", r->class_name);
+		fprintf(rsp, "\"instance_name\":\"%s\",", r->instance_name);
+		fprintf(rsp, "\"one_shot\":\"%s\",", BOOL_STR(r->one_shot));
+		fprintf(rsp, "\"effect\":\"%s\"", r->effect);
+		fprintf(rsp,"}");
+		if (r->next != NULL) {
 			fprintf(rsp, ",");
 		}
 	}

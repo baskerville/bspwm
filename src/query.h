@@ -56,6 +56,7 @@ void query_padding(padding_t p, FILE *rsp);
 void query_history(FILE *rsp);
 void query_coordinates(coordinates_t *loc, FILE *rsp);
 void query_stack(FILE *rsp);
+void query_rules(FILE *rsp);
 int query_node_ids(coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp);
 int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp);
 int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, desktop_printer_t printer, FILE *rsp);
