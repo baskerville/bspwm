@@ -57,6 +57,7 @@
 #define SWALLOW_FIRST_CLICK         false
 #define IGNORE_EWMH_FOCUS           false
 #define IGNORE_EWMH_FULLSCREEN      0
+#define IGNORE_EWMH_STRUTS          false
 
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            false
