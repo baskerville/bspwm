@@ -65,6 +65,7 @@
 #define REMOVE_DISABLED_MONITORS    false
 #define REMOVE_UNPLUGGED_MONITORS   false
 #define MERGE_OVERLAPPING_MONITORS  false
+#define RECORD_HISTORY              true
 
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];

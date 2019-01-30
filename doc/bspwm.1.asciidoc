@@ -587,7 +587,7 @@ Commands
 	Manage all the unmanaged windows remaining from a previous session.
 
 *-h*, *--record-history* on|off::
-	Enable or disable the recording of node focus history.
+	Enable or disable the record_history config option
 
 *-g*, *--get-status*::
 	Print the current status information.
@@ -764,6 +764,9 @@ Global Settings
 
 'merge_overlapping_monitors'::
 	Merge overlapping monitors (the bigger remains).
+
+'record_history'::
+	Enable or disable the recording of node focus history.
 
 Monitor and Desktop Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
