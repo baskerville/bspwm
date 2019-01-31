@@ -745,9 +745,9 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
+				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2, true);
 			} else if (parse_layout(*args, &lyt)) {
-				ret = set_layout(trg.monitor, trg.desktop, lyt);
+				ret = set_layout(trg.monitor, trg.desktop, lyt, true);
 			} else {
 				fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
@@ -1637,6 +1637,24 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("single_monocle", name)) {
+		bool b;
+		if (parse_bool(value, &b)) {
+			if (b == single_monocle) {
+				fail(rsp, "");
+				return;
+			}
+			single_monocle = b;
+			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+					layout_t l = (single_monocle && tiled_count(d->root, true) <= 1) ? LAYOUT_MONOCLE : d->user_layout;
+					set_layout(m, d, l, false);
+				}
+			}
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("focus_follows_pointer", name)) {
 		bool b;
 		if (parse_bool(value, &b)) {
@@ -1674,8 +1692,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(presel_feedback)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
-		SET_BOOL(single_monocle)
-		put_status(SBSC_MASK_REPORT);
 		SET_BOOL(swallow_first_click)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)

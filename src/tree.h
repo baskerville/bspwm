@@ -29,7 +29,7 @@
 #define MIN_HEIGHT  32
 
 void arrange(monitor_t *m, desktop_t *d);
-void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
 presel_t *make_presel(void);
 void set_ratio(node_t *n, double rat);
 void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir);

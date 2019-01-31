@@ -30,6 +30,7 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "monitor.h"
+#include "desktop.h"
 #include "query.h"
 #include "rule.h"
 #include "settings.h"
@@ -165,6 +166,9 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	f = insert_node(m, d, n, f);
 	clients_count++;
+	if (single_monocle && d->layout == LAYOUT_MONOCLE && tiled_count(d->root, true) > 1) {
+		set_layout(m, d, d->user_layout, false);
+	}
 
 	n->vacant = false;
 
@@ -293,7 +297,7 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		initialize_presel_feedback(n);
 	}
 
-	int gap = gapless_monocle && IS_MONOCLE(d) ? 0 : d->window_gap;
+	int gap = gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap;
 	presel_t *p = n->presel;
 	xcb_rectangle_t rect = n->rectangle;
 	rect.x = rect.y = 0;

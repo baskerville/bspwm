@@ -268,6 +268,7 @@ struct desktop_t {
 	char name[SMALEN];
 	uint32_t id;
 	layout_t layout;
+	layout_t user_layout;
 	node_t *root;
 	node_t *focus;
 	desktop_t *prev;

@@ -135,32 +135,41 @@ bool find_any_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t *
 	return false;
 }
 
-bool set_layout(monitor_t *m, desktop_t *d, layout_t l)
+bool set_layout(monitor_t *m, desktop_t *d, layout_t l, bool user)
 {
-	layout_t actual_layout = IS_SINGLE_MONOCLE(d) ? LAYOUT_MONOCLE : l;
-	bool actual_layout_changed = (d->layout != actual_layout);
-
-	if (d->layout == l) {
+	if ((user && d->user_layout == l) || (!user && d->layout == l)) {
 		return false;
 	}
 
-	d->layout = l;
+	layout_t old_layout = d->layout;
 
-	handle_presel_feedbacks(m, d);
+	if (user) {
+		d->user_layout = l;
+	} else {
+		d->layout = l;
+	}
 
-	if (!actual_layout_changed) {
+	if (user && (!single_monocle || tiled_count(d->root, true) > 1)) {
+		d->layout = l;
+	}
+
+	if (d->layout != old_layout) {
+		handle_presel_feedbacks(m, d);
+
+		if (user) {
+			arrange(m, d);
+		}
+
+		put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(d->layout));
+
+		if (d == m->desk) {
+			put_status(SBSC_MASK_REPORT);
+		}
+
 		return true;
+	} else {
+		return false;
 	}
-
-	arrange(m, d);
-
-	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(actual_layout));
-
-	if (d == m->desk) {
-		put_status(SBSC_MASK_REPORT);
-	}
-
-	return true;
 }
 
 void handle_presel_feedbacks(monitor_t *m, desktop_t *d)
@@ -255,7 +264,7 @@ desktop_t *make_desktop(const char *name, uint32_t id)
 	}
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
-	d->layout = LAYOUT_TILED;
+	d->layout = d->user_layout = LAYOUT_TILED;
 	d->padding = (padding_t) PADDING;
 	d->window_gap = window_gap;
 	d->border_width = border_width;

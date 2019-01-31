@@ -101,7 +101,7 @@ int print_report(FILE *stream)
 			fprintf(stream, ":%c%s", c, d->name);
 		}
 		if (m->desk != NULL) {
-			fprintf(stream, ":L%c", LAYOUT_CHR(ACTUAL_LAYOUT(m->desk)));
+			fprintf(stream, ":L%c", LAYOUT_CHR(m->desk->layout));
 			if (m->desk->focus != NULL) {
 				node_t *n = m->desk->focus;
 				if (n->client != NULL) {

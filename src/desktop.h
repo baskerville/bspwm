@@ -31,7 +31,7 @@ void focus_desktop(monitor_t *m, desktop_t *d);
 bool activate_desktop(monitor_t *m, desktop_t *d);
 bool find_closest_desktop(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, desktop_select_t *sel);
 bool find_any_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t *sel);
-bool set_layout(monitor_t *m, desktop_t *d, layout_t l);
+bool set_layout(monitor_t *m, desktop_t *d, layout_t l, bool user);
 void handle_presel_feedbacks(monitor_t *m, desktop_t *d);
 bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow);
 desktop_t *make_desktop(const char *name, uint32_t id);
