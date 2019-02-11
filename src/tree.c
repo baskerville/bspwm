@@ -348,7 +348,14 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 						c->split_type = TYPE_HORIZONTAL;
 					}
 				} else {
-					if (p->split_type == TYPE_HORIZONTAL) {
+					node_t *q = p;
+					while (q != NULL && (q->first_child->vacant || q->second_child->vacant)) {
+						q = q->parent;
+					}
+					if (q == NULL) {
+						q = p;
+					}
+					if (q->split_type == TYPE_HORIZONTAL) {
 						c->split_type = TYPE_VERTICAL;
 					} else {
 						c->split_type = TYPE_HORIZONTAL;
