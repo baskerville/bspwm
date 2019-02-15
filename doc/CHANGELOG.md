@@ -16,7 +16,12 @@
 
 ## Removals
 
-- The `paddingless_monocle` setting was removed (and subsumed).
+- The `paddingless_monocle` setting was removed (and subsumed). The effect of `paddingless_monocle` can now be achieved with:
+```shell
+for side in top right bottom left; do
+	bspc config ${side}_monocle_padding -$(bspc config ${side}_padding)
+done
+```
 
 # From 0.9.3 to 0.9.4
 
