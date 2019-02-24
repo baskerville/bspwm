@@ -1,3 +1,7 @@
+# From 0.9.6 to 0.9.7
+
+This release fixes a bug in the behavior of `single_monocle`.
+
 # From 0.9.4 to 0.9.6
 
 ## Additions
