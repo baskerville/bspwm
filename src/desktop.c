@@ -165,11 +165,9 @@ bool set_layout(monitor_t *m, desktop_t *d, layout_t l, bool user)
 		if (d == m->desk) {
 			put_status(SBSC_MASK_REPORT);
 		}
-
-		return true;
-	} else {
-		return false;
 	}
+
+	return true;
 }
 
 void handle_presel_feedbacks(monitor_t *m, desktop_t *d)

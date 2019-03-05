@@ -745,7 +745,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2, true);
+				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->user_layout + 1) % 2, true);
 			} else if (parse_layout(*args, &lyt)) {
 				ret = set_layout(trg.monitor, trg.desktop, lyt, true);
 			} else {
