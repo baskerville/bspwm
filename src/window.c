@@ -288,7 +288,7 @@ void initialize_presel_feedback(node_t *n)
 
 void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n == NULL || n->presel == NULL || d->layout == LAYOUT_MONOCLE || !presel_feedback) {
+	if (n == NULL || n->presel == NULL || d->user_layout == LAYOUT_MONOCLE || !presel_feedback) {
 		return;
 	}
 
