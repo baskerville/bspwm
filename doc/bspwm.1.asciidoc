@@ -932,7 +932,7 @@ Each item has the form '<type><value>' where '<type>' is the first character of 
 'T(T|P|F|=|@)'::
 	State of the focused node of a focused desktop.
 
-'G(S?P?L?)'::
+'G(S?P?L?M?)'::
 	Active flags of the focused node of a focused desktop.
 
 Environment Variables
