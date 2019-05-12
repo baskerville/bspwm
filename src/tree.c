@@ -1254,7 +1254,13 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 		}
 
 		if (!n->vacant && removal_adjustment) {
-			if (automatic_scheme == SCHEME_LONGEST_SIDE || g == NULL) {
+			if (automatic_scheme == SCHEME_SPIRAL) {
+				if (is_first_child(n)) {
+					rotate_tree(b, 270);
+				} else {
+					rotate_tree(b, 90);
+				}
+			} else if (automatic_scheme == SCHEME_LONGEST_SIDE || g == NULL) {
 				if (p != NULL) {
 					if (p->rectangle.width > p->rectangle.height) {
 						b->split_type = TYPE_VERTICAL;
