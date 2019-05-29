@@ -31,8 +31,9 @@
 #include "desktop.h"
 #include "settings.h"
 #include "subscribe.h"
+#include "tree.h"
 
-subscriber_list_t *make_subscriber_list(FILE *stream, char *fifo_path, int field, int count)
+subscriber_list_t *make_subscriber(FILE *stream, char *fifo_path, int field, int count)
 {
 	subscriber_list_t *sb = calloc(1, sizeof(subscriber_list_t));
 	sb->prev = sb->next = NULL;
@@ -62,15 +63,16 @@ void remove_subscriber(subscriber_list_t *sb)
 	if (sb == subscribe_tail) {
 		subscribe_tail = a;
 	}
-	fclose(sb->stream);
-	unlink(sb->fifo_path);
+	if (!restart) {
+		fclose(sb->stream);
+		unlink(sb->fifo_path);
+	}
 	free(sb->fifo_path);
 	free(sb);
 }
 
-void add_subscriber(FILE *stream, char* fifo_path, int field, int count)
+void add_subscriber(subscriber_list_t *sb)
 {
-	subscriber_list_t *sb = make_subscriber_list(stream, fifo_path, field, count);
 	if (subscribe_head == NULL) {
 		subscribe_head = subscribe_tail = sb;
 	} else {

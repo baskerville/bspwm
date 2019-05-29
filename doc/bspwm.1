@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/31/2018
+.\"      Date: 02/24/2019
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.5-14-g56ad57c
+.\"    Source: Bspwm 0.9.7
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "08/31/2018" "Bspwm 0\&.9\&.5\-14\-g56ad57c" "Bspwm Manual"
+.TH "BSPWM" "1" "02/24/2019" "Bspwm 0\&.9\&.7" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -102,7 +102,7 @@ Select a node\&.
 .nf
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
-                        <node_id>)[\&.[!]focused][\&.[!]automatic][\&.[!]local][\&.[!]active]
+                        <node_id>)[\&.[!]focused][\&.[!]active][\&.[!]automatic][\&.[!]local]
                                   [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
                                   [\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
 
@@ -240,12 +240,17 @@ Jumps to the node holding the edge in the given direction\&.
 .PP
 [!]focused
 .RS 4
-Only consider focused or unfocused nodes\&.
+Only consider the focused node\&.
+.RE
+.PP
+[!]active
+.RS 4
+Only consider nodes that are the focused node of their desktop\&.
 .RE
 .PP
 [!]automatic
 .RS 4
-Only consider nodes in automatic or manual insertion mode\&. See also
+Only consider nodes in automatic insertion mode\&. See also
 \fB\-\-presel\-dir\fR
 under
 \fBNode\fR
@@ -256,52 +261,47 @@ section below\&.
 .PP
 [!]local
 .RS 4
-Only consider nodes in or not in the reference desktop\&.
-.RE
-.PP
-[!]active
-.RS 4
-Only consider nodes in or not in the active desktop of their monitor\&.
+Only consider nodes in the reference desktop\&.
 .RE
 .PP
 [!]leaf
 .RS 4
-Only consider leaves or internal nodes\&.
+Only consider leaf nodes\&.
 .RE
 .PP
 [!]window
 .RS 4
-Only consider nodes that hold or don\(cqt hold a window\&.
+Only consider nodes that hold a window\&.
 .RE
 .PP
 [!](tiled|pseudo_tiled|floating|fullscreen)
 .RS 4
-Only consider windows in or not in the given state\&.
+Only consider windows in the given state\&.
 .RE
 .PP
 [!]same_class
 .RS 4
-Only consider windows that have or don\(cqt have the same class as the reference window\&.
+Only consider windows that have the same class as the reference window\&.
 .RE
 .PP
 [!]descendant_of
 .RS 4
-Only consider nodes that are or aren\(cqt descendants of the reference node\&.
+Only consider nodes that are descendants of the reference node\&.
 .RE
 .PP
 [!]ancestor_of
 .RS 4
-Only consider nodes that are or aren\(cqt ancestors of the reference node\&.
+Only consider nodes that are ancestors of the reference node\&.
 .RE
 .PP
 [!](hidden|sticky|private|locked|marked|urgent)
 .RS 4
-Only consider windows that have or don\(cqt have the given flag set\&.
+Only consider windows that have the given flag set\&.
 .RE
 .PP
 [!](below|normal|above)
 .RS 4
-Only consider windows in or not in the given layer\&.
+Only consider windows in the given layer\&.
 .RE
 .RE
 .SS "Desktop"
@@ -314,7 +314,8 @@ Select a desktop\&.
 .nf
 DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
-                              <desktop_id>|<desktop_name>)[\&.[!]occupied][\&.[!]focused][\&.[!]urgent][\&.[!]local]
+                              <desktop_id>|<desktop_name>)[\&.[!]focused][\&.[!]active]
+                                                          [\&.[!]occupied][\&.[!]urgent][\&.[!]local]
 .fi
 .if n \{\
 .RE
@@ -389,24 +390,29 @@ Selects the desktop with the given name\&.
 \fBModifiers\fR
 .RS 4
 .PP
-[!]occupied
-.RS 4
-Only consider occupied or free desktops\&.
-.RE
-.PP
 [!]focused
 .RS 4
-Only consider focused or unfocused desktops\&.
+Only consider the focused desktop\&.
+.RE
+.PP
+[!]active
+.RS 4
+Only consider desktops that are the focused desktop of their monitor\&.
+.RE
+.PP
+[!]occupied
+.RS 4
+Only consider occupied desktops\&.
 .RE
 .PP
 [!]urgent
 .RS 4
-Only consider urgent or non urgent desktops\&.
+Only consider urgent desktops\&.
 .RE
 .PP
 [!]local
 .RS 4
-Only consider desktops inside or outside of the reference monitor\&.
+Only consider desktops inside the reference monitor\&.
 .RE
 .RE
 .SS "Monitor"
@@ -419,7 +425,7 @@ Select a monitor\&.
 .nf
 MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|any|last|newest|older|newer|
                               focused|pointed|primary|^<n>|
-                              <monitor_id>|<monitor_name>)[\&.[!]occupied][\&.[!]focused]
+                              <monitor_id>|<monitor_name>)[\&.[!]focused][\&.[!]occupied]
 .fi
 .if n \{\
 .RE
@@ -507,36 +513,36 @@ Selects the monitor with the given name\&.
 \fBModifiers\fR
 .RS 4
 .PP
-[!]occupied
-.RS 4
-Only consider monitors where the focused desktop is occupied or free\&.
-.RE
-.PP
 [!]focused
 .RS 4
-Only consider focused or unfocused monitors\&.
+Only consider the focused monitor\&.
+.RE
+.PP
+[!]occupied
+.RS 4
+Only consider monitors where the focused desktop is occupied\&.
 .RE
 .RE
 .SH "WINDOW STATES"
 .PP
 tiled
 .RS 4
-Its size and position are determined by the splitting type and ratio of each node of its path in the window tree\&.
+Its size and position are determined by the window tree\&.
 .RE
 .PP
 pseudo_tiled
 .RS 4
-Has an unrestricted size while being centered in its tiling space\&.
+A tiled window that automatically shrinks but doesn\(cqt stretch beyond its floating size\&.
 .RE
 .PP
 floating
 .RS 4
-Can be moved/resized freely\&. Although it doesn\(cqt occupy any tiling space, it is still part of the window tree\&.
+Can be moved/resized freely\&. Although it doesn\(cqt use any tiling space, it is still part of the window tree\&.
 .RE
 .PP
 fullscreen
 .RS 4
-Fills its monitor rectangle and has no borders\&. It is send in the ABOVE layer by default\&.
+Fills its monitor rectangle and has no borders\&.
 .RE
 .SH "NODE FLAGS"
 .PP
@@ -575,7 +581,7 @@ Has its urgency hint set\&. This flag is set externally\&.
 .sp
 There\(cqs three stacking layers: BELOW, NORMAL and ABOVE\&.
 .sp
-In each layer, the window are orderered as follow: tiled & pseudo\-tiled < fullscreen < floating\&.
+In each layer, the window are orderered as follow: tiled & pseudo\-tiled < floating < fullscreen\&.
 .SH "RECEPTACLES"
 .sp
 A leaf node that doesn\(cqt hold any window is called a receptacle\&. When a node is inserted on a receptacle in automatic mode, it will replace the receptacle\&. A receptacle can be inserted on a node, preselected and killed\&. Receptacles can therefore be used to build a tree whose leaves are receptacles\&. Using the appropriate rules, one can then send windows on the leaves of this tree\&. This feature is used in \fIexamples/receptacles\fR to store and recreate layouts\&.
@@ -966,7 +972,7 @@ Dump the current world state on standard output\&.
 .PP
 \fB\-l\fR, \fB\-\-load\-state\fR <file_path>
 .RS 4
-Load a world state from the given file\&.
+Load a world state from the given file\&. The path must be absolute\&.
 .RE
 .PP
 \fB\-a\fR, \fB\-\-add\-monitor\fR <name> WxH+X+Y
@@ -992,6 +998,11 @@ Enable or disable the recording of node focus history\&.
 \fB\-g\fR, \fB\-\-get\-status\fR
 .RS 4
 Print the current status information\&.
+.RE
+.PP
+\fB\-r\fR, \fB\-\-restart\fR
+.RS 4
+Restart the window manager
 .RE
 .RE
 .SS "Rule"
@@ -1144,7 +1155,7 @@ Prefix prepended to each of the status lines\&.
 .PP
 \fIexternal_rules_command\fR
 .RS 4
-External command used to retrieve rule consequences\&. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences\&. The output of that command must have the following format:
+Absolute path to the command used to retrieve rule consequences\&. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences\&. The output of that command must have the following format:
 \fBkey1=value1 key2=value2 \&...\fR
 (the valid key/value pairs are given in the description of the
 \fIrule\fR
@@ -1155,6 +1166,7 @@ command)\&.
 .RS 4
 The insertion scheme used when the insertion point is in automatic mode\&. Accept the following values:
 \fBlongest_side\fR,
+\fBalternate\fR,
 \fBspiral\fR\&.
 .RE
 .PP
@@ -1174,6 +1186,17 @@ side of another window\&. Accept the following values:
 \fBlow\fR\&.
 .RE
 .PP
+\fIremoval_adjustment\fR
+.RS 4
+Adjust the brother when unlinking a node from the tree in accordance with the automatic insertion scheme\&.
+.RE
+.PP
+\fIpresel_feedback\fR
+.RS 4
+Draw the preselection feedback area\&. Defaults to
+\fItrue\fR\&.
+.RE
+.PP
 \fIborderless_monocle\fR
 .RS 4
 Remove borders of tiled windows for the
@@ -1188,9 +1211,9 @@ Remove gaps of tiled windows for the
 desktop layout\&.
 .RE
 .PP
-\fIpaddingless_monocle\fR
+\fItop_monocle_padding\fR, \fIright_monocle_padding\fR, \fIbottom_monocle_padding\fR, \fIleft_monocle_padding\fR
 .RS 4
-Remove padding space for the
+Padding space added at the sides of the screen for the
 \fBmonocle\fR
 desktop layout\&.
 .RE
@@ -1286,6 +1309,11 @@ Block the fullscreen state transitions that originate from an EWMH request\&. Th
 \fBall\fR, or a comma separated list of the following values:
 \fBenter\fR,
 \fBexit\fR\&.
+.RE
+.PP
+\fIignore_ewmh_struts\fR
+.RS 4
+BIgnore strut hinting from clients requesting to reserve space (i\&.e\&. task bars)\&.
 .RE
 .PP
 \fIcenter_pseudo_tiled\fR
@@ -1554,7 +1582,7 @@ Layout of the focused desktop of a monitor\&.
 State of the focused node of a focused desktop\&.
 .RE
 .PP
-\fIG(S?P?L?)\fR
+\fIG(S?P?L?M?)\fR
 .RS 4
 Active flags of the focused node of a focused desktop\&.
 .RE

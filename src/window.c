@@ -30,6 +30,7 @@
 #include "bspwm.h"
 #include "ewmh.h"
 #include "monitor.h"
+#include "desktop.h"
 #include "query.h"
 #include "rule.h"
 #include "settings.h"
@@ -62,7 +63,7 @@ void schedule_window(xcb_window_t win)
 		}
 	}
 
-	rule_consequence_t *csq = make_rule_conquence();
+	rule_consequence_t *csq = make_rule_consequence();
 	apply_rules(win, csq);
 	if (!schedule_rules(win, csq)) {
 		manage_window(win, csq, -1);
@@ -78,7 +79,7 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	parse_rule_consequence(fd, csq);
 
-	if (ewmh_handle_struts(win)) {
+	if (!ignore_ewmh_struts && ewmh_handle_struts(win)) {
 		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 			arrange(m, m->desk);
 		}
@@ -165,6 +166,9 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	f = insert_node(m, d, n, f);
 	clients_count++;
+	if (single_monocle && d->layout == LAYOUT_MONOCLE && tiled_count(d->root, true) > 1) {
+		set_layout(m, d, d->user_layout, false);
+	}
 
 	n->vacant = false;
 
@@ -201,6 +205,9 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		hide_node(d, n);
 	}
 
+	ewmh_update_client_list(false);
+	ewmh_set_wm_desktop(n, d);
+
 	if (!csq->hidden && csq->focus) {
 		if (d == mon->desk || csq->follow) {
 			focus_node(m, d, n);
@@ -212,8 +219,6 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		draw_border(n, false, (m == mon));
 	}
 
-	ewmh_set_wm_desktop(n, d);
-	ewmh_update_client_list(false);
 	free(csq->layer);
 	free(csq->state);
 
@@ -283,7 +288,7 @@ void initialize_presel_feedback(node_t *n)
 
 void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 {
-	if (n == NULL || n->presel == NULL || d->layout == LAYOUT_MONOCLE) {
+	if (n == NULL || n->presel == NULL || d->user_layout == LAYOUT_MONOCLE || !presel_feedback) {
 		return;
 	}
 
@@ -292,7 +297,7 @@ void draw_presel_feedback(monitor_t *m, desktop_t *d, node_t *n)
 		initialize_presel_feedback(n);
 	}
 
-	int gap = gapless_monocle && IS_MONOCLE(d) ? 0 : d->window_gap;
+	int gap = gapless_monocle && d->layout == LAYOUT_MONOCLE ? 0 : d->window_gap;
 	presel_t *p = n->presel;
 	xcb_rectangle_t rect = n->rectangle;
 	rect.x = rect.y = 0;
@@ -406,7 +411,7 @@ void draw_border(node_t *n, bool focused_node, bool focused_monitor)
 
 	uint32_t border_color_pxl = get_border_color(focused_node, focused_monitor);
 	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (f->client != NULL && f->client->border_width > 0) {
+		if (f->client != NULL) {
 			window_draw_border(f->id, border_color_pxl);
 		}
 	}
@@ -582,6 +587,8 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 			sr = MIN(1, sr);
 			horizontal_fence->split_ratio = sr;
 		}
+		node_t *target_fence = horizontal_fence != NULL ? horizontal_fence : vertical_fence;
+		adjust_ratios(target_fence, target_fence->rectangle);
 		arrange(loc->monitor, loc->desktop);
 	} else {
 		int w = width, h = height;

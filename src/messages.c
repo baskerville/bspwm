@@ -745,9 +745,9 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->layout + 1) % 2);
+				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->user_layout + 1) % 2, true);
 			} else if (parse_layout(*args, &lyt)) {
-				ret = set_layout(trg.monitor, trg.desktop, lyt);
+				ret = set_layout(trg.monitor, trg.desktop, lyt, true);
 			} else {
 				fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
@@ -1195,7 +1195,7 @@ void cmd_wm(char **args, int num, FILE *rsp)
 
 	while (num > 0) {
 		if (streq("-d", *args) || streq("--dump-state", *args)) {
-			query_tree(rsp);
+			query_state(rsp);
 			fprintf(rsp, "\n");
 		} else if (streq("-l", *args) || streq("--load-state", *args)) {
 			num--, args++;
@@ -1203,7 +1203,7 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Not enough arguments.\n", *(args - 1));
 				break;
 			}
-			if (!restore_tree(*args)) {
+			if (!restore_state(*args)) {
 				fail(rsp, "");
 				break;
 			}
@@ -1260,6 +1260,10 @@ void cmd_wm(char **args, int num, FILE *rsp)
 				fail(rsp, "wm %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-r", *args) || streq("--restart", *args)) {
+			running = false;
+			restart = true;
+			break;
 		} else {
 			fail(rsp, "wm: Unknown command: '%s'.\n", *args);
 			break;
@@ -1319,7 +1323,8 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 		}
 	}
 
-	add_subscriber(stream, fifo_path, field, count);
+	subscriber_list_t *sb = make_subscriber(stream, fifo_path, field, count);
+	add_subscriber(sb);
 	return;
 
 failed:
@@ -1515,6 +1520,22 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 		SET_DEF_MON_DESK(padding.left, lp)
 #undef SET_DEF_MON_DESK
+	} else if (streq("top_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.top) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
+	} else if (streq("right_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.right) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
+	} else if (streq("bottom_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.bottom) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
+	} else if (streq("left_monocle_padding", name)) {
+		if (sscanf(value, "%i", &monocle_padding.left) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+		}
 #define SET_STR(s) \
 	} else if (streq(#s, name)) { \
 		if (snprintf(s, sizeof(s), "%s", value) < 0) { \
@@ -1621,6 +1642,24 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("single_monocle", name)) {
+		bool b;
+		if (parse_bool(value, &b)) {
+			if (b == single_monocle) {
+				fail(rsp, "");
+				return;
+			}
+			single_monocle = b;
+			for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+					layout_t l = (single_monocle && tiled_count(d->root, true) <= 1) ? LAYOUT_MONOCLE : d->user_layout;
+					set_layout(m, d, l, false);
+				}
+			}
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("focus_follows_pointer", name)) {
 		bool b;
 		if (parse_bool(value, &b)) {
@@ -1655,16 +1694,17 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
 			return; \
 		}
+		SET_BOOL(presel_feedback)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
-		SET_BOOL(paddingless_monocle)
-		SET_BOOL(single_monocle)
 		SET_BOOL(swallow_first_click)
 		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
 		SET_BOOL(ignore_ewmh_focus)
+		SET_BOOL(ignore_ewmh_struts)
 		SET_BOOL(center_pseudo_tiled)
 		SET_BOOL(honor_size_hints)
+		SET_BOOL(removal_adjustment)
 #undef SET_BOOL
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1738,6 +1778,14 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	} else if (streq("left_padding", name)) {
 		GET_DEF_MON_DESK(padding.left)
 #undef GET_DEF_MON_DESK
+	} else if (streq("top_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.top);
+	} else if (streq("right_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.right);
+	} else if (streq("bottom_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.bottom);
+	} else if (streq("left_monocle_padding", name)) {
+		fprintf(rsp, "%i", monocle_padding.left);
 	} else if (streq("external_rules_command", name)) {
 		fprintf(rsp, "%s", external_rules_command);
 	} else if (streq("status_prefix", name)) {
@@ -1779,17 +1827,19 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 #define GET_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		fprintf(rsp, "%s", BOOL_STR(s));
+	GET_BOOL(presel_feedback)
 	GET_BOOL(borderless_monocle)
 	GET_BOOL(gapless_monocle)
-	GET_BOOL(paddingless_monocle)
 	GET_BOOL(single_monocle)
 	GET_BOOL(swallow_first_click)
 	GET_BOOL(focus_follows_pointer)
 	GET_BOOL(pointer_follows_focus)
 	GET_BOOL(pointer_follows_monitor)
 	GET_BOOL(ignore_ewmh_focus)
+	GET_BOOL(ignore_ewmh_struts)
 	GET_BOOL(center_pseudo_tiled)
 	GET_BOOL(honor_size_hints)
+	GET_BOOL(removal_adjustment)
 	GET_BOOL(remove_disabled_monitors)
 	GET_BOOL(remove_unplugged_monitors)
 	GET_BOOL(merge_overlapping_monitors)

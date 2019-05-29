@@ -29,7 +29,7 @@
 #define MIN_HEIGHT  32
 
 void arrange(monitor_t *m, desktop_t *d);
-void apply_layout(monitor_t *m, desktop_t *d, node_t *n, layout_t l, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
+void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
 presel_t *make_presel(void);
 void set_ratio(node_t *n, double rat);
 void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir);
@@ -40,7 +40,7 @@ node_t *find_public(desktop_t *d);
 node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f);
 void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n);
 bool activate_node(monitor_t *m, desktop_t *d, node_t *n);
-void transfer_sticky_nodes(monitor_t *m, desktop_t *ds, desktop_t *dd, node_t *n);
+void transfer_sticky_nodes(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n);
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n);
 void hide_node(desktop_t *d, node_t *n);
 void show_node(desktop_t *d, node_t *n);
@@ -77,6 +77,7 @@ void rotate_tree_rec(node_t *n, int deg);
 void flip_tree(node_t *n, flip_t flp);
 void equalize_tree(node_t *n);
 int balance_tree(node_t *n);
+void adjust_ratios(node_t *n, xcb_rectangle_t rect);
 void unlink_node(monitor_t *m, desktop_t *d, node_t *n);
 void close_node(node_t *n);
 void kill_node(monitor_t *m, desktop_t *d, node_t *n);
@@ -107,7 +108,6 @@ void set_private(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_locked(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_marked(monitor_t *m, desktop_t *d, node_t *n, bool value);
 void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value);
-bool contains(xcb_rectangle_t a, xcb_rectangle_t b);
 xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n);
 void listen_enter_notify(node_t *n, bool enable);
 void regenerate_ids_in(node_t *n);

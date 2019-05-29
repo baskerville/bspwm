@@ -85,7 +85,7 @@ void remove_rule_by_cause(char *cause)
 	char *instance_name = strtok(NULL, COL_TOK);
 	while (r != NULL) {
 		rule_t *next = r->next;
-		if ((streq(class_name, MATCH_ANY) || streq(r->class_name, class_name)) &&
+		if ((class_name != NULL && (streq(class_name, MATCH_ANY) || streq(r->class_name, class_name))) &&
 		    (instance_name == NULL || streq(instance_name, MATCH_ANY) || streq(r->instance_name, instance_name))) {
 			remove_rule(r);
 		}
@@ -104,7 +104,7 @@ bool remove_rule_by_index(int idx)
 	return false;
 }
 
-rule_consequence_t *make_rule_conquence(void)
+rule_consequence_t *make_rule_consequence(void)
 {
 	rule_consequence_t *rc = calloc(1, sizeof(rule_consequence_t));
 	rc->manage = rc->focus = rc->border = true;

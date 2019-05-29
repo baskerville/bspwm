@@ -46,6 +46,7 @@ typedef enum {
 
 typedef enum {
 	SCHEME_LONGEST_SIDE,
+	SCHEME_ALTERNATE,
 	SCHEME_SPIRAL
 } automatic_scheme_t;
 
@@ -162,8 +163,8 @@ typedef enum {
 typedef struct {
 	option_bool_t automatic;
 	option_bool_t focused;
-	option_bool_t local;
 	option_bool_t active;
+	option_bool_t local;
 	option_bool_t leaf;
 	option_bool_t window;
 	option_bool_t tiled;
@@ -187,6 +188,7 @@ typedef struct {
 typedef struct {
 	option_bool_t occupied;
 	option_bool_t focused;
+	option_bool_t active;
 	option_bool_t urgent;
 	option_bool_t local;
 } desktop_select_t;
@@ -266,6 +268,7 @@ struct desktop_t {
 	char name[SMALEN];
 	uint32_t id;
 	layout_t layout;
+	layout_t user_layout;
 	node_t *root;
 	node_t *focus;
 	desktop_t *prev;
@@ -324,7 +327,6 @@ struct event_queue_t {
 
 typedef struct subscriber_list_t subscriber_list_t;
 struct subscriber_list_t {
-	int fd;
 	FILE *stream;
 	char* fifo_path;
 	int field;

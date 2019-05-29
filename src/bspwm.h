@@ -32,6 +32,8 @@
 #define CONFIG_HOME_ENV          "XDG_CONFIG_HOME"
 #define RUNTIME_DIR_ENV          "XDG_RUNTIME_DIR"
 
+#define STATE_PATH_TPL           "/tmp/bspwm%s_%i_%i-state"
+
 #define ROOT_EVENT_MASK     (XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_BUTTON_PRESS)
 #define CLIENT_EVENT_MASK   (XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_FOCUS_CHANGE)
 #define BSPWM_CLASS_NAME    "Bspwm"
@@ -78,8 +80,10 @@ int exit_status;
 
 bool auto_raise;
 bool sticky_still;
+bool hide_sticky;
 bool record_history;
 bool running;
+bool restart;
 bool randr;
 
 void init(void);

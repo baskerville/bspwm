@@ -35,7 +35,7 @@
 #include "query.h"
 #include "geometry.h"
 
-void query_tree(FILE *rsp)
+void query_state(FILE *rsp)
 {
 	fprintf(rsp, "{");
 	fprintf(rsp, "\"focusedMonitorId\":%u,", mon->id);
@@ -58,8 +58,12 @@ void query_tree(FILE *rsp)
 	fprintf(rsp,",");
 	fprintf(rsp, "\"stackingList\":");
 	query_stack(rsp);
+	if (restart) {
+		fprintf(rsp,",");
+		fprintf(rsp, "\"eventSubscribers\":");
+		query_subscribers(rsp);
+	}
 	fprintf(rsp, "}");
-
 }
 
 void query_monitor(monitor_t *m, FILE *rsp)
@@ -97,6 +101,7 @@ void query_desktop(desktop_t *d, FILE *rsp)
 	fprintf(rsp, "\"name\":\"%s\",", d->name);
 	fprintf(rsp, "\"id\":%u,", d->id);
 	fprintf(rsp, "\"layout\":\"%s\",", LAYOUT_STR(d->layout));
+	fprintf(rsp, "\"userLayout\":\"%s\",", LAYOUT_STR(d->user_layout));
 	fprintf(rsp, "\"windowGap\":%i,", d->window_gap);
 	fprintf(rsp, "\"borderWidth\":%u,", d->border_width);
 	fprintf(rsp, "\"focusedNodeId\":%u,", d->focus != NULL ? d->focus->id : 0);
@@ -214,6 +219,22 @@ void query_stack(FILE *rsp)
 	fprintf(rsp, "[");
 	for (stacking_list_t *s = stack_head; s != NULL; s = s->next) {
 		fprintf(rsp, "%u", s->node->id);
+		if (s->next != NULL) {
+			fprintf(rsp, ",");
+		}
+	}
+	fprintf(rsp, "]");
+}
+
+void query_subscribers(FILE *rsp)
+{
+	fprintf(rsp, "[");
+	for (subscriber_list_t *s = subscribe_head; s != NULL; s = s->next) {
+		fprintf(rsp, "{\"fileDescriptor\": %i", fileno(s->stream));
+		if (s->fifo_path != NULL) {
+			fprintf(rsp, ",\"fifoPath\":\"%s\"", s->fifo_path);
+		}
+		fprintf(rsp, ",\"field\":%i,\"count\":%i}", s->field, s->count);
 		if (s->next != NULL) {
 			fprintf(rsp, ",");
 		}
@@ -436,8 +457,8 @@ node_select_t make_node_select(void)
 	node_select_t sel = {
 		.automatic = OPTION_NONE,
 		.focused = OPTION_NONE,
-		.local = OPTION_NONE,
 		.active = OPTION_NONE,
+		.local = OPTION_NONE,
 		.leaf = OPTION_NONE,
 		.window = OPTION_NONE,
 		.tiled = OPTION_NONE,
@@ -465,6 +486,7 @@ desktop_select_t make_desktop_select(void)
 	desktop_select_t sel = {
 		.occupied = OPTION_NONE,
 		.focused = OPTION_NONE,
+		.active = OPTION_NONE,
 		.urgent = OPTION_NONE,
 		.local = OPTION_NONE
 	};
@@ -990,9 +1012,16 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t *sel)
 	}
 
 	if (sel->focused != OPTION_NONE &&
-	    loc->node != loc->desktop->focus
+	    loc->node != mon->desk->focus
 	    ? sel->focused == OPTION_TRUE
 	    : sel->focused == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel->active != OPTION_NONE &&
+	    loc->node != loc->desktop->focus
+	    ? sel->active == OPTION_TRUE
+	    : sel->active == OPTION_FALSE) {
 		return false;
 	}
 
@@ -1128,9 +1157,16 @@ bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t *s
 	}
 
 	if (sel->focused != OPTION_NONE &&
-	    loc->desktop != loc->monitor->desk
+	    loc->desktop != mon->desk
 	    ? sel->focused == OPTION_TRUE
 	    : sel->focused == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel->active != OPTION_NONE &&
+	    loc->desktop != loc->monitor->desk
+	    ? sel->active == OPTION_TRUE
+	    : sel->active == OPTION_FALSE) {
 		return false;
 	}
 
@@ -1161,7 +1197,7 @@ bool monitor_matches(coordinates_t *loc, __attribute__((unused)) coordinates_t *
 	}
 
 	if (sel->focused != OPTION_NONE &&
-	    mon != loc->monitor
+	    loc->monitor != mon
 	    ? sel->focused == OPTION_TRUE
 	    : sel->focused == OPTION_FALSE) {
 		return false;

@@ -17,11 +17,14 @@ I follow the [Linux Coding Style][4] with the following variations:
 - [Indent with tabs, align with spaces][5].
 - Always use braces when using control structures.
 
+An [EditorConfig][6] is included for convinience.
+
 [1]: https://www.bell-labs.com/usr/dmr/www/cbook/
 [2]: https://xcb.freedesktop.org/tutorial/
 [3]: http://git-scm.com/documentation
 [4]: https://www.kernel.org/doc/Documentation/process/coding-style.rst
 [5]: http://lea.verou.me/2012/01/why-tabs-are-clearly-superior/
+[6]: https://editorconfig.org
 
 ## Donations
 

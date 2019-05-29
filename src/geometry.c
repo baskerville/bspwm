@@ -33,6 +33,13 @@ bool is_inside(xcb_point_t p, xcb_rectangle_t r)
 	        p.y >= r.y && p.y < (r.y + r.height));
 }
 
+/* Returns true if a contains b */
+bool contains(xcb_rectangle_t a, xcb_rectangle_t b)
+{
+	return (a.x <= b.x && (a.x + a.width) >= (b.x + b.width) &&
+	        a.y <= b.y && (a.y + a.height) >= (b.y + b.height));
+}
+
 unsigned int area(xcb_rectangle_t r)
 {
 	return r.width * r.height;

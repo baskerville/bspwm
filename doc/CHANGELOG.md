@@ -1,3 +1,32 @@
+# From 0.9.6 to 0.9.7
+
+This release fixes a bug in the behavior of `single_monocle`.
+
+# From 0.9.4 to 0.9.6
+
+## Additions
+
+- New *wm* command: `--restart`. It was already possible to restart `bspwm` without loosing the current state through `--{dump,load}-state`, but this command will also keep the existing subscribers intact.
+- New settings: `automatic_scheme`, `removal_adjustment`. The automatic insertion mode now provides three ways of inserting a new node: `spiral`, `longest_side` (the default) and `alternate`. Those schemes are described in the README.
+- New settings: `ignore_ewmh_struts`, `presel_feedback`, `{top,right,bottom,left}_monocle_padding`.
+- New node descriptor: `smallest`.
+- New desktop modifier: `active`.
+
+## Changes
+
+- The `focused` and `active` modifiers now mean the same thing across every object.
+- Fullscreen windows are no longer sent to the `above` layer. Within the same layer, fullscreen windows are now above floating windows. If you want a floating window to be above a fullscreen window, you'll need to rely on layers.
+- Pseudo-tiled windows now shrink automatically.
+
+## Removals
+
+- The `paddingless_monocle` setting was removed (and subsumed). The effect of `paddingless_monocle` can now be achieved with:
+```shell
+for side in top right bottom left; do
+	bspc config ${side}_monocle_padding -$(bspc config ${side}_padding)
+done
+```
+
 # From 0.9.3 to 0.9.4
 
 ## Changes

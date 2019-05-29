@@ -76,7 +76,7 @@ Select a node.
 ----
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
-                        <node_id>)[.[!]focused][.[!]automatic][.[!]local][.[!]active]
+                        <node_id>)[.[!]focused][.[!]active][.[!]automatic][.[!]local]
                                   [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
                                   [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
@@ -157,40 +157,40 @@ Modifiers
 ^^^^^^^^^
 
 [!]focused::
-	Only consider focused or unfocused nodes.
-
-[!]automatic::
-	Only consider nodes in automatic or manual insertion mode. See also *--presel-dir* under *Node* in the *DOMAINS* section below.
-
-[!]local::
-	Only consider nodes in or not in the reference desktop.
+	Only consider the focused node.
 
 [!]active::
-	Only consider nodes in or not in the active desktop of their monitor.
+	Only consider nodes that are the focused node of their desktop.
+
+[!]automatic::
+	Only consider nodes in automatic insertion mode. See also *--presel-dir* under *Node* in the *DOMAINS* section below.
+
+[!]local::
+	Only consider nodes in the reference desktop.
 
 [!]leaf::
-	Only consider leaves or internal nodes.
+	Only consider leaf nodes.
 
 [!]window::
-	Only consider nodes that hold or don't hold a window.
+	Only consider nodes that hold a window.
 
 [!](tiled|pseudo_tiled|floating|fullscreen)::
-	Only consider windows in or not in the given state.
+	Only consider windows in the given state.
 
 [!]same_class::
-	Only consider windows that have or don't have the same class as the reference window.
+	Only consider windows that have the same class as the reference window.
 
 [!]descendant_of::
-	Only consider nodes that are or aren't descendants of the reference node.
+	Only consider nodes that are descendants of the reference node.
 
 [!]ancestor_of::
-	Only consider nodes that are or aren't ancestors of the reference node.
+	Only consider nodes that are ancestors of the reference node.
 
 [!](hidden|sticky|private|locked|marked|urgent)::
-	Only consider windows that have or don't have the given flag set.
+	Only consider windows that have the given flag set.
 
 [!](below|normal|above)::
-	Only consider windows in or not in the given layer.
+	Only consider windows in the given layer.
 
 Desktop
 ~~~~~~~
@@ -200,7 +200,8 @@ Select a desktop.
 ----
 DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
-                              <desktop_id>|<desktop_name>)[.[!]occupied][.[!]focused][.[!]urgent][.[!]local]
+                              <desktop_id>|<desktop_name>)[.[!]focused][.[!]active]
+                                                          [.[!]occupied][.[!]urgent][.[!]local]
 ----
 
 Descriptors
@@ -239,17 +240,20 @@ focused::
 Modifiers
 ^^^^^^^^^
 
-[!]occupied::
-	Only consider occupied or free desktops.
-
 [!]focused::
-	Only consider focused or unfocused desktops.
+	Only consider the focused desktop.
+
+[!]active::
+	Only consider desktops that are the focused desktop of their monitor.
+
+[!]occupied::
+	Only consider occupied desktops.
 
 [!]urgent::
-	Only consider urgent or non urgent desktops.
+	Only consider urgent desktops.
 
 [!]local::
-	Only consider desktops inside or outside of the reference monitor.
+	Only consider desktops inside the reference monitor.
 
 Monitor
 ~~~~~~~
@@ -259,7 +263,7 @@ Select a monitor.
 ----
 MONITOR_SEL := [MONITOR_SEL#](DIR|CYCLE_DIR|any|last|newest|older|newer|
                               focused|pointed|primary|^<n>|
-                              <monitor_id>|<monitor_name>)[.[!]occupied][.[!]focused]
+                              <monitor_id>|<monitor_name>)[.[!]focused][.[!]occupied]
 ----
 
 Descriptors
@@ -308,27 +312,28 @@ primary::
 Modifiers
 ^^^^^^^^^
 
-[!]occupied::
-	Only consider monitors where the focused desktop is occupied or free.
-
 [!]focused::
-	Only consider focused or unfocused monitors.
+	Only consider the focused monitor.
+
+[!]occupied::
+	Only consider monitors where the focused desktop is occupied.
+
 
 
 Window States
 -------------
 
 tiled::
-	Its size and position are determined by the splitting type and ratio of each node of its path in the window tree.
+	Its size and position are determined by the window tree.
 
 pseudo_tiled::
-	Has an unrestricted size while being centered in its tiling space.
+	A tiled window that automatically shrinks but doesn't stretch beyond its floating size.
 
 floating::
-	Can be moved/resized freely. Although it doesn't occupy any tiling space, it is still part of the window tree.
+	Can be moved/resized freely. Although it doesn't use any tiling space, it is still part of the window tree.
 
 fullscreen::
-	Fills its monitor rectangle and has no borders. It is send in the ABOVE layer by default.
+	Fills its monitor rectangle and has no borders.
 
 
 Node Flags
@@ -358,7 +363,7 @@ Stacking Layers
 
 There's three stacking layers: BELOW, NORMAL and ABOVE.
 
-In each layer, the window are orderered as follow: tiled & pseudo-tiled < fullscreen < floating.
+In each layer, the window are orderered as follow: tiled & pseudo-tiled < floating < fullscreen.
 
 Receptacles
 -----------
@@ -570,7 +575,7 @@ Commands
 	Dump the current world state on standard output.
 
 *-l*, *--load-state* <file_path>::
-	Load a world state from the given file.
+	Load a world state from the given file. The path must be absolute.
 
 *-a*, *--add-monitor* <name> WxH+X+Y::
 	Add a monitor for the given name and rectangle.
@@ -586,6 +591,9 @@ Commands
 
 *-g*, *--get-status*::
 	Print the current status information.
+
+*-r*, *--restart*::
+	Restart the window manager
 
 Rule
 ~~~~
@@ -675,10 +683,10 @@ Global Settings
 	Prefix prepended to each of the status lines.
 
 'external_rules_command'::
-	External command used to retrieve rule consequences. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
+	Absolute path to the command used to retrieve rule consequences. The command will receive the following arguments: window ID, class name, instance name, and intermediate consequences. The output of that command must have the following format: *key1=value1 key2=value2 ...* (the valid key/value pairs are given in the description of the 'rule' command).
 
 'automatic_scheme'::
-	The insertion scheme used when the insertion point is in automatic mode. Accept the following values: *longest_side*, *spiral*.
+	The insertion scheme used when the insertion point is in automatic mode. Accept the following values: *longest_side*, *alternate*, *spiral*.
 
 'initial_polarity'::
 	On which child should a new window be attached when adding a window on a single window tree in automatic mode. Accept the following values: *first_child*, *second_child*.
@@ -686,14 +694,23 @@ Global Settings
 'directional_focus_tightness'::
 	The tightness of the algorithm used to decide whether a window is on the 'DIR' side of another window. Accept the following values: *high*, *low*.
 
+'removal_adjustment'::
+	Adjust the brother when unlinking a node from the tree in accordance with the automatic insertion scheme.
+
+'presel_feedback'::
+	Draw the preselection feedback area. Defaults to 'true'.
+
 'borderless_monocle'::
 	Remove borders of tiled windows for the *monocle* desktop layout.
 
 'gapless_monocle'::
 	Remove gaps of tiled windows for the *monocle* desktop layout.
 
-'paddingless_monocle'::
-	Remove padding space for the *monocle* desktop layout.
+'top_monocle_padding'::
+'right_monocle_padding'::
+'bottom_monocle_padding'::
+'left_monocle_padding'::
+	Padding space added at the sides of the screen for the *monocle* desktop layout.
 
 'single_monocle'::
 	Set the desktop layout to *monocle* if there's only one tiled window in the tree.
@@ -734,6 +751,9 @@ Global Settings
 
 'ignore_ewmh_fullscreen'::
 	Block the fullscreen state transitions that originate from an EWMH request. The possible values are: *none*, *all*, or a comma separated list of the following values: *enter*, *exit*.
+
+'ignore_ewmh_struts'::
+	BIgnore strut hinting from clients requesting to reserve space (i.e. task bars).
 
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
@@ -914,7 +934,7 @@ Each item has the form '<type><value>' where '<type>' is the first character of 
 'T(T|P|F|=|@)'::
 	State of the focused node of a focused desktop.
 
-'G(S?P?L?)'::
+'G(S?P?L?M?)'::
 	Active flags of the focused node of a focused desktop.
 
 Environment Variables

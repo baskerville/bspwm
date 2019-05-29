@@ -53,11 +53,13 @@ void load_settings(void)
 	snprintf(presel_feedback_color, sizeof(presel_feedback_color), "%s", PRESEL_FEEDBACK_COLOR);
 
 	padding = (padding_t) PADDING;
+	monocle_padding = (padding_t) MONOCLE_PADDING;
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
 	initial_polarity = SECOND_CHILD;
-	automatic_scheme = SCHEME_LONGEST_SIDE;
+	automatic_scheme = AUTOMATIC_SCHEME;
+	removal_adjustment = REMOVAL_ADJUSTMENT;
 	directional_focus_tightness = TIGHTNESS_HIGH;
 
 	pointer_modifier = POINTER_MODIFIER;
@@ -69,9 +71,9 @@ void load_settings(void)
 	pointer_actions[4] = ACTION_NONE;
 	mapping_events_count = MAPPING_EVENTS_COUNT;
 
+	presel_feedback = PRESEL_FEEDBACK;
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
-	paddingless_monocle = PADDINGLESS_MONOCLE;
 	single_monocle = SINGLE_MONOCLE;
 
 	focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
@@ -81,6 +83,7 @@ void load_settings(void)
 	swallow_first_click = SWALLOW_FIRST_CLICK;
 	ignore_ewmh_focus = IGNORE_EWMH_FOCUS;
 	ignore_ewmh_fullscreen = IGNORE_EWMH_FULLSCREEN;
+	ignore_ewmh_struts = IGNORE_EWMH_STRUTS;
 
 	center_pseudo_tiled = CENTER_PSEUDO_TILED;
 	honor_size_hints = HONOR_SIZE_HINTS;

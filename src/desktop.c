@@ -70,12 +70,12 @@ bool activate_desktop(monitor_t *m, desktop_t *d)
 		}
 	}
 
-	if (d == NULL) {
+	if (d == NULL || d == m->desk) {
 		return false;
 	}
 
-	if (m->sticky_count > 0) {
-		transfer_sticky_nodes(m, m->desk, d, m->desk->root);
+	if (m->sticky_count > 0 && m->desk != NULL) {
+		transfer_sticky_nodes(m, m->desk, m, d, m->desk->root);
 	}
 
 	show_desktop(d);
@@ -135,22 +135,36 @@ bool find_any_desktop(coordinates_t *ref, coordinates_t *dst, desktop_select_t *
 	return false;
 }
 
-bool set_layout(monitor_t *m, desktop_t *d, layout_t l)
+bool set_layout(monitor_t *m, desktop_t *d, layout_t l, bool user)
 {
-	if (d->layout == l) {
+	if ((user && d->user_layout == l) || (!user && d->layout == l)) {
 		return false;
 	}
 
-	d->layout = l;
+	layout_t old_layout = d->layout;
 
-	handle_presel_feedbacks(m, d);
+	if (user) {
+		d->user_layout = l;
+	} else {
+		d->layout = l;
+	}
 
-	arrange(m, d);
+	if (user && (!single_monocle || tiled_count(d->root, true) > 1)) {
+		d->layout = l;
+	}
 
-	put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(l));
+	if (d->layout != old_layout) {
+		handle_presel_feedbacks(m, d);
 
-	if (d == m->desk) {
-		put_status(SBSC_MASK_REPORT);
+		if (user) {
+			arrange(m, d);
+		}
+
+		put_status(SBSC_MASK_DESKTOP_LAYOUT, "desktop_layout 0x%08X 0x%08X %s\n", m->id, d->id, LAYOUT_STR(d->layout));
+
+		if (d == m->desk) {
+			put_status(SBSC_MASK_REPORT);
+		}
 	}
 
 	return true;
@@ -180,7 +194,9 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	unlink_desktop(ms, d);
 
 	if ((!follow || !d_was_active || !ms_was_focused) && md->desk != NULL) {
+		hide_sticky = false;
 		hide_desktop(d);
+		hide_sticky = true;
 	}
 
 	insert_desktop(md, d);
@@ -204,7 +220,15 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	}
 
 	if (ms->sticky_count > 0 && d_was_active) {
-		transfer_sticky_nodes(ms, d, ms->desk, d->root);
+		if (ms->desk != NULL) {
+			transfer_sticky_nodes(md, d, ms, ms->desk, d->root);
+		} else {
+			ms->sticky_count -= sticky_count(d->root);
+			md->sticky_count += sticky_count(d->root);
+			if (d != md->desk) {
+				transfer_sticky_nodes(md, d, md, md->desk, d->root);
+			}
+		}
 	}
 
 	adapt_geometry(&ms->rectangle, &md->rectangle, d->root);
@@ -238,7 +262,8 @@ desktop_t *make_desktop(const char *name, uint32_t id)
 	}
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
-	d->layout = LAYOUT_TILED;
+	d->user_layout = LAYOUT_TILED;
+	d->layout = single_monocle ? LAYOUT_MONOCLE : LAYOUT_TILED;
 	d->padding = (padding_t) PADDING;
 	d->window_gap = window_gap;
 	d->border_width = border_width;
@@ -359,6 +384,7 @@ void merge_desktops(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd)
 	if (ds == NULL || dd == NULL || ds == dd) {
 		return;
 	}
+	/* TODO: Handle sticky nodes. */
 	transfer_node(ms, ds, ds->root, md, dd, dd->focus, false);
 }
 

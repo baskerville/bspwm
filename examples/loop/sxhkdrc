@@ -1,4 +1,0 @@
-# refresh or quit bspwm
-super + alt + {_,shift + }Escape
-	{bspc wm -d > "$BSPWM_STATE" && bspc quit, \
-	 bspc quit 1}
