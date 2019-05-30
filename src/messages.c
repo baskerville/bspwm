@@ -1698,7 +1698,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
 		SET_BOOL(swallow_first_click)
-		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
 		SET_BOOL(ignore_ewmh_focus)
 		SET_BOOL(ignore_ewmh_struts)
@@ -1706,6 +1705,15 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(honor_size_hints)
 		SET_BOOL(removal_adjustment)
 #undef SET_BOOL
+	} else if (streq("pointer_follows_focus", name)) {
+		bool pff = pointer_follows_focus;
+		if (!parse_bool(value, &pointer_follows_focus)) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
+		if (pff == pointer_follows_focus) {
+			return;
+		}
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		if (!parse_bool(value, &s)) { \
