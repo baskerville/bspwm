@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <limits.h>
 #include "bspwm.h"
 #include "desktop.h"
@@ -1303,6 +1304,11 @@ void close_node(node_t *n)
 void kill_node(monitor_t *m, desktop_t *d, node_t *n)
 {
 	if (n == NULL) {
+		return;
+	}
+	
+	if (streq("Firefox", n->client->class_name) || streq("Chromium", n->client->class_name)) {
+		close_node(n);
 		return;
 	}
 
