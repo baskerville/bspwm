@@ -1626,6 +1626,9 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 		}
 		n = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
 		HANDLE_BOUNDARIES(m, d, n);
+		if (ref->node == NULL && d == ref->desktop) {
+			break;
+		}
 	}
 #undef HANDLE_BOUNDARIES
 	return false;
