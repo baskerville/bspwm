@@ -1,3 +1,9 @@
+# From 0.9.7 to 0.9.8
+
+- Fix a potential infinite loop.
+- Fix two bugs having to do with `single_monocle`.
+- Honor `removal_adjustment` for the spiral automatic insertion scheme.
+
 # From 0.9.6 to 0.9.7
 
 This release fixes a bug in the behavior of `single_monocle`.
