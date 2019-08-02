@@ -1931,6 +1931,14 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 			activate_node(m, d, d->focus);
 		}
 	}
+
+	if (single_monocle) {
+		if (value && d->layout != LAYOUT_MONOCLE && tiled_count(d->root, true) <= 1) {
+			set_layout(m, d, LAYOUT_MONOCLE, false);
+		} else if (!value && d->layout == LAYOUT_MONOCLE && tiled_count(d->root, true) > 1) {
+			set_layout(m, d, d->user_layout, false);
+		}
+	}
 }
 
 void set_hidden_local(monitor_t *m, desktop_t *d, node_t *n, bool value)
