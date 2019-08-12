@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		int len = (argc + 1 + (rargc < argc ? 4 : 0));
+		int len = rargc + 5;
 		char **rargv = malloc(len * sizeof(char *));
 
 		for (int i = 0; i < rargc; i++) {
