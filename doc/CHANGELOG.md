@@ -1,3 +1,8 @@
+# From 0.9.8 to 0.9.9
+
+- Fix a memory allocation bug in the implementation of `wm --restart`.
+- Honor `single_monocle` when the `hidden` flag is toggled.
+
 # From 0.9.7 to 0.9.8
 
 - Fix a potential infinite loop.
