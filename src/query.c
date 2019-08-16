@@ -230,7 +230,7 @@ void query_subscribers(FILE *rsp)
 {
 	fprintf(rsp, "[");
 	for (subscriber_list_t *s = subscribe_head; s != NULL; s = s->next) {
-		fprintf(rsp, "{\"fileDescriptor\": %i", fileno(s->stream));
+		fprintf(rsp, "{\"fileDescriptor\": %i", s->stream ? fileno(s->stream) : -1);
 		if (s->fifo_path != NULL) {
 			fprintf(rsp, ",\"fifoPath\":\"%s\"", s->fifo_path);
 		}

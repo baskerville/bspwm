@@ -576,7 +576,7 @@ void restore_subscriber(subscriber_list_t *s, jsmntok_t **t, char *json)
 			(*t)++;
 			int fd;
 			sscanf(json + (*t)->start, "%i", &fd);
-			s->stream = fdopen(fd, "w");
+			s->stream = fd != -1 ? fdopen(fd, "w") : NULL;
 		} else if (keyeq("fifoPath", *t, json)) {
 			(*t)++;
 			free(s->fifo_path);

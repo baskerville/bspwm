@@ -1315,12 +1315,7 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 		fflush(rsp);
 		fclose(rsp);
 
-		stream = fopen(fifo_path, "w");
-
-		if (stream == NULL) {
-			perror("subscribe: fopen");
-			goto free_fifo_path;
-		}
+		stream = NULL;
 	}
 
 	subscriber_list_t *sb = make_subscriber(stream, fifo_path, field, count);
@@ -1330,12 +1325,6 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 failed:
 	fflush(rsp);
 	fclose(rsp);
-
-free_fifo_path:
-	if (fifo_path) {
-		unlink(fifo_path);
-		free(fifo_path);
-	}
 }
 
 void cmd_quit(char **args, int num, FILE *rsp)

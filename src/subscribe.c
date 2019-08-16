@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <fcntl.h>
+#include <errno.h>
 #include "bspwm.h"
 #include "desktop.h"
 #include "settings.h"
@@ -64,21 +66,66 @@ void remove_subscriber(subscriber_list_t *sb)
 		subscribe_tail = a;
 	}
 	if (!restart) {
-		fclose(sb->stream);
+		if (sb->stream) {
+			fclose(sb->stream);
+		}
 		unlink(sb->fifo_path);
 	}
 	free(sb->fifo_path);
 	free(sb);
 }
 
+bool check_subscriber(subscriber_list_t *sb)
+{
+	int fd;
+
+	if (sb->stream != NULL) {
+		return true;
+	}
+
+	fd = open(sb->fifo_path, O_WRONLY | O_NONBLOCK);
+
+	if (fd == -1) {
+		if (errno != ENXIO) {
+			remove_subscriber(sb);
+			perror("subscribe: open");
+		}
+		return false;
+	}
+
+	sb->stream = fdopen(fd, "w");
+
+	if (sb->stream) {
+		return true;
+	} else {
+		perror("subscribe: fdopen");
+		remove_subscriber(sb);
+		return false;
+	}
+}
+
 void add_subscriber(subscriber_list_t *sb)
 {
+	int flags;
+
 	if (subscribe_head == NULL) {
 		subscribe_head = subscribe_tail = sb;
 	} else {
 		subscribe_tail->next = sb;
 		sb->prev = subscribe_tail;
 		subscribe_tail = sb;
+	}
+
+	if (sb->stream == NULL) {
+		return;
+	}
+
+	flags = fcntl(fileno(sb->stream), F_GETFL, 0);
+
+	if (flags == -1) {
+		perror("subscribe: fcntl(F_GETFL)");
+	} else if (fcntl(fileno(sb->stream), F_SETFL, flags | O_NONBLOCK) == -1) {
+		perror("subscribe: fcntl(F_SETFL)");
 	}
 	if (sb->field & SBSC_MASK_REPORT) {
 		print_report(sb->stream);
@@ -141,7 +188,7 @@ void put_status(subscriber_mask_t mask, ...)
 	int ret;
 	while (sb != NULL) {
 		subscriber_list_t *next = sb->next;
-		if (sb->field & mask) {
+		if (check_subscriber(sb) && (sb->field & mask)) {
 			if (sb->count > 0) {
 				sb->count--;
 			}
