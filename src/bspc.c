@@ -94,11 +94,12 @@ int main(int argc, char *argv[])
 				rsp[nb] = '\0';
 				if (rsp[0] == FAILURE_MESSAGE[0]) {
 					ret = EXIT_FAILURE;
-					printf("%s", rsp + 1);
+					fprintf(stderr, "%s", rsp + 1);
+					fflush(stderr);
 				} else {
-					printf("%s", rsp);
+					fprintf(stdout, "%s", rsp);
+					fflush(stdout);
 				}
-				fflush(stdout);
 			} else {
 				break;
 			}
