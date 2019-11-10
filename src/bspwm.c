@@ -128,7 +128,9 @@ int main(int argc, char *argv[])
 		}
 
 		sock_address.sun_family = AF_UNIX;
-		snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", socket_path);
+		if (snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", socket_path) < 0) {
+			err("Couldn't write the socket path.\n");
+		}
 
 		sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -244,7 +246,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		int len = (argc + 1 + (rargc < argc ? 4 : 0));
+		int len = rargc + 5;
 		char **rargv = malloc(len * sizeof(char *));
 
 		for (int i = 0; i < rargc; i++) {

@@ -1626,6 +1626,9 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 		}
 		n = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
 		HANDLE_BOUNDARIES(m, d, n);
+		if (ref->node == NULL && d == ref->desktop) {
+			break;
+		}
 	}
 #undef HANDLE_BOUNDARIES
 	return false;
@@ -1926,6 +1929,14 @@ void set_hidden(monitor_t *m, desktop_t *d, node_t *n, bool value)
 			focus_node(m, d, d->focus);
 		} else {
 			activate_node(m, d, d->focus);
+		}
+	}
+
+	if (single_monocle) {
+		if (value && d->layout != LAYOUT_MONOCLE && tiled_count(d->root, true) <= 1) {
+			set_layout(m, d, LAYOUT_MONOCLE, false);
+		} else if (!value && d->layout == LAYOUT_MONOCLE && tiled_count(d->root, true) > 1) {
+			set_layout(m, d, d->user_layout, false);
 		}
 	}
 }
