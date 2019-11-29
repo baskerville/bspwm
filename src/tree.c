@@ -499,13 +499,62 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 	return true;
 }
 
+node_t* find_placeholder(desktop_t *d, node_t *dn, node_t *n)
+{
+	if(dn == NULL) {
+		return NULL;
+	} else if (dn->placeholder_for == n) {
+		return dn;
+	} else {
+		node_t *first_child = dn->first_child;
+		node_t *second_child = dn->second_child;
+
+		node_t *found = find_placeholder(d, first_child, n);
+		if(found != NULL)
+			return found;
+
+		found = find_placeholder(d, second_child, n);
+		if(found != NULL)
+			return found;
+
+	}
+
+	return NULL;
+}
+
+void remove_placeholders(monitor_t *m, node_t *n) {
+	if(n == NULL)
+		return;
+
+	for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+		node_t* p = find_placeholder(d, d->root, n);
+		if(p != NULL) {
+			remove_node(m, d, p);
+			arrange(m, d);
+		}
+	}
+}
+
 void transfer_sticky_nodes(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_t *dd, node_t *n)
 {
+	if(ms != md) {
+		remove_placeholders(ms, n);
+	}
+
 	if (n == NULL) {
 		return;
 	} else if (n->sticky) {
+		node_t *r = make_node(XCB_NONE);
+		r->placeholder_for = n;
+		insert_node(ms, ds, r, n);
+
 		sticky_still = false;
-		transfer_node(ms, ds, n, md, dd, dd->focus, false);
+
+		node_t *dest = find_placeholder(ds, dd->root, n);
+		if(dest == NULL)
+			dest = dd->focus;
+
+		transfer_node(ms, ds, n, md, dd, dest, false);
 		sticky_still = true;
 	} else {
 		/* we need references to the children because n might be freed after
@@ -1413,6 +1462,8 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
+	remove_placeholders(m, n);
+
 	unlink_node(m, d, n);
 	history_remove(d, n, true);
 	remove_stack_node(n);
@@ -2100,6 +2151,10 @@ void set_sticky(monitor_t *m, desktop_t *d, node_t *n, bool value)
 {
 	if (n == NULL || n->sticky == value) {
 		return;
+	}
+
+	if(!value) {
+		remove_placeholders(m, n);
 	}
 
 	if (d != m->desk) {

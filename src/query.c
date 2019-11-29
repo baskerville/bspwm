@@ -137,6 +137,9 @@ void query_node(node_t *n, FILE *rsp)
 		fprintf(rsp, "\"constraints\":");
 		query_constraints(n->constraints, rsp);
 		fprintf(rsp,",");
+		fprintf(rsp, "\"placeholderFor\":");
+		query_node(n->placeholder_for, rsp);
+		fprintf(rsp,",");
 		fprintf(rsp, "\"firstChild\":");
 		query_node(n->first_child, rsp);
 		fprintf(rsp,",");
