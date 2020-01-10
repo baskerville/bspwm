@@ -435,7 +435,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 				if (sscanf(*args, "%i", &dx) == 1) {
 					num--, args++;
 					if (sscanf(*args, "%i", &dy) == 1) {
-						if (!resize_client(&trg, rh, dx, dy, true)) {
+						if (!resize_client(&trg, rh, dx, dy)) {
 							fail(rsp, "");
 							break;
 						}
