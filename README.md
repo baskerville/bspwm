@@ -182,3 +182,10 @@ The *spiral* automatic scheme generates window spirals that rotate clockwise (re
 
 - The RandR and Xinerama protocols.
 - A subset of the EWMH and ICCCM standards.
+
+## Community
+
+Want to get in touch with other *bspwm* users or you need help? Join us on our:
+
+- Subreddit at [r/bspwm](https://www.reddit.com/r/bspwm/).
+- IRC channel at `#bspwm` on `chat.freenode.net` (maintained by [@dannycolin](https://github.com/dannycolin) / sdk on IRC).
