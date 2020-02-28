@@ -1,0 +1,38 @@
+#!/bin/sh
+# NOTE: This script depends on 'jq' for parsing json!
+# make this script executable and put it somewhere in your PATH
+if [[ "$1" =~ "^(left|down|up|right)$" ]] ; then
+	echo "invalid option"
+	exit 1
+fi
+if [[ $(bspc query -T -n | jq -r '.client.state') == "floating" ]] ; then
+	case "$1" in
+	"left")
+		bspc node -z right -20 0
+		;;
+	"down")
+		bspc node -z bottom 0 +20
+		;;
+	"up")
+		bspc node -z bottom 0 -20
+		;;
+	"right")
+		bspc node -z right +20 0
+		;;
+	esac
+else
+	case "$1" in
+	"left")
+		bspc node 'parents.!leaf.vertical' -r -0.05
+		;;
+	"down")
+		bspc node 'parents.!leaf.horizontal' -r +0.05
+		;;
+	"up")
+		bspc node 'parents.!leaf.horizontal' -r -0.05
+		;;
+	"right")
+		bspc node 'parents.!leaf.vertical' -r +0.05
+		;;
+	esac
+fi

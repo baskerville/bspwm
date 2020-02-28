@@ -1,0 +1,11 @@
+#
+# move/resize/rotate
+#
+
+# easy resizing with bspc_resize script
+super + alt + {h,j,k,l}
+	bspc_resize {left,down,up,right}
+
+# move upper left corner
+super + alt + shift + {h,j,k,l}
+	bspc node -z {left -20 0,top 0 +20,top 0 -20,left +20 0}
