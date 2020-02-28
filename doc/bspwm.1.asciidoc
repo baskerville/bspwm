@@ -74,7 +74,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|parent|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[.[!]focused][.[!]active][.[!]automatic][.[!]local]
                                   [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
@@ -105,6 +105,9 @@ Descriptors
 
 any::
 	Selects the first node that matches the given selectors.
+
+parents::
+	Selects the first descendant of the reference node that matches the given selectors.
 
 last::
 	Selects the previously focused node relative to the reference node.
@@ -170,6 +173,12 @@ Modifiers
 
 [!]leaf::
 	Only consider leaf nodes.
+
+[!]horizontal::
+	Only consider nodes whose split type is horizontal.
+
+[!]vertical::
+	Only consider nodes whose split type is vertical.
 
 [!]window::
 	Only consider nodes that hold a window.

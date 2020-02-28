@@ -470,7 +470,9 @@ node_select_t make_node_select(void)
 		.ancestor_of = OPTION_NONE,
 		.below = OPTION_NONE,
 		.normal = OPTION_NONE,
-		.above = OPTION_NONE
+		.above = OPTION_NONE,
+		.horizontal = OPTION_NONE,
+		.vertical = OPTION_NONE
 	};
 	return sel;
 }
@@ -549,6 +551,8 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		history_find_node(hdi, ref, dst, &sel);
 	} else if (streq("any", desc)) {
 		find_any_node(ref, dst, &sel);
+	} else if (streq("parents", desc)) {
+		find_first_parent_node(ref, dst, &sel);
 	} else if (streq("last", desc)) {
 		history_find_node(HISTORY_OLDER, ref, dst, &sel);
 	} else if (streq("newest", desc)) {
@@ -1137,6 +1141,20 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t *sel)
 	}
 	WFLAG(urgent)
 #undef WFLAG
+
+	if (sel->horizontal != OPTION_NONE &&
+	    loc->node->split_type != TYPE_HORIZONTAL
+		? sel->horizontal == OPTION_TRUE
+		: sel->horizontal == OPTION_FALSE) {
+		return false;
+	}
+
+	if (sel->vertical != OPTION_NONE &&
+	    loc->node->split_type != TYPE_VERTICAL
+		? sel->vertical == OPTION_TRUE
+		: sel->vertical == OPTION_FALSE) {
+		return false;
+	}
 
 	return true;
 }

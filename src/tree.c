@@ -1014,6 +1014,17 @@ bool find_any_node_in(monitor_t *m, desktop_t *d, node_t *n, coordinates_t *ref,
 	}
 }
 
+void find_first_parent_node(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
+{
+	coordinates_t loc = {ref->monitor, ref->desktop, ref->node};
+	while (!node_matches(&loc, ref, sel)) {
+		if ( (loc.node = loc.node->parent) == NULL ) {
+			return;
+		}
+	}
+	*dst = loc;
+}
+
 /* Based on https://github.com/ntrrgc/right-window */
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t *sel)
 {

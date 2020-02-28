@@ -100,7 +100,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|parents|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[\&.[!]focused][\&.[!]active][\&.[!]automatic][\&.[!]local]
                                   [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
@@ -146,6 +146,11 @@ Selects the node at the given path\&.
 any
 .RS 4
 Selects the first node that matches the given selectors\&.
+.RE
+.PP
+parents
+.RS 4
+Selects the first descendant of the reference node that matches the given selectors\&.
 .RE
 .PP
 last
@@ -267,6 +272,16 @@ Only consider nodes in the reference desktop\&.
 [!]leaf
 .RS 4
 Only consider leaf nodes\&.
+.RE
+.PP
+[!]horizontal
+.RS 4
+Only consider nodes whose split type is horizontal\&.
+.RE
+.PP
+[!]vertical
+.RS 4
+Only consider nodes whose split type is vertical\&.
 .RE
 .PP
 [!]window
