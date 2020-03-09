@@ -549,6 +549,8 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		history_find_node(hdi, ref, dst, &sel);
 	} else if (streq("any", desc)) {
 		find_any_node(ref, dst, &sel);
+	} else if (streq("first_ancestor", desc)) {
+		find_first_ancestor(ref, dst, &sel);
 	} else if (streq("last", desc)) {
 		history_find_node(HISTORY_OLDER, ref, dst, &sel);
 	} else if (streq("newest", desc)) {
