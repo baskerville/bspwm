@@ -74,7 +74,7 @@ Node
 Select a node.
 
 ----
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|first_ancestor|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[.[!]focused][.[!]active][.[!]automatic][.[!]local]
                                   [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
@@ -105,6 +105,9 @@ Descriptors
 
 any::
 	Selects the first node that matches the given selectors.
+
+first_ancestor::
+	Selects the first ancestor of the reference node that matches the given selectors.
 
 last::
 	Selects the previously focused node relative to the reference node.

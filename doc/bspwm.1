@@ -100,7 +100,7 @@ Select a node\&.
 .RS 4
 .\}
 .nf
-NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|last|newest|
+NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|first_ancestor|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[\&.[!]focused][\&.[!]active][\&.[!]automatic][\&.[!]local]
                                   [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
@@ -146,6 +146,11 @@ Selects the node at the given path\&.
 any
 .RS 4
 Selects the first node that matches the given selectors\&.
+.RE
+.PP
+first_ancestor
+.RS 4
+Selects the first ancestor of the reference node that matches the given selectors\&.
 .RE
 .PP
 last
