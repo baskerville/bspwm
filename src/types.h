@@ -183,6 +183,8 @@ typedef struct {
 	option_bool_t below;
 	option_bool_t normal;
 	option_bool_t above;
+	option_bool_t horizontal;
+	option_bool_t vertical;
 } node_select_t;
 
 typedef struct {
