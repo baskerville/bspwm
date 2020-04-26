@@ -46,7 +46,7 @@
 #define LAYOUT_STR(A)     ((A) == LAYOUT_TILED ? "tiled" : "monocle")
 #define LAYOUT_CHR(A)     ((A) == LAYOUT_TILED ? 'T' : 'M')
 #define CHILD_POL_STR(A)  ((A) == FIRST_CHILD ? "first_child" : "second_child")
-#define AUTO_SCM_STR(A)   ((A) == SCHEME_LONGEST_SIDE ? "longest_side" : ((A) == SCHEME_ALTERNATE ? "alternate" : "spiral"))
+#define AUTO_SCM_STR(A)   ((A) == SCHEME_LONGEST_SIDE ? "longest_side" : ((A) == SCHEME_HVSPLIT ? "hvsplit" : ((A) == SCHEME_ALTERNATE ? "alternate" : "spiral")))
 #define TIGHTNESS_STR(A)  ((A) == TIGHTNESS_HIGH ? "high" : "low")
 #define SPLIT_TYPE_STR(A) ((A) == TYPE_HORIZONTAL ? "horizontal" : "vertical")
 #define SPLIT_MODE_STR(A) ((A) == MODE_AUTOMATIC ? "automatic" : "manual")

@@ -57,6 +57,7 @@ void load_settings(void)
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
+	hvsplit_ratio = HVSPLIT_RATIO;
 	initial_polarity = SECOND_CHILD;
 	automatic_scheme = AUTOMATIC_SCHEME;
 	removal_adjustment = REMOVAL_ADJUSTMENT;

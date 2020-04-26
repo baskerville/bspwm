@@ -46,6 +46,7 @@ typedef enum {
 
 typedef enum {
 	SCHEME_LONGEST_SIDE,
+	SCHEME_HVSPLIT,
 	SCHEME_ALTERNATE,
 	SCHEME_SPIRAL
 } automatic_scheme_t;
@@ -240,6 +241,7 @@ struct node_t {
 	uint32_t id;
 	split_type_t split_type;
 	double split_ratio;
+	double hvsplit_ratio;
 	presel_t *presel;
 	xcb_rectangle_t rectangle;
 	constraints_t constraints;
@@ -353,6 +355,7 @@ typedef struct {
 	char node_desc[MAXLEN];
 	char split_dir[SMALEN];
 	double split_ratio;
+	double hvsplit_ratio;
 	stack_layer_t *layer;
 	client_state_t *state;
 	bool hidden;

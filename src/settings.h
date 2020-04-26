@@ -42,6 +42,7 @@
 #define WINDOW_GAP           6
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
+#define HVSPLIT_RATIO        1
 #define AUTOMATIC_SCHEME     SCHEME_LONGEST_SIDE
 #define REMOVAL_ADJUSTMENT   true
 
@@ -80,6 +81,7 @@ padding_t monocle_padding;
 int window_gap;
 unsigned int border_width;
 double split_ratio;
+double hvsplit_ratio;
 child_polarity_t initial_polarity;
 automatic_scheme_t automatic_scheme;
 bool removal_adjustment;

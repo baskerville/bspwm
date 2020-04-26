@@ -1554,6 +1554,15 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			return;
 		}
 		return;
+	} else if (streq("hvsplit_ratio", name)) {
+		double r;
+		if (sscanf(value, "%lf", &r) == 1 && r > 0) {
+			hvsplit_ratio = r;
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
+			return;
+		}
+		return;
 #define SET_COLOR(s) \
 	} else if (streq(#s, name)) { \
 		if (!is_hex_color(value)) { \
@@ -1746,6 +1755,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 {
 	if (streq("split_ratio", name)) {
 		fprintf(rsp, "%lf", split_ratio);
+	} else if (streq("hvsplit_ratio", name)) {
+		fprintf(rsp, "%lf", hvsplit_ratio);
 	} else if (streq("border_width", name)) {
 		if (loc.node != NULL) {
 			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.node)) {

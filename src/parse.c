@@ -278,6 +278,9 @@ bool parse_automatic_scheme(char *s, automatic_scheme_t *a)
 	if (streq("longest_side", s)) {
 		*a = SCHEME_LONGEST_SIDE;
 		return true;
+	} else if (streq("hvsplit", s)) {
+		*a = SCHEME_HVSPLIT;
+		return true;
 	} else if (streq("alternate", s)) {
 		*a = SCHEME_ALTERNATE;
 		return true;
