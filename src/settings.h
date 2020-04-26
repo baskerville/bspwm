@@ -42,6 +42,7 @@
 #define WINDOW_GAP           6
 #define BORDER_WIDTH         1
 #define SPLIT_RATIO          0.5
+#define HVSPLIT_RATIO        1
 #define AUTOMATIC_SCHEME     SCHEME_LONGEST_SIDE
 #define REMOVAL_ADJUSTMENT   true
 
@@ -80,6 +81,7 @@ padding_t monocle_padding;
 int window_gap;
 unsigned int border_width;
 double split_ratio;
+double hvsplit_ratio;
 child_polarity_t initial_polarity;
 automatic_scheme_t automatic_scheme;
 bool removal_adjustment;
@@ -87,7 +89,7 @@ tightness_t directional_focus_tightness;
 
 uint16_t pointer_modifier;
 uint32_t pointer_motion_interval;
-pointer_action_t pointer_actions[3];
+pointer_action_t pointer_actions[5];
 int8_t mapping_events_count;
 
 bool presel_feedback;

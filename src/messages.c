@@ -1554,6 +1554,15 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			return;
 		}
 		return;
+	} else if (streq("hvsplit_ratio", name)) {
+		double r;
+		if (sscanf(value, "%lf", &r) == 1 && r > 0) {
+			hvsplit_ratio = r;
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
+			return;
+		}
+		return;
 #define SET_COLOR(s) \
 	} else if (streq(#s, name)) { \
 		if (!is_hex_color(value)) { \
@@ -1620,8 +1629,13 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
-	           streq("pointer_action3", name)) {
+	           streq("pointer_action3", name) ||
+	           streq("pointer_action8", name) ||
+	           streq("pointer_action9", name)) {
 		int index = name[14] - '1';
+		if (index > 2) {
+			index -= 4;
+		}
 		if (parse_pointer_action(value, &pointer_actions[index])) {
 			ungrab_buttons();
 			grab_buttons();
@@ -1693,7 +1707,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
 		SET_BOOL(swallow_first_click)
-		SET_BOOL(pointer_follows_focus)
 		SET_BOOL(pointer_follows_monitor)
 		SET_BOOL(ignore_ewmh_focus)
 		SET_BOOL(ignore_ewmh_struts)
@@ -1701,6 +1714,15 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(honor_size_hints)
 		SET_BOOL(removal_adjustment)
 #undef SET_BOOL
+	} else if (streq("pointer_follows_focus", name)) {
+		bool pff = pointer_follows_focus;
+		if (!parse_bool(value, &pointer_follows_focus)) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
+		if (pff == pointer_follows_focus) {
+			return;
+		}
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		if (!parse_bool(value, &s)) { \
@@ -1733,6 +1755,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 {
 	if (streq("split_ratio", name)) {
 		fprintf(rsp, "%lf", split_ratio);
+	} else if (streq("hvsplit_ratio", name)) {
+		fprintf(rsp, "%lf", hvsplit_ratio);
 	} else if (streq("border_width", name)) {
 		if (loc.node != NULL) {
 			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.node)) {
@@ -1803,8 +1827,13 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		fprintf(rsp, "%u", pointer_motion_interval);
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
-	           streq("pointer_action3", name)) {
+	           streq("pointer_action3", name) ||
+	           streq("pointer_action8", name) ||
+	           streq("pointer_action9", name)) {
 		int index = name[14] - '1';
+		if (index > 2) {
+			index -= 4;
+		}
 		print_pointer_action(pointer_actions[index], rsp);
 #define GET_COLOR(s) \
 	} else if (streq(#s, name)) { \

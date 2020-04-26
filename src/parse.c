@@ -227,6 +227,12 @@ bool parse_button_index(char *s, int8_t *b)
 	} else if (strcmp(s, "button3") == 0) {
 		*b = XCB_BUTTON_INDEX_3;
 		return true;
+	} else if (strcmp(s, "button8") == 0) {
+		*b = 8;
+		return true;
+	} else if (strcmp(s, "button9") == 0) {
+		*b = 9;
+		return true;
 	} else if (strcmp(s, "none") == 0) {
 		*b = -1;
 		return true;
@@ -271,6 +277,9 @@ bool parse_automatic_scheme(char *s, automatic_scheme_t *a)
 {
 	if (streq("longest_side", s)) {
 		*a = SCHEME_LONGEST_SIDE;
+		return true;
+	} else if (streq("hvsplit", s)) {
+		*a = SCHEME_HVSPLIT;
 		return true;
 	} else if (streq("alternate", s)) {
 		*a = SCHEME_ALTERNATE;

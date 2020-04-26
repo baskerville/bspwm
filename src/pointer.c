@@ -55,7 +55,11 @@ void window_grab_buttons(xcb_window_t win)
 			window_grab_button(win, BUTTONS[i], XCB_NONE);
 		}
 		if (pointer_actions[i] != ACTION_NONE) {
-			window_grab_button(win, BUTTONS[i], pointer_modifier);
+			if (BUTTONS[i] == 8 || BUTTONS[i] == 9) {
+				window_grab_button(win, BUTTONS[i], 0);
+			} else {
+				window_grab_button(win, BUTTONS[i], pointer_modifier);
+			}
 		}
 	}
 }

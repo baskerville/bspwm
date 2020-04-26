@@ -341,8 +341,14 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 					c->first_child = f;
 					c->second_child = n;
 				}
-				if (p == NULL || automatic_scheme == SCHEME_LONGEST_SIDE || single_tiled) {
-					if (f->rectangle.width > f->rectangle.height) {
+				if (p == NULL || automatic_scheme == SCHEME_LONGEST_SIDE || automatic_scheme == SCHEME_HVSPLIT || single_tiled) {
+					// TODO
+					double ratio = 1;
+					if (automatic_scheme == SCHEME_HVSPLIT) {
+						ratio = hvsplit_ratio;
+					}
+
+					if (f->rectangle.width > f->rectangle.height * ratio) {
 						c->split_type = TYPE_VERTICAL;
 					} else {
 						c->split_type = TYPE_HORIZONTAL;
@@ -1271,9 +1277,16 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 				} else {
 					rotate_tree(b, 90);
 				}
-			} else if (automatic_scheme == SCHEME_LONGEST_SIDE || g == NULL) {
+			} else if (automatic_scheme == SCHEME_LONGEST_SIDE ||
+				       	automatic_scheme == SCHEME_HVSPLIT ||
+				       	g == NULL) {
+				double ratio = 1;
+				if (automatic_scheme == SCHEME_HVSPLIT) {
+					ratio = hvsplit_ratio;
+				}
+
 				if (p != NULL) {
-					if (p->rectangle.width > p->rectangle.height) {
+					if (p->rectangle.width > p->rectangle.height * ratio) {
 						b->split_type = TYPE_VERTICAL;
 					} else {
 						b->split_type = TYPE_HORIZONTAL;

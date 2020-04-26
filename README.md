@@ -131,6 +131,10 @@ Since *1* is wide, it gets split vertically and *2* is added as *a*'s second chi
 
 This leads to *Y* where we insert window *3*. *2* is tall and is therefore split horizontally. *3* is once again added as *b*'s second child.
 
+#### Hvsplit scheme
+
+This is a generalized longest side scheme. It takes into account parameter hvsplit_ratio which indicates maximum ratio of width to hight after which the split is vertical. With hvsplit_ratio it behaves like longest side scheme.
+
 #### Alternate scheme
 
 When the value of the automatic scheme is `alternate`, the window will be attached as if the insertion point was in manual mode and the split direction was chosen based on the split type of the insertion point's parent and the initial polarity. If the parent is split horizontally, the insertion point will be split vertically and vice versa.

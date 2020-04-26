@@ -57,6 +57,7 @@ void load_settings(void)
 	window_gap = WINDOW_GAP;
 	border_width = BORDER_WIDTH;
 	split_ratio = SPLIT_RATIO;
+	hvsplit_ratio = HVSPLIT_RATIO;
 	initial_polarity = SECOND_CHILD;
 	automatic_scheme = AUTOMATIC_SCHEME;
 	removal_adjustment = REMOVAL_ADJUSTMENT;
@@ -67,6 +68,8 @@ void load_settings(void)
 	pointer_actions[0] = ACTION_MOVE;
 	pointer_actions[1] = ACTION_RESIZE_SIDE;
 	pointer_actions[2] = ACTION_RESIZE_CORNER;
+	pointer_actions[3] = ACTION_NONE;
+	pointer_actions[4] = ACTION_NONE;
 	mapping_events_count = MAPPING_EVENTS_COUNT;
 
 	presel_feedback = PRESEL_FEEDBACK;

@@ -31,7 +31,7 @@
 #define ERROR_CODE_BAD_WINDOW  3
 
 uint8_t randr_base;
-static const xcb_button_index_t BUTTONS[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3};
+static const xcb_button_index_t BUTTONS[] = {XCB_BUTTON_INDEX_1, XCB_BUTTON_INDEX_2, XCB_BUTTON_INDEX_3, 8, 9 };
 
 void handle_event(xcb_generic_event_t *evt);
 void map_request(xcb_generic_event_t *evt);
