@@ -1138,8 +1138,10 @@ void cmd_rule(char **args, int num, FILE *rsp)
 			rule_t *rule = make_rule();
 			char *class_name = strtok(*args, COL_TOK);
 			char *instance_name = strtok(NULL, COL_TOK);
+			char *name = strtok(NULL, COL_TOK);
 			snprintf(rule->class_name, sizeof(rule->class_name), "%s", class_name);
 			snprintf(rule->instance_name, sizeof(rule->instance_name), "%s", instance_name==NULL?MATCH_ANY:instance_name);
+			snprintf(rule->name, sizeof(rule->name), "%s", name==NULL?MATCH_ANY:name);
 			num--, args++;
 			size_t i = 0;
 			while (num > 0) {

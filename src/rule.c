@@ -39,7 +39,7 @@
 rule_t *make_rule(void)
 {
 	rule_t *r = calloc(1, sizeof(rule_t));
-	r->class_name[0] = r->instance_name[0] = r->effect[0] = '\0';
+	r->class_name[0] = r->instance_name[0] = r->name[0] = r->effect[0] = '\0';
 	r->next = r->prev = NULL;
 	r->one_shot = false;
 	return r;
@@ -83,10 +83,12 @@ void remove_rule_by_cause(char *cause)
 	rule_t *r = rule_head;
 	char *class_name = strtok(cause, COL_TOK);
 	char *instance_name = strtok(NULL, COL_TOK);
+	char *name = strtok(NULL, COL_TOK);
 	while (r != NULL) {
 		rule_t *next = r->next;
 		if ((class_name != NULL && (streq(class_name, MATCH_ANY) || streq(r->class_name, class_name))) &&
-		    (instance_name == NULL || streq(instance_name, MATCH_ANY) || streq(r->instance_name, instance_name))) {
+		    (instance_name == NULL || streq(instance_name, MATCH_ANY) || streq(r->instance_name, instance_name)) &&
+		    (name == NULL || streq(name, MATCH_ANY) || streq(r->name, name))) {
 			remove_rule(r);
 		}
 		r = next;
@@ -281,6 +283,15 @@ void _apply_class(xcb_window_t win, rule_consequence_t *csq)
 	}
 }
 
+void _apply_name(xcb_window_t win, rule_consequence_t *csq)
+{
+	xcb_icccm_get_text_property_reply_t reply;
+	if (xcb_icccm_get_wm_name_reply(dpy, xcb_icccm_get_wm_name(dpy, win), &reply, NULL) == 1) {
+		snprintf(csq->name, sizeof(csq->name), "%s", reply.name);
+		xcb_icccm_get_text_property_reply_wipe(&reply);
+	}
+}
+
 void parse_keys_values(char *buf, rule_consequence_t *csq)
 {
 	char *key = strtok(buf, CSQ_BLK);
@@ -299,12 +310,14 @@ void apply_rules(xcb_window_t win, rule_consequence_t *csq)
 	_apply_transient(win, csq);
 	_apply_hints(win, csq);
 	_apply_class(win, csq);
+	_apply_name(win, csq);
 
 	rule_t *rule = rule_head;
 	while (rule != NULL) {
 		rule_t *next = rule->next;
 		if ((streq(rule->class_name, MATCH_ANY) || streq(rule->class_name, csq->class_name)) &&
-		    (streq(rule->instance_name, MATCH_ANY) || streq(rule->instance_name, csq->instance_name))) {
+		    (streq(rule->instance_name, MATCH_ANY) || streq(rule->instance_name, csq->instance_name)) &&
+		    (streq(rule->name, MATCH_ANY) || streq(rule->name, csq->name))) {
 			char effect[MAXLEN];
 			snprintf(effect, sizeof(effect), "%s", rule->effect);
 			parse_keys_values(effect, csq);
@@ -424,6 +437,6 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 void list_rules(FILE *rsp)
 {
 	for (rule_t *r = rule_head; r != NULL; r = r->next) {
-		fprintf(rsp, "%s:%s %c> %s\n", r->class_name, r->instance_name, r->one_shot?'-':'=', r->effect);
+		fprintf(rsp, "%s:%s:%s %c> %s\n", r->class_name, r->instance_name, r->name, r->one_shot?'-':'=', r->effect);
 	}
 }
