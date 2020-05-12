@@ -44,6 +44,7 @@ void _apply_window_state(xcb_window_t win, rule_consequence_t *csq);
 void _apply_transient(xcb_window_t win, rule_consequence_t *csq);
 void _apply_hints(xcb_window_t win, rule_consequence_t *csq);
 void _apply_class(xcb_window_t win, rule_consequence_t *csq);
+void _apply_name(xcb_window_t win, rule_consequence_t *csq);
 void parse_keys_values(char *buf, rule_consequence_t *csq);
 void apply_rules(xcb_window_t win, rule_consequence_t *csq);
 bool schedule_rules(xcb_window_t win, rule_consequence_t *csq);

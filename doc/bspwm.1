@@ -1041,12 +1041,12 @@ rule \fICOMMANDS\fR
 \fBCommands\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
+\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)][:(<name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
 .RS 4
 Create a new rule\&.
 .RE
 .PP
-\fB\-r\fR, \fB\-\-remove\fR ^<n>|head|tail|(<class_name>|*)[:(<instance_name>|*)]\&...
+\fB\-r\fR, \fB\-\-remove\fR ^<n>|head|tail|(<class_name>|*)[:(<instance_name>|*)][:(<name>|*)]\&...
 .RS 4
 Remove the given rules\&.
 .RE
