@@ -208,8 +208,8 @@ struct icccm_props_t {
 };
 
 typedef struct {
-	char class_name[3 * SMALEN / 2];
-	char instance_name[3 * SMALEN / 2];
+	char class_name[MAXLEN];
+	char instance_name[MAXLEN];
 	unsigned int border_width;
 	bool urgent;
 	bool shown;
@@ -348,8 +348,8 @@ struct rule_t {
 };
 
 typedef struct {
-	char class_name[3 * SMALEN / 2];
-	char instance_name[3 * SMALEN / 2];
+	char class_name[MAXLEN];
+	char instance_name[MAXLEN];
 	char monitor_desc[MAXLEN];
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
