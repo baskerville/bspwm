@@ -399,7 +399,7 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		}
 	} else if (parse_bool(value, &v)) {
 		if (streq("hidden", key)) {
-			csq->hidden = true;
+			csq->hidden = v;
 		}
 #define SETCSQ(name) \
 		else if (streq(#name, key)) { \
