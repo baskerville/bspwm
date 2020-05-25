@@ -215,6 +215,8 @@ int main(int argc, char *argv[])
 		if (!check_connection(dpy)) {
 			running = false;
 		}
+
+		prune_dead_subscribers();
 	}
 
 	if (restart) {

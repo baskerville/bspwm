@@ -163,3 +163,20 @@ void put_status(subscriber_mask_t mask, ...)
 		sb = next;
 	}
 }
+
+void prune_dead_subscribers(void)
+{
+	subscriber_list_t *sb = subscribe_head;
+	while (sb != NULL) {
+		subscriber_list_t *next = sb->next;
+		// To check if a subscriber's stream is still open and writable call
+		// write with an empty buffer and check the returned value. If the
+		// stream is not writable anymore (i.e. it has been closed because the
+		// process associated to this subscriber no longer exists) then write()
+		// will return -1.
+		if (write(fileno(sb->stream), 0, 0) == -1) {
+			remove_subscriber(sb);
+		}
+		sb = next;
+	}
+}
