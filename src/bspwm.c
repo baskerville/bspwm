@@ -483,3 +483,16 @@ void sig_handler(int sig)
 		running = false;
 	}
 }
+
+/* Adapted from i3wm */
+uint32_t get_color_pixel(const char *color)
+{
+	unsigned int red, green, blue;
+	if (sscanf(color + 1, "%02x%02x%02x", &red, &green, &blue) == 3) {
+		/* We set the first 8 bits high to have 100% opacity in case of a 32 bit
+		 * color depth visual. */
+		return (0xFF << 24) | (red << 16 | green << 8 | blue);
+	} else {
+		return screen->black_pixel;
+	}
+}
