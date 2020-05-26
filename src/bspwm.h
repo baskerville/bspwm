@@ -92,5 +92,6 @@ void register_events(void);
 void cleanup(void);
 bool check_connection (xcb_connection_t *dpy);
 void sig_handler(int sig);
+uint32_t get_color_pixel(const char *color);
 
 #endif
