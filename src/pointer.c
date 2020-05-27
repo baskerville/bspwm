@@ -36,6 +36,13 @@
 #include "window.h"
 #include "pointer.h"
 
+uint16_t num_lock;
+uint16_t caps_lock;
+uint16_t scroll_lock;
+
+bool grabbing;
+node_t *grabbed_node;
+
 void pointer_init(void)
 {
 	num_lock = modfield_from_keysym(XK_Num_Lock);

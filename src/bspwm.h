@@ -44,47 +44,49 @@
 #define MOTION_RECORDER_I   "motion_recorder"
 #define MOTION_RECORDER_IC  MOTION_RECORDER_I "\0" BSPWM_CLASS_NAME
 
-xcb_connection_t *dpy;
-int default_screen, screen_width, screen_height;
-uint32_t clients_count;
-xcb_screen_t *screen;
-xcb_window_t root;
-char config_path[MAXLEN];
-
-monitor_t *mon;
-monitor_t *mon_head;
-monitor_t *mon_tail;
-monitor_t *pri_mon;
-history_t *history_head;
-history_t *history_tail;
-history_t *history_needle;
-rule_t *rule_head;
-rule_t *rule_tail;
-stacking_list_t *stack_head;
-stacking_list_t *stack_tail;
-subscriber_list_t *subscribe_head;
-subscriber_list_t *subscribe_tail;
-pending_rule_t *pending_rule_head;
-pending_rule_t *pending_rule_tail;
-
-xcb_window_t meta_window;
-struct {
+typedef struct {
 	xcb_window_t id;
 	uint16_t sequence;
 	bool enabled;
-} motion_recorder;
-xcb_atom_t WM_STATE;
-xcb_atom_t WM_TAKE_FOCUS;
-xcb_atom_t WM_DELETE_WINDOW;
-int exit_status;
+} motion_recorder_t;
 
-bool auto_raise;
-bool sticky_still;
-bool hide_sticky;
-bool record_history;
-bool running;
-bool restart;
-bool randr;
+extern xcb_connection_t *dpy;
+extern int default_screen, screen_width, screen_height;
+extern uint32_t clients_count;
+extern xcb_screen_t *screen;
+extern xcb_window_t root;
+extern char config_path[MAXLEN];
+
+extern monitor_t *mon;
+extern monitor_t *mon_head;
+extern monitor_t *mon_tail;
+extern monitor_t *pri_mon;
+extern history_t *history_head;
+extern history_t *history_tail;
+extern history_t *history_needle;
+extern rule_t *rule_head;
+extern rule_t *rule_tail;
+extern stacking_list_t *stack_head;
+extern stacking_list_t *stack_tail;
+extern subscriber_list_t *subscribe_head;
+extern subscriber_list_t *subscribe_tail;
+extern pending_rule_t *pending_rule_head;
+extern pending_rule_t *pending_rule_tail;
+
+extern xcb_window_t meta_window;
+extern motion_recorder_t motion_recorder;
+extern xcb_atom_t WM_STATE;
+extern xcb_atom_t WM_TAKE_FOCUS;
+extern xcb_atom_t WM_DELETE_WINDOW;
+extern int exit_status;
+
+extern bool auto_raise;
+extern bool sticky_still;
+extern bool hide_sticky;
+extern bool record_history;
+extern bool running;
+extern bool restart;
+extern bool randr;
 
 void init(void);
 void setup(void);

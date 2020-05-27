@@ -51,6 +51,44 @@
 #include "query.h"
 #include "bspwm.h"
 
+xcb_connection_t *dpy;
+int default_screen, screen_width, screen_height;
+uint32_t clients_count;
+xcb_screen_t *screen;
+xcb_window_t root;
+char config_path[MAXLEN];
+
+monitor_t *mon;
+monitor_t *mon_head;
+monitor_t *mon_tail;
+monitor_t *pri_mon;
+history_t *history_head;
+history_t *history_tail;
+history_t *history_needle;
+rule_t *rule_head;
+rule_t *rule_tail;
+stacking_list_t *stack_head;
+stacking_list_t *stack_tail;
+subscriber_list_t *subscribe_head;
+subscriber_list_t *subscribe_tail;
+pending_rule_t *pending_rule_head;
+pending_rule_t *pending_rule_tail;
+
+xcb_window_t meta_window;
+motion_recorder_t motion_recorder;
+xcb_atom_t WM_STATE;
+xcb_atom_t WM_TAKE_FOCUS;
+xcb_atom_t WM_DELETE_WINDOW;
+int exit_status;
+
+bool auto_raise;
+bool sticky_still;
+bool hide_sticky;
+bool record_history;
+bool running;
+bool restart;
+bool randr;
+
 int main(int argc, char *argv[])
 {
 	fd_set descriptors;

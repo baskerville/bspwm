@@ -30,6 +30,50 @@
 
 extern char **environ;
 
+char external_rules_command[MAXLEN];
+char status_prefix[MAXLEN];
+
+char normal_border_color[MAXLEN];
+char active_border_color[MAXLEN];
+char focused_border_color[MAXLEN];
+char presel_feedback_color[MAXLEN];
+
+padding_t padding;
+padding_t monocle_padding;
+int window_gap;
+unsigned int border_width;
+double split_ratio;
+child_polarity_t initial_polarity;
+automatic_scheme_t automatic_scheme;
+bool removal_adjustment;
+tightness_t directional_focus_tightness;
+
+uint16_t pointer_modifier;
+uint32_t pointer_motion_interval;
+pointer_action_t pointer_actions[3];
+int8_t mapping_events_count;
+
+bool presel_feedback;
+bool borderless_monocle;
+bool gapless_monocle;
+bool single_monocle;
+
+bool focus_follows_pointer;
+bool pointer_follows_focus;
+bool pointer_follows_monitor;
+int8_t click_to_focus;
+bool swallow_first_click;
+bool ignore_ewmh_focus;
+bool ignore_ewmh_struts;
+state_transition_t ignore_ewmh_fullscreen;
+
+bool center_pseudo_tiled;
+bool honor_size_hints;
+
+bool remove_disabled_monitors;
+bool remove_unplugged_monitors;
+bool merge_overlapping_monitors;
+
 void run_config(void)
 {
 	if (fork() == 0) {

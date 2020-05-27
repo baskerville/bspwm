@@ -35,6 +35,8 @@
 #include "rule.h"
 #include "events.h"
 
+uint8_t randr_base;
+
 void handle_event(xcb_generic_event_t *evt)
 {
 	uint8_t resp_type = XCB_EVENT_RESPONSE_TYPE(evt);
