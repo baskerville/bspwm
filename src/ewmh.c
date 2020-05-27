@@ -31,6 +31,8 @@
 #include "tree.h"
 #include "ewmh.h"
 
+xcb_ewmh_connection_t *ewmh;
+
 void ewmh_init(void)
 {
 	ewmh = calloc(1, sizeof(xcb_ewmh_connection_t));

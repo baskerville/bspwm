@@ -29,12 +29,12 @@
 #define XK_Caps_Lock    0xffe5
 #define XK_Scroll_Lock  0xff14
 
-uint16_t num_lock;
-uint16_t caps_lock;
-uint16_t scroll_lock;
+extern uint16_t num_lock;
+extern uint16_t caps_lock;
+extern uint16_t scroll_lock;
 
-bool grabbing;
-node_t *grabbed_node;
+extern bool grabbing;
+extern node_t *grabbed_node;
 
 void pointer_init(void);
 void window_grab_buttons(xcb_window_t win);
