@@ -1,6 +1,6 @@
 The scripts present in this directory can be used to store and recreate layouts.
 
-Both scripts takes a JSON state (output of `bspc wm -d`) as input or argument.
+Both scripts take a JSON state (output of `bspc wm -d`) as input or argument.
 
 - `extract_canvas [state.json]` outputs a new JSON state where each leaf window is replaced by a receptacle.
 
