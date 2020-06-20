@@ -615,10 +615,10 @@ rule 'COMMANDS'
 Commands
 ^^^^^^^^
 
-*-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
+*-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)[:(<name>|*)]] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
 	Create a new rule.
 
-*-r*, *--remove* ^<n>|head|tail|(<class_name>|\*)[:(<instance_name>|*)]...::
+*-r*, *--remove* ^<n>|head|tail|(<class_name>|\*)[:(<instance_name>|*)[:(<name>|*)]]...::
 	Remove the given rules.
 
 *-l*, *--list*::
@@ -760,7 +760,7 @@ Global Settings
 	Block the fullscreen state transitions that originate from an EWMH request. The possible values are: *none*, *all*, or a comma separated list of the following values: *enter*, *exit*.
 
 'ignore_ewmh_struts'::
-	BIgnore strut hinting from clients requesting to reserve space (i.e. task bars).
+	Ignore strut hinting from clients requesting to reserve space (i.e. task bars).
 
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.

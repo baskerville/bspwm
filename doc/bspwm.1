@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 03/16/2020
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/26/2020
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.9-7-gda1dc1d
+.\"    Source: Bspwm 0.9.9-13-g2df413f
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "03/16/2020" "Bspwm 0\&.9\&.9\-7\-gda1dc1d" "Bspwm Manual"
+.TH "BSPWM" "1" "07/26/2020" "Bspwm 0\&.9\&.9\-13\-g2df413f" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1041,12 +1041,12 @@ rule \fICOMMANDS\fR
 \fBCommands\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)][:(<name>|*)] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
+\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)[:(<name>|\fB)]] [\fR\-o*|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
 .RS 4
 Create a new rule\&.
 .RE
 .PP
-\fB\-r\fR, \fB\-\-remove\fR ^<n>|head|tail|(<class_name>|*)[:(<instance_name>|*)][:(<name>|*)]\&...
+\fB\-r\fR, \fB\-\-remove\fR ^<n>|head|tail|(<class_name>|*)[:(<instance_name>|\fB)[:(<name>|\fR)]]\&...
 .RS 4
 Remove the given rules\&.
 .RE
@@ -1328,7 +1328,7 @@ Block the fullscreen state transitions that originate from an EWMH request\&. Th
 .PP
 \fIignore_ewmh_struts\fR
 .RS 4
-BIgnore strut hinting from clients requesting to reserve space (i\&.e\&. task bars)\&.
+Ignore strut hinting from clients requesting to reserve space (i\&.e\&. task bars)\&.
 .RE
 .PP
 \fIcenter_pseudo_tiled\fR
