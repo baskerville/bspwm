@@ -1834,7 +1834,9 @@ void set_floating(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	}
 
 	cancel_presel(m, d, n);
-	set_vacant(m, d, n, value);
+	if (!n->hidden) {
+		set_vacant(m, d, n, value);
+	}
 
 	if (!value && d->focus == n) {
 		neutralize_occluding_windows(m, d, n);
@@ -1852,7 +1854,9 @@ void set_fullscreen(monitor_t *m, desktop_t *d, node_t *n, bool value)
 	client_t *c = n->client;
 
 	cancel_presel(m, d, n);
-	set_vacant(m, d, n, value);
+	if (!n->hidden) {
+		set_vacant(m, d, n, value);
+	}
 
 	if (value) {
 		c->wm_flags |= WM_FLAG_FULLSCREEN;
