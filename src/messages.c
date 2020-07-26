@@ -1095,6 +1095,12 @@ void cmd_query(char **args, int num, FILE *rsp)
 		goto end;
 	}
 
+	if ((dom == DOMAIN_MONITOR && (desktop_sel != NULL || node_sel != NULL)) ||
+	    (dom == DOMAIN_DESKTOP && node_sel != NULL)) {
+		fail(rsp, "query -%c: Incompatible descriptor-free constraints.\n", dom == DOMAIN_MONITOR ? 'M' : 'D');
+		goto end;
+	}
+
 	if (dom == DOMAIN_NODE) {
 		if (query_node_ids(&ref, &trg, monitor_sel, desktop_sel, node_sel, rsp) < 1) {
 			fail(rsp, "");
