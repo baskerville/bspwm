@@ -534,7 +534,9 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 		return true;
 	}
 
+	sticky_still = false;
 	transfer_node(loc->monitor, loc->desktop, n, pm, pm->desk, pm->desk->focus, true);
+	sticky_still = true;
 	loc->monitor = pm;
 	loc->desktop = pm->desk;
 
