@@ -965,6 +965,8 @@ void cmd_query(char **args, int num, FILE *rsp)
 				num--, args++;
 				int ret;
 				coordinates_t tmp = ref;
+				ref.desktop = NULL;
+				ref.node = NULL;
 				if ((ret = monitor_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
 					handle_failure(ret, "query -M", *args, rsp);
 					goto end;
@@ -976,6 +978,7 @@ void cmd_query(char **args, int num, FILE *rsp)
 				num--, args++;
 				int ret;
 				coordinates_t tmp = ref;
+				ref.node = NULL;
 				if ((ret = desktop_from_desc(*args, &tmp, &ref)) != SELECTOR_OK) {
 					handle_failure(ret, "query -D", *args, rsp);
 					goto end;
