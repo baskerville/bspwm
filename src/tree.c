@@ -431,6 +431,8 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 	}
 
+	m->sticky_count += sticky_count(n);
+
 	propagate_flags_upward(m, d, n);
 
 	if (d->focus == NULL && is_focusable(n)) {
@@ -1239,6 +1241,10 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	node_t *p = n->parent;
 
+	if (m->sticky_count > 0) {
+		m->sticky_count -= sticky_count(n);
+	}
+
 	if (p == NULL) {
 		d->root = NULL;
 		d->focus = NULL;
@@ -1249,6 +1255,7 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 
 		history_remove(d, p, false);
 		cancel_presel(m, d, p);
+
 		if (p->sticky) {
 			m->sticky_count--;
 		}
@@ -1340,9 +1347,6 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	history_remove(d, n, true);
 	remove_stack_node(n);
 	cancel_presel_in(m, d, n);
-	if (m->sticky_count > 0) {
-		m->sticky_count -= sticky_count(n);
-	}
 	clients_count -= clients_count_in(n);
 	if (is_descendant(grabbed_node, n)) {
 		grabbed_node = NULL;
