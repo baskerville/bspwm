@@ -1016,6 +1016,10 @@ bool find_any_node_in(monitor_t *m, desktop_t *d, node_t *n, coordinates_t *ref,
 
 void find_first_ancestor(coordinates_t *ref, coordinates_t *dst, node_select_t *sel)
 {
+	if (ref->node == NULL) {
+		return;
+	}
+
 	coordinates_t loc = {ref->monitor, ref->desktop, ref->node};
 	while ((loc.node = loc.node->parent) != NULL) {
 		if (node_matches(&loc, ref, sel)) {
