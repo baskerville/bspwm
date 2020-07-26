@@ -242,15 +242,19 @@ void query_subscribers(FILE *rsp)
 	fprintf(rsp, "]");
 }
 
-int query_node_ids(coordinates_t *ref, coordinates_t *trg, node_select_t *sel, FILE *rsp)
+int query_node_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *mon_sel, desktop_select_t *desk_sel, node_select_t *sel, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (trg->monitor != NULL && m != trg->monitor) {
+		coordinates_t loc = {m, NULL, NULL};
+		if ((trg->monitor != NULL && m != trg->monitor) ||
+		    (mon_sel != NULL && !monitor_matches(&loc, ref, mon_sel))) {
 			continue;
 		}
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
-			if (trg->desktop != NULL && d != trg->desktop) {
+			coordinates_t loc = {m, d, NULL};
+			if ((trg->desktop != NULL && d != trg->desktop) ||
+			    (desk_sel != NULL && !desktop_matches(&loc, ref, desk_sel))) {
 				continue;
 			}
 			count += query_node_ids_in(d->root, d, m, ref, trg, sel, rsp);
@@ -277,11 +281,13 @@ int query_node_ids_in(node_t *n, desktop_t *d, monitor_t *m, coordinates_t *ref,
 	return count;
 }
 
-int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, desktop_select_t *sel, desktop_printer_t printer, FILE *rsp)
+int query_desktop_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *mon_sel, desktop_select_t *sel, desktop_printer_t printer, FILE *rsp)
 {
 	int count = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-		if (trg->monitor != NULL && m != trg->monitor) {
+		coordinates_t loc = {m, NULL, NULL};
+		if ((trg->monitor != NULL && m != trg->monitor) ||
+		    (mon_sel != NULL && !monitor_matches(&loc, ref, mon_sel))) {
 			continue;
 		}
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
@@ -303,7 +309,7 @@ int query_monitor_ids(coordinates_t *ref, coordinates_t *trg, monitor_select_t *
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		coordinates_t loc = {m, NULL, NULL};
 		if ((trg->monitor != NULL && m != trg->monitor) ||
-			(sel != NULL && !monitor_matches(&loc, ref, sel))) {
+		    (sel != NULL && !monitor_matches(&loc, ref, sel))) {
 			continue;
 		}
 		printer(m, rsp);

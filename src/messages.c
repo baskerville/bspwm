@@ -1096,11 +1096,11 @@ void cmd_query(char **args, int num, FILE *rsp)
 	}
 
 	if (dom == DOMAIN_NODE) {
-		if (query_node_ids(&ref, &trg, node_sel, rsp) < 1) {
+		if (query_node_ids(&ref, &trg, monitor_sel, desktop_sel, node_sel, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else if (dom == DOMAIN_DESKTOP) {
-		if (query_desktop_ids(&ref, &trg, desktop_sel, print_ids ? fprint_desktop_id : fprint_desktop_name, rsp) < 1) {
+		if (query_desktop_ids(&ref, &trg, monitor_sel, desktop_sel, print_ids ? fprint_desktop_id : fprint_desktop_name, rsp) < 1) {
 			fail(rsp, "");
 		}
 	} else if (dom == DOMAIN_MONITOR) {
