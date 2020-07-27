@@ -1,4 +1,3 @@
 #! /bin/sh
 
-[ -e "$PANEL_FIFO" ] && bspc subscribe report > "$PANEL_FIFO" &
 pgrep -x panel > /dev/null || panel &
