@@ -944,6 +944,13 @@ Each item has the form '<type><value>' where '<type>' is the first character of 
 'G(S?P?L?M?)'::
 	Active flags of the focused node of a focused desktop.
 
+Configuration file
+------------------
+
+Its default path is '$XDG_CONFIG_HOME/bspwm/bspwmrc'.
+
+An argument is passed to this script: the run level, a number which indicates whether it was launched after a restart (cf. 'wm -r') or not.
+
 Environment Variables
 ---------------------
 

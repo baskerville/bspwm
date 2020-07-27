@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 	fd_set descriptors;
 	char socket_path[MAXLEN];
 	char state_path[MAXLEN] = {0};
+	int run_level = 0;
 	config_path[0] = '\0';
 	int sock_fd = -1, cli_fd, dpy_fd, max_fd, n;
 	struct sockaddr_un sock_address;
@@ -116,9 +117,11 @@ int main(int argc, char *argv[])
 				snprintf(config_path, sizeof(config_path), "%s", optarg);
 				break;
 			case 's':
+				run_level |= 1;
 				snprintf(state_path, sizeof(state_path), "%s", optarg);
 				break;
 			case 'o':
+				run_level |= 2;
 				sock_fd = strtol(optarg, &end, 0);
 				if (*end != '\0') {
 					sock_fd = -1;
@@ -192,7 +195,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, sig_handler);
 	signal(SIGCHLD, sig_handler);
 	signal(SIGPIPE, SIG_IGN);
-	run_config();
+	run_config(run_level);
 	running = true;
 
 	while (running) {

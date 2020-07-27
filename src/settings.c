@@ -28,8 +28,6 @@
 #include "bspwm.h"
 #include "settings.h"
 
-extern char **environ;
-
 char external_rules_command[MAXLEN];
 char status_prefix[MAXLEN];
 
@@ -74,14 +72,16 @@ bool remove_disabled_monitors;
 bool remove_unplugged_monitors;
 bool merge_overlapping_monitors;
 
-void run_config(void)
+void run_config(int run_level)
 {
 	if (fork() == 0) {
 		if (dpy != NULL) {
 			close(xcb_get_file_descriptor(dpy));
 		}
 		setsid();
-		execle(config_path, config_path, (char *) NULL, environ);
+		char arg1[2];
+		snprintf(arg1, 2, "%i", run_level);
+		execl(config_path, config_path, arg1, (char *) NULL);
 		err("Couldn't execute the configuration file.\n");
 	}
 }
