@@ -851,7 +851,7 @@ node_t *next_node(node_t *n)
 		return first_extrema(n->second_child);
 	} else {
 		node_t *p = n;
-		while (p != NULL && is_second_child(p)) {
+		while (is_second_child(p)) {
 			p = p->parent;
 		}
 		if (is_first_child(p)) {
@@ -872,7 +872,7 @@ node_t *prev_node(node_t *n)
 		return second_extrema(n->first_child);
 	} else {
 		node_t *p = n;
-		while (p != NULL && is_first_child(p)) {
+		while (is_first_child(p)) {
 			p = p->parent;
 		}
 		if (is_second_child(p)) {
