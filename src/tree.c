@@ -841,6 +841,48 @@ node_t *first_focusable_leaf(node_t *n)
 	return NULL;
 }
 
+node_t *next_node(node_t *n)
+{
+	if (n == NULL) {
+		return NULL;
+	}
+
+	if (n->second_child != NULL) {
+		return first_extrema(n->second_child);
+	} else {
+		node_t *p = n;
+		while (p != NULL && is_second_child(p)) {
+			p = p->parent;
+		}
+		if (is_first_child(p)) {
+			return p->parent;
+		} else {
+			return NULL;
+		}
+	}
+}
+
+node_t *prev_node(node_t *n)
+{
+	if (n == NULL) {
+		return NULL;
+	}
+
+	if (n->first_child != NULL) {
+		return second_extrema(n->first_child);
+	} else {
+		node_t *p = n;
+		while (p != NULL && is_first_child(p)) {
+			p = p->parent;
+		}
+		if (is_second_child(p)) {
+			return p->parent;
+		} else {
+			return NULL;
+		}
+	}
+}
+
 node_t *next_leaf(node_t *n, node_t *r)
 {
 	if (n == NULL) {
@@ -1097,7 +1139,7 @@ void find_by_area(area_peak_t ap, coordinates_t *ref, coordinates_t *dst, node_s
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
 			for (node_t *f = first_extrema(d->root); f != NULL; f = next_leaf(f, d->root)) {
 				coordinates_t loc = {m, d, f};
-				if (f->client == NULL || f->vacant || !node_matches(&loc, ref, sel)) {
+				if (f->vacant || !node_matches(&loc, ref, sel)) {
 					continue;
 				}
 				unsigned int f_area = node_area(d, f);
@@ -1618,7 +1660,7 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;
 	node_t *n = ref->node;
-	n = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
+	n = (dir == CYCLE_PREV ? prev_node(n) : next_node(n));
 
 #define HANDLE_BOUNDARIES(m, d, n)  \
 	while (n == NULL) { \
@@ -1639,11 +1681,11 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 
 	while (n != ref->node) {
 		coordinates_t loc = {m, d, n};
-		if (n->client != NULL && !n->hidden && node_matches(&loc, ref, sel)) {
+		if (node_matches(&loc, ref, sel)) {
 			*dst = loc;
 			return true;
 		}
-		n = (dir == CYCLE_PREV ? prev_leaf(n, d->root) : next_leaf(n, d->root));
+		n = (dir == CYCLE_PREV ? prev_node(n) : next_node(n));
 		HANDLE_BOUNDARIES(m, d, n);
 		if (ref->node == NULL && d == ref->desktop) {
 			break;

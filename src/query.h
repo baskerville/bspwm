@@ -77,6 +77,7 @@ monitor_select_t make_monitor_select(void);
 int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
 int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst);
+bool locate_leaf(xcb_window_t win, coordinates_t *loc);
 bool locate_window(xcb_window_t win, coordinates_t *loc);
 bool locate_desktop(char *name, coordinates_t *loc);
 bool locate_monitor(char *name, coordinates_t *loc);

@@ -733,18 +733,32 @@ void query_pointer(xcb_window_t *win, xcb_point_t *pt)
 
 	if (qpr != NULL) {
 		if (win != NULL) {
-			*win = qpr->child;
-			xcb_point_t pt = {qpr->root_x, qpr->root_y};
-			for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
-				if (!s->node->client->shown || s->node->hidden) {
-					continue;
-				}
-				xcb_rectangle_t rect = get_rectangle(NULL, NULL, s->node);
-				if (is_inside(pt, rect)) {
-					if (s->node->id == qpr->child || is_presel_window(qpr->child)) {
-						*win = s->node->id;
+			if (qpr->child == XCB_NONE) {
+				xcb_point_t mpt = (xcb_point_t) {qpr->root_x, qpr->root_y};
+				monitor_t *m = monitor_from_point(mpt);
+				if (m != NULL) {
+					desktop_t *d = m->desk;
+					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+						if (n->client == NULL && is_inside(mpt, get_rectangle(m, d, n))) {
+							*win = n->id;
+							break;
+						}
 					}
-					break;
+				}
+			} else {
+				*win = qpr->child;
+				xcb_point_t pt = {qpr->root_x, qpr->root_y};
+				for (stacking_list_t *s = stack_tail; s != NULL; s = s->prev) {
+					if (!s->node->client->shown || s->node->hidden) {
+						continue;
+					}
+					xcb_rectangle_t rect = get_rectangle(NULL, NULL, s->node);
+					if (is_inside(pt, rect)) {
+						if (s->node->id == qpr->child || is_presel_window(qpr->child)) {
+							*win = s->node->id;
+						}
+						break;
+					}
 				}
 			}
 		}

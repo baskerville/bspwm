@@ -98,7 +98,7 @@ Descriptors
 	Selects the window in the given (spacial) direction relative to the reference node.
 
 'CYCLE_DIR'::
-	Selects the window in the given (cyclic) direction relative to the reference node.
+	Selects the node in the given (cyclic) direction relative to the reference node within a depth-first in-order traversal of the tree.
 
 'PATH'::
 	Selects the node at the given path.
@@ -125,13 +125,13 @@ focused::
 	Selects the currently focused node.
 
 pointed::
-	Selects the window under the pointer.
+	Selects the leaf under the pointer.
 
 biggest::
-	Selects the biggest window.
+	Selects the biggest leaf.
 
 smallest::
-	Selects the smallest window.
+	Selects the smallest leaf.
 
 <node_id>::
 	Selects the node with the given ID.

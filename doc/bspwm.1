@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 07/27/2020
+.\"      Date: 07/28/2020
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.9-25-g8f41d79
+.\"    Source: Bspwm 0.9.9-26-ga54ab70
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "07/27/2020" "Bspwm 0\&.9\&.9\-25\-g8f41d79" "Bspwm Manual"
+.TH "BSPWM" "1" "07/28/2020" "Bspwm 0\&.9\&.9\-26\-ga54ab70" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -135,7 +135,7 @@ Selects the window in the given (spacial) direction relative to the reference no
 .PP
 \fICYCLE_DIR\fR
 .RS 4
-Selects the window in the given (cyclic) direction relative to the reference node\&.
+Selects the node in the given (cyclic) direction relative to the reference node within a depth\-first in\-order traversal of the tree\&.
 .RE
 .PP
 \fIPATH\fR
@@ -180,17 +180,17 @@ Selects the currently focused node\&.
 .PP
 pointed
 .RS 4
-Selects the window under the pointer\&.
+Selects the leaf under the pointer\&.
 .RE
 .PP
 biggest
 .RS 4
-Selects the biggest window\&.
+Selects the biggest leaf\&.
 .RE
 .PP
 smallest
 .RS 4
-Selects the smallest window\&.
+Selects the smallest leaf\&.
 .RE
 .PP
 <node_id>

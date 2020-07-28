@@ -570,7 +570,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	} else if (streq("pointed", desc)) {
 		xcb_window_t win = XCB_NONE;
 		query_pointer(&win, NULL);
-		if (locate_window(win, dst) && node_matches(dst, ref, &sel)) {
+		if (locate_leaf(win, dst) && node_matches(dst, ref, &sel)) {
 			return SELECTOR_OK;
 		} else {
 			return SELECTOR_INVALID;
@@ -880,6 +880,23 @@ end:
 	}
 
 	return SELECTOR_OK;
+}
+
+bool locate_leaf(xcb_window_t win, coordinates_t *loc)
+{
+	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
+		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+			for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) {
+				if (n->id == win) {
+					loc->monitor = m;
+					loc->desktop = d;
+					loc->node = n;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 bool locate_window(xcb_window_t win, coordinates_t *loc)

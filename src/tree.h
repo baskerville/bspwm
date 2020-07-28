@@ -56,6 +56,8 @@ node_t *brother_tree(node_t *n);
 node_t *first_extrema(node_t *n);
 node_t *second_extrema(node_t *n);
 node_t *first_focusable_leaf(node_t *n);
+node_t *next_node(node_t *n);
+node_t *prev_node(node_t *n);
 node_t *next_leaf(node_t *n, node_t *r);
 node_t *prev_leaf(node_t *n, node_t *r);
 node_t *next_tiled_leaf(node_t *n, node_t *r);
