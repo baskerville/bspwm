@@ -356,7 +356,7 @@ typedef struct {
 	char monitor_desc[MAXLEN];
 	char desktop_desc[MAXLEN];
 	char node_desc[MAXLEN];
-	char split_dir[SMALEN];
+	direction_t *split_dir;
 	double split_ratio;
 	stack_layer_t *layer;
 	client_state_t *state;

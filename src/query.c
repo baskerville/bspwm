@@ -438,7 +438,7 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 	        csq->monitor_desc, csq->desktop_desc, csq->node_desc,
 	        csq->state == NULL ? "" : STATE_STR(*csq->state),
 	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
-	        csq->split_dir, csq->split_ratio,
+	        csq->split_dir == NULL ? "" : SPLIT_DIR_STR(*csq->split_dir), csq->split_ratio,
 	        ON_OFF_STR(csq->hidden), ON_OFF_STR(csq->sticky), ON_OFF_STR(csq->private),
 	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->marked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
 	        ON_OFF_STR(csq->manage), ON_OFF_STR(csq->focus), ON_OFF_STR(csq->border), rect_buf);
