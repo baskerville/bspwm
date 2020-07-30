@@ -124,11 +124,8 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		f = mon->desk->focus;
 	}
 
-	if (csq->split_dir[0] != '\0' && f != NULL) {
-		direction_t dir;
-		if (parse_direction(csq->split_dir, &dir)) {
-			presel_dir(m, d, f, dir);
-		}
+	if (csq->split_dir != NULL && f != NULL) {
+		presel_dir(m, d, f, *csq->split_dir);
 	}
 
 	if (csq->split_ratio != 0 && f != NULL) {

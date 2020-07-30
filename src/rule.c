@@ -192,6 +192,14 @@ event_queue_t *make_event_queue(xcb_generic_event_t *evt)
 }
 
 
+#define SET_CSQ_SPLIT_DIR(val) \
+	do { \
+		if (csq->split_dir == NULL) { \
+			csq->split_dir = calloc(1, sizeof(direction_t)); \
+		} \
+		*(csq->split_dir) = (val); \
+	} while (0)
+
 #define SET_CSQ_STATE(val) \
 	do { \
 		if (csq->state == NULL) { \
@@ -386,7 +394,10 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 	} else if (streq("node", key)) {
 		snprintf(csq->node_desc, sizeof(csq->node_desc), "%s", value);
 	} else if (streq("split_dir", key)) {
-		snprintf(csq->split_dir, sizeof(csq->split_dir), "%s", value);
+		direction_t dir;
+		if (parse_direction(value, &dir)) {
+			SET_CSQ_SPLIT_DIR(dir);
+		}
 	} else if (streq("state", key)) {
 		client_state_t cst;
 		if (parse_client_state(value, &cst)) {
