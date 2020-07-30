@@ -434,15 +434,25 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 		rect_buf = malloc(1);
 		*rect_buf = '\0';
 	}
+	char *monitor_desc = shell_escape(csq->monitor_desc);
+	char *desktop_desc = shell_escape(csq->desktop_desc);
+	char *node_desc = shell_escape(csq->node_desc);
+	char *split_dir = shell_escape(csq->split_dir);
 	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s marked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
-	        csq->monitor_desc, csq->desktop_desc, csq->node_desc,
+	        monitor_desc == NULL ? "" : monitor_desc,
+	        desktop_desc == NULL ? "" : desktop_desc,
+	        node_desc == NULL ? "" : node_desc,
 	        csq->state == NULL ? "" : STATE_STR(*csq->state),
 	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
-	        csq->split_dir, csq->split_ratio,
+	        split_dir == NULL ? "" : split_dir, csq->split_ratio,
 	        ON_OFF_STR(csq->hidden), ON_OFF_STR(csq->sticky), ON_OFF_STR(csq->private),
 	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->marked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
 	        ON_OFF_STR(csq->manage), ON_OFF_STR(csq->focus), ON_OFF_STR(csq->border), rect_buf);
 	free(rect_buf);
+	free(monitor_desc);
+	free(desktop_desc);
+	free(node_desc);
+	free(split_dir);
 }
 
 void print_rectangle(char **buf, xcb_rectangle_t *rect)
