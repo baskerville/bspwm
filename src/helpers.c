@@ -119,35 +119,6 @@ char *copy_string(char *str, size_t len)
 	return cpy;
 }
 
-char *shell_escape(char *s)
-{
-	char *e = malloc(2 * strlen(s) + 1);
-
-	if (e == NULL) {
-		return NULL;
-	}
-
-	int c = 0;
-	int j = 0;
-
-	for (size_t i = 0; i < strlen(s); i++) {
-		if (s[i] == '\\') {
-			c += 1;
-		} else {
-			if (s[i] == '$' || s[i] == '(' || s[i] == ')') {
-				if (c % 2 == 0) {
-					e[j++] = '\\';
-				}
-			}
-			c = 0;
-		}
-		e[j++] = s[i];
-	}
-
-	e[j] = '\0';
-	return e;
-}
-
 char *mktempfifo(const char *template)
 {
 	int tempfd;

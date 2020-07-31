@@ -79,7 +79,6 @@ void warn(char *fmt, ...);
 void err(char *fmt, ...);
 char *read_string(const char *file_path, size_t *tlen);
 char *copy_string(char *str, size_t len);
-char *shell_escape(char *s);
 char *mktempfifo(const char *template);
 int asprintf(char **buf, const char *fmt, ...);
 int vasprintf(char **buf, const char *fmt, va_list args);
