@@ -434,8 +434,30 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 		rect_buf = malloc(1);
 		*rect_buf = '\0';
 	}
+
+	coordinates_t ref = {mon, mon->desk, mon->desk->focus};
+	coordinates_t dst = {NULL, NULL, NULL};
+	monitor_t *monitor = monitor_from_desc(csq->monitor_desc, &ref, &dst) != SELECTOR_OK ? NULL : dst.monitor;
+	desktop_t *desktop = desktop_from_desc(csq->desktop_desc, &ref, &dst) != SELECTOR_OK ? NULL : dst.desktop;
+	node_t *node = node_from_desc(csq->node_desc, &ref, &dst) != SELECTOR_OK ? NULL : dst.node;
+
+#define PRINT_OBJECT_ID(name) \
+	char *name##_buf = NULL; \
+	if (name == NULL) { \
+		name##_buf = malloc(1); \
+		*name##_buf = '\0'; \
+	} else { \
+		asprintf(&name##_buf, "0x%08X", name->id); \
+	}
+	PRINT_OBJECT_ID(monitor)
+	PRINT_OBJECT_ID(desktop)
+	PRINT_OBJECT_ID(node)
+#undef PRINT_OBJECT_ID
+
 	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s marked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
-	        csq->monitor_desc, csq->desktop_desc, csq->node_desc,
+	        monitor_buf == NULL ? "" : monitor_buf,
+	        desktop_buf == NULL ? "" : desktop_buf,
+	        node_buf == NULL ? "" : node_buf,
 	        csq->state == NULL ? "" : STATE_STR(*csq->state),
 	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
 	        csq->split_dir == NULL ? "" : SPLIT_DIR_STR(*csq->split_dir), csq->split_ratio,
@@ -443,6 +465,9 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->marked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
 	        ON_OFF_STR(csq->manage), ON_OFF_STR(csq->focus), ON_OFF_STR(csq->border), rect_buf);
 	free(rect_buf);
+	free(monitor_buf);
+	free(desktop_buf);
+	free(node_buf);
 }
 
 void print_rectangle(char **buf, xcb_rectangle_t *rect)
