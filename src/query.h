@@ -69,6 +69,7 @@ void print_ignore_request(state_transition_t st, FILE *rsp);
 void print_modifier_mask(uint16_t m, FILE *rsp);
 void print_button_index(int8_t b, FILE *rsp);
 void print_pointer_action(pointer_action_t a, FILE *rsp);
+void resolve_rule_consequence(rule_consequence_t *csq);
 void print_rule_consequence(char **buf, rule_consequence_t *csq);
 void print_rectangle(char **buf, xcb_rectangle_t *rect);
 node_select_t make_node_select(void);
