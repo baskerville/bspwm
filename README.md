@@ -19,6 +19,8 @@ sxhkd  -------->  bspc  <------>  bspwm
 
 The default configuration file is `$XDG_CONFIG_HOME/bspwm/bspwmrc`: this is simply a shell script that calls *bspc*.
 
+An argument is passed to that script to indicate whether is was executed after a restart (`$1 -gt 0`) or not (`$1 -eq 0`).
+
 Keyboard and pointer bindings are defined with [sxhkd](https://github.com/baskerville/sxhkd).
 
 Example configuration files can be found in the [examples](examples) directory.
