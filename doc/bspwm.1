@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 08/01/2020
+.\"      Date: 08/02/2020
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.9-33-g1c795c3
+.\"    Source: Bspwm 0.9.9-34-ga9a2d00
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "08/01/2020" "Bspwm 0\&.9\&.9\-33\-g1c795c3" "Bspwm Manual"
+.TH "BSPWM" "1" "08/02/2020" "Bspwm 0\&.9\&.9\-34\-ga9a2d00" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -103,7 +103,7 @@ Select a node\&.
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|first_ancestor|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[\&.[!]focused][\&.[!]active][\&.[!]automatic][\&.[!]local]
-                                  [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER]
+                                  [\&.[!]leaf][\&.[!]window][\&.[!]STATE][\&.[!]FLAG][\&.[!]LAYER][\&.[!]SPLIT_TYPE]
                                   [\&.[!]same_class][\&.[!]descendant_of][\&.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
@@ -111,6 +111,8 @@ STATE := tiled|pseudo_tiled|floating|fullscreen
 FLAG := hidden|sticky|private|locked|marked|urgent
 
 LAYER := below|normal|above
+
+SPLIT_TYPE := horizontal|vertical
 
 PATH := @[DESKTOP_SEL:][[/]JUMP](/JUMP)*
 
@@ -274,16 +276,6 @@ Only consider nodes in the reference desktop\&.
 Only consider leaf nodes\&.
 .RE
 .PP
-[!]horizontal
-.RS 4
-Only consider nodes whose split type is horizontal\&.
-.RE
-.PP
-[!]vertical
-.RS 4
-Only consider nodes whose split type is vertical\&.
-.RE
-.PP
 [!]window
 .RS 4
 Only consider nodes that hold a window\&.
@@ -317,6 +309,11 @@ Only consider windows that have the given flag set\&.
 [!](below|normal|above)
 .RS 4
 Only consider windows in the given layer\&.
+.RE
+.PP
+[!](horizontal|vertical)
+.RS 4
+Only consider nodes with the given split type\&.
 .RE
 .RE
 .SS "Desktop"

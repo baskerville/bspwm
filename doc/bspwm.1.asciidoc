@@ -77,7 +77,7 @@ Select a node.
 NODE_SEL := [NODE_SEL#](DIR|CYCLE_DIR|PATH|any|first_ancestor|last|newest|
                         older|newer|focused|pointed|biggest|smallest|
                         <node_id>)[.[!]focused][.[!]active][.[!]automatic][.[!]local]
-                                  [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER]
+                                  [.[!]leaf][.[!]window][.[!]STATE][.[!]FLAG][.[!]LAYER][.[!]SPLIT_TYPE]
                                   [.[!]same_class][.[!]descendant_of][.[!]ancestor_of]
 
 STATE := tiled|pseudo_tiled|floating|fullscreen
@@ -85,6 +85,8 @@ STATE := tiled|pseudo_tiled|floating|fullscreen
 FLAG := hidden|sticky|private|locked|marked|urgent
 
 LAYER := below|normal|above
+
+SPLIT_TYPE := horizontal|vertical
 
 PATH := @[DESKTOP_SEL:][[/]JUMP](/JUMP)*
 
@@ -174,12 +176,6 @@ Modifiers
 [!]leaf::
 	Only consider leaf nodes.
 
-[!]horizontal::
-	Only consider nodes whose split type is horizontal.
-
-[!]vertical::
-	Only consider nodes whose split type is vertical.
-
 [!]window::
 	Only consider nodes that hold a window.
 
@@ -200,6 +196,10 @@ Modifiers
 
 [!](below|normal|above)::
 	Only consider windows in the given layer.
+
+[!](horizontal|vertical)::
+	Only consider nodes with the given split type.
+
 
 Desktop
 ~~~~~~~
