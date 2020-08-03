@@ -196,21 +196,6 @@ void adapt_geometry(xcb_rectangle_t *rs, xcb_rectangle_t *rd, node_t *n)
 	}
 }
 
-void focus_monitor(monitor_t *m)
-{
-	if (mon == m) {
-		return;
-	}
-
-	mon = m;
-
-	if (pointer_follows_monitor) {
-		center_pointer(m->rectangle);
-	}
-
-	put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%08X\n", m->id);
-}
-
 void add_monitor(monitor_t *m)
 {
 	xcb_rectangle_t r = m->rectangle;

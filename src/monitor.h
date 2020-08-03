@@ -35,7 +35,6 @@ monitor_t *find_monitor(uint32_t id);
 monitor_t *get_monitor_by_randr_id(xcb_randr_output_t id);
 void embrace_client(monitor_t *m, client_t *c);
 void adapt_geometry(xcb_rectangle_t *rs, xcb_rectangle_t *rd, node_t *n);
-void focus_monitor(monitor_t *m);
 void add_monitor(monitor_t *m);
 void unlink_monitor(monitor_t *m);
 void remove_monitor(monitor_t *m);

@@ -609,9 +609,36 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	draw_border(n, true, true);
 
-	focus_desktop(m, d);
+	bool desk_changed = (m != mon || m->desk != d);
+	bool has_input_focus = false;
+
+	if (mon != m) {
+		mon = m;
+
+		if (pointer_follows_monitor) {
+			center_pointer(m->rectangle);
+		}
+
+		put_status(SBSC_MASK_MONITOR_FOCUS, "monitor_focus 0x%08X\n", m->id);
+	}
+
+	if (m->desk != d) {
+		show_desktop(d);
+		set_input_focus(n);
+		has_input_focus = true;
+		hide_desktop(m->desk);
+		m->desk = d;
+	}
+
+	if (desk_changed) {
+		ewmh_update_current_desktop();
+		put_status(SBSC_MASK_DESKTOP_FOCUS, "desktop_focus 0x%08X 0x%08X\n", m->id, d->id);
+	}
 
 	d->focus = n;
+	if (!has_input_focus) {
+		set_input_focus(n);
+	}
 	ewmh_update_active_window();
 	history_add(m, d, n, true);
 
@@ -627,7 +654,6 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	put_status(SBSC_MASK_NODE_FOCUS, "node_focus 0x%08X 0x%08X 0x%08X\n", m->id, d->id, n->id);
 
 	stack(d, n, true);
-	set_input_focus(n);
 
 	if (pointer_follows_focus) {
 		center_pointer(get_rectangle(m, d, n));
