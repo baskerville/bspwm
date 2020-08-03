@@ -81,7 +81,9 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 
 	if (!ignore_ewmh_struts && ewmh_handle_struts(win)) {
 		for (monitor_t *m = mon_head; m != NULL; m = m->next) {
-			arrange(m, m->desk);
+			for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {
+				arrange(m, d);
+			}
 		}
 	}
 
