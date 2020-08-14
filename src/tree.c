@@ -1581,6 +1581,10 @@ bool swap_nodes(monitor_t *m1, desktop_t *d1, node_t *n1, monitor_t *m2, desktop
 
 	if (d1 != d2) {
 		arrange(m2, d2);
+	} else {
+		if (pointer_follows_focus && (n1_held_focus || n2_held_focus)) {
+			center_pointer(get_rectangle(m1, d1, d1->focus));
+		}
 	}
 
 	return true;
