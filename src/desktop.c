@@ -283,6 +283,7 @@ void add_desktop(monitor_t *m, desktop_t *d)
 	d->border_width = m->border_width;
 	d->window_gap = m->window_gap;
 	insert_desktop(m, d);
+	ewmh_update_current_desktop();
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();
 	ewmh_update_desktop_viewport();
