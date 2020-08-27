@@ -335,9 +335,55 @@ void client_message(xcb_generic_event_t *evt)
 		if (ewmh_locate_desktop(e->data.data32[0], &dloc)) {
 			transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus, false);
 		}
+	} else if (e->type == ewmh->_NET_WM_MOVERESIZE) {
+		wm_move_resize_node(e, loc);
 	} else if (e->type == ewmh->_NET_CLOSE_WINDOW) {
 		close_node(loc.node);
 	}
+}
+
+void wm_move_resize_node(xcb_client_message_event_t* e, coordinates_t loc) {
+	uint32_t direction = e->data.data32[2];
+
+	switch (direction) {
+		case _NET_WM_MOVERESIZE_MOVE:
+			wm_move_node(e, loc);
+			break;
+		case _NET_WM_MOVERESIZE_SIZE_TOPLEFT ... _NET_WM_MOVERESIZE_SIZE_LEFT:
+			wm_resize_node(e, loc);
+			break;
+		default:
+			break;
+  }
+}
+
+void wm_move_node(xcb_client_message_event_t* e, coordinates_t loc) {
+	// This logic comes from pointer.c function grab_pointer,
+	// we have that logic for the pac == ACTION_MOVE branches taken.
+
+	xcb_window_t win = e->window;
+	xcb_point_t pos;
+
+	query_pointer(&win, &pos);
+
+	xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(dpy, xcb_grab_pointer(dpy, 0, root, XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME), NULL);
+
+	if (reply == NULL || reply->status != XCB_GRAB_STATUS_SUCCESS) {
+		free(reply);
+		return;
+	}
+	free(reply);
+
+	put_status(SBSC_MASK_POINTER_ACTION, "pointer_action 0x%08X 0x%08X 0x%08X move begin\n", loc.monitor->id, loc.desktop->id, loc.node->id);
+
+	track_pointer(loc, ACTION_MOVE, pos);
+
+}
+
+void wm_resize_node(xcb_client_message_event_t* e, coordinates_t loc) {
+	// TODO resize window keeping the opposite 1 or 2 edges fixed
+	// Not sure if this is even possible as most tiling windows do not
+	// draw decorations with which the user could grab window edges.
 }
 
 void focus_in(xcb_generic_event_t *evt)

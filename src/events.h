@@ -41,6 +41,9 @@ void destroy_notify(xcb_generic_event_t *evt);
 void unmap_notify(xcb_generic_event_t *evt);
 void property_notify(xcb_generic_event_t *evt);
 void client_message(xcb_generic_event_t *evt);
+void wm_move_resize_node(xcb_client_message_event_t* e, coordinates_t loc);
+void wm_move_node(xcb_client_message_event_t* e, coordinates_t loc);
+void wm_resize_node(xcb_client_message_event_t* e, coordinates_t loc);
 void focus_in(xcb_generic_event_t *evt);
 void button_press(xcb_generic_event_t *evt);
 void enter_notify(xcb_generic_event_t *evt);
@@ -48,5 +51,20 @@ void motion_notify(xcb_generic_event_t *evt);
 void handle_state(monitor_t *m, desktop_t *d, node_t *n, xcb_atom_t state, unsigned int action);
 void mapping_notify(xcb_generic_event_t *evt);
 void process_error(xcb_generic_event_t *evt);
+
+// These are used when handling client movement requests;
+// they are directly from https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm46035372579808
+#define _NET_WM_MOVERESIZE_SIZE_TOPLEFT      0
+#define _NET_WM_MOVERESIZE_SIZE_TOP          1
+#define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT     2
+#define _NET_WM_MOVERESIZE_SIZE_RIGHT        3
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT  4
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOM       5
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT   6
+#define _NET_WM_MOVERESIZE_SIZE_LEFT         7
+#define _NET_WM_MOVERESIZE_MOVE              8   /* movement only */
+#define _NET_WM_MOVERESIZE_SIZE_KEYBOARD     9   /* size via keyboard */
+#define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
+#define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
 #endif
