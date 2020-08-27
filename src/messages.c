@@ -1711,6 +1711,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		SET_BOOL(center_pseudo_tiled)
 		SET_BOOL(honor_size_hints)
 		SET_BOOL(removal_adjustment)
+		SET_BOOL(allow_net_wm_moveresize)
 #undef SET_BOOL
 #define SET_MON_BOOL(s) \
 	} else if (streq(#s, name)) { \
@@ -1844,6 +1845,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 	GET_BOOL(remove_disabled_monitors)
 	GET_BOOL(remove_unplugged_monitors)
 	GET_BOOL(merge_overlapping_monitors)
+	GET_BOOL(allow_net_wm_moveresize)
 #undef GET_BOOL
 	} else {
 		fail(rsp, "config: Unknown setting: '%s'.\n", name);

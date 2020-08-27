@@ -72,6 +72,8 @@ bool remove_disabled_monitors;
 bool remove_unplugged_monitors;
 bool merge_overlapping_monitors;
 
+bool allow_net_wm_moveresize;
+
 void run_config(int run_level)
 {
 	if (fork() == 0) {
@@ -133,4 +135,6 @@ void load_settings(void)
 	remove_disabled_monitors = REMOVE_DISABLED_MONITORS;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;
 	merge_overlapping_monitors = MERGE_OVERLAPPING_MONITORS;
+
+	allow_net_wm_moveresize = ALLOW_NET_WM_MOVERESIZE;
 }

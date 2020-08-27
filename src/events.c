@@ -336,7 +336,9 @@ void client_message(xcb_generic_event_t *evt)
 			transfer_node(loc.monitor, loc.desktop, loc.node, dloc.monitor, dloc.desktop, dloc.desktop->focus, false);
 		}
 	} else if (e->type == ewmh->_NET_WM_MOVERESIZE) {
-		wm_move_resize_node(e, loc);
+		if (allow_net_wm_moveresize) {
+			wm_move_resize_node(e, loc);
+		}
 	} else if (e->type == ewmh->_NET_CLOSE_WINDOW) {
 		close_node(loc.node);
 	}
