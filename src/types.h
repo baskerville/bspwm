@@ -193,6 +193,10 @@ typedef struct {
 	option_bool_t active;
 	option_bool_t urgent;
 	option_bool_t local;
+	option_bool_t tiled;
+	option_bool_t monocle;
+	option_bool_t user_tiled;
+	option_bool_t user_monocle;
 } desktop_select_t;
 
 typedef struct {

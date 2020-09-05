@@ -211,6 +211,9 @@ DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
                               <desktop_id>|<desktop_name>)[.[!]focused][.[!]active]
                                                           [.[!]occupied][.[!]urgent][.[!]local]
+                                                          [.[!]LAYOUT][.[!]user_LAYOUT]
+
+LAYOUT := tiled|monocle
 ----
 
 Descriptors
@@ -263,6 +266,12 @@ Modifiers
 
 [!]local::
 	Only consider desktops inside the reference monitor.
+
+[!](tiled|monocle)::
+	Only consider desktops with the given layout.
+
+[!](user_tiled|user_monocle)::
+	Only consider desktops which have the given layout as userLayout.
 
 Monitor
 ~~~~~~~

@@ -503,6 +503,10 @@ bool parse_desktop_modifiers(char *desc, desktop_select_t *sel)
 		GET_MOD(active)
 		GET_MOD(urgent)
 		GET_MOD(local)
+		GET_MOD(tiled)
+		GET_MOD(monocle)
+		GET_MOD(user_tiled)
+		GET_MOD(user_monocle)
 		} else {
 			return false;
 		}
