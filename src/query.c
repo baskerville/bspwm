@@ -511,7 +511,11 @@ desktop_select_t make_desktop_select(void)
 		.focused = OPTION_NONE,
 		.active = OPTION_NONE,
 		.urgent = OPTION_NONE,
-		.local = OPTION_NONE
+		.local = OPTION_NONE,
+		.tiled = OPTION_NONE,
+		.monocle = OPTION_NONE,
+		.user_tiled = OPTION_NONE,
+		.user_monocle = OPTION_NONE
 	};
 	return sel;
 }
@@ -1239,6 +1243,28 @@ bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t *s
 	    : sel->local == OPTION_FALSE) {
 		return false;
 	}
+
+#define DLAYOUT(p, e) \
+	if (sel->p != OPTION_NONE && \
+	    loc->desktop->layout != e \
+	    ? sel->p == OPTION_TRUE \
+	    : sel->p == OPTION_FALSE) { \
+		return false; \
+	}
+	DLAYOUT(tiled, LAYOUT_TILED)
+	DLAYOUT(monocle, LAYOUT_MONOCLE)
+#undef DLAYOUT
+
+#define DUSERLAYOUT(p, e) \
+	if (sel->p != OPTION_NONE && \
+	    loc->desktop->user_layout != e \
+	    ? sel->p == OPTION_TRUE \
+	    : sel->p == OPTION_FALSE) { \
+		return false; \
+	}
+	DUSERLAYOUT(user_tiled, LAYOUT_TILED)
+	DUSERLAYOUT(user_monocle, LAYOUT_MONOCLE)
+#undef DUSERLAYOUT
 
 	return true;
 }

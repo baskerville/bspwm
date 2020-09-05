@@ -4,10 +4,10 @@
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
 .\"      Date: 09/08/2020
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.10-8-ge64864b
+.\"    Source: Bspwm 0.9.10-9-gab72002
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "09/08/2020" "Bspwm 0\&.9\&.10\-8\-ge64864b" "Bspwm Manual"
+.TH "BSPWM" "1" "09/08/2020" "Bspwm 0\&.9\&.10\-9\-gab72002" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -328,6 +328,9 @@ DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                               [MONITOR_SEL:](focused|^<n>)|
                               <desktop_id>|<desktop_name>)[\&.[!]focused][\&.[!]active]
                                                           [\&.[!]occupied][\&.[!]urgent][\&.[!]local]
+                                                          [\&.[!]LAYOUT][\&.[!]user_LAYOUT]
+
+LAYOUT := tiled|monocle
 .fi
 .if n \{\
 .RE
@@ -425,6 +428,16 @@ Only consider urgent desktops\&.
 [!]local
 .RS 4
 Only consider desktops inside the reference monitor\&.
+.RE
+.PP
+[!](tiled|monocle)
+.RS 4
+Only consider desktops with the given layout\&.
+.RE
+.PP
+[!](user_tiled|user_monocle)
+.RS 4
+Only consider desktops which have the given layout as userLayout\&.
 .RE
 .RE
 .SS "Monitor"
