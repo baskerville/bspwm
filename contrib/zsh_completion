@@ -295,7 +295,7 @@ _bspc() {
 					compset -P '*:'
 					bspc rule -l 2> /dev/null |
 						while IFS=" " read target settings ;do
-							by_index+="^$((index++)):${target} ${settings}"
+							by_index+="^$((++index)):${target} ${settings}"
 							if [ -n "$IPREFIX" ] ;then
 								completions+="${target#*:}"
 							else
