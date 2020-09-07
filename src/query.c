@@ -951,6 +951,8 @@ bool locate_desktop(char *name, coordinates_t *loc)
 			}
 		}
 	}
+	loc->monitor = NULL;
+	loc->desktop = NULL;
 	return false;
 }
 
@@ -962,6 +964,7 @@ bool locate_monitor(char *name, coordinates_t *loc)
 			return true;
 		}
 	}
+	loc->monitor = NULL;
 	return false;
 }
 
