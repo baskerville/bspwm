@@ -527,6 +527,8 @@ monitor_select_t make_monitor_select(void)
 
 int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	dst->node = NULL;
+
 	coordinates_t ref_copy = *ref;
 	ref = &ref_copy;
 	char *desc_copy = copy_string(desc, strlen(desc));
@@ -564,8 +566,6 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		free(desc_copy);
 		return SELECTOR_BAD_MODIFIERS;
 	}
-
-	dst->node = NULL;
 
 	direction_t dir;
 	cycle_dir_t cyc;
@@ -676,6 +676,8 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 
 int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	dst->desktop = NULL;
+
 	if (*desc == '%') {
 		locate_desktop(desc + 1, dst);
 		goto end;
@@ -707,8 +709,6 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		free(desc_copy);
 		return SELECTOR_BAD_MODIFIERS;
 	}
-
-	dst->desktop = NULL;
 
 	cycle_dir_t cyc;
 	history_dir_t hdi;
@@ -794,6 +794,8 @@ end:
 
 int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 {
+	dst->monitor = NULL;
+
 	if (*desc == '%') {
 		locate_monitor(desc + 1, dst);
 		goto end;
@@ -824,8 +826,6 @@ int monitor_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		free(desc_copy);
 		return SELECTOR_BAD_MODIFIERS;
 	}
-
-	dst->monitor = NULL;
 
 	direction_t dir;
 	cycle_dir_t cyc;
