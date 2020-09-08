@@ -348,10 +348,10 @@ void wm_move_resize_node(xcb_client_message_event_t* e, coordinates_t loc) {
 	uint32_t direction = e->data.data32[2];
 
 	switch (direction) {
-		case _NET_WM_MOVERESIZE_MOVE:
+		case XCB_EWMH_WM_MOVERESIZE_MOVE:
 			wm_move_node(e, loc);
 			break;
-		case _NET_WM_MOVERESIZE_SIZE_TOPLEFT ... _NET_WM_MOVERESIZE_SIZE_LEFT:
+		case XCB_EWMH_WM_MOVERESIZE_SIZE_TOPLEFT ... XCB_EWMH_WM_MOVERESIZE_SIZE_LEFT:
 			wm_resize_node(e, loc);
 			break;
 		default:
