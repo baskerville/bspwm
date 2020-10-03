@@ -486,7 +486,7 @@ bool check_connection (xcb_connection_t *dpy)
 		warn("The server closed the connection: ");
 		switch (xerr) {
 			case XCB_CONN_ERROR:
-				warn("socket, pipe or stream error.\n");
+				warn("XCB connection error (socket, pipe or stream error).\n");
 				break;
 			case XCB_CONN_CLOSED_EXT_NOTSUPPORTED:
 				warn("unsupported extension.\n");
