@@ -86,9 +86,6 @@ int main(int argc, char *argv[])
 	};
 
 	while (poll(fds, 2, -1) > 0) {
-		if (fds[1].revents & (POLLERR | POLLHUP)) {
-			break;
-		}
 		if (fds[0].revents & POLLIN) {
 			if ((nb = recv(sock_fd, rsp, sizeof(rsp)-1, 0)) > 0) {
 				rsp[nb] = '\0';
@@ -103,6 +100,9 @@ int main(int argc, char *argv[])
 			} else {
 				break;
 			}
+		}
+		if (fds[1].revents & (POLLERR | POLLHUP)) {
+			break;
 		}
 	}
 
