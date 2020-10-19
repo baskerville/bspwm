@@ -28,6 +28,7 @@
 #define SOCKET_PATH_TPL  "/tmp/bspwm%s_%i_%i-socket"
 #define SOCKET_ENV_VAR   "BSPWM_SOCKET"
 
-#define FAILURE_MESSAGE  "\x07"
+#define FAILURE_MESSAGE   "\x07"
+#define SUBSCRIBE_MESSAGE "\x08"
 
 #endif

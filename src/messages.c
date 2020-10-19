@@ -1332,6 +1332,9 @@ void cmd_subscribe(char **args, int num, FILE *rsp)
 			perror("subscribe: fopen");
 			goto free_fifo_path;
 		}
+	} else {
+		fprintf(rsp, SUBSCRIBE_MESSAGE);
+		fflush(rsp);
 	}
 
 	subscriber_list_t *sb = make_subscriber(stream, fifo_path, field, count);

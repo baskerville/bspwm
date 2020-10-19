@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 	}
 
 	int ret = EXIT_SUCCESS, nb;
+	bool subwait = false;
 
 	struct pollfd fds[] = {
 		{sock_fd, POLLIN, 0},
@@ -93,6 +94,8 @@ int main(int argc, char *argv[])
 					ret = EXIT_FAILURE;
 					fprintf(stderr, "%s", rsp + 1);
 					fflush(stderr);
+				} else if (rsp[0] == SUBSCRIBE_MESSAGE[0]) {
+					subwait = true;
 				} else {
 					fprintf(stdout, "%s", rsp);
 					fflush(stdout);
@@ -101,7 +104,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 		}
-		if (fds[1].revents & (POLLERR | POLLHUP)) {
+		if (subwait && fds[1].revents & (POLLERR | POLLHUP)) {
 			break;
 		}
 	}
