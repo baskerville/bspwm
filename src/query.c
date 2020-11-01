@@ -542,7 +542,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	char *path = strrchr(desc, '@');
 	char *colon = strrchr(desc, ':');
 
-	/* Discard hashes inside a DESKTOP_SEL */
+	/* Discard hashes inside a DESKTOP_SEL, e.g. `newest#@prev#older:/1/2` */
 	if (hash != NULL && colon != NULL && path != NULL &&
 	    path < hash && hash < colon) {
 		if (path > desc && *(path - 1) == '#') {
@@ -562,6 +562,11 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 			free(desc_copy);
 			return ret;
 		}
+	}
+
+	/* Discard colons within references, e.g. `@next.occupied:/#any.descendant_of.window` */
+	if (colon != NULL && hash != NULL && colon < hash) {
+		colon = NULL;
 	}
 
 	node_select_t sel = make_node_select();
