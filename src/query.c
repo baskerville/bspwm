@@ -542,7 +542,7 @@ int node_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 	char *path = strrchr(desc, '@');
 	char *colon = strrchr(desc, ':');
 
-	/* Discard hashes inside a DESKTOP_SEL, e.g. `newest#@prev#older:/1/2` */
+	/* Adjust or discard hashes inside a DESKTOP_SEL, e.g. `newest#@prev#older:/1/2` */
 	if (hash != NULL && colon != NULL && path != NULL &&
 	    path < hash && hash < colon) {
 		if (path > desc && *(path - 1) == '#') {
