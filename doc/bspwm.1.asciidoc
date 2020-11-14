@@ -734,7 +734,7 @@ Global Settings
 	Set the desktop layout to *monocle* if there's only one tiled window in the tree.
 
 'borderless_singleton'::
-	Remove borders of the only window on the only monitor in any layout.
+	Remove borders of the only window on the only monitor regardless its layout.
 
 'pointer_motion_interval'::
 	The minimum interval, in milliseconds, between two motion notify events.
