@@ -55,6 +55,7 @@ bool presel_feedback;
 bool borderless_monocle;
 bool gapless_monocle;
 bool single_monocle;
+bool borderless_singleton;
 
 bool focus_follows_pointer;
 bool pointer_follows_focus;
@@ -117,6 +118,7 @@ void load_settings(void)
 	borderless_monocle = BORDERLESS_MONOCLE;
 	gapless_monocle = GAPLESS_MONOCLE;
 	single_monocle = SINGLE_MONOCLE;
+	borderless_singleton = BORDERLESS_SINGLETON;
 
 	focus_follows_pointer = FOCUS_FOLLOWS_POINTER;
 	pointer_follows_focus = POINTER_FOLLOWS_FOCUS;
