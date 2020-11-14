@@ -316,7 +316,7 @@ _bspc() {
 			;;
 		(config)
 			local -a {look,behaviour,input}{_bool,}
-			look_bool=(presel_feedback borderless_monocle gapless_monocle)
+			look_bool=(presel_feedback borderless_monocle gapless_monocle borderless_singleton)
 			look=({normal,active,focused}_border_color {top,right,bottom,left}_padding {top,right,bottom,left}_monocle_padding presel_feedback_color border_width window_gap)
 			behaviour_bool=(single_monocle removal_adjustment ignore_ewmh_focus ignore_ewmh_struts center_pseudo_tiled honor_size_hints remove_disabled_monitors remove_unplugged_monitors merge_overlapping_monitors)
 			behaviour=(mapping_events_count ignore_ewmh_fullscreen external_rules_command split_ratio automatic_scheme initial_polarity directional_focus_tightness status_prefix)
