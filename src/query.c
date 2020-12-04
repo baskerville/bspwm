@@ -1150,17 +1150,19 @@ bool node_matches(coordinates_t *loc, coordinates_t *ref, node_select_t *sel)
 		return false;
 	}
 
-	if (loc->node->client == NULL &&
-		(sel->same_class != OPTION_NONE ||
-		 sel->tiled != OPTION_NONE ||
-		 sel->pseudo_tiled != OPTION_NONE ||
-		 sel->floating != OPTION_NONE ||
-		 sel->fullscreen != OPTION_NONE ||
-		 sel->below != OPTION_NONE ||
-		 sel->normal != OPTION_NONE ||
-		 sel->above != OPTION_NONE ||
-		 sel->urgent != OPTION_NONE)) {
-		return false;
+	if (loc->node->client == NULL) {
+		if (sel->same_class == OPTION_TRUE ||
+		    sel->tiled == OPTION_TRUE ||
+		    sel->pseudo_tiled == OPTION_TRUE ||
+		    sel->floating == OPTION_TRUE ||
+		    sel->fullscreen == OPTION_TRUE ||
+		    sel->below == OPTION_TRUE ||
+		    sel->normal == OPTION_TRUE ||
+		    sel->above == OPTION_TRUE ||
+		    sel->urgent == OPTION_TRUE) {
+			return false;
+		}
+		return true;
 	}
 
 	if (ref->node != NULL && ref->node->client != NULL &&
