@@ -570,10 +570,10 @@ The optional selectors are references.
 Options
 ^^^^^^^
 
-*-m*,*--monitor* ['MONITOR_SEL']::
-*-d*,*--desktop* ['DESKTOP_SEL']::
-*-n*, *--node* ['NODE_SEL']::
-	Constrain matches to the selected monitor, desktop or node. The descriptor can be omitted for '-M', '-D' and '-N'.
+*-m*,*--monitor* ['MONITOR_SEL'|'MONITOR_MODIFIERS']::
+*-d*,*--desktop* ['DESKTOP_SEL'|'DESKTOP_MODIFIERS']::
+*-n*, *--node* ['NODE_SEL'|'NODE_MODIFIERS']::
+	Constrain matches to the selected monitors, desktops or nodes.
 
 *--names*::
 	Print names instead of IDs. Can only be used with '-M' and '-D'.
