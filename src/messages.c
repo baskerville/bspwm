@@ -595,6 +595,9 @@ void cmd_node(char **args, int num, FILE *rsp)
 
 	if (changed) {
 		arrange(trg.monitor, trg.desktop);
+		if (pointer_follows_focus) {
+			center_pointer(get_rectangle(mon, mon->desk, mon->desk->focus));
+		}
 	}
 }
 
