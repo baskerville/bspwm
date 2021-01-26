@@ -632,16 +632,12 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 /* taken from awesomeWM */
 void apply_size_hints(client_t *c, uint16_t *width, uint16_t *height)
 {
-	if (!honor_size_hints) {
+	if (!honor_size_hints || c->state == STATE_FULLSCREEN || c->state == STATE_TILED) {
 		return;
 	}
 
 	int32_t minw = 0, minh = 0;
 	int32_t basew = 0, baseh = 0, real_basew = 0, real_baseh = 0;
-
-	if (c->state == STATE_FULLSCREEN) {
-		return;
-	}
 
 	if (c->size_hints.flags & XCB_ICCCM_SIZE_HINT_BASE_SIZE) {
 		basew = c->size_hints.base_width;
