@@ -452,8 +452,8 @@ Commands
 *-C*, *--circulate* forward|backward::
 	Circulate the windows of the tree rooted at the selected node.
 
-*-t*, *--state* [~](tiled|pseudo_tiled|floating|fullscreen)::
-	Set the state of the selected window. If *~* is present and the current state matches the given state, then the argument is interpreted as the last state.
+*-t*, *--state* \~|\[~]'STATE'::
+	Set the state of the selected window. If *\~* is present and the current state matches 'STATE', then the argument is interpreted as its last state. If the argument is just *~* with 'STATE' omitted, then the state of the selected window is set to its last state.
 
 *-g*, *--flag* hidden|sticky|private|locked|marked[=on|off]::
 	Set or toggle the given flag for the selected node.
