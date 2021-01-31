@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 12/24/2020
+.\"      Date: 05/28/2021
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.10-18-g87822b5
+.\"    Source: Bspwm 0.9.10-25-g94c3c69
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "12/24/2020" "Bspwm 0\&.9\&.10\-18\-g87822b5" "Bspwm Manual"
+.TH "BSPWM" "1" "05/28/2021" "Bspwm 0\&.9\&.10\-25\-g94c3c69" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -738,11 +738,16 @@ Adjust the split ratios of the tree rooted at the selected node so that all wind
 Circulate the windows of the tree rooted at the selected node\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-state\fR [~](tiled|pseudo_tiled|floating|fullscreen)
+\fB\-t\fR, \fB\-\-state\fR ~|[~]\fISTATE\fR
 .RS 4
 Set the state of the selected window\&. If
 \fB~\fR
-is present and the current state matches the given state, then the argument is interpreted as the last state\&.
+is present and the current state matches
+\fISTATE\fR, then the argument is interpreted as its last state\&. If the argument is just
+\fB~\fR
+with
+\fISTATE\fR
+omitted, then the state of the selected window is set to its last state\&.
 .RE
 .PP
 \fB\-g\fR, \fB\-\-flag\fR hidden|sticky|private|locked|marked[=on|off]
