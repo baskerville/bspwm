@@ -441,7 +441,7 @@ Commands
 	Rotate the tree rooted at the selected node.
 
 *-F*, *--flip* 'horizontal|vertical'::
-	Flip the the tree rooted at selected node.
+	Flip the tree rooted at selected node.
 
 *-E*, *--equalize*::
 	Reset the split ratios of the tree rooted at the selected node to their default value.
