@@ -711,6 +711,7 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		coordinates_t tmp = {mon, mon->desk, NULL};
 		if ((ret = desktop_from_desc(desc, &tmp, ref)) == SELECTOR_OK) {
 			desc = hash + 1;
+			colon = strrchr(desc, ':');
 		} else {
 			free(desc_copy);
 			return ret;
