@@ -1630,6 +1630,11 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
+	} else if (streq("pointer_motion_interval_resize", name)) {
+		if (sscanf(value, "%u", &pointer_motion_interval_resize) != 1) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
 	           streq("pointer_action3", name)) {
@@ -1814,6 +1819,8 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		print_button_index(click_to_focus, rsp);
 	} else if (streq("pointer_motion_interval", name)) {
 		fprintf(rsp, "%u", pointer_motion_interval);
+	} else if (streq("pointer_motion_interval_resize", name)) {
+		fprintf(rsp, "%u", pointer_motion_interval_resize);
 	} else if (streq("pointer_action1", name) ||
 	           streq("pointer_action2", name) ||
 	           streq("pointer_action3", name)) {

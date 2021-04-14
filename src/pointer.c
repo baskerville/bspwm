@@ -280,7 +280,8 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 		if (resp_type == XCB_MOTION_NOTIFY) {
 			xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t*) evt;
 			uint32_t dtime = e->time - last_motion_time;
-			if (dtime < pointer_motion_interval) {
+			if ((pac == ACTION_MOVE && dtime < pointer_motion_interval) ||
+				((pac == ACTION_RESIZE_SIDE || pac == ACTION_RESIZE_CORNER) && dtime < pointer_motion_interval_resize)) {
 				continue;
 			}
 			last_motion_time = e->time;
