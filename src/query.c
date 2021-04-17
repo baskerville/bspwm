@@ -717,6 +717,11 @@ int desktop_from_desc(char *desc, coordinates_t *ref, coordinates_t *dst)
 		}
 	}
 
+	/* Discard colons within references, e.g. `DisplayPort-1:focused#next.local` */
+	if (colon != NULL && hash != NULL && colon < hash) {
+		colon = NULL;
+	}
+
 	desktop_select_t sel = make_desktop_select();
 
 	if (!parse_desktop_modifiers(colon != NULL ? colon : desc, &sel)) {
