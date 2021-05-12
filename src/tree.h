@@ -114,6 +114,7 @@ void set_urgent(monitor_t *m, desktop_t *d, node_t *n, bool value);
 xcb_rectangle_t get_rectangle(monitor_t *m, desktop_t *d, node_t *n);
 void listen_enter_notify(node_t *n, bool enable);
 void regenerate_ids_in(node_t *n);
+void set_split_type(node_t *n, split_type_t t);
 
 unsigned int sticky_count(node_t *n);
 unsigned int private_count(node_t *n);

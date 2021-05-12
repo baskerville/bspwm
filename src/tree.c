@@ -2240,6 +2240,11 @@ void regenerate_ids_in(node_t *n)
 	regenerate_ids_in(n->second_child);
 }
 
+void set_split_type(node_t *n, split_type_t t)
+{
+	n->split_type = t;
+}
+
 #define DEF_FLAG_COUNT(flag) \
 	unsigned int flag##_count(node_t *n) \
 	{ \

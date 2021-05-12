@@ -541,6 +541,24 @@ void cmd_node(char **args, int num, FILE *rsp)
 			}
 			balance_tree(trg.node);
 			changed = true;
+		} else if (streq("-S", *args) || streq("--set-split", *args)) {
+			num--, args++;
+			if (num < 1) {
+				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
+			split_type_t t;
+			if (parse_split_type(*args, &t)) {
+				set_split_type(trg.node, t);
+			} else {
+				fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+				break;
+			}
+			changed = true;
 		} else if (streq("-C", *args) || streq("--circulate", *args)) {
 			num--, args++;
 			if (num < 1) {
