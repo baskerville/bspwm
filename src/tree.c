@@ -1183,7 +1183,8 @@ void find_by_area(area_peak_t ap, coordinates_t *ref, coordinates_t *dst, node_s
 void rotate_tree(node_t *n, int deg)
 {
 	rotate_tree_rec(n, deg);
-	rebuild_constraints(n);
+	rebuild_constraints_from_leaves(n);
+	rebuild_constraints_towards_root(n);
 }
 
 void rotate_tree_rec(node_t *n, int deg)
@@ -1966,15 +1967,30 @@ void neutralize_occluding_windows(monitor_t *m, desktop_t *d, node_t *n)
 	}
 }
 
-void rebuild_constraints(node_t *n)
+void rebuild_constraints_from_leaves(node_t *n)
 {
 	if (n == NULL || is_leaf(n)) {
 		return;
 	} else {
-		rebuild_constraints(n->first_child);
-		rebuild_constraints(n->second_child);
+		rebuild_constraints_from_leaves(n->first_child);
+		rebuild_constraints_from_leaves(n->second_child);
 		update_constraints(n);
 	}
+}
+
+void rebuild_constraints_towards_root(node_t *n)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	node_t *p = n->parent;
+
+	if (p != NULL) {
+		update_constraints(p);
+	}
+
+	rebuild_constraints_towards_root(p);
 }
 
 void update_constraints(node_t *n)
