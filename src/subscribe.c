@@ -174,7 +174,7 @@ void prune_dead_subscribers(void)
 		// stream is not writable anymore (i.e. it has been closed because the
 		// process associated to this subscriber no longer exists) then write()
 		// will return -1.
-		if (write(fileno(sb->stream), 0, 0) == -1) {
+		if (write(fileno(sb->stream), NULL, 0) == -1) {
 			remove_subscriber(sb);
 		}
 		sb = next;
