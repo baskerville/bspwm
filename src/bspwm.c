@@ -30,6 +30,7 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -190,6 +191,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	fcntl(sock_fd, F_SETFD, FD_CLOEXEC | fcntl(sock_fd, F_GETFD));
+
 	signal(SIGINT, sig_handler);
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
@@ -282,6 +285,8 @@ int main(int argc, char *argv[])
 	xcb_disconnect(dpy);
 
 	if (restart) {
+		fcntl(sock_fd, F_SETFD, ~FD_CLOEXEC & fcntl(sock_fd, F_GETFD));
+
 		int rargc;
 		for (rargc = 0; rargc < argc; rargc++) {
 			if (streq("-s", argv[rargc])) {
