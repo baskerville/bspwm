@@ -172,8 +172,10 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 
 	bool d_was_active = (d == ms->desk);
 	bool ms_was_focused = (ms == mon);
+	unsigned int sc = (ms->sticky_count > 0 && d_was_active) ? sticky_count(d->root) : 0;
 
 	unlink_desktop(ms, d);
+	ms->sticky_count -= sc;
 
 	if ((!follow || !d_was_active || !ms_was_focused) && md->desk != NULL) {
 		hide_sticky = false;
@@ -182,6 +184,7 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 	}
 
 	insert_desktop(md, d);
+	md->sticky_count += sc;
 	history_remove(d, NULL, false);
 
 	if (d_was_active) {
@@ -201,15 +204,11 @@ bool transfer_desktop(monitor_t *ms, monitor_t *md, desktop_t *d, bool follow)
 		}
 	}
 
-	if (ms->sticky_count > 0 && d_was_active) {
+	if (sc > 0) {
 		if (ms->desk != NULL) {
 			transfer_sticky_nodes(md, d, ms, ms->desk, d->root);
-		} else {
-			ms->sticky_count -= sticky_count(d->root);
-			md->sticky_count += sticky_count(d->root);
-			if (d != md->desk) {
-				transfer_sticky_nodes(md, d, md, md->desk, d->root);
-			}
+		} else if (d != md->desk) {
+			transfer_sticky_nodes(md, d, md, md->desk, d->root);
 		}
 	}
 

@@ -433,8 +433,6 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		}
 	}
 
-	m->sticky_count += sticky_count(n);
-
 	propagate_flags_upward(m, d, n);
 
 	if (d->focus == NULL && is_focusable(n)) {
@@ -1312,10 +1310,6 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 
 	node_t *p = n->parent;
 
-	if (m->sticky_count > 0) {
-		m->sticky_count -= sticky_count(n);
-	}
-
 	if (p == NULL) {
 		d->root = NULL;
 		d->focus = NULL;
@@ -1418,6 +1412,9 @@ void remove_node(monitor_t *m, desktop_t *d, node_t *n)
 	history_remove(d, n, true);
 	remove_stack_node(n);
 	cancel_presel_in(m, d, n);
+	if (m->sticky_count > 0 && d == m->desk) {
+		m->sticky_count -= sticky_count(n);
+	}
 	clients_count -= clients_count_in(n);
 	if (is_descendant(grabbed_node, n)) {
 		grabbed_node = NULL;
@@ -1599,7 +1596,8 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		return false;
 	}
 
-	if (sticky_still && ms->sticky_count > 0 && sticky_count(ns) > 0 && dd != md->desk) {
+	unsigned int sc = (ms->sticky_count > 0 && ds == ms->desk) ? sticky_count(ns) : 0;
+	if (sticky_still && sc > 0 && dd != md->desk) {
 		return false;
 	}
 
@@ -1621,6 +1619,8 @@ bool transfer_node(monitor_t *ms, desktop_t *ds, node_t *ns, monitor_t *md, desk
 		if (ns->client == NULL || monitor_from_client(ns->client) != md) {
 			adapt_geometry(&ms->rectangle, &md->rectangle, ns);
 		}
+		ms->sticky_count -= sc;
+		md->sticky_count += sc;
 	}
 
 	if (ds != dd) {
