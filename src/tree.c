@@ -1393,13 +1393,15 @@ void kill_node(monitor_t *m, desktop_t *d, node_t *n)
 		return;
 	}
 
-	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
-		if (f->client != NULL) {
-			xcb_kill_client(dpy, f->id);
+	if (IS_RECEPTACLE(n)) {
+		remove_node(m, d, n);
+	} else {
+		for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+			if (f->client != NULL) {
+				xcb_kill_client(dpy, f->id);
+			}
 		}
 	}
-
-	remove_node(m, d, n);
 }
 
 void remove_node(monitor_t *m, desktop_t *d, node_t *n)
