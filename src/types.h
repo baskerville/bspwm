@@ -256,6 +256,7 @@ struct node_t {
 	bool private;
 	bool locked;
 	bool marked;
+	node_t *placeholder_for;
 	node_t *first_child;
 	node_t *second_child;
 	node_t *parent;
