@@ -190,6 +190,17 @@ presel_t *make_presel(void)
 	return p;
 }
 
+void set_type(node_t *n, split_type_t typ)
+{
+	if (n == NULL) {
+		return;
+	}
+
+	n->split_type = typ;
+	update_constraints(n);
+	rebuild_constraints_towards_root(n);
+}
+
 void set_ratio(node_t *n, double rat)
 {
 	if (n == NULL) {

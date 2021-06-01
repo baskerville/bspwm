@@ -178,6 +178,7 @@ _bspc() {
 				'*'{-n,--to-node}'[Transplant the selected node to the given node]:node selector:_bspc_selector -- node'\
 				'*'{-o,--presel-ratio}'[Set the splitting ratio of the preselection area]:preselect ratio: ( )'\
 				'*'{-p,--presel-dir}'[Preselect the splitting area of the selected node or cancel the preselection]: :_bspc_prefix -- "~" preselect presel_dir'\
+				'*'{-y,--type}'[Set the splitting type of the selected node]: :(horizontal vertical)'\
 				'*'{-r,--ratio}'[Set the splitting ratio of the selected node (0 < ratio < 1)]: :( )'\
 				'*'{-R,--rotate}'[Rotate the tree rooted at the selected node]:angle:(90 270 180)'\
 				'*'{-s,--swap}'[Swap the selected node with the given node]:node selector:_bspc_selector -- node'\

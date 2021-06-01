@@ -458,6 +458,24 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "node %s: Invalid resize handle argument: '%s'.\n", *(args - 1), *args);
 				break;
 			}
+		} else if (streq("-y", *args) || streq("--type", *args)) {
+			num--, args++;
+			if (num < 1) {
+				fail(rsp, "node %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			if (trg.node == NULL) {
+				fail(rsp, "");
+				break;
+			}
+			split_type_t typ;
+			if (parse_split_type(*args, &typ)) {
+				set_type(trg.node, typ);
+				changed = true;
+			} else {
+				fail(rsp, "");
+				break;
+			}
 		} else if (streq("-r", *args) || streq("--ratio", *args)) {
 			num--, args++;
 			if (num < 1) {
