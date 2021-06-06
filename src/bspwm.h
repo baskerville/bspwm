@@ -78,6 +78,7 @@ extern motion_recorder_t motion_recorder;
 extern xcb_atom_t WM_STATE;
 extern xcb_atom_t WM_TAKE_FOCUS;
 extern xcb_atom_t WM_DELETE_WINDOW;
+extern xcb_atom_t WM_CHANGE_STATE;
 extern int exit_status;
 
 extern bool auto_raise;
