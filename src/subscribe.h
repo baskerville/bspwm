@@ -58,7 +58,7 @@ typedef enum {
 	SBSC_MASK_POINTER_ACTION = 1 << 27,
 	SBSC_MASK_MONITOR = (1 << 7) - (1 << 1),
 	SBSC_MASK_DESKTOP = (1 << 15) - (1 << 7),
-	SBSC_MASK_NODE = (1 << 28) - (1 << 15),
+	SBSC_MASK_NODE = (1 << 27) - (1 << 15),
 	SBSC_MASK_ALL = (1 << 28) - 1
 } subscriber_mask_t;
 
