@@ -39,24 +39,23 @@ bspwm: $(WM_OBJ)
 bspc: $(CLI_OBJ)
 
 install:
-	mkdir -p "$(DESTDIR)$(BINPREFIX)"
-	cp -pf bspwm "$(DESTDIR)$(BINPREFIX)"
-	cp -pf bspc "$(DESTDIR)$(BINPREFIX)"
-	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -p doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	cp -Pp doc/bspc.1 "$(DESTDIR)$(MANPREFIX)"/man1
-	mkdir -p "$(DESTDIR)$(BASHCPL)"
-	cp -p contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
-	mkdir -p "$(DESTDIR)$(FISHCPL)"
-	cp -p contrib/fish_completion "$(DESTDIR)$(FISHCPL)"/bspc.fish
-	mkdir -p "$(DESTDIR)$(ZSHCPL)"
-	cp -p contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
-	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
-	cp -p $(MD_DOCS) "$(DESTDIR)$(DOCPREFIX)"
-	mkdir -p "$(DESTDIR)$(DOCPREFIX)"/examples
-	cp -pr examples/* "$(DESTDIR)$(DOCPREFIX)"/examples
-	mkdir -p "$(DESTDIR)$(XSESSIONS)"
-	cp -p contrib/freedesktop/bspwm.desktop "$(DESTDIR)$(XSESSIONS)"
+	install -d "$(DESTDIR)$(BINPREFIX)"
+	install -p bspwm "$(DESTDIR)$(BINPREFIX)"
+	install -p bspc "$(DESTDIR)$(BINPREFIX)"
+	install -d "$(DESTDIR)$(MANPREFIX)"/man1
+	install -p -m 644 doc/bspwm.1 "$(DESTDIR)$(MANPREFIX)"/man1
+	(cd "$(DESTDIR)$(MANPREFIX)"/man1; ln -s bspwm.1 bspc.1)
+	install -d "$(DESTDIR)$(BASHCPL)"
+	install -p -m 644 contrib/bash_completion "$(DESTDIR)$(BASHCPL)"/bspc
+	install -d "$(DESTDIR)$(FISHCPL)"
+	install -p -m 644 contrib/fish_completion "$(DESTDIR)$(FISHCPL)"/bspc.fish
+	install -d "$(DESTDIR)$(ZSHCPL)"
+	install -p -m 644 contrib/zsh_completion "$(DESTDIR)$(ZSHCPL)"/_bspc
+	install -d "$(DESTDIR)$(DOCPREFIX)"
+	install -p -m 644 $(MD_DOCS) "$(DESTDIR)$(DOCPREFIX)"
+	find examples -type f -print0 | xargs -0 -I% install -D -p % "$(DESTDIR)$(DOCPREFIX)"/%
+	install -d "$(DESTDIR)$(XSESSIONS)"
+	install -p -m 644 contrib/freedesktop/bspwm.desktop "$(DESTDIR)$(XSESSIONS)"
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)"/bspwm
