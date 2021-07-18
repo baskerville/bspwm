@@ -329,6 +329,8 @@ void client_message(xcb_generic_event_t *evt)
 		    loc.node == mon->desk->focus) {
 			return;
 		}
+		set_hidden(loc.monitor, loc.desktop, loc.node, false);
+		arrange(loc.monitor, loc.desktop);
 		focus_node(loc.monitor, loc.desktop, loc.node);
 	} else if (e->type == ewmh->_NET_WM_DESKTOP) {
 		coordinates_t dloc;
@@ -337,6 +339,10 @@ void client_message(xcb_generic_event_t *evt)
 		}
 	} else if (e->type == ewmh->_NET_CLOSE_WINDOW) {
 		close_node(loc.node);
+	} else if (e->type == WM_CHANGE_STATE) {
+		set_hidden(loc.monitor, loc.desktop, loc.node,
+			e->data.data32[0] == XCB_ICCCM_WM_STATE_ICONIC || e->data.data32[0] == XCB_ICCCM_WM_STATE_WITHDRAWN);
+		arrange(loc.monitor, loc.desktop);
 	}
 }
 
