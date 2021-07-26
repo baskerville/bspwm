@@ -468,14 +468,17 @@ void cmd_node(char **args, int num, FILE *rsp)
 				fail(rsp, "");
 				break;
 			}
+			cycle_dir_t cyc;
 			split_type_t typ;
-			if (parse_split_type(*args, &typ)) {
+			if (parse_cycle_direction(*args, &cyc)) {
+				set_type(trg.node, (trg.node->split_type + 1) % 2);
+			} else if (parse_split_type(*args, &typ)) {
 				set_type(trg.node, typ);
-				changed = true;
 			} else {
 				fail(rsp, "");
 				break;
 			}
+			changed = true;
 		} else if (streq("-r", *args) || streq("--ratio", *args)) {
 			num--, args++;
 			if (num < 1) {
