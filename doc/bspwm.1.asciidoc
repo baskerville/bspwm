@@ -434,8 +434,8 @@ Commands
 *-z*, *--resize* top|left|bottom|right|top_left|top_right|bottom_right|bottom_left 'dx' 'dy'::
 	Resize the selected window by moving the given handle by 'dx' pixels horizontally and 'dy' pixels vertically.
 
-*-y*, *--type* 'horizontal|vertical'::
-	Set the splitting type of the selected node.
+*-y*, *--type* 'CYCLE_DIR'|horizontal|vertical::
+	Set or cycle the splitting type of the selected node.
 
 *-r*, *--ratio* 'RATIO'|(+|-)('PIXELS'|'FRACTION')::
 	Set the splitting ratio of the selected node (0 < 'RATIO' < 1).
