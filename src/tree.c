@@ -488,7 +488,7 @@ bool activate_node(monitor_t *m, desktop_t *d, node_t *n)
 		if (d->focus != n) {
 			for (node_t *f = first_extrema(d->focus); f != NULL; f = next_leaf(f, d->focus)) {
 				if (f->client != NULL && !is_descendant(f, n)) {
-					window_draw_border(f->id, get_border_color(false, (m == mon)));
+					window_draw_border(f->id, get_border_color(f->marked, false, (m == mon)));
 				}
 			}
 		}
@@ -614,7 +614,7 @@ bool focus_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (d->focus != n) {
 		for (node_t *f = first_extrema(d->focus); f != NULL; f = next_leaf(f, d->focus)) {
 			if (f->client != NULL && !is_descendant(f, n)) {
-				window_draw_border(f->id, get_border_color(false, true));
+				window_draw_border(f->id, get_border_color(f->marked, false, true));
 			}
 		}
 	}

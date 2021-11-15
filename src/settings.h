@@ -36,6 +36,7 @@
 #define ACTIVE_BORDER_COLOR           "#474645"
 #define FOCUSED_BORDER_COLOR          "#817f7f"
 #define PRESEL_FEEDBACK_COLOR         "#f4d775"
+#define MARKED_BORDER_COLOR           "#DD0840"
 
 #define PADDING              {0, 0, 0, 0}
 #define MONOCLE_PADDING      {0, 0, 0, 0}
@@ -75,6 +76,7 @@ extern char normal_border_color[MAXLEN];
 extern char active_border_color[MAXLEN];
 extern char focused_border_color[MAXLEN];
 extern char presel_feedback_color[MAXLEN];
+extern char marked_border_color[MAXLEN];
 
 extern padding_t padding;
 extern padding_t monocle_padding;

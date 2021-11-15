@@ -35,6 +35,7 @@ char normal_border_color[MAXLEN];
 char active_border_color[MAXLEN];
 char focused_border_color[MAXLEN];
 char presel_feedback_color[MAXLEN];
+char marked_border_color[MAXLEN];
 
 padding_t padding;
 padding_t monocle_padding;
@@ -96,6 +97,7 @@ void load_settings(void)
 	snprintf(active_border_color, sizeof(active_border_color), "%s", ACTIVE_BORDER_COLOR);
 	snprintf(focused_border_color, sizeof(focused_border_color), "%s", FOCUSED_BORDER_COLOR);
 	snprintf(presel_feedback_color, sizeof(presel_feedback_color), "%s", PRESEL_FEEDBACK_COLOR);
+	snprintf(marked_border_color, sizeof(marked_border_color), "%s", MARKED_BORDER_COLOR);
 
 	padding = (padding_t) PADDING;
 	monocle_padding = (padding_t) MONOCLE_PADDING;
