@@ -1,10 +1,23 @@
+.POSIX:
+
 VERCMD  ?= git describe --tags 2> /dev/null
 VERSION := $(shell $(VERCMD) || cat VERSION)
+CC       = cc
 
-CPPFLAGS += -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\"
-CFLAGS   += -std=c99 -pedantic -Wall -Wextra -DJSMN_STRICT
-LDFLAGS  ?=
-LDLIBS    = $(LDFLAGS) -lm -lxcb -lxcb-util -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama -lxcb-shape
+# Linux
+X11INC = -I/usr/include
+X11LIB = -L/usr/lib
+
+# OpenBSD
+# X11INC = -I/usr/X11R6/include
+# X11LIB = -L/usr/X11R6/lib
+
+# FreeBSD
+# X11INC = -I/usr/local/incldue
+# X11LIB = -L/usr/local/lib
+
+CFLAGS  = $(X11INC) -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\" -std=c99 -pedantic -Wall -Wextra -DJSMN_STRICT
+LDFLAGS = $(X11LIB) -lm -lxcb -lxcb-util -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama -lxcb-shape
 
 PREFIX    ?= /usr/local
 BINPREFIX ?= $(PREFIX)/bin
@@ -35,8 +48,10 @@ include Sourcedeps
 $(WM_OBJ) $(CLI_OBJ): Makefile
 
 bspwm: $(WM_OBJ)
+	$(CC) $(LDFLAGS) $(WM_OBJ) -o $@
 
 bspc: $(CLI_OBJ)
+	$(CC) $(LDFLAGS) $(CLI_OBJ) -o $@
 
 install:
 	mkdir -p "$(DESTDIR)$(BINPREFIX)"
