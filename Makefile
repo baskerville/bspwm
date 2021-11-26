@@ -1,8 +1,5 @@
-.POSIX:
-
 VERCMD  ?= git describe --tags 2> /dev/null
 VERSION := $(shell $(VERCMD) || cat VERSION)
-CC       = cc
 
 # Linux
 X11INC = -I/usr/include
