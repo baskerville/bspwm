@@ -1,10 +1,22 @@
 VERCMD  ?= git describe --tags 2> /dev/null
 VERSION := $(shell $(VERCMD) || cat VERSION)
+UNAME_S := $(shell uname -s)
 
-CPPFLAGS += -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\"
+ifeq ($(UNAME_S), OpenBSD)
+	X11INC = -I/usr/X11R6/include
+	X11LIB = -L/usr/X11R6/lib
+else ifeq ($(UNAME_S), FreeBSD)
+	X11INC = -I/usr/local/include
+	X11LIB = -L/usr/local/lib
+else
+	X11INC = -I/usr/include
+	X11LIB = -L/usr/lib
+endif
+
+CPPFLAGS += -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\" $(X11INC)
 CFLAGS   += -std=c99 -pedantic -Wall -Wextra -DJSMN_STRICT
 LDFLAGS  ?=
-LDLIBS    = $(LDFLAGS) -lm -lxcb -lxcb-util -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama -lxcb-shape
+LDLIBS    = $(LDFLAGS) $(X11LIB) -lm -lxcb -lxcb-util -lxcb-keysyms -lxcb-icccm -lxcb-ewmh -lxcb-randr -lxcb-xinerama -lxcb-shape
 
 PREFIX    ?= /usr/local
 BINPREFIX ?= $(PREFIX)/bin
