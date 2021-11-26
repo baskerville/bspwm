@@ -6,7 +6,7 @@ ifeq ($(UNAME_S), OpenBSD)
 	X11INC = -I/usr/X11R6/include
 	X11LIB = -L/usr/X11R6/lib
 else ifeq ($(UNAME_S), FreeBSD)
-	X11INC = -I/usr/local/incldue
+	X11INC = -I/usr/local/include
 	X11LIB = -L/usr/local/lib
 else
 	X11INC = -I/usr/include
