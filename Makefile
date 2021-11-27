@@ -3,14 +3,14 @@ VERSION := $(shell $(VERCMD) || cat VERSION)
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S), OpenBSD)
-	X11INC = -I/usr/X11R6/include
-	X11LIB = -L/usr/X11R6/lib
+	X11INC ?= -I/usr/X11R6/include
+	X11LIB ?= -L/usr/X11R6/lib
 else ifeq ($(UNAME_S), FreeBSD)
-	X11INC = -I/usr/local/include
-	X11LIB = -L/usr/local/lib
+	X11INC ?= -I/usr/local/include
+	X11LIB ?= -L/usr/local/lib
 else
-	X11INC = -I/usr/include
-	X11LIB = -L/usr/lib
+	X11INC ?= -I/usr/include
+	X11LIB ?= -L/usr/lib
 endif
 
 CPPFLAGS += -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\" $(X11INC)
