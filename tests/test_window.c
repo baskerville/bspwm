@@ -57,8 +57,27 @@ void render_text(xcb_connection_t *dpy, xcb_window_t win, int16_t x, int16_t y)
 }
 
 
-int main(void)
+int main(int argc, char **argv)
 {
+	char *wm_class = TEST_WINDOW_IC;
+	size_t wm_class_len = sizeof (TEST_WINDOW_IC);
+	bool will_free_wm_class = false;
+
+	// test instance-name class-name
+	if (argc > 2) {
+		will_free_wm_class = true;
+		size_t len1 = strlen(argv[1]);
+		size_t len2 = strlen(argv[2]);
+		// 2 null terminators
+		wm_class_len = len1 + len2 + 2;
+		wm_class = malloc(wm_class_len);
+
+		if (!wm_class) return 1;
+
+		memcpy(wm_class, argv[1], len1 + 1);
+		memcpy(wm_class + len1 + 1, argv[2], len2 + 1);
+	}
+
 	xcb_connection_t *dpy = xcb_connect(NULL, NULL);
 	if (dpy == NULL) {
 		fprintf(stderr, "Can't connect to X.\n");
@@ -82,7 +101,7 @@ int main(void)
 	uint32_t values[] = {0xff111111, XCB_EVENT_MASK_EXPOSURE};
 	xcb_create_window(dpy, XCB_COPY_FROM_PARENT, win, screen->root, 0, 0, 320, 240, 2,
 	                  XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT, mask, values);
-	xcb_icccm_set_wm_class(dpy, win, sizeof(TEST_WINDOW_IC), TEST_WINDOW_IC);
+	xcb_icccm_set_wm_class(dpy, win, wm_class_len, wm_class);
 	xcb_map_window(dpy, win);
 	xcb_flush(dpy);
 	xcb_generic_event_t *evt;
@@ -101,5 +120,10 @@ int main(void)
 	}
 	xcb_destroy_window(dpy, win);
 	xcb_disconnect(dpy);
+
+	if (will_free_wm_class) {
+		free(wm_class);
+	}
+
 	return EXIT_SUCCESS;
 }
