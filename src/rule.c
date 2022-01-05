@@ -81,9 +81,17 @@ void remove_rule(rule_t *r)
 void remove_rule_by_cause(char *cause)
 {
 	rule_t *r = rule_head;
-	char *class_name = strtok(cause, COL_TOK);
-	char *instance_name = strtok(NULL, COL_TOK);
-	char *name = strtok(NULL, COL_TOK);
+	struct tokenize_state state;
+	char *class_name = tokenize_with_escape(&state, cause, COL_TOK[0]);
+	char *instance_name = tokenize_with_escape(&state, NULL, COL_TOK[0]);
+	char *name = tokenize_with_escape(&state, NULL, COL_TOK[0]);
+	if (!class_name || !instance_name || !name) {
+		free(class_name);
+		free(instance_name);
+		free(name);
+		return;
+	}
+
 	while (r != NULL) {
 		rule_t *next = r->next;
 		if ((class_name != NULL && (streq(class_name, MATCH_ANY) || streq(r->class_name, class_name))) &&
@@ -93,6 +101,9 @@ void remove_rule_by_cause(char *cause)
 		}
 		r = next;
 	}
+	free(class_name);
+	free(instance_name);
+	free(name);
 }
 
 bool remove_rule_by_index(int idx)
