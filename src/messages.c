@@ -1173,12 +1173,27 @@ void cmd_rule(char **args, int num, FILE *rsp)
 				return;
 			}
 			rule_t *rule = make_rule();
-			char *class_name = strtok(*args, COL_TOK);
-			char *instance_name = strtok(NULL, COL_TOK);
-			char *name = strtok(NULL, COL_TOK);
+
+			struct tokenize_state state;
+			char *class_name = tokenize_with_escape(&state, args[0], COL_TOK[0]);
+			char *instance_name = tokenize_with_escape(&state, NULL, COL_TOK[0]);
+			char *name = tokenize_with_escape(&state, NULL, COL_TOK[0]);
+			if (!class_name || !instance_name || !name) {
+				free(class_name);
+				free(instance_name);
+				free(name);
+				return;
+			}
+
 			snprintf(rule->class_name, sizeof(rule->class_name), "%s", class_name);
-			snprintf(rule->instance_name, sizeof(rule->instance_name), "%s", instance_name==NULL?MATCH_ANY:instance_name);
-			snprintf(rule->name, sizeof(rule->name), "%s", name==NULL?MATCH_ANY:name);
+			snprintf(rule->instance_name, sizeof(rule->instance_name), "%s",
+					 instance_name[0] == '\0' ? MATCH_ANY : instance_name);
+			snprintf(rule->name, sizeof(rule->name), "%s",
+					 name[0] == '\0' ? MATCH_ANY : name);
+			free(class_name);
+			free(instance_name);
+			free(name);
+
 			num--, args++;
 			size_t i = 0;
 			while (num > 0) {

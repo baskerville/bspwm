@@ -12,9 +12,9 @@ bspc node -g sticky
 
 sticky_node_id=$(bspc query -N -n)
 
-bspc rule -a Test:test -o desktop="test-sticky-b"
+bspc rule -a 'Blah\:\:2:test' -o desktop="test-sticky-b"
 
-window add
+CLASS_NAME=Blah::2 INSTANCE_NAME=test window add
 
 bspc desktop -f "test-sticky-b"
 

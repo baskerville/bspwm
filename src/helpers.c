@@ -193,3 +193,39 @@ bool is_hex_color(const char *color)
 	}
 	return true;
 }
+
+char *tokenize_with_escape(struct tokenize_state *state, const char *s, char sep)
+{
+	if (s != NULL) {
+		// first call
+		state->in_escape = false;
+		state->pos = s;
+		state->len = strlen(s) + 1;
+	}
+
+	char *outp = calloc(state->len, 1);
+	char *ret = outp;
+	if (!outp) return NULL;
+
+	char cur;
+	while (*state->pos) {
+		--state->len;
+		cur = *state->pos++;
+
+		if (state->in_escape) {
+			*outp++ = cur;
+			state->in_escape = false;
+			continue;
+		}
+
+		if (cur == '\\') {
+			state->in_escape = !state->in_escape;
+		} else if (cur == sep) {
+			return ret;
+		} else {
+			*outp++ = cur;
+		}
+	}
+
+	return ret;
+}

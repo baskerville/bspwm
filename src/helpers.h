@@ -84,4 +84,11 @@ int asprintf(char **buf, const char *fmt, ...);
 int vasprintf(char **buf, const char *fmt, va_list args);
 bool is_hex_color(const char *color);
 
+struct tokenize_state {
+	bool in_escape;
+	const char *pos;
+	size_t len;
+};
+char *tokenize_with_escape(struct tokenize_state *state, const char *s, char sep);
+
 #endif

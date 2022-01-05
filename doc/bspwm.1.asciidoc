@@ -633,7 +633,8 @@ Commands
 ^^^^^^^^
 
 *-a*, *--add* (<class_name>|\*)[:(<instance_name>|\*)[:(<name>|\*)]] [*-o*|*--one-shot*] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]::
-	Create a new rule.
+	Create a new rule. Colons in the 'instance_name', 'class_name', or 'name'
+	fields can be escaped with a backslash.
 
 *-r*, *--remove* ^<n>|head|tail|(<class_name>|\*)[:(<instance_name>|\*)[:(<name>|*)]]...::
 	Remove the given rules.

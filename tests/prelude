@@ -10,9 +10,12 @@ window() {
 	local iter=${2:-1}
 	local delta=${3:-1}
 	local event=node_${action}
+	local instance_name=${INSTANCE_NAME:-test}
+	local class_name=${CLASS_NAME:-Test}
+
 	local cmd
 	case "$action" in
-		add) cmd=./test_window ;;
+		add) cmd="./test_window $instance_name $class_name" ;;
 		remove) cmd="bspc node -c" ;;
 	esac
 	while [ $iter -gt 0 ] ; do
