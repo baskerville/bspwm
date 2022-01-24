@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <xcb/xinerama.h>
+#include <xcb/xcb_aux.h>
 #include "types.h"
 #include "desktop.h"
 #include "monitor.h"
@@ -248,6 +249,7 @@ int main(int argc, char *argv[])
 			}
 
 			if (FD_ISSET(dpy_fd, &descriptors)) {
+				xcb_aux_sync(dpy);
 				while ((event = xcb_poll_for_event(dpy)) != NULL) {
 					handle_event(event);
 					free(event);
