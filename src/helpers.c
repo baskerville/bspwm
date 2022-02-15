@@ -193,3 +193,18 @@ bool is_hex_color(const char *color)
 	}
 	return true;
 }
+
+void print_string_as_json(FILE *f, char *str)
+{
+	fputc('"', f);
+	for (char *ptr = str; *ptr != '\0'; ++ptr) {
+		if (*ptr == '\x7f' || (*ptr >= '\x01' && *ptr <= '\x1f')) {
+			fprintf(f, "\\u%04x", *ptr);
+			continue;
+		}
+		if (*ptr == '"' || *ptr == '\\')
+			fputc('\\', f);
+		fputc(*ptr, f);
+	}
+	fputc('"', f);
+}
