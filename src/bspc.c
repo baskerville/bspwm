@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -46,10 +47,6 @@ int main(int argc, char *argv[])
 	sock_address.sun_family = AF_UNIX;
 	char *sp;
 
-	if ((sock_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		err("Failed to create the socket.\n");
-	}
-
 	sp = getenv(SOCKET_ENV_VAR);
 	if (sp != NULL) {
 		snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), "%s", sp);
@@ -60,6 +57,15 @@ int main(int argc, char *argv[])
 			snprintf(sock_address.sun_path, sizeof(sock_address.sun_path), SOCKET_PATH_TPL, host, dn, sn);
 		}
 		free(host);
+	}
+
+	if (streq(argv[1], "--print-socket-path")) {
+		printf("%s\n", sock_address.sun_path);
+		return EXIT_SUCCESS;
+	}
+
+	if ((sock_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		err("Failed to create the socket.\n");
 	}
 
 	if (connect(sock_fd, (struct sockaddr *) &sock_address, sizeof(sock_address)) == -1) {

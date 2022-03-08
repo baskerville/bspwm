@@ -15,6 +15,8 @@ Synopsis
 
 *bspwm* [*-h*|*-v*|*-c* 'CONFIG_PATH']
 
+*bspc --print-socket-path*
+
 *bspc* 'DOMAIN' ['SELECTOR'] 'COMMANDS'
 
 *bspc* 'COMMAND' ['OPTIONS'] ['ARGUMENTS']
@@ -38,6 +40,9 @@ Options
 
 *-c* 'CONFIG_PATH'::
 	Use the given configuration file.
+
+*--print-socket-path*::
+    Print the *bspwm* socket path and exit.
 
 Common Definitions
 ------------------

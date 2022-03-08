@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 02/15/2022
+.\"      Date: 03/08/2022
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.10-34-g3403bb2
+.\"    Source: Bspwm 0.9.10-36-g1560df3
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "02/15/2022" "Bspwm 0\&.9\&.10\-34\-g3403bb2" "Bspwm Manual"
+.TH "BSPWM" "1" "03/08/2022" "Bspwm 0\&.9\&.10\-36\-g1560df3" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,6 +33,8 @@ bspwm \- Binary space partitioning window manager
 .sp
 \fBbspwm\fR [\fB\-h\fR|\fB\-v\fR|\fB\-c\fR \fICONFIG_PATH\fR]
 .sp
+\fBbspc \-\-print\-socket\-path\fR
+.sp
 \fBbspc\fR \fIDOMAIN\fR [\fISELECTOR\fR] \fICOMMANDS\fR
 .sp
 \fBbspc\fR \fICOMMAND\fR [\fIOPTIONS\fR] [\fIARGUMENTS\fR]
@@ -56,6 +58,13 @@ Print the version and exit\&.
 \fB\-c\fR \fICONFIG_PATH\fR
 .RS 4
 Use the given configuration file\&.
+.RE
+.PP
+\fB\-\-print\-socket\-path\fR
+.RS 4
+Print the
+\fBbspwm\fR
+socket path and exit\&.
 .RE
 .SH "COMMON DEFINITIONS"
 .sp
