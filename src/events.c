@@ -350,8 +350,16 @@ void focus_in(xcb_generic_event_t *evt)
 		return;
 	}
 
-	if (mon->desk->focus != NULL && e->event == mon->desk->focus->id) {
-		return;
+	if (mon->desk->focus != NULL) {
+		if (e->event == mon->desk->focus->id) {
+			return;
+		}
+		if (e->event == root) {
+			/* Some clients expect the window manager to refocus the
+			   focused window in this case */
+			focus_node(mon, mon->desk, mon->desk->focus);
+			return;
+		}
 	}
 
 	coordinates_t loc;
