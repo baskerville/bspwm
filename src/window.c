@@ -977,7 +977,6 @@ void send_client_message(xcb_window_t win, xcb_atom_t property, xcb_atom_t value
 	e->data.data32[0] = value;
 	e->data.data32[1] = XCB_CURRENT_TIME;
 
-	xcb_send_event(dpy, false, win, XCB_EVENT_MASK_NO_EVENT, (char *) e);
 	xcb_flush(dpy);
 	free(e);
 }
