@@ -310,7 +310,9 @@ int main(int argc, char *argv[])
 		rargv[rargc + 3] = sock_fd_arg;
 		rargv[rargc + 4] = 0;
 
-		exit_status = execvp(*rargv, rargv);
+		execvp(*rargv, rargv);
+
+		exit_status = 1;
 		free(rargv);
 	}
 
