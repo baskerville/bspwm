@@ -152,10 +152,9 @@ char *mktempfifo(const char *template)
 
 int asprintf(char **buf, const char *fmt, ...)
 {
-	int size = 0;
 	va_list args;
 	va_start(args, fmt);
-	size = vasprintf(buf, fmt, args);
+	int size = vasprintf(buf, fmt, args);
 	va_end(args);
 	return size;
 }
