@@ -21,8 +21,8 @@
 	- [bspwm (i686)](https://www.archlinux.org/packages/community/i686/bspwm)
 
 - Debian
-	- [packages](http://download.opensuse.org/repositories/home:/Head_on_a_Stick:/bspwm/Debian_8.0/)
-	- [guide](http://forums.debian.net/viewtopic.php?f=16&t=127708)
+	- [bspwm](https://tracker.debian.org/pkg/bspwm)
+	- [wiki page](https://wiki.debian.org/bspwm)
 
 - Gentoo Linux
 	- [bspwm](https://packages.gentoo.org/packages/x11-wm/bspwm)
