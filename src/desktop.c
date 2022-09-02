@@ -246,6 +246,7 @@ desktop_t *make_desktop(const char *name, uint32_t id)
 	d->user_layout = LAYOUT_TILED;
 	d->layout = single_monocle ? LAYOUT_MONOCLE : LAYOUT_TILED;
 	d->padding = (padding_t) PADDING;
+	d->monocle_padding = (padding_t) MONOCLE_PADDING;
 	d->window_gap = window_gap;
 	d->border_width = border_width;
 	return d;

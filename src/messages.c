@@ -1558,24 +1558,35 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
-		SET_DEF_MON_DESK(padding.left, lp)
-#undef SET_DEF_MON_DESK
 	} else if (streq("top_monocle_padding", name)) {
-		if (sscanf(value, "%i", &monocle_padding.top) != 1) {
+		int tp;
+		if (sscanf(value, "%i", &tp) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
 		}
+		SET_DEF_MON_DESK(monocle_padding.top, tp)
 	} else if (streq("right_monocle_padding", name)) {
-		if (sscanf(value, "%i", &monocle_padding.right) != 1) {
+		int rp;
+		if (sscanf(value, "%i", &rp) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
 		}
+		SET_DEF_MON_DESK(monocle_padding.right, rp)
 	} else if (streq("bottom_monocle_padding", name)) {
-		if (sscanf(value, "%i", &monocle_padding.bottom) != 1) {
+		int bp;
+		if (sscanf(value, "%i", &bp) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
 		}
+		SET_DEF_MON_DESK(monocle_padding.bottom, bp)
 	} else if (streq("left_monocle_padding", name)) {
-		if (sscanf(value, "%i", &monocle_padding.left) != 1) {
+		int lp;
+		if (sscanf(value, "%i", &lp) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
 		}
+		SET_DEF_MON_DESK(monocle_padding.left, lp)
+#undef SET_DEF_MON_DESK
 #define SET_STR(s) \
 	} else if (streq(#s, name)) { \
 		if (snprintf(s, sizeof(s), "%s", value) < 0) { \
@@ -1798,9 +1809,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 			fprintf(rsp, "%i", window_gap);
 		}
 #define GET_DEF_MON_DESK(k) \
-		if (loc.desktop != NULL) { \
-			fprintf(rsp, "%i", loc.desktop->k); \
-		} else if (loc.monitor != NULL) { \
+	if (loc.monitor != NULL) { \
 			fprintf(rsp, "%i", loc.monitor->k); \
 		} else { \
 			fprintf(rsp, "%i", k); \
@@ -1813,15 +1822,15 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 		GET_DEF_MON_DESK(padding.bottom)
 	} else if (streq("left_padding", name)) {
 		GET_DEF_MON_DESK(padding.left)
-#undef GET_DEF_MON_DESK
 	} else if (streq("top_monocle_padding", name)) {
-		fprintf(rsp, "%i", monocle_padding.top);
+		GET_DEF_MON_DESK(monocle_padding.top)
 	} else if (streq("right_monocle_padding", name)) {
-		fprintf(rsp, "%i", monocle_padding.right);
+		GET_DEF_MON_DESK(monocle_padding.right)
 	} else if (streq("bottom_monocle_padding", name)) {
-		fprintf(rsp, "%i", monocle_padding.bottom);
+		GET_DEF_MON_DESK(monocle_padding.bottom)
 	} else if (streq("left_monocle_padding", name)) {
-		fprintf(rsp, "%i", monocle_padding.left);
+		GET_DEF_MON_DESK(monocle_padding.left)
+#undef GET_DEF_MON_DESK
 	} else if (streq("external_rules_command", name)) {
 		fprintf(rsp, "%s", external_rules_command);
 	} else if (streq("status_prefix", name)) {
