@@ -31,8 +31,8 @@
 void arrange(monitor_t *m, desktop_t *d);
 void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, xcb_rectangle_t root_rect);
 presel_t *make_presel(void);
-void set_type(node_t *n, split_type_t typ);
-void set_ratio(node_t *n, double rat);
+bool set_type(node_t *n, split_type_t typ);
+bool set_ratio(node_t *n, double rat);
 void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir);
 void presel_ratio(monitor_t *m, desktop_t *d, node_t *n, double ratio);
 void cancel_presel(monitor_t *m, desktop_t *d, node_t *n);

@@ -190,24 +190,26 @@ presel_t *make_presel(void)
 	return p;
 }
 
-void set_type(node_t *n, split_type_t typ)
+bool set_type(node_t *n, split_type_t typ)
 {
-	if (n == NULL) {
-		return;
+	if (n == NULL || n->split_type == typ) {
+		return false;
 	}
 
 	n->split_type = typ;
 	update_constraints(n);
 	rebuild_constraints_towards_root(n);
+	return true;
 }
 
-void set_ratio(node_t *n, double rat)
+bool set_ratio(node_t *n, double rat)
 {
-	if (n == NULL) {
-		return;
+	if (n == NULL || n->split_ratio == rat) {
+		return false;
 	}
 
 	n->split_ratio = rat;
+	return true;
 }
 
 void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir)
