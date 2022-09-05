@@ -472,13 +472,13 @@ void cmd_node(char **args, int num, FILE *rsp)
 			split_type_t typ;
 			if (parse_cycle_direction(*args, &cyc)) {
 				set_type(trg.node, (trg.node->split_type + 1) % 2);
+				changed = true;
 			} else if (parse_split_type(*args, &typ)) {
-				set_type(trg.node, typ);
+				changed |= set_type(trg.node, typ);
 			} else {
 				fail(rsp, "");
 				break;
 			}
-			changed = true;
 		} else if (streq("-r", *args) || streq("--ratio", *args)) {
 			num--, args++;
 			if (num < 1) {
@@ -500,7 +500,7 @@ void cmd_node(char **args, int num, FILE *rsp)
 						rat = ((max * rat) + delta) / max;
 					}
 					if (rat > 0 && rat < 1) {
-						set_ratio(trg.node, rat);
+						changed |= set_ratio(trg.node, rat);
 					} else {
 						fail(rsp, "");
 						break;
@@ -512,13 +512,12 @@ void cmd_node(char **args, int num, FILE *rsp)
 			} else {
 				double rat;
 				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
-					set_ratio(trg.node, rat);
+					changed |= set_ratio(trg.node, rat);
 				} else {
 					fail(rsp, "node %s: Invalid argument: '%s'.\n", *(args - 1), *args);
 					break;
 				}
 			}
-			changed = true;
 		} else if (streq("-F", *args) || streq("--flip", *args)) {
 			num--, args++;
 			if (num < 1) {
