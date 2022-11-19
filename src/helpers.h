@@ -83,5 +83,6 @@ char *mktempfifo(const char *template);
 int asprintf(char **buf, const char *fmt, ...);
 int vasprintf(char **buf, const char *fmt, va_list args);
 bool is_hex_color(const char *color);
+void print_string_as_json(FILE *f, char *str);
 
 #endif

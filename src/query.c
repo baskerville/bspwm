@@ -27,13 +27,14 @@
 #include <string.h>
 #include "bspwm.h"
 #include "desktop.h"
-#include "history.h"
-#include "parse.h"
-#include "monitor.h"
-#include "window.h"
-#include "tree.h"
-#include "query.h"
 #include "geometry.h"
+#include "helpers.h"
+#include "history.h"
+#include "monitor.h"
+#include "parse.h"
+#include "query.h"
+#include "tree.h"
+#include "window.h"
 
 void query_state(FILE *rsp)
 {
@@ -69,7 +70,9 @@ void query_state(FILE *rsp)
 void query_monitor(monitor_t *m, FILE *rsp)
 {
 	fprintf(rsp, "{");
-	fprintf(rsp, "\"name\":\"%s\",", m->name);
+	fprintf(rsp, "\"name\":");
+	print_string_as_json(rsp, m->name);
+	fprintf(rsp, ",");
 	fprintf(rsp, "\"id\":%u,", m->id);
 	fprintf(rsp, "\"randrId\":%u,", m->randr_id);
 	fprintf(rsp, "\"wired\":%s,", BOOL_STR(m->wired));
@@ -98,7 +101,9 @@ void query_monitor(monitor_t *m, FILE *rsp)
 void query_desktop(desktop_t *d, FILE *rsp)
 {
 	fprintf(rsp, "{");
-	fprintf(rsp, "\"name\":\"%s\",", d->name);
+	fprintf(rsp, "\"name\":");
+	print_string_as_json(rsp, d->name);
+	fprintf(rsp, ",");
 	fprintf(rsp, "\"id\":%u,", d->id);
 	fprintf(rsp, "\"layout\":\"%s\",", LAYOUT_STR(d->layout));
 	fprintf(rsp, "\"userLayout\":\"%s\",", LAYOUT_STR(d->user_layout));
@@ -164,8 +169,12 @@ void query_client(client_t *c, FILE *rsp)
 		fprintf(rsp, "null");
 	} else {
 		fprintf(rsp, "{");
-		fprintf(rsp, "\"className\":\"%s\",", c->class_name);
-		fprintf(rsp, "\"instanceName\":\"%s\",", c->instance_name);
+		fprintf(rsp, "\"className\":");
+		print_string_as_json(rsp, c->class_name);
+		fprintf(rsp, ",");
+		fprintf(rsp, "\"instanceName\":");
+		print_string_as_json(rsp, c->instance_name);
+		fprintf(rsp, ",");
 		fprintf(rsp, "\"borderWidth\":%u,", c->border_width);
 		fprintf(rsp, "\"state\":\"%s\",", STATE_STR(c->state));
 		fprintf(rsp, "\"lastState\":\"%s\",", STATE_STR(c->last_state));
@@ -232,7 +241,8 @@ void query_subscribers(FILE *rsp)
 	for (subscriber_list_t *s = subscribe_head; s != NULL; s = s->next) {
 		fprintf(rsp, "{\"fileDescriptor\": %i", fileno(s->stream));
 		if (s->fifo_path != NULL) {
-			fprintf(rsp, ",\"fifoPath\":\"%s\"", s->fifo_path);
+			fprintf(rsp, ",\"fifoPath\":");
+			print_string_as_json(rsp, s->fifo_path);
 		}
 		fprintf(rsp, ",\"field\":%i,\"count\":%i}", s->field, s->count);
 		if (s->next != NULL) {
