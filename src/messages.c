@@ -104,6 +104,8 @@ void process_message(char **args, int num, FILE *rsp)
 		cmd_config(++args, --num, rsp);
 	} else if (streq("quit", *args)) {
 		cmd_quit(++args, --num, rsp);
+	} else if (streq("focus", *args)) {
+		grab_pointer(ACTION_FOCUS);
 	} else {
 		fail(rsp, "Unknown domain or command: '%s'.\n", *args);
 	}
