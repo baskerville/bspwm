@@ -1280,7 +1280,8 @@ int balance_tree(node_t *n)
  * despite the potential alteration of their rectangle. */
 void adjust_ratios(node_t *n, xcb_rectangle_t rect)
 {
-	if (n == NULL) {
+#define NULL_OR_VACANT(n) ((n) == NULL || (n)->vacant)
+	if (NULL_OR_VACANT(n)) {
 		return;
 	}
 
@@ -1301,6 +1302,16 @@ void adjust_ratios(node_t *n, xcb_rectangle_t rect)
 	xcb_rectangle_t first_rect;
 	xcb_rectangle_t second_rect;
 	unsigned int fence;
+
+	if (NULL_OR_VACANT(n->first_child)) {
+		adjust_ratios(n->second_child, rect);
+		return;
+	}
+	if (NULL_OR_VACANT(n->second_child)) {
+		adjust_ratios(n->first_child, rect);
+		return;
+	}
+#undef NULL_OR_VACANT
 
 	if (n->split_type == TYPE_VERTICAL) {
 		fence = rect.width * n->split_ratio;
