@@ -574,6 +574,7 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 			sr = MAX(0, sr);
 			sr = MIN(1, sr);
 			vertical_fence->split_ratio = sr;
+			adjust_ratios(vertical_fence, vertical_fence->rectangle);
 		}
 		if (horizontal_fence != NULL) {
 			double sr = 0.0;
@@ -585,9 +586,8 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 			sr = MAX(0, sr);
 			sr = MIN(1, sr);
 			horizontal_fence->split_ratio = sr;
+			adjust_ratios(horizontal_fence, horizontal_fence->rectangle);
 		}
-		node_t *target_fence = horizontal_fence != NULL ? horizontal_fence : vertical_fence;
-		adjust_ratios(target_fence, target_fence->rectangle);
 		arrange(loc->monitor, loc->desktop);
 	} else {
 		int w = width, h = height;
