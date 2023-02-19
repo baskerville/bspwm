@@ -294,6 +294,8 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		return NULL;
 	}
 
+	bool d_was_not_occupied = d->root == NULL;
+
 	/* n: inserted node */
 	/* c: new internal node */
 	/* f: focus or insertion anchor */
@@ -450,6 +452,10 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
 	if (d->focus == NULL && is_focusable(n)) {
 		d->focus = n;
+	}
+
+	if (d_was_not_occupied) {
+		put_status(SBSC_MASK_REPORT);
 	}
 
 	return f;
@@ -1338,6 +1344,7 @@ void unlink_node(monitor_t *m, desktop_t *d, node_t *n)
 	if (p == NULL) {
 		d->root = NULL;
 		d->focus = NULL;
+		put_status(SBSC_MASK_REPORT);
 	} else {
 		if (d->focus == p || is_descendant(d->focus, n)) {
 			d->focus = NULL;
