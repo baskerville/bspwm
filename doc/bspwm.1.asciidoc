@@ -580,7 +580,7 @@ Options
 
 *-m*,*--monitor* ['MONITOR_SEL'|'MONITOR_MODIFIERS']::
 *-d*,*--desktop* ['DESKTOP_SEL'|'DESKTOP_MODIFIERS']::
-*-n*, *--node* ['NODE_SEL'|'NODE_MODIFIERS']::
+*-n*,*--node* ['NODE_SEL'|'NODE_MODIFIERS']::
 	Constrain matches to the selected monitors, desktops or nodes.
 
 *--names*::
