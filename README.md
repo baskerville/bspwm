@@ -190,5 +190,5 @@ The *spiral* automatic scheme generates window spirals that rotate clockwise (re
 Want to get in touch with other *bspwm* users or you need help? Join us on our:
 
 - Subreddit at [r/bspwm](https://www.reddit.com/r/bspwm/).
-- IRC channel at `#bspwm` on `irc.libera.chat` (maintained by [@dannycolin](https://github.com/dannycolin) / sdk on IRC).
+- IRC channel at `#bspwm` on `irc.libera.chat` (maintained by [Emanuele Torre](https://github.com/emanuele6) / emanuele6 on IRC).
 - Matrix room at https://matrix.to/#/#bspwm:matrix.org
