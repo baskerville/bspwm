@@ -540,7 +540,7 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 	return true;
 }
 
-bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool relative)
+bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy)
 {
 	node_t *n = loc->node;
 	if (n == NULL || n->client == NULL || n->client->state == STATE_FULLSCREEN) {
@@ -566,22 +566,14 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 		}
 		if (vertical_fence != NULL) {
 			double sr = 0.0;
-			if (relative) {
-				sr = vertical_fence->split_ratio + (double) dx / (double) vertical_fence->rectangle.width;
-			} else {
-				sr = (double) (dx - vertical_fence->rectangle.x) / (double) vertical_fence->rectangle.width;
-			}
+			sr = vertical_fence->split_ratio + (double) dx / (double) vertical_fence->rectangle.width;
 			sr = MAX(0, sr);
 			sr = MIN(1, sr);
 			vertical_fence->split_ratio = sr;
 		}
 		if (horizontal_fence != NULL) {
 			double sr = 0.0;
-			if (relative) {
-				sr = horizontal_fence->split_ratio + (double) dy / (double) horizontal_fence->rectangle.height;
-			} else {
-				sr = (double) (dy - horizontal_fence->rectangle.y) / (double) horizontal_fence->rectangle.height;
-			}
+			sr = horizontal_fence->split_ratio + (double) dy / (double) horizontal_fence->rectangle.height;
 			sr = MAX(0, sr);
 			sr = MIN(1, sr);
 			horizontal_fence->split_ratio = sr;
@@ -590,22 +582,8 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 		adjust_ratios(target_fence, target_fence->rectangle);
 		arrange(loc->monitor, loc->desktop);
 	} else {
-		int w = width, h = height;
-		if (relative) {
-			w += dx * (rh & HANDLE_LEFT ? -1 : (rh & HANDLE_RIGHT ? 1 : 0));
-			h += dy * (rh & HANDLE_TOP ? -1 : (rh & HANDLE_BOTTOM ? 1 : 0));
-		} else {
-			if (rh & HANDLE_LEFT) {
-				w = x + width - dx;
-			} else if (rh & HANDLE_RIGHT) {
-				w = dx - x;
-			}
-			if (rh & HANDLE_TOP) {
-				h = y + height - dy;
-			} else if (rh & HANDLE_BOTTOM) {
-				h = dy - y;
-			}
-		}
+		int w = width + dx * (rh & HANDLE_LEFT ? -1 : (rh & HANDLE_RIGHT ? 1 : 0));
+		int h = height + dy * (rh & HANDLE_TOP ? -1 : (rh & HANDLE_BOTTOM ? 1 : 0));
 		width = MAX(1, w);
 		height = MAX(1, h);
 		apply_size_hints(n->client, &width, &height);
