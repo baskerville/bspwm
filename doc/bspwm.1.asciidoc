@@ -787,7 +787,7 @@ Global Settings
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
 
 'honor_size_hints'::
-	Apply ICCCM window size hints.
+	If 'true', apply ICCCM window size hints to all windows. If 'floating', only apply them to floating and pseudo tiled windows. If 'tiled', only apply them to tiled windows. If 'false', don't apply them. Defaults to 'false'.
 
 'remove_disabled_monitors'::
 	Consider disabled monitors as disconnected.

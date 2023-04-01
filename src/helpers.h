@@ -54,10 +54,20 @@
 #define STATE_STR(A)      ((A) == STATE_TILED ? "tiled" : ((A) == STATE_FLOATING ? "floating" : ((A) == STATE_FULLSCREEN ? "fullscreen" : "pseudo_tiled")))
 #define STATE_CHR(A)      ((A) == STATE_TILED ? 'T' : ((A) == STATE_FLOATING ? 'F' : ((A) == STATE_FULLSCREEN ? '=' : 'P')))
 #define LAYER_STR(A)      ((A) == LAYER_BELOW ? "below" : ((A) == LAYER_NORMAL ? "normal" : "above"))
+#define HSH_MODE_STR(A)   ((A) == HONOR_SIZE_HINTS_TILED ? "tiled" : ((A) == HONOR_SIZE_HINTS_FLOATING ? "floating" : BOOL_STR(A)))
 
 #define XCB_CONFIG_WINDOW_X_Y               (XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y)
 #define XCB_CONFIG_WINDOW_WIDTH_HEIGHT      (XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT)
 #define XCB_CONFIG_WINDOW_X_Y_WIDTH_HEIGHT  (XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT)
+
+#define SHOULD_HONOR_SIZE_HINTS(hsh, state) \
+	((hsh) && \
+	 (((hsh) == HONOR_SIZE_HINTS_YES && \
+	   (state) != STATE_FULLSCREEN) || \
+	  ((hsh) == HONOR_SIZE_HINTS_TILED && \
+	   (state) == STATE_TILED) || \
+	  ((hsh) == HONOR_SIZE_HINTS_FLOATING && \
+	   ((state) == STATE_FLOATING || (state) == STATE_PSEUDO_TILED))))
 
 #define MAXLEN    256
 #define SMALEN     32

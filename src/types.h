@@ -51,6 +51,13 @@ typedef enum {
 } automatic_scheme_t;
 
 typedef enum {
+	HONOR_SIZE_HINTS_NO = 0,
+	HONOR_SIZE_HINTS_YES,
+	HONOR_SIZE_HINTS_FLOATING,
+	HONOR_SIZE_HINTS_TILED
+} honor_size_hints_mode_t;
+
+typedef enum {
 	STATE_TILED,
 	STATE_PSEUDO_TILED,
 	STATE_FLOATING,
