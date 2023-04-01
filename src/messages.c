@@ -1509,6 +1509,47 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 		}
 		SET_DEF_DEFMON_DEFDESK_WIN(border_width, bw)
 #undef SET_DEF_DEFMON_DEFDESK_WIN
+#define SET_DEF_WIN(k, v) \
+		if (loc.node != NULL) { \
+			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.node)) { \
+				if (n->client != NULL) { \
+					n->client->k = v; \
+				} \
+			} \
+		} else if (loc.desktop != NULL) { \
+			for (node_t *n = first_extrema(loc.desktop->root); n != NULL; n = next_leaf(n, loc.desktop->root)) { \
+				if (n->client != NULL) { \
+					n->client->k = v; \
+				} \
+			} \
+		} else if (loc.monitor != NULL) { \
+			for (desktop_t *d = loc.monitor->desk_head; d != NULL; d = d->next) { \
+				for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) { \
+					if (n->client != NULL) { \
+						n->client->k = v; \
+					} \
+				} \
+			} \
+		} else { \
+			k = v; \
+			for (monitor_t *m = mon_head; m != NULL; m = m->next) { \
+				for (desktop_t *d = m->desk_head; d != NULL; d = d->next) { \
+					for (node_t *n = first_extrema(d->root); n != NULL; n = next_leaf(n, d->root)) { \
+						if (n->client != NULL) { \
+							n->client->k = v; \
+						} \
+					} \
+				} \
+			} \
+		}
+	} else if (streq("honor_size_hints", name)) {
+		honor_size_hints_mode_t hsh;
+		if (!parse_honor_size_hints_mode(value, &hsh)) {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
+			return;
+		}
+		SET_DEF_WIN(honor_size_hints, hsh)
+#undef SET_DEF_WIN
 #define SET_DEF_DEFMON_DESK(k, v) \
 		if (loc.desktop != NULL) { \
 			loc.desktop->k = v; \
@@ -1638,13 +1679,6 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
 			return;
 		}
-	} else if (streq("honor_size_hints", name)) {
-		honor_size_hints_mode_t hsh;
-		if (!parse_honor_size_hints_mode(value, &hsh)) {
-			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);
-			return;
-		}
-		honor_size_hints = hsh;
 	} else if (streq("mapping_events_count", name)) {
 		if (sscanf(value, "%" SCNi8, &mapping_events_count) != 1) {
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value);

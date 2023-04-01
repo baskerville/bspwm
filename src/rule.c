@@ -124,6 +124,7 @@ rule_consequence_t *make_rule_consequence(void)
 	rc->layer = NULL;
 	rc->state = NULL;
 	rc->rect = NULL;
+	rc->honor_size_hints = HONOR_SIZE_HINTS_DEFAULT;
 	return rc;
 }
 
@@ -432,6 +433,10 @@ void parse_key_value(char *key, char *value, rule_consequence_t *csq)
 		if (!parse_rectangle(value, csq->rect)) {
 			free(csq->rect);
 			csq->rect = NULL;
+		}
+	} else if (streq("honor_size_hints", key)) {
+		if (!parse_honor_size_hints_mode(value, &csq->honor_size_hints)) {
+			csq->honor_size_hints = HONOR_SIZE_HINTS_DEFAULT;
 		}
 	} else if (parse_bool(value, &v)) {
 		if (streq("hidden", key)) {

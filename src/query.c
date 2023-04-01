@@ -455,10 +455,11 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 		*rect_buf = '\0';
 	}
 
-	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s marked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
+	asprintf(buf, "monitor=%s desktop=%s node=%s state=%s layer=%s honor_size_hints=%s split_dir=%s split_ratio=%lf hidden=%s sticky=%s private=%s locked=%s marked=%s center=%s follow=%s manage=%s focus=%s border=%s rectangle=%s",
 	        csq->monitor_desc, csq->desktop_desc, csq->node_desc,
 	        csq->state == NULL ? "" : STATE_STR(*csq->state),
 	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
+	        csq->honor_size_hints == HONOR_SIZE_HINTS_DEFAULT ? "" : HSH_MODE_STR(csq->honor_size_hints),
 	        csq->split_dir == NULL ? "" : SPLIT_DIR_STR(*csq->split_dir), csq->split_ratio,
 	        ON_OFF_STR(csq->hidden), ON_OFF_STR(csq->sticky), ON_OFF_STR(csq->private),
 	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->marked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),

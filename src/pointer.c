@@ -290,7 +290,7 @@ void track_pointer(coordinates_t loc, pointer_action_t pac, xcb_point_t pos)
 				move_client(&loc, dx, dy);
 			} else if (n) {
 				client_t *c = n->client;
-				if (c && SHOULD_HONOR_SIZE_HINTS(honor_size_hints, c->state)) {
+				if (c && SHOULD_HONOR_SIZE_HINTS(c->honor_size_hints, c->state)) {
 					resize_client(&loc, rh, e->root_x, e->root_y, false);
 				} else {
 					resize_client(&loc, rh, dx, dy, true);

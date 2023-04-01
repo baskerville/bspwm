@@ -185,6 +185,10 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		set_state(m, d, n, *(csq->state));
 	}
 
+	if (csq->honor_size_hints != HONOR_SIZE_HINTS_DEFAULT) {
+		c->honor_size_hints = csq->honor_size_hints;
+	}
+
 	set_hidden(m, d, n, csq->hidden);
 	set_sticky(m, d, n, csq->sticky);
 	set_private(m, d, n, csq->private);
@@ -632,7 +636,7 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 /* taken from awesomeWM */
 void apply_size_hints(client_t *c, uint16_t *width, uint16_t *height)
 {
-	if (!SHOULD_HONOR_SIZE_HINTS(honor_size_hints, c->state)) {
+	if (!SHOULD_HONOR_SIZE_HINTS(c->honor_size_hints, c->state)) {
 		return;
 	}
 
