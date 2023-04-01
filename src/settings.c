@@ -67,7 +67,7 @@ bool ignore_ewmh_struts;
 state_transition_t ignore_ewmh_fullscreen;
 
 bool center_pseudo_tiled;
-bool honor_size_hints;
+honor_size_hints_mode_t honor_size_hints;
 
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;

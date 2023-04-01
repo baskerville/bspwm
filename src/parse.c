@@ -282,6 +282,22 @@ bool parse_automatic_scheme(char *s, automatic_scheme_t *a)
 	return false;
 }
 
+bool parse_honor_size_hints_mode(char *s, honor_size_hints_mode_t *a)
+{
+	bool b;
+	if (parse_bool(s, &b)) {
+		*a = b ? HONOR_SIZE_HINTS_YES : HONOR_SIZE_HINTS_NO;
+		return true;
+	} else if (streq("floating", s)) {
+		*a = HONOR_SIZE_HINTS_FLOATING;
+		return true;
+	} else if (streq("tiled", s)) {
+		*a = HONOR_SIZE_HINTS_TILED;
+		return true;
+	}
+	return false;
+}
+
 bool parse_state_transition(char *s, state_transition_t *m)
 {
 	if (streq("none", s)) {

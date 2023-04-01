@@ -758,6 +758,7 @@ client_t *make_client(void)
 	c->icccm_props.take_focus = false;
 	c->icccm_props.delete_window = false;
 	c->size_hints.flags = 0;
+	c->honor_size_hints = honor_size_hints;
 	return c;
 }
 

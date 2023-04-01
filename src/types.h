@@ -51,6 +51,14 @@ typedef enum {
 } automatic_scheme_t;
 
 typedef enum {
+	HONOR_SIZE_HINTS_NO = 0,
+	HONOR_SIZE_HINTS_YES,
+	HONOR_SIZE_HINTS_FLOATING,
+	HONOR_SIZE_HINTS_TILED,
+	HONOR_SIZE_HINTS_DEFAULT
+} honor_size_hints_mode_t;
+
+typedef enum {
 	STATE_TILED,
 	STATE_PSEUDO_TILED,
 	STATE_FLOATING,
@@ -224,6 +232,7 @@ typedef struct {
 	stack_layer_t last_layer;
 	xcb_rectangle_t floating_rectangle;
 	xcb_rectangle_t tiled_rectangle;
+	honor_size_hints_mode_t honor_size_hints;
 	xcb_size_hints_t size_hints;
 	icccm_props_t icccm_props;
 	wm_flags_t wm_flags;
@@ -364,6 +373,7 @@ typedef struct {
 	double split_ratio;
 	stack_layer_t *layer;
 	client_state_t *state;
+	honor_size_hints_mode_t honor_size_hints;
 	bool hidden;
 	bool sticky;
 	bool private;
