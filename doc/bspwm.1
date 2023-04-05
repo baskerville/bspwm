@@ -4,10 +4,10 @@
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
 .\"      Date: 04/05/2023
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.10-48-gbcc8377
+.\"    Source: Bspwm 0.9.10-49-gc58c67a
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/05/2023" "Bspwm 0\&.9\&.10\-48\-gbcc8377" "Bspwm Manual"
+.TH "BSPWM" "1" "04/05/2023" "Bspwm 0\&.9\&.10\-49\-gc58c67a" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1066,7 +1066,7 @@ rule \fICOMMANDS\fR
 \fBCommands\fR
 .RS 4
 .PP
-\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)[:(<name>|*)]] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
+\fB\-a\fR, \fB\-\-add\fR (<class_name>|*)[:(<instance_name>|*)[:(<name>|*)]] [\fB\-o\fR|\fB\-\-one\-shot\fR] [monitor=MONITOR_SEL|desktop=DESKTOP_SEL|node=NODE_SEL] [state=STATE] [layer=LAYER] [honor_size_hints=(true|false|tiled|floating)] [split_dir=DIR] [split_ratio=RATIO] [(hidden|sticky|private|locked|marked|center|follow|manage|focus|border)=(on|off)] [rectangle=WxH+X+Y]
 .RS 4
 Create a new rule\&. Colons in the
 \fIinstance_name\fR,
@@ -1371,11 +1371,6 @@ Center pseudo tiled windows into their tiling rectangles\&. Defaults to
 \fItrue\fR\&.
 .RE
 .PP
-\fIhonor_size_hints\fR
-.RS 4
-Apply ICCCM window size hints\&.
-.RE
-.PP
 \fIremove_disabled_monitors\fR
 .RS 4
 Consider disabled monitors as disconnected\&.
@@ -1407,6 +1402,16 @@ Size of the gap that separates windows\&.
 \fIborder_width\fR
 .RS 4
 Window border width\&.
+.RE
+.PP
+\fIhonor_size_hints\fR
+.RS 4
+If
+\fItrue\fR, apply ICCCM window size hints to all windows\&. If
+\fIfloating\fR, only apply them to floating and pseudo tiled windows\&. If
+\fItiled\fR, only apply them to tiled windows\&. If
+\fIfalse\fR, don\(cqt apply them\&. Defaults to
+\fIfalse\fR\&.
 .RE
 .SH "POINTER BINDINGS"
 .PP
