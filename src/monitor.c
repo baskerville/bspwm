@@ -75,6 +75,7 @@ void update_root(monitor_t *m, xcb_rectangle_t *rect)
 		                  XCB_WINDOW_CLASS_INPUT_ONLY, XCB_COPY_FROM_PARENT, XCB_CW_EVENT_MASK, values);
 		xcb_icccm_set_wm_class(dpy, m->root, sizeof(ROOT_WINDOW_IC), ROOT_WINDOW_IC);
 		xcb_icccm_set_wm_name(dpy, m->root, XCB_ATOM_STRING, 8, strlen(m->name), m->name);
+		xcb_ewmh_set_wm_window_type(ewmh, m->root, 1, &ewmh->_NET_WM_WINDOW_TYPE_DESKTOP);
 		window_lower(m->root);
 		if (focus_follows_pointer) {
 			window_show(m->root);
