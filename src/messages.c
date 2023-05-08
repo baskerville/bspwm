@@ -1809,7 +1809,9 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 			fprintf(rsp, "%i", window_gap);
 		}
 #define GET_DEF_MON_DESK(k) \
-	if (loc.monitor != NULL) { \
+		if (loc.desktop != NULL) { \
+			fprintf(rsp, "%i", loc.desktop->k); \
+		} else if (loc.monitor != NULL) { \
 			fprintf(rsp, "%i", loc.monitor->k); \
 		} else { \
 			fprintf(rsp, "%i", k); \
