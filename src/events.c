@@ -171,6 +171,9 @@ void configure_request(xcb_generic_event_t *evt)
 		c->floating_rectangle.height = height;
 		xcb_rectangle_t r = c->floating_rectangle;
 
+		r.x -= c->border_width;
+		r.y -= c->border_width;
+
 		window_move_resize(e->window, r.x, r.y, r.width, r.height);
 
 		put_status(SBSC_MASK_NODE_GEOMETRY, "node_geometry 0x%08X 0x%08X 0x%08X %ux%u+%i+%i\n", loc.monitor->id, loc.desktop->id, e->window, r.width, r.height, r.x, r.y);
