@@ -290,6 +290,7 @@ struct desktop_t {
 	desktop_t *prev;
 	desktop_t *next;
 	padding_t padding;
+	padding_t monocle_padding;
 	int window_gap;
 	unsigned int border_width;
 };
@@ -302,6 +303,7 @@ struct monitor_t {
 	xcb_window_t root;
 	bool wired;
 	padding_t padding;
+	padding_t monocle_padding;
 	unsigned int sticky_count;
 	int window_gap;
 	unsigned int border_width;
