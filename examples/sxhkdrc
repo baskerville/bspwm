@@ -15,6 +15,26 @@ super + Escape
 	pkill -USR1 -x sxhkd
 
 #
+# media keys
+#
+
+# toggle microphone
+XF86AudioMicMute
+	amixer set Capture toggle
+
+# toggle volume
+XF86AudioMute
+	amixer set Master toggle
+
+# adjust volume
+XF86Audio{Lower,Raise}Volume
+	amixer sset Master 2%{-,+}
+
+# adjust brightness
+XF86MonBrightness{Down,Up}{_, + shift}
+	light -{U,A} {2,10}
+
+#
 # bspwm hotkeys
 #
 
