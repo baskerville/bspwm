@@ -1,6 +1,9 @@
 #! /bin/sh
 
-pgrep -x sxhkd > /dev/null || sxhkd &
+if [ "$1" = 0 ]; then
+    # won't run on restarts
+    sxhkd &
+fi
 
 bspc monitor -d I II III IV V VI VII VIII IX X
 
