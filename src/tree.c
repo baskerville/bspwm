@@ -695,6 +695,8 @@ void hide_node(desktop_t *d, node_t *n)
 			}
 			if (n->client != NULL) {
 				window_hide(n->id);
+				n->client->wm_flags |= WM_FLAG_HIDDEN;
+				ewmh_wm_state_update(n);
 			}
 		}
 		if (n->client != NULL) {
@@ -713,6 +715,8 @@ void show_node(desktop_t *d, node_t *n)
 		if (!n->hidden) {
 			if (n->client != NULL) {
 				window_show(n->id);
+				n->client->wm_flags &= ~WM_FLAG_HIDDEN;
+				ewmh_wm_state_update(n);
 			}
 			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
 				window_show(n->presel->feedback);
