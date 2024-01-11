@@ -194,12 +194,12 @@ int main(int argc, char *argv[])
 
 	fcntl(sock_fd, F_SETFD, FD_CLOEXEC | fcntl(sock_fd, F_GETFD));
 
+	run_config(run_level);
 	signal(SIGINT, sig_handler);
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
 	signal(SIGCHLD, sig_handler);
 	signal(SIGPIPE, SIG_IGN);
-	run_config(run_level);
 	running = true;
 
 	while (running) {
