@@ -27,7 +27,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <fcntl.h>
@@ -87,7 +86,7 @@ bool auto_raise;
 bool sticky_still;
 bool hide_sticky;
 bool record_history;
-bool running;
+volatile sig_atomic_t running;
 bool restart;
 bool randr;
 
@@ -104,6 +103,7 @@ int main(int argc, char *argv[])
 	xcb_generic_event_t *event;
 	char *end;
 	int opt;
+	struct sigaction sigact;
 
 	while ((opt = getopt(argc, argv, "hvc:s:o:")) != -1) {
 		switch (opt) {
@@ -194,11 +194,20 @@ int main(int argc, char *argv[])
 
 	fcntl(sock_fd, F_SETFD, FD_CLOEXEC | fcntl(sock_fd, F_GETFD));
 
-	signal(SIGINT, sig_handler);
-	signal(SIGHUP, sig_handler);
-	signal(SIGTERM, sig_handler);
-	signal(SIGCHLD, sig_handler);
-	signal(SIGPIPE, SIG_IGN);
+	sigact.sa_handler = sig_handler;
+	sigemptyset(&sigact.sa_mask);
+	sigact.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sigact, NULL);
+	sigaction(SIGHUP, &sigact, NULL);
+	sigaction(SIGTERM, &sigact, NULL);
+	/* We avoid using SIG_IGN with SIGPIPE because that would be preserved across
+	   exec. */
+	sigaction(SIGPIPE, &sigact, NULL);
+
+	sigact.sa_handler = SIG_IGN;
+	sigact.sa_flags = SA_NOCLDWAIT;
+	sigaction(SIGCHLD, &sigact, NULL);
+
 	run_config(run_level);
 	running = true;
 
@@ -527,11 +536,7 @@ bool check_connection (xcb_connection_t *dpy)
 
 void sig_handler(int sig)
 {
-	if (sig == SIGCHLD) {
-		signal(sig, sig_handler);
-		while (waitpid(-1, 0, WNOHANG) > 0)
-			;
-	} else if (sig == SIGINT || sig == SIGHUP || sig == SIGTERM) {
+	if (sig == SIGINT || sig == SIGHUP || sig == SIGTERM) {
 		running = false;
 	}
 }
