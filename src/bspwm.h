@@ -25,6 +25,7 @@
 #ifndef BSPWM_BSPWM_H
 #define BSPWM_BSPWM_H
 
+#include <signal.h>
 #include "types.h"
 
 #define WM_NAME                  "bspwm"
@@ -84,7 +85,7 @@ extern bool auto_raise;
 extern bool sticky_still;
 extern bool hide_sticky;
 extern bool record_history;
-extern bool running;
+extern volatile sig_atomic_t running;
 extern bool restart;
 extern bool randr;
 
