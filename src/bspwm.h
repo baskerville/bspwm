@@ -25,6 +25,7 @@
 #ifndef BSPWM_BSPWM_H
 #define BSPWM_BSPWM_H
 
+#include <signal.h>
 #include "types.h"
 
 #define WM_NAME                  "bspwm"
