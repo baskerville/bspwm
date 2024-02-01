@@ -218,7 +218,7 @@ DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                                                           [.[!]occupied][.[!]urgent][.[!]local]
                                                           [.[!]LAYOUT][.[!]user_LAYOUT]
 
-LAYOUT := tiled|monocle
+LAYOUT := tiled|stacked|monocle
 ----
 
 Descriptors
@@ -502,7 +502,7 @@ COMMANDS
 *-s*, *--swap* 'DESKTOP_SEL' [*--follow*]::
 	Swap the selected desktop with the given desktop. If *--follow* is passed, the focused desktop will stay focused.
 
-*-l*, *--layout* 'CYCLE_DIR'|monocle|tiled::
+*-l*, *--layout* 'CYCLE_DIR'|tiled|stacked|monocle::
 	Set or cycle the layout of the selected desktop.
 
 *-n*, *--rename* <new_name>::
@@ -513,6 +513,12 @@ COMMANDS
 
 *-r*, *--remove*::
 	Remove the selected desktop.
+
+*-D*, *--stacked-dir* 'DIR'::
+	Set stacked layout direction.
+
+*-R*, *--stacked-ratio* 'RATIO'|(+|-)('PIXELS'|'FRACTION')::
+	Set the stacked ratio of the selected desktop (0 < 'RATIO' < 1).
 
 Monitor
 ~~~~~~~
@@ -706,6 +712,15 @@ Global Settings
 'split_ratio'::
 	Default split ratio.
 
+'stacked_layout'::
+	Display tiled windows in a master-stack layout.
+
+'stacked_direction'::
+	Desktop edge to use for master-stack.
+
+'stacked_ratio'::
+	Default window ratio for stacked mode.
+
 'status_prefix'::
 	Prefix prepended to each of the status lines.
 
@@ -881,7 +896,7 @@ Events
 'desktop_activate <monitor_id> <desktop_id>'::
 	A desktop is activated.
 
-'desktop_layout <monitor_id> <desktop_id> tiled|monocle'::
+'desktop_layout <monitor_id> <desktop_id> tiled|stacked|monocle'::
 	The layout of a desktop changed.
 
 'node_add <monitor_id> <desktop_id> <ip_id> <node_id>'::
@@ -956,7 +971,7 @@ Each item has the form '<type><value>' where '<type>' is the first character of 
 'u<desktop_name>'::
 	Urgent unfocused desktop.
 
-'L(T|M)'::
+'L(T|S|M)'::
 	Layout of the focused desktop of a monitor.
 
 'T(T|P|F|=|@)'::

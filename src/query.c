@@ -104,6 +104,8 @@ void query_desktop(desktop_t *d, FILE *rsp)
 	fprintf(rsp, "\"userLayout\":\"%s\",", LAYOUT_STR(d->user_layout));
 	fprintf(rsp, "\"windowGap\":%i,", d->window_gap);
 	fprintf(rsp, "\"borderWidth\":%u,", d->border_width);
+	fprintf(rsp, "\"stackedDirection\":%i,", d->stacked_direction);
+	fprintf(rsp, "\"stackedRatio\":%f,", d->stacked_ratio);
 	fprintf(rsp, "\"focusedNodeId\":%u,", d->focus != NULL ? d->focus->id : 0);
 	fprintf(rsp, "\"padding\":");
 	query_padding(d->padding, rsp);
@@ -154,7 +156,7 @@ void query_presel(presel_t *p, FILE *rsp)
 	if (p == NULL) {
 		fprintf(rsp, "null");
 	} else {
-		fprintf(rsp, "{\"splitDir\":\"%s\",\"splitRatio\":%lf}", SPLIT_DIR_STR(p->split_dir), p->split_ratio);
+		fprintf(rsp, "{\"splitDir\":\"%s\",\"splitRatio\":%lf}", DIR_STR(p->split_dir), p->split_ratio);
 	}
 }
 
@@ -189,6 +191,7 @@ void query_rectangle(xcb_rectangle_t r, FILE *rsp)
 
 void query_constraints(constraints_t c, FILE *rsp)
 {
+	// FIXME: change to cammelCase
 	fprintf(rsp, "{\"min_width\":%u,\"min_height\":%u}", c.min_width, c.min_height);
 }
 
@@ -460,7 +463,7 @@ void print_rule_consequence(char **buf, rule_consequence_t *csq)
 	        csq->state == NULL ? "" : STATE_STR(*csq->state),
 	        csq->layer == NULL ? "" : LAYER_STR(*csq->layer),
 	        csq->honor_size_hints == HONOR_SIZE_HINTS_DEFAULT ? "" : HSH_MODE_STR(csq->honor_size_hints),
-	        csq->split_dir == NULL ? "" : SPLIT_DIR_STR(*csq->split_dir), csq->split_ratio,
+	        csq->split_dir == NULL ? "" : DIR_STR(*csq->split_dir), csq->split_ratio,
 	        ON_OFF_STR(csq->hidden), ON_OFF_STR(csq->sticky), ON_OFF_STR(csq->private),
 	        ON_OFF_STR(csq->locked), ON_OFF_STR(csq->marked), ON_OFF_STR(csq->center), ON_OFF_STR(csq->follow),
 	        ON_OFF_STR(csq->manage), ON_OFF_STR(csq->focus), ON_OFF_STR(csq->border), rect_buf);
@@ -514,8 +517,10 @@ desktop_select_t make_desktop_select(void)
 		.urgent = OPTION_NONE,
 		.local = OPTION_NONE,
 		.tiled = OPTION_NONE,
+		.stacked = OPTION_NONE,
 		.monocle = OPTION_NONE,
 		.user_tiled = OPTION_NONE,
+		.user_stacked = OPTION_NONE,
 		.user_monocle = OPTION_NONE
 	};
 	return sel;
@@ -1267,6 +1272,7 @@ bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t *s
 		return false; \
 	}
 	DLAYOUT(tiled, LAYOUT_TILED)
+	DLAYOUT(stacked, LAYOUT_STACKED)
 	DLAYOUT(monocle, LAYOUT_MONOCLE)
 #undef DLAYOUT
 
@@ -1278,6 +1284,7 @@ bool desktop_matches(coordinates_t *loc, coordinates_t *ref, desktop_select_t *s
 		return false; \
 	}
 	DUSERLAYOUT(user_tiled, LAYOUT_TILED)
+	DUSERLAYOUT(user_stacked, LAYOUT_STACKED)
 	DUSERLAYOUT(user_monocle, LAYOUT_MONOCLE)
 #undef DUSERLAYOUT
 

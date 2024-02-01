@@ -138,13 +138,85 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 		}
 
 		window_border_width(n->id, bw);
-
 	} else {
 		xcb_rectangle_t first_rect;
 		xcb_rectangle_t second_rect;
 
 		if (d->layout == LAYOUT_MONOCLE || n->first_child->vacant || n->second_child->vacant) {
 			first_rect = second_rect = rect;
+			apply_layout(m, d, n->first_child, first_rect, root_rect);
+			apply_layout(m, d, n->second_child, second_rect, root_rect);
+		} else if (d->layout == LAYOUT_STACKED) {
+			node_t *root = d->root;
+			int nc = tiled_count(root, true);
+			node_t arr[nc];
+			tiled_to_array(root, true, arr);
+			unsigned int fence;
+			direction_t dir = d->stacked_direction;
+
+			if (dir == DIR_EAST || dir == DIR_WEST) {
+				fence = rect.width * d->stacked_ratio;
+				if ((n->first_child->constraints.min_width + n->second_child->constraints.min_width) <= rect.width) {
+					if (fence < n->first_child->constraints.min_width) {
+						fence = n->first_child->constraints.min_width;
+					} else if (fence > (uint16_t) (rect.width - n->second_child->constraints.min_width)) {
+						fence = (rect.width - n->second_child->constraints.min_width);
+					}
+				}
+				if (dir == DIR_EAST) {
+					first_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+					second_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+				} else {
+					fence = rect.width - fence;
+					first_rect = (xcb_rectangle_t) {rect.x + fence, rect.y, rect.width - fence, rect.height};
+					second_rect = (xcb_rectangle_t) {rect.x, rect.y, fence, rect.height};
+				}
+				apply_layout(m, d, first_focusable_leaf(root), first_rect, root_rect);
+				/* divide second_rect by number of remaining nodes */
+				int second_count = nc - 1;
+				int node_height = second_rect.height / second_count;
+				int extra_height = second_rect.height - (second_count * node_height);
+				xcb_rectangle_t r;
+				for (int i = 0; i < second_count; i++) {
+					if (i == second_count - 1) {
+						r = (xcb_rectangle_t) {second_rect.x, second_rect.y + (node_height * i), second_rect.width, node_height + extra_height};
+					} else {
+						r = (xcb_rectangle_t) {second_rect.x, second_rect.y + (node_height * i), second_rect.width, node_height};
+					}
+					apply_layout(m, d, &arr[i + 1], r, second_rect);
+				}
+			} else {
+				fence = rect.height * d->stacked_ratio;
+				if ((n->first_child->constraints.min_height + n->second_child->constraints.min_height) <= rect.height) {
+					if (fence < n->first_child->constraints.min_height) {
+						fence = n->first_child->constraints.min_height;
+					} else if (fence > (uint16_t) (rect.height - n->second_child->constraints.min_height)) {
+						fence = (rect.height - n->second_child->constraints.min_height);
+					}
+				}
+				if (dir == DIR_SOUTH) {
+					first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+					second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+				} else {
+					fence = rect.height - fence;
+					first_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
+					second_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
+				}
+				apply_layout(m, d, first_focusable_leaf(root), first_rect, root_rect);
+				/* divide second_rect by number of remaining nodes */
+				int second_count = nc - 1;
+				int node_width = second_rect.width / second_count;
+				int extra_width = second_rect.width - (second_count * node_width);
+				xcb_rectangle_t r;
+				for (int i = 0; i < second_count; i++) {
+					if (i == second_count - 1) {
+						r = (xcb_rectangle_t) {second_rect.x + (node_width * i), second_rect.y, node_width + extra_width, second_rect.height};
+					} else {
+						r = (xcb_rectangle_t) {second_rect.x + (node_width * i), second_rect.y, node_width, second_rect.height};
+					}
+					apply_layout(m, d, &arr[i + 1], r, second_rect);
+				}
+			}
 		} else {
 			unsigned int fence;
 			if (n->split_type == TYPE_VERTICAL) {
@@ -174,10 +246,9 @@ void apply_layout(monitor_t *m, desktop_t *d, node_t *n, xcb_rectangle_t rect, x
 				first_rect = (xcb_rectangle_t) {rect.x, rect.y, rect.width, fence};
 				second_rect = (xcb_rectangle_t) {rect.x, rect.y + fence, rect.width, rect.height - fence};
 			}
+			apply_layout(m, d, n->first_child, first_rect, root_rect);
+			apply_layout(m, d, n->second_child, second_rect, root_rect);
 		}
-
-		apply_layout(m, d, n->first_child, first_rect, root_rect);
-		apply_layout(m, d, n->second_child, second_rect, root_rect);
 	}
 }
 
@@ -220,7 +291,7 @@ void presel_dir(monitor_t *m, desktop_t *d, node_t *n, direction_t dir)
 
 	n->presel->split_dir = dir;
 
-	put_status(SBSC_MASK_NODE_PRESEL, "node_presel 0x%08X 0x%08X 0x%08X dir %s\n", m->id, d->id, n->id, SPLIT_DIR_STR(dir));
+	put_status(SBSC_MASK_NODE_PRESEL, "node_presel 0x%08X 0x%08X 0x%08X dir %s\n", m->id, d->id, n->id, DIR_STR(dir));
 }
 
 void presel_ratio(monitor_t *m, desktop_t *d, node_t *n, double ratio)
@@ -1171,6 +1242,21 @@ int tiled_count(node_t *n, bool include_receptacles)
 		}
 	}
 	return cnt;
+}
+
+int tiled_to_array(node_t *n, bool include_receptacles, node_t arr[])
+{
+	if (n == NULL) {
+		return 0;
+	}
+	int i = 0;
+	for (node_t *f = first_extrema(n); f != NULL; f = next_leaf(f, n)) {
+		if (!f->hidden && ((include_receptacles && f->client == NULL) ||
+		                   (f->client != NULL && IS_TILED(f->client)))) {
+			arr[i++] = *f;
+		}
+	}
+	return i;
 }
 
 void find_by_area(area_peak_t ap, coordinates_t *ref, coordinates_t *dst, node_select_t *sel)

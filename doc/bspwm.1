@@ -2,12 +2,12 @@
 .\"     Title: bspwm
 .\"    Author: [see the "Author" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 04/05/2023
+.\"      Date: 01/01/1980
 .\"    Manual: Bspwm Manual
-.\"    Source: Bspwm 0.9.10-49-gc58c67a
+.\"    Source: Bspwm 0.9.10
 .\"  Language: English
 .\"
-.TH "BSPWM" "1" "04/05/2023" "Bspwm 0\&.9\&.10\-49\-gc58c67a" "Bspwm Manual"
+.TH "BSPWM" "1" "01/01/1980" "Bspwm 0\&.9\&.10" "Bspwm Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -339,7 +339,7 @@ DESKTOP_SEL := [DESKTOP_SEL#](CYCLE_DIR|any|last|newest|older|newer|
                                                           [\&.[!]occupied][\&.[!]urgent][\&.[!]local]
                                                           [\&.[!]LAYOUT][\&.[!]user_LAYOUT]
 
-LAYOUT := tiled|monocle
+LAYOUT := tiled|stacked|monocle
 .fi
 .if n \{\
 .RE
@@ -836,7 +836,7 @@ Swap the selected desktop with the given desktop\&. If
 is passed, the focused desktop will stay focused\&.
 .RE
 .PP
-\fB\-l\fR, \fB\-\-layout\fR \fICYCLE_DIR\fR|monocle|tiled
+\fB\-l\fR, \fB\-\-layout\fR \fICYCLE_DIR\fR|tiled|stacked|monocle
 .RS 4
 Set or cycle the layout of the selected desktop\&.
 .RE
@@ -854,6 +854,18 @@ Bubble the selected desktop in the given direction\&.
 \fB\-r\fR, \fB\-\-remove\fR
 .RS 4
 Remove the selected desktop\&.
+.RE
+.PP
+\fB\-D\fR, \fB\-\-stacked\-dir\fR \fIDIR\fR
+.RS 4
+Set stacked layout direction\&.
+.RE
+.PP
+\fB\-R\fR, \fB\-\-stacked\-ratio\fR \fIRATIO\fR|(+|\-)(\fIPIXELS\fR|\fIFRACTION\fR)
+.RS 4
+Set the stacked ratio of the selected desktop (0 <
+\fIRATIO\fR
+< 1)\&.
 .RE
 .RE
 .SS "Monitor"
@@ -1192,6 +1204,21 @@ message feedback area\&.
 Default split ratio\&.
 .RE
 .PP
+\fIstacked_layout\fR
+.RS 4
+Display tiled windows in a master\-stack layout\&.
+.RE
+.PP
+\fIstacked_direction\fR
+.RS 4
+Desktop edge to use for master\-stack\&.
+.RE
+.PP
+\fIstacked_ratio\fR
+.RS 4
+Default window ratio for stacked mode\&.
+.RE
+.PP
 \fIstatus_prefix\fR
 .RS 4
 Prefix prepended to each of the status lines\&.
@@ -1509,7 +1536,7 @@ A desktop is focused\&.
 A desktop is activated\&.
 .RE
 .PP
-\fIdesktop_layout <monitor_id> <desktop_id> tiled|monocle\fR
+\fIdesktop_layout <monitor_id> <desktop_id> tiled|stacked|monocle\fR
 .RS 4
 The layout of a desktop changed\&.
 .RE
@@ -1626,7 +1653,7 @@ Urgent focused desktop\&.
 Urgent unfocused desktop\&.
 .RE
 .PP
-\fIL(T|M)\fR
+\fIL(T|S|M)\fR
 .RS 4
 Layout of the focused desktop of a monitor\&.
 .RE

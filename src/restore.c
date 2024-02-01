@@ -317,6 +317,8 @@ desktop_t *restore_desktop(jsmntok_t **t, char *json)
 		RESTORE_ANY(userLayout, &d->user_layout, parse_layout)
 		RESTORE_INT(windowGap, &d->window_gap)
 		RESTORE_UINT(borderWidth, &d->border_width)
+		RESTORE_UINT(stackedDirection, &d->stacked_direction)
+		RESTORE_DOUBLE(stackedRatio, &d->stacked_ratio)
 		} else if (keyeq("focusedNodeId", *t, json)) {
 			(*t)++;
 			sscanf(json + (*t)->start, "%u", &focusedNodeId);

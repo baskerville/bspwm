@@ -140,7 +140,9 @@ typedef enum {
 
 typedef enum {
 	LAYOUT_TILED,
-	LAYOUT_MONOCLE
+	LAYOUT_STACKED,
+	LAYOUT_MONOCLE,
+	LAYOUT_SIZE
 } layout_t;
 
 typedef enum {
@@ -202,8 +204,10 @@ typedef struct {
 	option_bool_t urgent;
 	option_bool_t local;
 	option_bool_t tiled;
+	option_bool_t stacked;
 	option_bool_t monocle;
 	option_bool_t user_tiled;
+	option_bool_t user_stacked;
 	option_bool_t user_monocle;
 } desktop_select_t;
 
@@ -292,6 +296,8 @@ struct desktop_t {
 	padding_t padding;
 	int window_gap;
 	unsigned int border_width;
+	direction_t stacked_direction;
+	double stacked_ratio;
 };
 
 typedef struct monitor_t monitor_t;

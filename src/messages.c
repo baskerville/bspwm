@@ -772,7 +772,7 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			layout_t lyt;
 			cycle_dir_t cyc;
 			if (parse_cycle_direction(*args, &cyc)) {
-				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->user_layout + 1) % 2, true);
+				ret = set_layout(trg.monitor, trg.desktop, (trg.desktop->user_layout + 1) % LAYOUT_SIZE, true);
 			} else if (parse_layout(*args, &lyt)) {
 				ret = set_layout(trg.monitor, trg.desktop, lyt, true);
 			} else {
@@ -805,6 +805,64 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 			} else {
 				fail(rsp, "");
 				break;
+			}
+		} else if (streq("-D", *args) || streq("--stacked-direction", *args)) {
+			num--, args++;
+			if (num < 1) {
+				fail(rsp, "desktop %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			direction_t dir;
+			if (parse_direction(*args, &dir)) {
+				set_stacked_direction(trg.monitor, trg.desktop, dir);
+				changed = true;
+			} else {
+				fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+				break;
+			}
+		} else if (streq("-R", *args) || streq("--stacked-ratio", *args)) {
+			num--, args++;
+			if (num < 1) {
+				fail(rsp, "desktop %s: Not enough arguments.\n", *(args - 1));
+				break;
+			}
+			if ((*args)[0] == '+' || (*args)[0] == '-') {
+				float delta;
+				if (sscanf(*args, "%f", &delta) == 1) {
+					double rat = trg.desktop->stacked_ratio;
+					if (delta > -1 && delta < 1) {
+						rat += delta;
+					} else {
+						int max;
+						switch (trg.desktop->stacked_direction) {
+							case DIR_NORTH:
+							case DIR_SOUTH:
+								max = trg.desktop->root->rectangle.height;
+								break;
+							default:
+								max = trg.desktop->root->rectangle.width;
+								break;
+						}
+						rat = ((max * rat) + delta) / max;
+					}
+					if (rat > 0 && rat < 1) {
+						changed |= set_stacked_ratio(trg.monitor, trg.desktop, rat);
+					} else {
+						fail(rsp, "");
+						break;
+					}
+				} else {
+					fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+					break;
+				}
+			} else {
+				double rat;
+				if (sscanf(*args, "%lf", &rat) == 1 && rat > 0 && rat < 1) {
+					changed |= set_stacked_ratio(trg.monitor, trg.desktop, rat);
+				} else {
+					fail(rsp, "desktop %s: Invalid argument: '%s'.\n", *(args - 1), *args);
+					break;
+				}
 			}
 		} else {
 			fail(rsp, "desktop: Unknown command: '%s'.\n", *args);
@@ -1649,6 +1707,23 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			return;
 		}
 		return;
+	} else if (streq("stacked_ratio", name)) {
+		double r;
+		if (sscanf(value, "%lf", &r) == 1 && r > 0 && r < 1) {
+			stacked_ratio = r;
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
+			return;
+		}
+		return;
+	} else if (streq("stacked_direction", name)) {
+		direction_t d;
+		if (parse_direction(value, &d)) {
+			stacked_direction = d;
+		} else {
+			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
+			return;
+		}
 #define SET_COLOR(s) \
 	} else if (streq(#s, name)) { \
 		if (!is_hex_color(value)) { \
@@ -1784,6 +1859,7 @@ void set_setting(coordinates_t loc, char *name, char *value, FILE *rsp)
 			fail(rsp, "config: %s: Invalid value: '%s'.\n", name, value); \
 			return; \
 		}
+		SET_BOOL(stacked_layout)
 		SET_BOOL(presel_feedback)
 		SET_BOOL(borderless_monocle)
 		SET_BOOL(gapless_monocle)
@@ -1828,6 +1904,10 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 {
 	if (streq("split_ratio", name)) {
 		fprintf(rsp, "%lf", split_ratio);
+	} else if (streq("stacked_ratio", name)) {
+		fprintf(rsp, "%lf", stacked_ratio);
+	} else if (streq("stacked_direction", name)) {
+		fprintf(rsp, "%s", DIR_STR(stacked_direction));
 	} else if (streq("border_width", name)) {
 		if (loc.node != NULL) {
 			for (node_t *n = first_extrema(loc.node); n != NULL; n = next_leaf(n, loc.node)) {
@@ -1914,6 +1994,7 @@ void get_setting(coordinates_t loc, char *name, FILE* rsp)
 #define GET_BOOL(s) \
 	} else if (streq(#s, name)) { \
 		fprintf(rsp, "%s", BOOL_STR(s));
+	GET_BOOL(stacked_layout)
 	GET_BOOL(presel_feedback)
 	GET_BOOL(borderless_monocle)
 	GET_BOOL(gapless_monocle)

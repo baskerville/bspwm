@@ -152,6 +152,36 @@ bool set_layout(monitor_t *m, desktop_t *d, layout_t l, bool user)
 	return true;
 }
 
+bool set_stacked_direction(monitor_t *m, desktop_t *d, direction_t dir)
+{
+	if (d->stacked_direction == dir) {
+		return false;
+	}
+
+	d->stacked_direction = dir;
+
+	if (d->layout == LAYOUT_STACKED) {
+		arrange(m, d);
+	}
+
+	return true;
+}
+
+bool set_stacked_ratio(monitor_t *m, desktop_t *d, double rat)
+{
+	if (d->stacked_ratio == rat) {
+		return false;
+	}
+
+	d->stacked_ratio = rat;
+
+	if (d->layout == LAYOUT_STACKED) {
+		arrange(m, d);
+	}
+
+	return true;
+}
+
 void handle_presel_feedbacks(monitor_t *m, desktop_t *d)
 {
 	if (m->desk != d) {
@@ -243,11 +273,13 @@ desktop_t *make_desktop(const char *name, uint32_t id)
 	}
 	d->prev = d->next = NULL;
 	d->root = d->focus = NULL;
-	d->user_layout = LAYOUT_TILED;
-	d->layout = single_monocle ? LAYOUT_MONOCLE : LAYOUT_TILED;
+	d->user_layout = stacked_layout ? LAYOUT_STACKED : LAYOUT_TILED;
+	d->layout = single_monocle ? LAYOUT_MONOCLE : stacked_layout ? LAYOUT_STACKED : LAYOUT_TILED;
 	d->padding = (padding_t) PADDING;
 	d->window_gap = window_gap;
 	d->border_width = border_width;
+	d->stacked_direction = stacked_direction;
+	d->stacked_ratio = stacked_ratio;
 	return d;
 }
 

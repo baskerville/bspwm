@@ -49,6 +49,9 @@ bool parse_layout(char *s, layout_t *l)
 	} else if (streq("tiled", s)) {
 		*l = LAYOUT_TILED;
 		return true;
+	} else if (streq("stacked", s)) {
+		*l = LAYOUT_STACKED;
+		return true;
 	}
 	return false;
 }
@@ -520,8 +523,10 @@ bool parse_desktop_modifiers(char *desc, desktop_select_t *sel)
 		GET_MOD(urgent)
 		GET_MOD(local)
 		GET_MOD(tiled)
+		GET_MOD(stacked)
 		GET_MOD(monocle)
 		GET_MOD(user_tiled)
+		GET_MOD(user_stacked)
 		GET_MOD(user_monocle)
 		} else {
 			return false;
