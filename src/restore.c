@@ -351,7 +351,7 @@ node_t *restore_node(jsmntok_t **t, char *json)
 		int s = (*t)->size;
 		(*t)++;
 		/* hack to prevent a new ID from being generated */
-		node_t *n = make_node(UINT32_MAX);
+		node_t *n = make_node(UINT32_MAX, split_ratio);
 
 		for (int i = 0; i < s; i++) {
 			if (keyeq("id", *t, json)) {

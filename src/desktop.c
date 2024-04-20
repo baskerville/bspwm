@@ -248,6 +248,7 @@ desktop_t *make_desktop(const char *name, uint32_t id)
 	d->padding = (padding_t) PADDING;
 	d->window_gap = window_gap;
 	d->border_width = border_width;
+	d->split_ratio = split_ratio;
 	return d;
 }
 

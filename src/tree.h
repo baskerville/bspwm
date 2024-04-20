@@ -45,7 +45,7 @@ void transfer_sticky_nodes(monitor_t *ms, desktop_t *ds, monitor_t *md, desktop_
 bool focus_node(monitor_t *m, desktop_t *d, node_t *n);
 void hide_node(desktop_t *d, node_t *n);
 void show_node(desktop_t *d, node_t *n);
-node_t *make_node(uint32_t id);
+node_t *make_node(uint32_t id, double sr);
 client_t *make_client(void);
 void initialize_client(node_t *n);
 bool is_focusable(node_t *n);
