@@ -3,3 +3,4 @@ Name=bspwm
 Comment=Binary space partitioning window manager
 Exec=bspwm
 Type=Application
+DesktopNames=bspwm
