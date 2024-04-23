@@ -234,9 +234,11 @@ void _apply_window_type(xcb_window_t win, rule_consequence_t *csq)
 	if (xcb_ewmh_get_wm_window_type_reply(ewmh, xcb_ewmh_get_wm_window_type(ewmh, win), &win_type, NULL) == 1) {
 		for (unsigned int i = 0; i < win_type.atoms_len; i++) {
 			xcb_atom_t a = win_type.atoms[i];
-			if (a == ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR ||
-			    a == ewmh->_NET_WM_WINDOW_TYPE_UTILITY) {
+			if (a == ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR) {
 				csq->focus = false;
+			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_UTILITY) {
+				csq->focus = false;
+				SET_CSQ_STATE(STATE_FLOATING);
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
 				SET_CSQ_STATE(STATE_FLOATING);
 				csq->center = true;
