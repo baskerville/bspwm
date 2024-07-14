@@ -1124,7 +1124,8 @@ void find_first_ancestor(coordinates_t *ref, coordinates_t *dst, node_select_t *
 void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t dir, node_select_t *sel)
 {
 	xcb_rectangle_t rect = get_rectangle(ref->monitor, ref->desktop, ref->node);
-	uint32_t md = UINT32_MAX, mr = UINT32_MAX;
+	int32_t md = INT32_MAX;
+	uint32_t mr = UINT32_MAX;
 
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		desktop_t *d = m->desk;
@@ -1139,7 +1140,7 @@ void find_nearest_neighbor(coordinates_t *ref, coordinates_t *dst, direction_t d
 			    !on_dir_side(rect, r, dir)) {
 				continue;
 			}
-			uint32_t fd = boundary_distance(rect, r, dir);
+			int32_t fd = boundary_distance(rect, r, dir);
 			uint32_t fr = history_rank(f);
 			if (fd < md || (fd == md && fr < mr)) {
 				md = fd;

@@ -46,25 +46,26 @@ unsigned int area(xcb_rectangle_t r)
 }
 
 /* Distance between the `dir` edge of `r1` and the `opposite(dir)` edge of `r2`. */
-uint32_t boundary_distance(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
+int32_t boundary_distance(xcb_rectangle_t r1, xcb_rectangle_t r2, direction_t dir)
 {
 	xcb_point_t r1_max = {r1.x + r1.width - 1, r1.y + r1.height - 1};
 	xcb_point_t r2_max = {r2.x + r2.width - 1, r2.y + r2.height - 1};
+
 	switch (dir) {
 		case DIR_NORTH:
-			return r2_max.y > r1.y ? r2_max.y - r1.y : r1.y - r2_max.y;
-			break;
+                        return r1.y - r2_max.y;
+                        break;
 		case DIR_WEST:
-			return r2_max.x > r1.x ? r2_max.x - r1.x : r1.x - r2_max.x;
-			break;
+                        return r1.x - r2_max.x;
+                        break;
 		case DIR_SOUTH:
-			return r2.y < r1_max.y ? r1_max.y - r2.y : r2.y - r1_max.y;
-			break;
+                        return r2.y - r1_max.y;
+                        break;
 		case DIR_EAST:
-			return r2.x < r1_max.x ? r1_max.x - r2.x : r2.x - r1_max.x;
-			break;
+                        return r2.x - r1_max.x;
+                        break;
 		default:
-			return UINT32_MAX;
+			return INT32_MAX;
 	}
 }
 
