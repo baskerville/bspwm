@@ -35,7 +35,7 @@
 #define NORMAL_BORDER_COLOR           "#30302f"
 #define ACTIVE_BORDER_COLOR           "#474645"
 #define FOCUSED_BORDER_COLOR          "#817f7f"
-#define PRESEL_FEEDBACK_COLOR         "#f4d775"
+#define PRESEL_FEEDBACK_COLOR         "#44475A"
 
 #define PADDING              {0, 0, 0, 0}
 #define MONOCLE_PADDING      {0, 0, 0, 0}
