@@ -1,3 +1,54 @@
+# From 0.9.10 to 0.9.11
+
+## Fixes
+
+- Set the input focus before unmapping windows (#811).
+- Arrange across all desktops when handling structs (#1165).
+- Don't set the wrong border color when swapping nodes.
+- Honor `pointer_follows_focus` when swapping nodes.
+- Update EWMH's current desktop when adding a desktop (#1179).
+- Initialize the destination location early (#1196).
+- Handle standard output closure last (#1207).
+- Discard colons within references (#1218).
+- Use separate references in `cmd_query` (#1235).
+- `DESKTOP_SEL`: discard hashes within `MONITOR_SEL` (#1267).
+- Discard colons within refs in `desktop_from_desc` (#1278).
+- Propagate the size constraints toward the root.
+- Set `CLOEXEC` on the sockets except when restarting (#1298).
+- Properly update the sticky count in `transfer_*` (#1199).
+- Don't remove non-receptacles in `kill_node` (#1268).
+- Handle empty insertion point in the `node_add` message (#1306).
+- Windows sometimes not appearing (#935).
+- Refocus the focused window when receiving a FOCUS_IN event for root (#1160).
+- Always return `1` when `execvp()` fails (#1393).
+- Avoid unnecessary relayouts for unchanged values (#1415).
+- Account for vacant nodes when adjusting ratios (#1431).
+- Notify subscribers when a desktop's status changes (#1437).
+- Account for border width in configure requests (#863).
+- Unset `pointer_follows_focus` when refocusing the focused node (#1481).
+- Fix segfault caused by non-null-terminated string (#1503).
+
+## Changes
+
+- Allow negated window modifiers to match non-windows (#1232).
+- Handle sticky nodes in `swap_desktops` (#1298).
+- Don't include pointer events in the node mask.
+- Turn `honor_size_hints` into a node setting (#1447).
+- Set `_NET_WM_WINDOW_TYPE` on monitor root window (#1453).
+- Revamp signal handling (#1480).
+- Set the desktop name in the xsession file (#1493).
+
+## Additions
+
+- Add layout modifiers to desktop selectors : `.tiled`, `.monocle`, `.user_tiled`, `.user_monocle`.
+- Add new setting: `borderless_singleton`.
+- Restore the last window state with `node -t ~`.
+- Emit life cycle events for receptacles.
+- Allow setting a node's splitting type (#1291).
+- Allow cycling the splitting type of a node.
+- Add `--print-socket-path` option (#1367).
+- Allow escaping colons in rule tokenization (#1071).
+
 # From 0.9.9 to 0.9.10
 
 ## Additions
