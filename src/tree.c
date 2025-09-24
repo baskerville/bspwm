@@ -1733,6 +1733,7 @@ bool find_closest_node(coordinates_t *ref, coordinates_t *dst, cycle_dir_t dir, 
 	monitor_t *m = ref->monitor;
 	desktop_t *d = ref->desktop;
 	node_t *n = ref->node;
+	if (!n) return false;
 	n = (dir == CYCLE_PREV ? prev_node(n) : next_node(n));
 
 #define HANDLE_BOUNDARIES(m, d, n)  \
