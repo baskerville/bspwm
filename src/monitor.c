@@ -48,6 +48,7 @@ monitor_t *make_monitor(const char *name, xcb_rectangle_t *rect, uint32_t id)
 	m->randr_id = XCB_NONE;
 	snprintf(m->name, sizeof(m->name), "%s", name == NULL ? DEFAULT_MON_NAME : name);
 	m->padding = padding;
+	m->monocle_padding = monocle_padding;
 	m->border_width = border_width;
 	m->window_gap = window_gap;
 	m->root = XCB_NONE;
