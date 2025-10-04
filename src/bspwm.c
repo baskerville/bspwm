@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <xcb/xinerama.h>
 #include <xcb/xcb_aux.h>
 #include "types.h"
@@ -197,16 +198,13 @@ int main(int argc, char *argv[])
 	sigact.sa_handler = sig_handler;
 	sigemptyset(&sigact.sa_mask);
 	sigact.sa_flags = SA_RESTART;
+	sigaction(SIGCHLD, &sigact, NULL);
 	sigaction(SIGINT, &sigact, NULL);
 	sigaction(SIGHUP, &sigact, NULL);
 	sigaction(SIGTERM, &sigact, NULL);
 	/* We avoid using SIG_IGN with SIGPIPE because that would be preserved across
 	   exec. */
 	sigaction(SIGPIPE, &sigact, NULL);
-
-	sigact.sa_handler = SIG_IGN;
-	sigact.sa_flags = SA_NOCLDWAIT;
-	sigaction(SIGCHLD, &sigact, NULL);
 
 	run_config(run_level);
 	running = true;
@@ -536,7 +534,10 @@ bool check_connection (xcb_connection_t *dpy)
 
 void sig_handler(int sig)
 {
-	if (sig == SIGINT || sig == SIGHUP || sig == SIGTERM) {
+	if (sig == SIGCHLD) {
+		while (waitpid(-1, 0, WNOHANG) > 0)
+			;
+	} else if (sig == SIGINT || sig == SIGHUP || sig == SIGTERM) {
 		running = false;
 	}
 }
