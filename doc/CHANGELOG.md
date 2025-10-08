@@ -1,3 +1,7 @@
+# From 0.9.11 to 0.9.12
+
+- Fix a regression introduced by 6082d8b (#1533).
+
 # From 0.9.10 to 0.9.11
 
 ## Fixes
