@@ -54,10 +54,10 @@ void arrange(monitor_t *m, desktop_t *d)
 	rect.height -= m->padding.top + d->padding.top + d->padding.bottom + m->padding.bottom;
 
 	if (d->layout == LAYOUT_MONOCLE) {
-		rect.x += monocle_padding.left;
-		rect.y += monocle_padding.top;
-		rect.width -= monocle_padding.left + monocle_padding.right;
-		rect.height -= monocle_padding.top + monocle_padding.bottom;
+		rect.x += m->monocle_padding.left + d->monocle_padding.left;
+		rect.y += m->monocle_padding.top + d->monocle_padding.top;
+		rect.width -= m->monocle_padding.left + d->monocle_padding.left + d->monocle_padding.right + m->monocle_padding.right;
+		rect.height -= m->monocle_padding.top + d->monocle_padding.top + d->monocle_padding.bottom + m->monocle_padding.bottom;
 	}
 
 	if (!gapless_monocle || d->layout != LAYOUT_MONOCLE) {
