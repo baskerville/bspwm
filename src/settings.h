@@ -68,6 +68,8 @@
 #define REMOVE_UNPLUGGED_MONITORS   false
 #define MERGE_OVERLAPPING_MONITORS  false
 
+#define ALLOW_NET_WM_MOVERESIZE true
+
 extern char external_rules_command[MAXLEN];
 extern char status_prefix[MAXLEN];
 
@@ -112,6 +114,8 @@ extern honor_size_hints_mode_t honor_size_hints;
 extern bool remove_disabled_monitors;
 extern bool remove_unplugged_monitors;
 extern bool merge_overlapping_monitors;
+
+extern bool allow_net_wm_moveresize;
 
 void run_config(int run_level);
 void load_settings(void);
