@@ -240,6 +240,9 @@ void _apply_window_type(xcb_window_t win, rule_consequence_t *csq)
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DIALOG) {
 				SET_CSQ_STATE(STATE_FLOATING);
 				csq->center = true;
+				if (put_dialogs_above) {
+					SET_CSQ_LAYER(LAYER_ABOVE);
+				}
 			} else if (a == ewmh->_NET_WM_WINDOW_TYPE_DOCK ||
 			           a == ewmh->_NET_WM_WINDOW_TYPE_DESKTOP ||
 			           a == ewmh->_NET_WM_WINDOW_TYPE_NOTIFICATION) {

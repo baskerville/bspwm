@@ -783,6 +783,9 @@ Global Settings
 'ignore_ewmh_struts'::
 	Ignore strut hinting from clients requesting to reserve space (i.e. task bars).
 
+'put_dialogs_above'::
+	Put dialogs in the ABOVE stacking layer.
+
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
 
