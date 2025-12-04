@@ -362,7 +362,9 @@ void focus_in(xcb_generic_event_t *evt)
 			   focused window in this case */
 			bool pff = pointer_follows_focus;
 			pointer_follows_focus = false;
+			auto_raise = false;
 			focus_node(mon, mon->desk, mon->desk->focus);
+			auto_raise = true;
 			pointer_follows_focus = pff;
 			return;
 		}
