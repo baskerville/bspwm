@@ -663,7 +663,9 @@ void cmd_desktop(char **args, int num, FILE *rsp)
 					break;
 				}
 			}
+			auto_raise = false;
 			focus_node(dst.monitor, dst.desktop, NULL);
+			auto_raise = true;
 		} else if (streq("-a", *args) || streq("--activate", *args)) {
 			coordinates_t dst = trg;
 			if (num > 1 && *(args + 1)[0] != OPT_CHR) {
