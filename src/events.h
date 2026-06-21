@@ -27,6 +27,7 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include <xcb/xcb_ewmh.h>
 
 #define ERROR_CODE_BAD_WINDOW  3
 
@@ -41,6 +42,9 @@ void destroy_notify(xcb_generic_event_t *evt);
 void unmap_notify(xcb_generic_event_t *evt);
 void property_notify(xcb_generic_event_t *evt);
 void client_message(xcb_generic_event_t *evt);
+void wm_move_resize_node(xcb_client_message_event_t* e, coordinates_t loc);
+void wm_move_node(xcb_client_message_event_t* e, coordinates_t loc);
+void wm_resize_node(xcb_client_message_event_t* e, coordinates_t loc);
 void focus_in(xcb_generic_event_t *evt);
 void button_press(xcb_generic_event_t *evt);
 void enter_notify(xcb_generic_event_t *evt);

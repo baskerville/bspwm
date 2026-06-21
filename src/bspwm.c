@@ -387,6 +387,7 @@ void setup(void)
 	                          ewmh->_NET_CLOSE_WINDOW,
 	                          ewmh->_NET_WM_STRUT_PARTIAL,
 	                          ewmh->_NET_WM_DESKTOP,
+	                          ewmh->_NET_WM_MOVERESIZE,
 	                          ewmh->_NET_WM_STATE,
 	                          ewmh->_NET_WM_STATE_HIDDEN,
 	                          ewmh->_NET_WM_STATE_FULLSCREEN,
