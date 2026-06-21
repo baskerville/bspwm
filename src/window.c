@@ -134,7 +134,7 @@ bool manage_window(xcb_window_t win, rule_consequence_t *csq, int fd)
 		presel_ratio(m, d, f, csq->split_ratio);
 	}
 
-	node_t *n = make_node(win);
+	node_t *n = make_node(win, d->split_ratio);
 	client_t *c = make_client();
 	c->border_width = csq->border ? d->border_width : 0;
 	n->client = c;
@@ -547,6 +547,7 @@ bool move_client(coordinates_t *loc, int dx, int dy)
 bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool relative)
 {
 	node_t *n = loc->node;
+	desktop_t *d = loc->desktop;
 	if (n == NULL || n->client == NULL || n->client->state == STATE_FULLSCREEN) {
 		return false;
 	}
@@ -577,6 +578,9 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 			}
 			sr = MAX(0, sr);
 			sr = MIN(1, sr);
+			if (d->root == vertical_fence) {
+				d->split_ratio = sr;
+			}
 			vertical_fence->split_ratio = sr;
 			adjust_ratios(vertical_fence, vertical_fence->rectangle);
 		}
@@ -589,6 +593,9 @@ bool resize_client(coordinates_t *loc, resize_handle_t rh, int dx, int dy, bool 
 			}
 			sr = MAX(0, sr);
 			sr = MIN(1, sr);
+			if (vertical_fence == NULL && d->root == horizontal_fence) {
+				d->split_ratio = sr;
+			}
 			horizontal_fence->split_ratio = sr;
 			adjust_ratios(horizontal_fence, horizontal_fence->rectangle);
 		}

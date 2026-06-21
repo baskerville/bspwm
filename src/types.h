@@ -283,6 +283,7 @@ typedef struct desktop_t desktop_t;
 struct desktop_t {
 	char name[SMALEN];
 	uint32_t id;
+	double split_ratio;
 	layout_t layout;
 	layout_t user_layout;
 	node_t *root;

@@ -323,7 +323,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 		free(f);
 		f = NULL;
 	} else {
-		node_t *c = make_node(XCB_NONE);
+		node_t *c = make_node(XCB_NONE, d->split_ratio);
 		node_t *p = f->parent;
 		if (f->presel == NULL && (f->private || private_count(f->parent) > 0)) {
 			node_t *k = find_public(d);
@@ -442,6 +442,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 			}
 			if (d->root == f) {
 				d->root = c;
+				d->split_ratio = c->split_ratio;
 			}
 			cancel_presel(m, d, f);
 			set_marked(m, d, n, false);
@@ -463,7 +464,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 
 void insert_receptacle(monitor_t *m, desktop_t *d, node_t *n)
 {
-	node_t *r = make_node(XCB_NONE);
+	node_t *r = make_node(XCB_NONE, d->split_ratio);
 	insert_node(m, d, r, n);
 	put_status(SBSC_MASK_NODE_ADD, "node_add 0x%08X 0x%08X 0x%08X 0x%08X\n", m->id, d->id, n != NULL ? n->id : 0, r->id);
 
@@ -726,7 +727,7 @@ void show_node(desktop_t *d, node_t *n)
 	}
 }
 
-node_t *make_node(uint32_t id)
+node_t *make_node(uint32_t id, double sr)
 {
 	if (id == XCB_NONE) {
 		id = xcb_generate_id(dpy);
@@ -735,7 +736,7 @@ node_t *make_node(uint32_t id)
 	n->id = id;
 	n->parent = n->first_child = n->second_child = NULL;
 	n->vacant = n->hidden = n->sticky = n->private = n->locked = n->marked = false;
-	n->split_ratio = split_ratio;
+	n->split_ratio = sr;
 	n->split_type = TYPE_VERTICAL;
 	n->constraints = (constraints_t) {MIN_WIDTH, MIN_HEIGHT};
 	n->presel = NULL;
