@@ -62,6 +62,7 @@
 
 #define CENTER_PSEUDO_TILED         true
 #define HONOR_SIZE_HINTS            HONOR_SIZE_HINTS_NO
+#define USE_RELATIVE_RESIZING       true
 #define MAPPING_EVENTS_COUNT        1
 
 #define REMOVE_DISABLED_MONITORS    false
@@ -108,6 +109,7 @@ extern state_transition_t ignore_ewmh_fullscreen;
 
 extern bool center_pseudo_tiled;
 extern honor_size_hints_mode_t honor_size_hints;
+extern bool use_relative_resizing;
 
 extern bool remove_disabled_monitors;
 extern bool remove_unplugged_monitors;

@@ -68,6 +68,7 @@ state_transition_t ignore_ewmh_fullscreen;
 
 bool center_pseudo_tiled;
 honor_size_hints_mode_t honor_size_hints;
+bool use_relative_resizing;
 
 bool remove_disabled_monitors;
 bool remove_unplugged_monitors;
@@ -131,6 +132,7 @@ void load_settings(void)
 
 	center_pseudo_tiled = CENTER_PSEUDO_TILED;
 	honor_size_hints = HONOR_SIZE_HINTS;
+	use_relative_resizing = USE_RELATIVE_RESIZING;
 
 	remove_disabled_monitors = REMOVE_DISABLED_MONITORS;
 	remove_unplugged_monitors = REMOVE_UNPLUGGED_MONITORS;

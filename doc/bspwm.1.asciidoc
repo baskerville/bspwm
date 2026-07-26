@@ -786,6 +786,9 @@ Global Settings
 'center_pseudo_tiled'::
 	Center pseudo tiled windows into their tiling rectangles. Defaults to 'true'.
 
+'use_relative_resizing'::
+	Resize windows relative to the pointer motion instead of the pointer position. Defaults to 'true'.
+
 'remove_disabled_monitors'::
 	Consider disabled monitors as disconnected.
 
