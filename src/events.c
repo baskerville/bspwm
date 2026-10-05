@@ -23,17 +23,17 @@
  */
 
 #include <stdbool.h>
-#include "bspwm.h"
-#include "ewmh.h"
+#include "include/spwm.h"
+#include "include/ewmh.h"
 #include "monitor.h"
 #include "query.h"
-#include "settings.h"
+#include "include/settings.h"
 #include "subscribe.h"
 #include "tree.h"
-#include "window.h"
+#include "include/window.h"
 #include "pointer.h"
 #include "rule.h"
-#include "events.h"
+#include "include/events.h"
 
 uint8_t randr_base;
 

@@ -26,9 +26,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <limits.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "desktop.h"
-#include "ewmh.h"
+#include "include/ewmh.h"
 #include "history.h"
 #include "monitor.h"
 #include "query.h"
@@ -37,7 +37,7 @@
 #include "settings.h"
 #include "pointer.h"
 #include "stack.h"
-#include "window.h"
+#include "include/window.h"
 #include "tree.h"
 
 void arrange(monitor_t *m, desktop_t *d)

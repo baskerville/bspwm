@@ -26,9 +26,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "desktop.h"
-#include "ewmh.h"
+#include "include/ewmh.h"
 #include "history.h"
 #include "pointer.h"
 #include "monitor.h"
@@ -38,7 +38,7 @@
 #include "settings.h"
 #include "subscribe.h"
 #include "restore.h"
-#include "window.h"
+#include "include/window.h"
 #include "parse.h"
 
 bool restore_state(const char *file_path)

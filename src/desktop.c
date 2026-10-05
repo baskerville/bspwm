@@ -25,13 +25,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "bspwm.h"
-#include "ewmh.h"
+#include "include/bspwm.h"
+#include "include/ewmh.h"
 #include "history.h"
 #include "monitor.h"
 #include "query.h"
 #include "tree.h"
-#include "window.h"
+#include "include/window.h"
 #include "desktop.h"
 #include "subscribe.h"
 #include "settings.h"

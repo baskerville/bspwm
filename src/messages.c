@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "desktop.h"
 #include "monitor.h"
 #include "pointer.h"
@@ -38,7 +38,7 @@
 #include "restore.h"
 #include "settings.h"
 #include "tree.h"
-#include "window.h"
+#include "include/window.h"
 #include "common.h"
 #include "parse.h"
 #include "messages.h"

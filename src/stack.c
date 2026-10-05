@@ -23,10 +23,10 @@
  */
 
 #include <stdlib.h>
-#include "bspwm.h"
-#include "window.h"
+#include "include/bspwm.h"
+#include "include/window.h"
 #include "subscribe.h"
-#include "ewmh.h"
+#include "include/ewmh.h"
 #include "tree.h"
 #include "stack.h"
 

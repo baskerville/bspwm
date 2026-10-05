@@ -27,16 +27,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "desktop.h"
-#include "ewmh.h"
+#include "include/ewmh.h"
 #include "query.h"
 #include "pointer.h"
 #include "settings.h"
 #include "geometry.h"
 #include "tree.h"
 #include "subscribe.h"
-#include "window.h"
+#include "include/window.h"
 #include "monitor.h"
 
 monitor_t *make_monitor(const char *name, xcb_rectangle_t *rect, uint32_t id)

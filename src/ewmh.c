@@ -26,10 +26,10 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "settings.h"
 #include "tree.h"
-#include "ewmh.h"
+#include "include/ewmh.h"
 
 xcb_ewmh_connection_t *ewmh;
 

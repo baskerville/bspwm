@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "settings.h"
 
 char external_rules_command[MAXLEN];

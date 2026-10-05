@@ -25,12 +25,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "desktop.h"
 #include "history.h"
 #include "parse.h"
 #include "monitor.h"
-#include "window.h"
+#include "include/window.h"
 #include "tree.h"
 #include "query.h"
 #include "geometry.h"

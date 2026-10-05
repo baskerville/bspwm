@@ -28,7 +28,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <fcntl.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "desktop.h"
 #include "settings.h"
 #include "subscribe.h"

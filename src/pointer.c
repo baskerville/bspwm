@@ -25,15 +25,15 @@
 #include <xcb/xcb_keysyms.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "query.h"
 #include "settings.h"
 #include "stack.h"
 #include "tree.h"
 #include "monitor.h"
 #include "subscribe.h"
-#include "events.h"
-#include "window.h"
+#include "include/events.h"
+#include "include/window.h"
 #include "pointer.h"
 
 uint16_t num_lock;

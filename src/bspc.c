@@ -31,8 +31,8 @@
 #include <poll.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include "helpers.h"
-#include "common.h"
+#include "include/helpers.h"
+#include "include/common.h"
 
 int main(int argc, char *argv[])
 {

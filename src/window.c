@@ -27,8 +27,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <xcb/shape.h>
-#include "bspwm.h"
-#include "ewmh.h"
+#include "include/bspwm.h"
+#include "include/ewmh.h"
 #include "monitor.h"
 #include "desktop.h"
 #include "query.h"
@@ -39,7 +39,7 @@
 #include "stack.h"
 #include "tree.h"
 #include "parse.h"
-#include "window.h"
+#include "include/window.h"
 
 void schedule_window(xcb_window_t win)
 {

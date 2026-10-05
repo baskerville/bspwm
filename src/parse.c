@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
-#include "parse.h"
+#include "include/parse.h"
 
 bool parse_bool(char *value, bool *b)
 {

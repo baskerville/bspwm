@@ -28,9 +28,9 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
-#include "bspwm.h"
-#include "ewmh.h"
-#include "window.h"
+#include "include/bspwm.h"
+#include "include/ewmh.h"
+#include "include/window.h"
 #include "query.h"
 #include "parse.h"
 #include "settings.h"

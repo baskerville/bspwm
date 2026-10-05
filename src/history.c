@@ -24,7 +24,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 #include "tree.h"
 #include "query.h"
 #include "history.h"

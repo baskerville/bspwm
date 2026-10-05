@@ -31,7 +31,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
-#include "bspwm.h"
+#include "include/bspwm.h"
 
 void warn(char *fmt, ...)
 {
