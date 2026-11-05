@@ -367,8 +367,7 @@ struct stacking_list_t {
 };
 
 /* Deferred event for pending rule processing.
- * On X11 this holds the raw xcb_generic_event_t; on wlroots
- * the backend stores an opaque copy of the event data. */
+ * On X11 this holds a copy of the raw xcb_generic_event_t. */
 typedef struct event_queue_t event_queue_t;
 struct event_queue_t {
 	uint8_t data[64]; /* large enough for any backend event */

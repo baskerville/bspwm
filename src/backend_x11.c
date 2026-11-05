@@ -27,8 +27,7 @@
  *
  * This file implements the backend_* interface from backend.h using XCB.
  * It holds the X11-specific global state (connection, screen, atoms)
- * and delegates to the existing window.c/events.c/ewmh.c/pointer.c
- * which remain X11-specific and are only compiled with BACKEND=x11.
+ * and delegates to the existing window.c/events.c/ewmh.c/pointer.c.
  */
 
 #include <stdio.h>

@@ -34,9 +34,7 @@ extern uint8_t randr_base;
 /* Button list — values from backend.h */
 static const uint8_t BUTTONS[] = {BSP_BUTTON_1, BSP_BUTTON_2, BSP_BUTTON_3};
 
-/* Backend-specific event dispatch — the X11 backend calls these
- * from its event loop; the wlroots backend calls them from
- * its signal handlers. */
+/* Event dispatch — called from the X11 event loop. */
 void handle_event(void *evt);
 void map_request(void *evt);
 void configure_request(void *evt);

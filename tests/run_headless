@@ -1,21 +1,18 @@
 #!/bin/sh
 # Red-green TDD test runner for bspwm
-# Usage: ./run_headless [x11|wlroots]
+# Usage: ./run_headless
 #
 # Starts bspwm on a headless display, runs all tests, reports results.
 # Exit code: 0 = all green, 1 = red (failures)
 
 set -e
 
-BACKEND="${1:-x11}"
 # The WM exports BSPWM_SOCKET to everything it spawns, so a terminal inside
 # a live session carries the live socket path. Left in place, the WM under
 # test binds that same path and unlinks it on exit, cutting bspc off from
 # the real session.
 unset BSPWM_SOCKET
-# The X11 build is bspwm, the wlroots compositor is bspwm-wl.
 BSPWM="../bspwm"
-[ "$BACKEND" = "wlroots" ] && BSPWM="../bspwm-wl"
 BSPC="../bspc"
 PASS=0
 FAIL=0
@@ -28,14 +25,11 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 cleanup() {
-	if [ -n "${CLEANUP_XDG_RUNTIME_DIR:-}" ]; then
-		rm -rf "$CLEANUP_XDG_RUNTIME_DIR"
-	fi
 	if [ -n "$BSPWM_PID" ]; then
 		kill "$BSPWM_PID" 2>/dev/null || true
 		wait "$BSPWM_PID" 2>/dev/null || true
 	fi
-	if [ "$BACKEND" = "x11" ] && [ -n "$XVFB_PID" ]; then
+	if [ -n "$XVFB_PID" ]; then
 		kill "$XVFB_PID" 2>/dev/null || true
 	fi
 }
@@ -43,44 +37,23 @@ trap cleanup EXIT
 
 # ---- Start headless display ----
 
-if [ "$BACKEND" = "x11" ]; then
-	# Find a free display
-	DISPLAY_NUM=99
-	while [ -e "/tmp/.X${DISPLAY_NUM}-lock" ]; do
-		DISPLAY_NUM=$((DISPLAY_NUM + 1))
-	done
-	export DISPLAY=":${DISPLAY_NUM}"
+# Find a free display
+DISPLAY_NUM=99
+while [ -e "/tmp/.X${DISPLAY_NUM}-lock" ]; do
+	DISPLAY_NUM=$((DISPLAY_NUM + 1))
+done
+export DISPLAY=":${DISPLAY_NUM}"
 
-	Xvfb "$DISPLAY" -screen 0 1920x1080x24 &
-	XVFB_PID=$!
-	sleep 0.5
+Xvfb "$DISPLAY" -screen 0 1920x1080x24 &
+XVFB_PID=$!
+sleep 0.5
 
-	if ! kill -0 "$XVFB_PID" 2>/dev/null; then
-		printf "%b\n" "${RED}FAIL: Xvfb failed to start${NC}"
-		exit 1
-	fi
-
-	printf "%b\n" "${YELLOW}=== Testing X11 backend on ${DISPLAY} ===${NC}"
-elif [ "$BACKEND" = "wlroots" ]; then
-	export WLR_BACKENDS=headless
-	export WLR_RENDERER=pixman
-	export WLR_HEADLESS_OUTPUTS=1
-	# No DISPLAY needed — bspwm sets WAYLAND_DISPLAY itself
-	unset DISPLAY
-	# wlroots needs XDG_RUNTIME_DIR for its Wayland socket and has no
-	# fallback. A bare CI container (GitHub Actions) does not set it, so
-	# provide a private one when it is missing.
-	if [ -z "${XDG_RUNTIME_DIR:-}" ] || [ ! -d "${XDG_RUNTIME_DIR:-}" ]; then
-		XDG_RUNTIME_DIR=$(mktemp -d "${TMPDIR:-/tmp}/bspwm-xdg.XXXXXX")
-		chmod 700 "$XDG_RUNTIME_DIR"
-		export XDG_RUNTIME_DIR
-		CLEANUP_XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR"
-	fi
-	printf "%b\n" "${YELLOW}=== Testing wlroots backend (headless) ===${NC}"
-else
-	echo "Usage: $0 [x11|wlroots]"
+if ! kill -0 "$XVFB_PID" 2>/dev/null; then
+	printf "%b\n" "${RED}FAIL: Xvfb failed to start${NC}"
 	exit 1
 fi
+
+printf "%b\n" "${YELLOW}=== Testing X11 backend on ${DISPLAY} ===${NC}"
 
 # ---- Start bspwm ----
 
@@ -91,20 +64,6 @@ sleep 2
 if ! kill -0 "$BSPWM_PID" 2>/dev/null; then
 	printf "%b\n" "${RED}FAIL: bspwm failed to start${NC}"
 	exit 1
-fi
-
-# Pick up the socket — find the most recently created bspwm socket
-if [ "$BACKEND" = "wlroots" ]; then
-	# bspwm creates socket at $XDG_RUNTIME_DIR/bspwm<wayland-display>_0_0-socket
-	# (falling back to /tmp when XDG_RUNTIME_DIR is unset).
-	SOCKDIR="${XDG_RUNTIME_DIR:-/tmp}"
-	SOCK=$(ls -t "$SOCKDIR"/bspwmwayland-*-socket 2>/dev/null | head -1)
-	if [ -n "$SOCK" ]; then
-		export BSPWM_SOCKET="$SOCK"
-		# Point the test clients at this compositor, not at whatever
-		# wayland-0 happens to be running on the machine.
-		export WAYLAND_DISPLAY=$(basename "$SOCK" | sed 's/^bspwm\(wayland-[0-9]*\)_.*/\1/')
-	fi
 fi
 
 # ---- Test helpers ----
@@ -187,30 +146,28 @@ assert_not_empty "query --tree returns data" "$TREE"
 # T5b: a second bspwm that resolves THIS socket (via BSPWM_SOCKET) but runs on
 # another display must refuse, not unlink the live socket out from under us.
 # Regression for the "bspc control dies, keybinds stop" incident.
-if [ "$BACKEND" = "x11" ]; then
-	FIRST_SOCK="${XDG_RUNTIME_DIR:-/tmp}/bspwm_${DISPLAY_NUM}_0-socket"
-	if [ -S "$FIRST_SOCK" ]; then
-		DN2=$((DISPLAY_NUM + 50))
-		while [ -e "/tmp/.X${DN2}-lock" ]; do DN2=$((DN2 + 1)); done
-		Xvfb ":${DN2}" -screen 0 640x480x24 >/dev/null 2>&1 &
-		XVFB2_PID=$!
-		sleep 0.5
-		BSPWM_SOCKET="$FIRST_SOCK" DISPLAY=":${DN2}" "$BSPWM" -c /dev/null >/dev/null 2>&1 &
-		SECOND_PID=$!
-		sleep 1
-		if kill -0 "$SECOND_PID" 2>/dev/null; then
-			printf "%b\n" "  ${RED}FAIL${NC}: second bspwm did not refuse the live socket"
-			FAIL=$((FAIL + 1)); kill "$SECOND_PID" 2>/dev/null || true
-		else
-			printf "%b\n" "  ${GREEN}PASS${NC}: second bspwm refuses the live socket"
-			PASS=$((PASS + 1))
-		fi
-		TESTS_RUN=$((TESTS_RUN + 1))
-		assert_ok "live socket survives the second instance" $BSPC query -M
-		kill "$XVFB2_PID" 2>/dev/null || true
+FIRST_SOCK="${XDG_RUNTIME_DIR:-/tmp}/bspwm_${DISPLAY_NUM}_0-socket"
+if [ -S "$FIRST_SOCK" ]; then
+	DN2=$((DISPLAY_NUM + 50))
+	while [ -e "/tmp/.X${DN2}-lock" ]; do DN2=$((DN2 + 1)); done
+	Xvfb ":${DN2}" -screen 0 640x480x24 >/dev/null 2>&1 &
+	XVFB2_PID=$!
+	sleep 0.5
+	BSPWM_SOCKET="$FIRST_SOCK" DISPLAY=":${DN2}" "$BSPWM" -c /dev/null >/dev/null 2>&1 &
+	SECOND_PID=$!
+	sleep 1
+	if kill -0 "$SECOND_PID" 2>/dev/null; then
+		printf "%b\n" "  ${RED}FAIL${NC}: second bspwm did not refuse the live socket"
+		FAIL=$((FAIL + 1)); kill "$SECOND_PID" 2>/dev/null || true
 	else
-		printf "%b\n" "  ${YELLOW}SKIP${NC}: socket clobber test (socket path not found)"
+		printf "%b\n" "  ${GREEN}PASS${NC}: second bspwm refuses the live socket"
+		PASS=$((PASS + 1))
 	fi
+	TESTS_RUN=$((TESTS_RUN + 1))
+	assert_ok "live socket survives the second instance" $BSPC query -M
+	kill "$XVFB2_PID" 2>/dev/null || true
+else
+	printf "%b\n" "  ${YELLOW}SKIP${NC}: socket clobber test (socket path not found)"
 fi
 
 echo ""
@@ -259,7 +216,7 @@ assert_eq "keybinds empty after clear" "" "$KB_EMPTY"
 # T16b: keybinds actually FIRE end-to-end (X11 only, needs xdotool).
 # This is the only test that exercises the key-press dispatch path, i.e. the
 # in-process `bspc ...` fast path in keybind_exec and its fork+sh fallback.
-if [ "$BACKEND" = "x11" ] && command -v xdotool >/dev/null 2>&1; then
+if command -v xdotool >/dev/null 2>&1; then
 	# Fast path: a plain `bspc ...` binding runs in-process (no fork/sh).
 	$BSPC config border_width 1 >/dev/null 2>&1
 	$BSPC keybind --add "super + F12" "bspc config border_width 7" >/dev/null 2>&1
@@ -311,7 +268,7 @@ $BSPC rule -r head >/dev/null 2>&1 || true  # drop the regex rule too
 
 # Real window matched by class gets the consequence applied (x11 only:
 # the test client sets WM_CLASS; the wl client uses app_id differently).
-if [ "$BACKEND" = "x11" ] && [ -f ./test_window ]; then
+if [ -f ./test_window ]; then
 	$BSPC rule -a class=RuleFloat state=floating >/dev/null 2>&1 || true
 	FLOAT_BEFORE=$($BSPC query -N -n .floating 2>/dev/null | wc -l)
 	./test_window rulefloat-i RuleFloat &
@@ -353,12 +310,7 @@ $BSPC config magnet_threshold 0 >/dev/null 2>&1 || true
 echo ""
 echo "== Window management =="
 
-# Pick the right test client
-if [ "$BACKEND" = "x11" ]; then
-	TEST_CLIENT="./test_window"
-else
-	TEST_CLIENT="./test_window_wl"
-fi
+TEST_CLIENT="./test_window"
 
 if [ -f "$TEST_CLIENT" ]; then
 	# -- Spawn first window --
@@ -620,9 +572,9 @@ echo ""
 echo "================================="
 TOTAL=$((PASS + FAIL))
 if [ "$FAIL" -eq 0 ]; then
-	printf "%b\n" "${GREEN}ALL GREEN: ${PASS}/${TOTAL} tests passed${NC} (${BACKEND})"
+	printf "%b\n" "${GREEN}ALL GREEN: ${PASS}/${TOTAL} tests passed${NC}"
 else
-	printf "%b\n" "${RED}RED: ${FAIL} failures, ${PASS} passed out of ${TOTAL}${NC} (${BACKEND})"
+	printf "%b\n" "${RED}RED: ${FAIL} failures, ${PASS} passed out of ${TOTAL}${NC}"
 fi
 echo "================================="
 

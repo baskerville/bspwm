@@ -1226,8 +1226,8 @@ bool is_child(node_t *a, node_t *b)
 unsigned int prune_dead_nodes(void)
 {
 	/* Count from the trees: a restored state whose recorded client count
-	 * was wrong (or zero) must not skip the prune, since on the wlroots
-	 * backend every restored client is dead after a restart. */
+	 * was wrong (or zero) must not skip the prune, since every restored
+	 * client is dead after a restart. */
 	uint32_t capacity = 0;
 	for (monitor_t *m = mon_head; m != NULL; m = m->next) {
 		for (desktop_t *d = m->desk_head; d != NULL; d = d->next) {

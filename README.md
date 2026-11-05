@@ -1,19 +1,14 @@
 # bspwm
 
-fork of baskerville/bspwm: a wlroots Wayland backend, edge snapping and magnetic edges, rule matching by property and regex, and fewer X11 round-trips.
+fork of baskerville/bspwm: edge snapping and magnetic edges, rule matching by property and regex, and fewer X11 round-trips.
 
 ## overview
 
-binary tree tiling window manager. socket IPC with bspc client. on X11 it uses sxhkd for keybindings; the Wayland build binds keys itself.
+binary tree tiling window manager. socket IPC with bspc client. uses sxhkd for keybindings, with built-in `bspc keybind` also available.
 
 ## changes from upstream
 
-### wayland backend
-
-`bspwm-wl` is a wlroots 0.20 compositor running the same tree, rules and `bspc` protocol. it
-supports layer shell, Xwayland, ext-workspace-v1 (waybar desktops), wlr-output-management
-(wlr-randr, kanshi), primary selection and data-control. keybindings are in-process via
-`bspc keybind`. see [build](#build).
+the experimental wlroots Wayland backend has been removed; this tree targets X11 only.
 
 ### window management
 
@@ -83,22 +78,15 @@ CPU cycle microbenchmarks exist in `benches/microbench.c` but are UX-irrelevant.
 ## build
 
 ```bash
-make                  # X11 backend -> bspwm
-make install          # installs bspwm, bspc and the xsessions entry
+make                  # build bspwm and bspc
+make install          # installs binaries, man pages, docs and the xsessions entry
 ```
 
-```bash
-make BACKEND=wlroots           # Wayland compositor -> bspwm-wl, against the distro wlroots (pkg-config wlroots-0.20)
-make BACKEND=wlroots install   # installs bspwm-wl, bspc and the wayland-sessions entry
-make BACKEND=wlroots WLROOTS_DIR=../wlroots WLROOTS_ABI=0.21   # or against a wlroots source checkout
-```
+`bspc` links no display library. objects live under `build/x11/`.
 
-each backend is a separate build and a separate binary. objects go under `build/<backend>/`, so the two can be built and installed side by side. `bspc` is shared and links no display library. the wayland build has no sxhkd: keybindings are handled in-process via `bspc keybind`. bars: waybar with `ext/workspaces` for desktops and `wlr/taskbar` for windows. a compositor restart (`bspc wm -r`) closes every client, as on any Wayland compositor. github releases build the X11 backend; the AUR has `bspwm1` (X11) and `bspwm1-wl` (Wayland).
+dependencies: libxcb, xcb-util, xcb-util-keysyms, xcb-util-wm, libxkbcommon
 
-dependencies (x11): libxcb, xcb-util, xcb-util-keysyms, xcb-util-wm, libxkbcommon
-dependencies (wlroots): wlroots 0.20, wayland, wayland-protocols, wlr-protocols, libxkbcommon, pixman, libdrm, xorg-xwayland
-
-arch packages: `pkg/arch/PKGBUILD` (bspwm1, X11) and `pkg/arch/bspwm1-wl/PKGBUILD` (bspwm1-wl, Wayland)
+arch package: `pkg/arch/PKGBUILD` (bspwm1)
 
 binary size: 285KB (+34KB / +13% vs upstream 0.9.12)
 

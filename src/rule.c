@@ -30,9 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "bspwm.h"
-#ifdef BACKEND_X11
 #include "backend_x11.h"
-#endif
 #include "ewmh.h"
 #include "window.h"
 #include "query.h"
@@ -331,7 +329,6 @@ void _apply_window_type(bspwm_wid_t win, bspwm_window_type_t type, rule_conseque
 
 void _apply_window_state(bspwm_wid_t win, rule_consequence_t *csq)
 {
-#ifdef BACKEND_X11
 	/* Query _NET_WM_STATE to set initial fullscreen/above/below/sticky */
 	xcb_ewmh_get_atoms_reply_t wm_state;
 	if (xcb_ewmh_get_wm_state_reply(ewmh, xcb_ewmh_get_wm_state(ewmh, win), &wm_state, NULL) == 1) {
@@ -349,13 +346,6 @@ void _apply_window_state(bspwm_wid_t win, rule_consequence_t *csq)
 		}
 		xcb_ewmh_get_atoms_reply_wipe(&wm_state);
 	}
-#else
-	/* Wayland: a client that asked for fullscreen before it was managed
-	 * (mpv --fs, games) has it recorded on the toplevel. */
-	if (backend_window_requests_fullscreen(win)) {
-		SET_CSQ_STATE(STATE_FULLSCREEN);
-	}
-#endif
 }
 
 void _apply_transient(bspwm_wid_t transient_for, rule_consequence_t *csq)

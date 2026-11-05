@@ -1,3 +1,12 @@
+# Unreleased
+
+### Removed
+
+- The experimental wlroots Wayland backend (`bspwm-wl`, `backend_wlr.c`,
+  `window_ops.c`) together with its build target, headless tests, session
+  entry and AUR package. The tree now builds X11 only; `make` no longer takes
+  a `BACKEND` argument.
+
 # v1.7.5
 
 ### Fixed

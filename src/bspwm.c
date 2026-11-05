@@ -54,10 +54,7 @@
 #include "keybind.h"
 #include "ipc.h"
 #include "bspwm.h"
-
-#ifdef BACKEND_X11
 #include "backend_x11.h"
-#endif
 
 /* Global state */
 int default_screen, screen_width, screen_height;
@@ -308,10 +305,8 @@ int main(int argc, char *argv[])
 		socket_path_set = true;
 	}
 
-	/* Hand the path to everything we spawn (config file, keybinds, rules).
-	 * bspc otherwise re-derives it from DISPLAY, which under the wlroots
-	 * backend names the Xwayland display while this socket is named after the
-	 * Wayland one: every bspc in the config failed to connect. */
+	/* Hand the path to everything we spawn (config file, keybinds, rules), so
+	 * bspc does not have to re-derive it from DISPLAY. */
 	setenv(SOCKET_ENV_VAR, socket_path, true);
 
 	fcntl(sock_fd, F_SETFD, FD_CLOEXEC | fcntl(sock_fd, F_GETFD));
@@ -385,19 +380,14 @@ int main(int argc, char *argv[])
 			} else if (ipc_handle(fd)) {
 				continue;
 			} else if (fd == dpy_fd) {
-#ifdef BACKEND_X11
 				xcb_generic_event_t *event;
 				while ((event = xcb_poll_for_event(dpy)) != NULL) {
 					handle_event(event);
 					free(event);
 				}
-#else
-				backend_dispatch_events();
-#endif
 			}
 		}
 
-#ifdef BACKEND_X11
 		/* Drain events xcb has already buffered in userspace. A handler above
 		 * (pending-rule window management, or any IPC command that issues an X
 		 * round-trip) pulls bytes off the socket into xcb's queue; those events
@@ -411,7 +401,6 @@ int main(int argc, char *argv[])
 				free(qev);
 			}
 		}
-#endif
 
 		if (!backend_check_connection()) {
 			running = false;
@@ -537,7 +526,6 @@ void setup(void)
 	init();
 	keybind_init();
 
-#ifdef BACKEND_X11
 	backend_ewmh_init();
 	pointer_init();
 	x11_setup_screen();
@@ -573,22 +561,6 @@ void setup(void)
 		add_monitor(m);
 		add_desktop(m, make_desktop(NULL, BSPWM_WID_NONE));
 	}
-#endif
-
-#ifndef BACKEND_X11
-	/* Wayland: outputs were created during backend_init, but setup
-	 * wasn't ready yet. Re-query outputs now. */
-	root = backend_get_root();
-	backend_get_screen_size(&screen_width, &screen_height);
-	if (!update_monitors()) {
-		bspwm_rect_t rect = {0, 0, screen_width, screen_height};
-		monitor_t *m = make_monitor(NULL, &rect, BSPWM_WID_NONE);
-		add_monitor(m);
-		add_desktop(m, make_desktop(NULL, BSPWM_WID_NONE));
-	}
-	if (mon_head && !mon)
-		mon = mon_head;
-#endif
 
 	ewmh_update_number_of_desktops();
 	ewmh_update_desktop_names();

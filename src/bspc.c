@@ -40,8 +40,7 @@
 #define MSG_CHUNK_SIZE 4096
 
 /* Parse an X11 display string ("[protocol/][host]:display[.screen]") the
- * way xcb_parse_display does for the socket path, without linking libxcb:
- * the client should not need X libraries on a Wayland-only system. */
+ * way xcb_parse_display does for the socket path, without linking libxcb. */
 static bool parse_display(const char *name, char **host, int *display_num, int *screen_num)
 {
 	const char *slash = strrchr(name, '/');
@@ -121,21 +120,9 @@ int main(int argc, char *argv[])
 		int dn = 0, sn = 0;
 		bool found = false;
 
-		/* Try X11 display first */
 		char *display = getenv("DISPLAY");
 		if (display != NULL && parse_display(display, &host, &dn, &sn)) {
 			found = true;
-		}
-
-		/* Fall back to WAYLAND_DISPLAY */
-		if (!found) {
-			char *wl = getenv("WAYLAND_DISPLAY");
-			if (wl) {
-				host = strdup(wl);
-				dn = 0;
-				sn = 0;
-				found = true;
-			}
 		}
 
 		if (found) {
