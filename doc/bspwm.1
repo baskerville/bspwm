@@ -1095,7 +1095,7 @@ Create a new rule\&. Colons in the
 fields can be escaped with a backslash\&.
 .RE
 .sp
-A rule is given either as the pattern above or as a list of conditions, each one \fI<property>=<pattern>\fR or \fI<property>~=<pattern>\fR\&. The properties are \fIclass\fR, \fIinstance\fR, \fIname\fR (the title), \fItype\fR, \fIrole\fR (\fBWM_WINDOW_ROLE\fR, always empty under the wlroots backend) and \fItransient\fR (\fBon\fR when the window is a child of another one)\&. A window matches the rule when every condition holds, and a rule with no condition at all, only effects, matches every window, the same as \fI*:*:*\fR\&.
+A rule is given either as the pattern above or as a list of conditions, each one \fI<property>=<pattern>\fR or \fI<property>~=<pattern>\fR\&. The properties are \fIclass\fR, \fIinstance\fR, \fIname\fR (the title), \fItype\fR, \fIrole\fR (\fBWM_WINDOW_ROLE\fR) and \fItransient\fR (\fBon\fR when the window is a child of another one)\&. A window matches the rule when every condition holds, and a rule with no condition at all, only effects, matches every window, the same as \fI*:*:*\fR\&.
 .sp
 The first argument after the options decides the form\&. When it starts with a key (lowercase letters and underscores) followed by \fI=\fR or \fI~=\fR, the rule is a list of conditions and effects, and a key that is neither a property nor an effect is an error\&. Anything else is the pattern above, so a pattern whose title contains an \fI=\fR, such as \fIst:*:vim = notes\fR, is still a pattern\&. Only the first \fI=\fR of a condition ends the property, which lets the same title be written as a condition too: \fIname=vim = notes\fR\&. The one pattern that cannot be given as such is a lone lowercase class containing an \fI=\fR, such as \fIfoo=bar\fR, which reads as the unknown key \fIfoo\fR: write it as \fIclass=foo=bar\fR\&.
 .sp
@@ -1180,7 +1180,7 @@ keybind \fIOPTIONS\fR
 Manage bspwm\(cqs built\-in keybindings\&.
 .RE
 .sp
-Built\-in keybindings exist mainly for the Wayland backend, where there is no \fBsxhkd\fR to grab keys\&. They work on X11 too, but note that bspwm and \fBsxhkd\fR cannot both hold a grab on the same key: whichever registers first wins and the other silently gets nothing\&. Prefer one or the other per key\&.
+Built\-in keybindings are an alternative to \fBsxhkd\fR\&. Note that bspwm and \fBsxhkd\fR cannot both hold a grab on the same key: whichever registers first wins and the other silently gets nothing\&. Prefer one or the other per key\&.
 .sp
 A \fICOMBO\fR is modifiers and a key joined by \fB+\fR, e\&.g\&. \fB"super + shift + q"\fR\&. Accepted modifier names are \fBsuper\fR/\fBmod4\fR, \fBalt\fR/\fBmod1\fR, \fBctrl\fR/\fBcontrol\fR, \fBshift\fR, \fBmod3\fR and \fBmod5\fR\&. The key is an XKB keysym name and is matched unshifted, so write \fB"super + shift + q"\fR, not \fB"super + Q"\fR\&. Num Lock, Caps Lock and Scroll Lock are ignored when matching; \fBmod2\fR is conventionally Num Lock, so a binding that names it could never fire and is refused\&.
 .RE
@@ -1564,7 +1564,7 @@ Consider disabled monitors as disconnected\&.
 .PP
 \fIignore_monitor_updates\fR
 .RS 4
-Ignore monitor updates (RandR or wlroots output hotplug events) after the initial startup detection, freezing the monitor layout\&. Useful where a display or KVM switch reports spurious hotplugs\&. Note that this makes
+Ignore monitor updates (RandR output hotplug events) after the initial startup detection, freezing the monitor layout\&. Useful where a display or KVM switch reports spurious hotplugs\&. Note that this makes
 \fIremove_disabled_monitors\fR
 and
 \fIremove_unplugged_monitors\fR

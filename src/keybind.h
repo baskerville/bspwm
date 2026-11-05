@@ -31,7 +31,7 @@
 #define MAX_KEYBINDS  256
 #define MAX_COMMAND   512
 
-/* Modifier flags (match WLR_MODIFIER_* / X11 mod masks) */
+/* Modifier flags (match X11 modifier masks) */
 #define KBMOD_SHIFT   (1 << 0)
 #define KBMOD_CAPS    (1 << 1)
 #define KBMOD_CTRL    (1 << 2)

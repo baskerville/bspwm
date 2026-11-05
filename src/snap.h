@@ -29,8 +29,8 @@
 
 /* Windows-like edge snapping.
  *
- * These live outside the backend so that both the pointer-drag path (X11,
- * `track_pointer`) and the `bspc node --snap` command reach the same
+ * These live outside the backend so that both the pointer-drag path
+ * (`track_pointer`) and the `bspc node --snap` command reach the same
  * geometry logic. The drag preview overlay stays backend-specific. */
 
 /* Which snap zone, if any, the pointer position falls into on `m`. */

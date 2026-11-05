@@ -647,9 +647,8 @@ Commands
 
 A rule is given either as the pattern above or as a list of conditions, each one
 '<property>=<pattern>' or '<property>~=<pattern>'. The properties are 'class',
-'instance', 'name' (the title), 'type', 'role' (*WM_WINDOW_ROLE*, always empty under
-the wlroots backend) and 'transient' (*on* when the window is a child of another
-one). A window matches the rule when every condition holds, and a rule with no
+'instance', 'name' (the title), 'type', 'role' (*WM_WINDOW_ROLE*) and
+'transient' (*on* when the window is a child of another one). A window matches the rule when every condition holds, and a rule with no
 condition at all, only effects, matches every window, the same as '\*:*:*'.
 
 The first argument after the options decides the form. When it starts with a key
@@ -735,8 +734,7 @@ General Syntax
 keybind 'OPTIONS'::
 	Manage bspwm's built-in keybindings.
 
-Built-in keybindings exist mainly for the Wayland backend, where there is no
-*sxhkd* to grab keys. They work on X11 too, but note that bspwm and *sxhkd*
+Built-in keybindings are an alternative to *sxhkd*. Note that bspwm and *sxhkd*
 cannot both hold a grab on the same key: whichever registers first wins and
 the other silently gets nothing. Prefer one or the other per key.
 
@@ -928,7 +926,7 @@ Global Settings
 	Consider disabled monitors as disconnected.
 
 'ignore_monitor_updates'::
-	Ignore monitor updates (RandR or wlroots output hotplug events) after the initial startup detection, freezing the monitor layout. Useful where a display or KVM switch reports spurious hotplugs. Note that this makes 'remove_disabled_monitors' and 'remove_unplugged_monitors' ineffective, since the events they act on are never processed. Can also be enabled from the start with the *-i* command line option. Defaults to *false*.
+	Ignore monitor updates (RandR output hotplug events) after the initial startup detection, freezing the monitor layout. Useful where a display or KVM switch reports spurious hotplugs. Note that this makes 'remove_disabled_monitors' and 'remove_unplugged_monitors' ineffective, since the events they act on are never processed. Can also be enabled from the start with the *-i* command line option. Defaults to *false*.
 
 'remove_unplugged_monitors'::
 	Remove unplugged monitors.

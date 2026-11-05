@@ -168,7 +168,6 @@ static bool has_shell_meta(const char *s)
  * the socket. Returns true when handled; false means "fall back to fork+sh". */
 static bool keybind_exec_inproc(const char *command)
 {
-#ifdef BACKEND_X11
 	/* During an interactive X11 drag, track_pointer() is a nested blocking
 	 * loop and the control socket is not accept()ed until it returns, so a
 	 * keybind pressed mid-drag has always been deferred to drag-release (bspc
@@ -177,7 +176,6 @@ static bool keybind_exec_inproc(const char *command)
 	 * defer-to-release behavior by taking the (blocking) fork+sh path. */
 	extern bool grabbing;
 	if (grabbing) return false;
-#endif
 
 	while (*command == ' ' || *command == '\t') command++;
 

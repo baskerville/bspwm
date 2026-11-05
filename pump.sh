@@ -11,9 +11,9 @@
 #   ./pump.sh major      # force a major bump   (X.0.0)
 #   ./pump.sh 2.0.0      # set an explicit version
 #
-# It bumps VERSION + both PKGBUILDs + both .SRCINFOs, builds and tests BOTH
-# backends, commits the bump, then (after one confirmation) pushes the tag and
-# updates both AUR packages.
+# It bumps VERSION + the PKGBUILD + .SRCINFO, builds and tests the tree,
+# commits the bump, then (after one confirmation) pushes the tag and updates
+# the AUR package.
 #
 #   -n, --dry-run   do everything except commit/push/AUR (prints the plan)
 #   -y, --yes       skip the confirmation prompt before pushing
@@ -78,8 +78,8 @@ git log --oneline $range
 echo "-------------------------------"
 
 # ---- bump the version strings ------------------------------------------------
-pkgbuilds=(pkg/arch/PKGBUILD pkg/arch/bspwm1-wl/PKGBUILD)
-srcinfos=(pkg/arch/.SRCINFO pkg/arch/bspwm1-wl/.SRCINFO)
+pkgbuilds=(pkg/arch/PKGBUILD)
+srcinfos=(pkg/arch/.SRCINFO)
 
 printf '%s\n' "$new" > VERSION
 sed -i "s/^pkgver=${cur//./\\.}\$/pkgver=$new/" "${pkgbuilds[@]}"
@@ -91,16 +91,12 @@ for f in VERSION "${pkgbuilds[@]}" "${srcinfos[@]}"; do
 done
 say "bumped VERSION, PKGBUILDs, .SRCINFOs"
 
-# ---- build + test both backends ---------------------------------------------
-say "building + testing x11"
+# ---- build + test ------------------------------------------------------------
+say "building + testing"
 make clean >/dev/null 2>&1 || true
-make >/dev/null 2>&1              || die "x11 build failed"
-make test >/dev/null 2>&1        || die "x11 tests failed (run: make test)"
-say "building + testing wlroots"
-make clean >/dev/null 2>&1 || true
-make BACKEND=wlroots >/dev/null 2>&1       || die "wlroots build failed"
-make test BACKEND=wlroots >/dev/null 2>&1  || die "wlroots tests failed (run: make test BACKEND=wlroots)"
-say "both backends green"
+make >/dev/null 2>&1       || die "build failed"
+make test >/dev/null 2>&1  || die "tests failed (run: make test)"
+say "build green"
 
 if [ "$DRY" = 1 ]; then
 	say "dry run — reverting version bump, nothing committed or pushed"
@@ -122,7 +118,7 @@ say "committed release v$new"
 
 # ---- confirm before anything leaves this machine ----------------------------
 if [ "$ASSUME_YES" != 1 ]; then
-	printf '\033[1;33mPush v%s to origin + both AUR packages? [y/N] \033[0m' "$new"
+	printf '\033[1;33mPush v%s to origin + the AUR package? [y/N] \033[0m' "$new"
 	read -r reply
 	case "$reply" in
 		y|Y|yes) ;;
@@ -142,12 +138,11 @@ aur_update() {
 	dir="$(mktemp -d "${TMPDIR:-/tmp}/aur-$pkg.XXXXXX")"
 	say "AUR: $pkg"
 	git clone -q "ssh://aur@aur.archlinux.org/$pkg.git" "$dir"
-	if [ "$pkg" = bspwm1 ]; then src=pkg/arch; else src="pkg/arch/$pkg"; fi
+	src=pkg/arch
 	cp "$src/PKGBUILD" "$src/.SRCINFO" "$dir/"
 	( cd "$dir" && git add -A && git commit -q -m "v$new" && git push -q )
 	rm -rf "$dir"
 }
 aur_update bspwm1
-aur_update bspwm1-wl
 
-say "released v$new. Install with: yay -Sy bspwm1 bspwm1-wl   then: bspc wm -r"
+say "released v$new. Install with: yay -Sy bspwm1   then: bspc wm -r"

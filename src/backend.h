@@ -32,8 +32,7 @@
  * Backend abstraction layer for display server independence.
  *
  * The core bspwm logic (tree, stack, rules, IPC) uses only these types
- * and functions. Backends (X11/xcb or Wayland/wlroots) provide the
- * implementations. Selected at compile time via BACKEND=x11|wlroots.
+ * and functions. The X11/xcb backend provides the implementations.
  */
 
 /* ------------------------------------------------------------------ */
@@ -50,8 +49,7 @@ typedef struct {
 } bspwm_point_t;
 
 /* Window / surface identifier — opaque to core.
- * X11 backend: maps directly to xcb_window_t (uint32_t).
- * wlroots backend: sequential ID with internal pointer lookup. */
+ * X11 backend: maps directly to xcb_window_t (uint32_t). */
 typedef uint32_t bspwm_wid_t;
 
 /* Output (monitor) identifier — opaque to core. */
@@ -142,7 +140,7 @@ int  backend_init(int *default_screen);
 void backend_destroy(void);
 
 /* Get the file descriptor for epoll integration.
- * X11: xcb_get_file_descriptor(). wlroots: wl_event_loop fd. */
+ * X11: xcb_get_file_descriptor(). */
 int  backend_get_fd(void);
 
 /* Flush pending requests to the display server. */
@@ -162,7 +160,7 @@ bool backend_check_connection(void);
 /* Get screen dimensions. */
 void backend_get_screen_size(int *width, int *height);
 
-/* Get the root window ID (X11) or a sentinel (wlroots). */
+/* Get the root window ID. */
 bspwm_wid_t backend_get_root(void);
 
 /* ------------------------------------------------------------------ */
@@ -242,7 +240,7 @@ bool backend_get_window_class(bspwm_wid_t win, char *class_name, char *instance_
 
 /* Get window title / _NET_WM_NAME. */
 bool backend_get_window_name(bspwm_wid_t win, char *name, size_t len);
-/* WM_WINDOW_ROLE (X11 only; empty on Wayland). Returns false when unset. */
+/* WM_WINDOW_ROLE. Returns false when unset. */
 bool backend_get_window_role(bspwm_wid_t win, char *role, size_t len);
 
 /* Get ICCCM hints (take_focus, input_hint, delete_window). */
@@ -286,10 +284,6 @@ bool backend_get_window_type(bspwm_wid_t win, bspwm_window_type_t *type);
 void backend_ewmh_init(void);
 void backend_ewmh_update_active_window(bspwm_wid_t win);
 void backend_ewmh_update_number_of_desktops(uint32_t count);
-/* wlroots only: publish desktops through ext-workspace-v1 (waybar ext/workspaces). */
-void backend_workspaces_update(void);
-/* wlroots only: whether the client has an outstanding fullscreen request. */
-bool backend_window_requests_fullscreen(bspwm_wid_t win);
 void backend_ewmh_update_current_desktop(uint32_t index);
 void backend_ewmh_update_desktop_names(const char *names, size_t len);
 void backend_ewmh_update_desktop_viewport(void);
@@ -362,7 +356,7 @@ bspwm_wid_t backend_create_presel_feedback(uint32_t color);
 /* Kill a window forcefully (xcb_kill_client on X11). */
 void backend_close_window(bspwm_wid_t win);
 
-/* Send a graceful close request (WM_DELETE_WINDOW on X11, xdg_toplevel_close on Wayland). */
+/* Send a graceful close request (WM_DELETE_WINDOW). */
 void backend_request_close(bspwm_wid_t win);
 
 /* Send a "take focus" message if the window supports it. */
@@ -410,8 +404,8 @@ bool backend_register_root_events(void);
 /*  Keybinding grabs                                                   */
 /* ------------------------------------------------------------------ */
 
-/* Grab all keys from the keybind table on the root window.
- * On X11: uses xcb_grab_key. On Wayland: no-op (handled in compositor). */
+/* Grab all keys from the keybind table on the root window
+ * using xcb_grab_key. */
 void backend_grab_keys(void);
 
 /* Ungrab all keys from the root window. */

@@ -45,7 +45,7 @@ bool grab_pointer(pointer_action_t pac);
 void track_pointer(coordinates_t loc, pointer_action_t pac, bspwm_point_t pos);
 
 /* Windows-like edge snap drag preview. The zone geometry itself lives in
- * snap.c so that `bspc node --snap` can reach it on every backend. */
+ * snap.c so that `bspc node --snap` can reach it. */
 void show_snap_preview(monitor_t *m, snap_zone_t zone);
 void hide_snap_preview(void);
 void destroy_snap_preview(void);
