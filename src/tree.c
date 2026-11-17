@@ -320,6 +320,7 @@ node_t *insert_node(monitor_t *m, desktop_t *d, node_t *n, node_t *f)
 			d->root = n;
 		}
 		n->parent = p;
+		put_status(SBSC_MASK_NODE_REMOVE, "node_remove 0x%08X 0x%08X 0x%08X\n", m->id, d->id, f->id);
 		free(f);
 		f = NULL;
 	} else {
