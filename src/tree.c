@@ -690,7 +690,7 @@ void hide_node(desktop_t *d, node_t *n)
 		return;
 	} else {
 		if (!n->hidden) {
-			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
+			if (n->presel != NULL && d->user_layout != LAYOUT_MONOCLE) {
 				window_hide(n->presel->feedback);
 			}
 			if (n->client != NULL) {
@@ -714,7 +714,7 @@ void show_node(desktop_t *d, node_t *n)
 			if (n->client != NULL) {
 				window_show(n->id);
 			}
-			if (n->presel != NULL && d->layout != LAYOUT_MONOCLE) {
+			if (n->presel != NULL && d->user_layout != LAYOUT_MONOCLE) {
 				window_show(n->presel->feedback);
 			}
 		}
